@@ -1,0 +1,25 @@
+import React from 'react';
+import { Link, Outlet } from 'react-router-dom';
+
+const Dashboard: React.FC = () => {
+    return (
+        <div>
+            <header>
+                <h1>Bienvenido al Panel</h1>
+                <nav>
+                    <ul>
+                        <li>
+                            <Link to="/usuarios">Usuarios</Link>
+                        </li>
+                        {/* Puedes agregar más enlaces aquí */}
+                    </ul>
+                </nav>
+            </header>
+            <main>
+                <Outlet /> {/* Aquí se rendereizarán los componentes hijos */}
+            </main>
+        </div>
+    );
+};
+
+export default Dashboard;
