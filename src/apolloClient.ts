@@ -1,7 +1,7 @@
 import { ApolloClient, InMemoryCache } from '@apollo/client';
 
 const client = new ApolloClient({
-    uri: 'http://localhost:4000/graphql',
+    uri: import.meta.env.VITE_GRAPHQL_URI,
     cache: new InMemoryCache(),
     // Puedes agregar un link de error para manejar errores de red
     onError: (error) => {
