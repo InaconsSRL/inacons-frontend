@@ -6,6 +6,7 @@
    import { store } from './store/store';
    import client from './apolloClient';
    import App from './App';
+   import './index.css'
 
    ReactDOM.createRoot(document.getElementById('root')!).render(
        <React.StrictMode>
