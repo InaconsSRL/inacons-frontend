@@ -2,9 +2,9 @@ import React, { useState } from 'react';
 import { useDispatch } from 'react-redux';
 import { loginUser } from '../../actions/userActions';
 import { useNavigate } from 'react-router-dom';
-import EyeIcon from '../../components/Icons/EyeIcon';
-import EyeSlashIcon from '../../components/Icons/EyeSlashIcon';
-import Loader from '../../components/Loader';
+import EyeIcon from '../../components/Icons/solid/EyeIcon';
+import EyeSlashIcon from '../../components/Icons/solid/EyeSlashIcon';
+import Loader from '../../components/Loader/Loader';
 import Logo from '../../assets/logo.svg'
 
 const Login: React.FC = () => {
