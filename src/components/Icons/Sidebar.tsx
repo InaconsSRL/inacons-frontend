@@ -4,12 +4,12 @@ import './Sidebar.css'
 
 import HomeIcon from '../../components/Icons/HomeIcon';
 import FolderIcon from '../../components/Icons/FolderIcon';
-import CalendarIcon from '../../components/Icons/CalendarIcon';
-import CogIcon from '../../components/Icons/CogIcon';
+import CalendarIcon from '../../components/Icons/MenuIcon';
+import CogIcon from '../../components/Icons/XIcon';
 import ChevronDownIcon from '../../components/Icons/ChevronDownIcon'; // Icono para mostrar que se puede desplegar
 import ChevronUpIcon from '../../components/Icons/ChevronUpIcon';
-import MailIcon from '../../components/Icons/MailIcon';
-import UsersIcon from '../../components/Icons/UserGroupIcon';
+import MailIcon from '../../components/Icons/ChevronUpIcon';
+import UsersIcon from '../../components/Icons/ChevronUpIcon';
 
 interface SidebarProps {
   isSidebarOpen: boolean;
@@ -47,14 +47,14 @@ const Sidebar: React.FC<SidebarProps> = ({ isSidebarOpen }) => {
         </div>
 
         {/* Colaboración con opciones desplegables */}
-        <div className="flex flex-col w-full ">
+        <div className="flex flex-col w-full">
           <div
             className="flex items-center justify-between space-x-4 mb-4 cursor-pointer"
             onClick={toggleCollaborationMenu}
           >
             <div className="flex items-center">
               <FolderIcon className="w-6 h-6 text-white" />
-              {isSidebarOpen && <span className="text-white pl-3">Colaboración</span>}
+              {isSidebarOpen && <span className="text-white">Colaboración</span>}
             </div>
             {isSidebarOpen && (
               <span>
@@ -69,7 +69,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isSidebarOpen }) => {
 
           {/* Submenú con transición */}
           <div
-            className={`${isCollaborationOpen && "bg-white/20 rounded-xl mb-3 p-2"} overflow-hidden transition-all duration-300 ${isCollaborationOpen ? 'max-h-screen' : 'max-h-0'
+            className={`overflow-hidden transition-all duration-300 ${isCollaborationOpen ? 'max-h-screen' : 'max-h-0'
               }`}
           >
             <div className="flex items-center space-x-4 mb-4">
@@ -111,14 +111,14 @@ const Sidebar: React.FC<SidebarProps> = ({ isSidebarOpen }) => {
         </div>
 
        {/* Colaboración2 con opciones desplegables */}
-        <div className="flex flex-col w-full ">
+        <div className="flex flex-col w-full">
           <div
             className="flex items-center justify-between space-x-4 mb-4 cursor-pointer"
             onClick={toggleCollaborationMenu2}
           >
             <div className="flex items-center">
               <FolderIcon className="w-6 h-6 text-white" />
-              {isSidebarOpen && <span className="text-white pl-3">Colaboración</span>}
+              {isSidebarOpen && <span className="text-white">Colaboración</span>}
             </div>
             {isSidebarOpen && (
               <span>
@@ -133,7 +133,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isSidebarOpen }) => {
 
           {/* Submenú con transición */}
           <div
-            className={`${isCollaborationOpen2 && "bg-white/20 rounded-xl mb-3 p-2"} overflow-hidden transition-all duration-300 ${isCollaborationOpen2 ? 'max-h-screen' : 'max-h-0'
+            className={`overflow-hidden transition-all duration-300 ${isCollaborationOpen2 ? 'max-h-screen' : 'max-h-0'
               }`}
           >
             <div className="flex items-center space-x-4 mb-4">
@@ -177,14 +177,14 @@ const Sidebar: React.FC<SidebarProps> = ({ isSidebarOpen }) => {
         </div>
 
         {/* Colaboración3 con opciones desplegables */}
-        <div className="flex flex-col w-full ">
+        <div className="flex flex-col w-full">
           <div
             className="flex items-center justify-between space-x-4 mb-4 cursor-pointer"
             onClick={toggleCollaborationMenu3}
           >
             <div className="flex items-center">
               <FolderIcon className="w-6 h-6 text-white" />
-              {isSidebarOpen && <span className="text-white pl-3">Colaboración</span>}
+              {isSidebarOpen && <span className="text-white">Colaboración</span>}
             </div>
             {isSidebarOpen && (
               <span>
@@ -199,7 +199,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isSidebarOpen }) => {
 
           {/* Submenú con transición */}
           <div
-            className={`${isCollaborationOpen3 && "bg-white/20 rounded-xl mb-3 p-2"} overflow-hidden transition-all duration-300 ${isCollaborationOpen3 ? 'max-h-screen' : 'max-h-0'
+            className={`overflow-hidden transition-all duration-300 ${isCollaborationOpen3 ? 'max-h-screen' : 'max-h-0'
               }`}
           >
             <div className="flex items-center space-x-4 mb-4">

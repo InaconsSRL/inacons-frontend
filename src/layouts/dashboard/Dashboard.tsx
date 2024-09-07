@@ -1,13 +1,14 @@
-import React, {useState} from 'react';
-import { Link, Outlet } from 'react-router-dom';
+import React, { useState } from 'react';
 import { useSelector } from 'react-redux';
 import { RootState } from '../../store/store';
 
-import Header from '../Header/Header'
+import Header from '../header/Header'
 import Sidebar from '../Sidebar/Sidebar'
-import Footer from '../Footer/Footer'
+import Footer from '../footer/Footer'
+import Main from '../main/Main'
 
 import bg from '../../assets/bgmedia.webp'
+import blanco from "../../assets/blanco.jpg"
 
 const Dashboard: React.FC = () => {
     const user = useSelector((state: RootState) => state.user);
@@ -24,19 +25,9 @@ const Dashboard: React.FC = () => {
             backgroundPosition: 'center',
         }}>
             <Header toggleSidebar={toggleSidebar} isSidebarOpen={isSidebarOpen} />
-            <div className="flex flex-1 overflow-hidden pt-16">
+            <div className="flex flex-1 overflow-hidden pt-16 mb-12">
                 <Sidebar isSidebarOpen={isSidebarOpen} />
-                <main 
-                    className={`flex-1 overflow-auto transition-all duration-500 ease-in-out ${
-                        isSidebarOpen ? 'ml-64' : 'ml-16'
-                    }`}
-                    
-                >
-                    <div className="p-4">
-                        <h1 className="text-white">Contenido principal</h1>
-                        <Outlet />
-                    </div>
-                </main>
+                <Main />
             </div>
             <Footer />
         </div>

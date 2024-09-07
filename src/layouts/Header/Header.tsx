@@ -1,12 +1,11 @@
 import React from 'react';
 
-import MenuIcon from '../../components/Icons/outline/MenuIcon';
-import XIcon from '../../components/Icons/outline/XIcon';
+import MenuIcon from '../../components/Icons/MenuIcon';
+import XIcon from '../../components/Icons/XIcon';
 
-import SearchIcon from '../../components/Icons/solid/EyeSlashIcon';
-import BellIcon from '../../components/Icons/solid/EyeSlashIcon';
-import CogIcon from '../../components/Icons/solid/EyeSlashIcon';
-import UserCircleIcon from '../../components/Icons/solid/EyeSlashIcon';
+import SearchIcon from '../../components/Icons/EyeSlashIcon';
+import BellIcon from '../../components/Icons/HandshakeIcon';
+import CogIcon from '../../components/Icons/EyeSlashIcon';
 
 import logo from '../../assets/logo.svg'
 import avatar from '../../assets/avatar.webp'
@@ -31,12 +30,12 @@ const Header: React.FC = ({ toggleSidebar, isSidebarOpen }) => {
         </button>
 
         {/* Sección izquierda: Logo */}
-        <div className="flex items-center mx-20">
+        <div className="flex items-center mx-2 sm:mx-1 md:mx-5 lg:ml-5 xl:ml-10">
           <img src={logo} alt="Logo" className="h-10 mr-4" />
         </div>
 
         {/* Sección media: Barra de búsqueda */}
-        <div className="flex items-center flex-grow">
+        <div className="flex items-center flex-grow md:mx-3">
           <div className="relative w-full max-w-md">
             <input
               type="text"
@@ -48,28 +47,20 @@ const Header: React.FC = ({ toggleSidebar, isSidebarOpen }) => {
         </div>
 
         {/* Sección derecha: Hora, usuario e iconos */}
-        <div className="flex items-center space-x-4">
+        <div className="flex items-center space-x-4 text-center">
           {/* Reloj */}
           <span className="text-white text-lg">{currentTime}</span>
-
           {/* Avatar del usuario */}
           <div className="flex items-center space-x-2">
             {/* <UserCircleIcon className="w-8 h-8 text-white" /> */}
-            <div className="flex items-center">
+            <div className="flex items-center text-white">
               <img src={avatar} alt="Avatar" className="h-10 mr-4" />
-            </div>
-            <div className="text-white">
               <span>Noe Plasiro Cano Nunez</span>
             </div>
           </div>
 
-          {/* Plan e Invitar */}
-          <button className="bg-teal-500 text-white px-4 py-1 rounded-full">Mi plan</button>
-          <button className="bg-blue-500 text-white px-4 py-1 rounded-full">Invitar</button>
-
           {/* Iconos de notificación y configuración */}
           <BellIcon className="w-6 h-6 text-white" />
-          <CogIcon className="w-6 h-6 text-white" />
         </div>
       </div>
     </header>

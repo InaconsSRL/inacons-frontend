@@ -2,10 +2,11 @@ import React, { useState } from 'react';
 import { useDispatch } from 'react-redux';
 import { loginUser } from '../../actions/userActions';
 import { useNavigate } from 'react-router-dom';
-import EyeIcon from '../../components/Icons/solid/EyeIcon';
-import EyeSlashIcon from '../../components/Icons/solid/EyeSlashIcon';
+import EyeIcon from '../../components/Icons/EyeIcon';
+import EyeSlashIcon from '../../components/Icons/EyeSlashIcon';
 import Loader from '../../components/Loader/Loader';
 import Logo from '../../assets/logo.svg'
+import fondo from '../../assets/fondo.jpg'
 
 const Login: React.FC = () => {
   const dispatch = useDispatch();
@@ -37,6 +38,12 @@ const Login: React.FC = () => {
 
   return (
     <div className="flex justify-center items-center h-screen bg-gradient-to-r from-loginRightColor to-loginLeftColor font-[Montserrat] p-4">
+  {/* //   <div className="flex justify-center items-center h-screen font-[Montserrat] p-4"  style={{
+  //     backgroundImage: `url(${fondo})`,
+  //     backgroundSize: 'cover',
+  //     backgroundPosition: 'center',
+  // }}> */}
+
       <div className="flex flex-col items-center p-8 rounded-[20px] bg-white bg-opacity-20 shadow-lg backdrop-blur-lg border border-white/30 max-w-[350px] w-full md:w-auto">
         <img className="w-full mb-8" src={Logo} alt="Logo" />
         <h1 className="mb-6 mt-2 text-xl font-bold text-center uppercase tracking-wide bg-clip-text text-transparent bg-gradient-to-r from-loginLeftTextColor to-loginRightTextColor">
