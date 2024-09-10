@@ -1,7 +1,5 @@
 import React, { useState } from 'react';
 
-import './Sidebar.css'
-
 import HomeIcon from '../../components/Icons/HomeIcon';
 import FolderIcon from '../../components/Icons/FolderIcon';
 import CalendarIcon from '../../components/Icons/CalendarIcon';
