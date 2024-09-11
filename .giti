@@ -1,0 +1,9 @@
+# Node.js modules
+node_modules/
+# Backup files
+*.backup
+*~
+*#*
+#TestRolf.ts#
+#Roles.ts#
+#Usuario.ts#
