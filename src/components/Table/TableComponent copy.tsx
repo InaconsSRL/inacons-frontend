@@ -30,7 +30,15 @@ const TableComponent: React.FC<TableProps> = ({ tableData }) => {
   );
 
   return (
-    
+    <div className="flex flex-1 overflow-hidden rounded-xl">
+      <main className="w-full flex flex-col flex-grow p-4 bg-white overflow-hidden">
+        <div className="flex justify-between items-center mb-4">
+          <h2 className="text-xl font-bold">Actividades Septiembre, 2024</h2>
+          <div className="flex items-center space-x-2">
+            <button className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors">Programar</button>
+            <button className="px-4 py-2 bg-gray-200 text-gray-700 rounded hover:bg-gray-300 transition-colors">&lt; Hoy &gt;</button>
+          </div>
+        </div>
         <div className="flex-grow border rounded-lg overflow-hidden">
           <div className="h-full overflow-auto">
             <table {...getTableProps()} className="w-full bg-white shadow-md">
@@ -117,6 +125,8 @@ const TableComponent: React.FC<TableProps> = ({ tableData }) => {
             </table>
           </div>
         </div>
+      </main>
+    </div>
   );
 };
 
