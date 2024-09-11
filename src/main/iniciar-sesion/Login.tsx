@@ -14,7 +14,7 @@ const Login: React.FC = () => {
         e.preventDefault();
         try {
             const resultAction = await dispatch(loginUser({ username, password }));
-            //console.log(resultAction);  
+               console.log(resultAction);  
 	    
             if (loginUser.fulfilled.match(resultAction)) {
 		 navigate('/dashboard');
@@ -52,7 +52,7 @@ const Login: React.FC = () => {
         required
             />
 	    <br/>
-            <button type="submit">Ingresar</button>
+            <button type="submit">Ingresar aqui</button>
         </form>
 	 {/*welcomeMessage && <h2>{welcomeMessage}</h2> */}
 	{errorMessage && <p style={{ color: 'red' }}>{errorMessage}</p>}
