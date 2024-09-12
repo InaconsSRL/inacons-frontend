@@ -5,7 +5,7 @@ import TableComponent from '../../components/Table/TableComponent';
 import FormComponent from '../../components/FormComponent/FormComponent'; // Asegúrate de importar el nuevo componente
 
 import { useDispatch, useSelector } from 'react-redux';
-import { fetchCargos, createCargo, updateCargo } from '../../slices/cargoSlice';
+import { fetchCargos, addCargo, updateCargo } from '../../slices/cargoSlice';
 import { RootState, AppDispatch } from '../../store/store';
 
 const CargosComponent: React.FC = () => {
@@ -24,7 +24,7 @@ const CargosComponent: React.FC = () => {
     if (editingCargo) {
       dispatch(updateCargo({ updateCargoId: editingCargo.id, nombre, descripcion }));
     } else {
-      dispatch(createCargo({ nombre, descripcion }));
+      dispatch(addCargo(data.value));
     }
     setIsModalOpen(false);
     setEditingCargo(null);
@@ -50,7 +50,7 @@ const CargosComponent: React.FC = () => {
   };
 
   const tableData = {
-    headers: ["id", "descripcion", "nombre", "opciones"],
+    headers: [ "descripcion", "nombre", "opciones"],
     rows: cargos.map(cargo => ({
       ...cargo,
       opciones: (

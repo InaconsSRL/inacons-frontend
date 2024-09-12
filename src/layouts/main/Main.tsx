@@ -1,7 +1,8 @@
 import React from 'react';
 import { Outlet } from 'react-router-dom';
-//import CalendarPage from '../../pages/CalendarPage/CalendarPage';
+import CalendarPage from '../../pages/CalendarPage/CalendarPage';
 import CargosComponent from '../../pages/Cargos/CargosComponent';
+import CalendarIcon from '../../components/Icons/CalendarIcon';
 
 const Main: React.FC = () => {
     return (

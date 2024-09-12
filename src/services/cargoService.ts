@@ -11,7 +11,7 @@ const LIST_CARGOS_QUERY = gql`
   }
 `;
 
-const CREATE_CARGO_MUTATION = gql`
+const ADD_CARGO_MUTATION = gql`
   mutation AddCargo($nombre: String!, $descripcion: String!) {
     addCargo(nombre: $nombre, descripcion: $descripcion) {
       descripcion
@@ -47,16 +47,16 @@ export const listCargosService = async () => {
   }
 };
 
-export const createCargoService = async (cargoData: { nombre: string; descripcion: string }) => {
+export const addCargoService = async (cargoData: { nombre: string; descripcion: string }) => {
   try {
     const response = await client.mutate({
-      mutation: CREATE_CARGO_MUTATION,
+      mutation: ADD_CARGO_MUTATION,
       variables: cargoData,
     });
     if (response.errors) {
       throw new Error(response.errors[0]?.message || 'Error desconocido');
     }
-    return response.data.createCargo;
+    return response.data.addCargo;
   } catch (error) {
     console.error('Error al crear el cargo:', error);
     throw error;

@@ -1,5 +1,5 @@
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
-import { listCargosService, createCargoService, updateCargoService } from '../services/cargoService';
+import { listCargosService, addCargoService, updateCargoService } from '../services/cargoService';
 
 // Interfaces
 interface Cargo {
@@ -33,11 +33,11 @@ export const fetchCargos = createAsyncThunk(
   }
 );
 
-export const createCargo = createAsyncThunk(
-  'cargo/createCargo',
-  async (cargoData: Omit<Cargo, 'id'>, { rejectWithValue }) => {
+export const addCargo = createAsyncThunk(
+  'cargo/addCargo',
+  async (cargoData: { nombre: string; descripcion: string }, { rejectWithValue }) => {
     try {
-      return await createCargoService(cargoData);
+      return await addCargoService(cargoData);
     } catch (error) {
       return rejectWithValue(error.message);
     }
@@ -74,7 +74,7 @@ const cargoSlice = createSlice({
         state.loading = false;
         state.error = action.payload as string;
       })
-      .addCase(createCargo.fulfilled, (state, action: PayloadAction<Cargo>) => {
+      .addCase(addCargo.fulfilled, (state, action: PayloadAction<Cargo>) => {
         state.cargos.push(action.payload);
       })
       .addCase(updateCargo.fulfilled, (state, action: PayloadAction<Cargo>) => {
