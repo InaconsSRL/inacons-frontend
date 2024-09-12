@@ -9,7 +9,7 @@ import Main from '../main/Main'
 
 import bg from '../../assets/bgmedia.webp'
 
-import RoleManagementTable from '../../pages/usuarios/RoleManagementTable';
+import RoleManagementTable from '../../pages/Role/RoleManagementTable';
 
 import { motion } from 'framer-motion';
 const pageVariants = {

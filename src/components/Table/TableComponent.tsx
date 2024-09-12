@@ -12,10 +12,13 @@ import {
   ColumnFiltersState,
 } from '@tanstack/react-table';
 
+type TableRow = Record<string, string | number | boolean>;
+
 type TableData = {
   headers: string[];
-  rows: Record<string, any>[];
+  rows: TableRow[];
 };
+
 
 interface TableComponentProps {
   tableData: TableData;
@@ -38,7 +41,7 @@ const TableComponent: React.FC<TableComponentProps> = ({ tableData }) => {
     };
   }, []);
 
-  const columns = useMemo<ColumnDef<Record<string, any>>[]>(() => 
+  const columns = useMemo<ColumnDef<TableRow>[]>(() => 
     tableData.headers.map(header => ({
       header,
       accessorKey: header,
@@ -90,7 +93,7 @@ const TableComponent: React.FC<TableComponentProps> = ({ tableData }) => {
                               : '',
                             onClick: header.column.getToggleSortingHandler(),
                           }}
-                        >
+                        > 
                           {flexRender(
                             header.column.columnDef.header,
                             header.getContext()

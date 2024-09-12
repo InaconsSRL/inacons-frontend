@@ -1,6 +1,6 @@
 import React, {useState} from 'react';
 import Modal from '../../components/Modal/Modal';
-import PermissionUser from './PermissionUser';
+import PermissionRol from '../Role/PermissionRol';
 
 interface Role {
     id: number;
@@ -72,7 +72,7 @@ const RoleManagementTable: React.FC<RoleManagementTableProps> = ({ roles }) => {
                     Crear
                 </button>
                 <Modal isOpen={isModalOpen} onClose={handleCloseModal} title="Permisos de Rol">
-                    <PermissionUser title="New Rol" role={blankRole} />
+                    <PermissionRol title="New Rol" role={blankRole} />
                 </Modal>
             </div>
             <table className="min-w-full divide-y divide-gray-200">
@@ -102,7 +102,7 @@ const RoleManagementTable: React.FC<RoleManagementTableProps> = ({ roles }) => {
                         </tr>
                     ))}
                     <Modal isOpen={isModalOpen} onClose={handleCloseModal} title="Permisos de Rol">
-                                    <PermissionUser title={roleSeing.rol} role={roleSeing} />
+                                    <PermissionRol title={roleSeing.rol} role={roleSeing} />
                                     <p>mimimi  </p>
                     </Modal>
                 </tbody>

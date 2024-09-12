@@ -17,8 +17,8 @@ const Button: React.FC<ButtonProps> = ({ onClick, color = 'verde', options = [],
   };
 
   const buttonColors = {
-    transp: 'bg-white/10 hover:bg-white/20 active:bg-white/30 text-white/100',
-    verde: 'bg-[#c4f033] hover:bg-[#D2F95F] active:bg-[#B2E232] text-white',
+    transp: 'bg-white/10 hover:bg-white/20 active:bg-white/30 text-black/100',
+    verde: 'bg-[#c4f033] hover:bg-[#D2F95F] active:bg-[#B2E232] text-black',
     blanco: 'bg-white border border-gray-300 text-black hover:bg-gray-100 active:bg-gray-200',
   };
 

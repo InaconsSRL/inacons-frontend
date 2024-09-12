@@ -6,7 +6,6 @@ import EyeIcon from '../../components/Icons/EyeIcon';
 import EyeSlashIcon from '../../components/Icons/EyeSlashIcon';
 import Loader from '../../components/Loader/Loader';
 import Logo from '../../assets/logo.svg'
-import fondo from '../../assets/fondo.jpg'
 
 const Login: React.FC = () => {
   const dispatch = useDispatch();

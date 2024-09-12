@@ -9,26 +9,6 @@ import { useSelector } from 'react-redux';
 import {RootState} from './store/store';
 
 
-
-// const App: React.FC = () => {
-//    const user = useSelector((state: RootState) => state.user); 
-
-//     return (
-//         <Router>
-//             <Routes>
-//                 {/* <Route path="/" element={<Login />} /> */}
-//                 <Route path="/" element={<Dashboard />} />
-//                 {/* <Route path="/dashboard" element={user.token ? <Dashboard /> : <Navigate to="/" />} >
-//                     <Route path="usuarios" element={<Usuarios />} />
-//                 </Route> */}
-//             </Routes>
-//         </Router>
-//     );
-// };
-
-// export default App
-
-
 const App: React.FC = () => {
     const user = useSelector((state: RootState) => state.user);
     const location = useLocation();
@@ -36,10 +16,10 @@ const App: React.FC = () => {
     return (
       <AnimatePresence mode="wait">
         <Routes location={location} key={location.pathname}>
-          <Route path="/" element={<Dashboard />} />
-          {/* <Route path="/dashboard" element={user.token ? <Dashboard /> : <Navigate to="/" />} >
+          <Route path="/" element={<Login />} />
+          <Route path="/dashboard" element={user.token ? <Dashboard /> : <Login to="/" />} >
             <Route path="usuarios" element={<Usuarios />} />
-          </Route> */}
+          </Route>
         </Routes>
       </AnimatePresence>
     );

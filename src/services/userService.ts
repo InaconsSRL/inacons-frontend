@@ -23,5 +23,6 @@ export const loginUserService = async (username: string, password: string) => {
 
         return response.data.login;
     } catch (error) {
+        console.log(error)
     }
 };
