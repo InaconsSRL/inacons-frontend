@@ -38,11 +38,6 @@ const Login: React.FC = () => {
 
   return (
     <div className="flex justify-center items-center h-screen bg-gradient-to-r from-loginRightColor to-loginLeftColor font-[Montserrat] p-4">
-  {/* //   <div className="flex justify-center items-center h-screen font-[Montserrat] p-4"  style={{
-  //     backgroundImage: `url(${fondo})`,
-  //     backgroundSize: 'cover',
-  //     backgroundPosition: 'center',
-  // }}> */}
 
       <div className="flex flex-col items-center p-8 rounded-[20px] bg-white bg-opacity-20 shadow-lg backdrop-blur-lg border border-white/30 max-w-[350px] w-full md:w-auto">
         <img className="w-full mb-8" src={Logo} alt="Logo" />

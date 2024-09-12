@@ -1,122 +1,230 @@
-import React from 'react';
-import { useTable, useFilters, useSortBy, useResizeColumns, Column } from 'react-table';
+import React, { useState, useMemo, useEffect, useRef } from 'react';
+import {
+  useReactTable,
+  getCoreRowModel,
+  getFilteredRowModel,
+  getPaginationRowModel,
+  getSortedRowModel,
+  flexRender,
+  ColumnDef,
+  ColumnResizeMode,
+  SortingState,
+  ColumnFiltersState,
+} from '@tanstack/react-table';
 
-interface TableProps {
-  tableData: {
-    headers: string[];
-    rows: Record<string, any>[];
-  };
+type TableData = {
+  headers: string[];
+  rows: Record<string, any>[];
+};
+
+interface TableComponentProps {
+  tableData: TableData;
 }
 
-const TableComponent: React.FC<TableProps> = ({ tableData }) => {
-  const data = React.useMemo(() => tableData.rows, [tableData.rows]);
-  const columns = React.useMemo<Column<Record<string, any>>[]>(
-    () => tableData.headers.map(header => ({ Header: header, accessor: header })),
-    [tableData.headers]
-  );
+const preventDefault = (e: Event) => {
+  e.preventDefault();
+  e.stopPropagation();
+};
 
-  const {
-    getTableProps,
-    getTableBodyProps,
-    headerGroups,
-    rows,
-    prepareRow,
-    setFilter,
-  } = useTable(
-    { columns, data },
-    useFilters,
-    useSortBy,
-    useResizeColumns
-  );
+const TableComponent: React.FC<TableComponentProps> = ({ tableData }) => {
+  const [sorting, setSorting] = useState<SortingState>([]);
+  const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
+  const [columnResizeMode] = useState<ColumnResizeMode>('onChange');
+  const tableContainerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    return () => {
+      document.removeEventListener("selectstart", preventDefault);
+    };
+  }, []);
+
+  const columns = useMemo<ColumnDef<Record<string, any>>[]>(() => 
+    tableData.headers.map(header => ({
+      header,
+      accessorKey: header,
+      cell: info => info.getValue(),
+      footer: props => props.column.id,
+    })),
+  [tableData.headers]);
+
+  const table = useReactTable({
+    data: tableData.rows,
+    columns,
+    state: {
+      sorting,
+      columnFilters,
+    },
+    onSortingChange: setSorting,
+    onColumnFiltersChange: setColumnFilters,
+    getCoreRowModel: getCoreRowModel(),
+    getFilteredRowModel: getFilteredRowModel(),
+    getPaginationRowModel: getPaginationRowModel(),
+    getSortedRowModel: getSortedRowModel(),
+    columnResizeMode,
+  });
 
   return (
-    
-        <div className="flex-grow border rounded-lg overflow-hidden">
-          <div className="h-full overflow-auto">
-            <table {...getTableProps()} className="w-full bg-white shadow-md">
-              <thead className="bg-gray-200 text-gray-700 sticky top-0 z-20">
-                {headerGroups.map(headerGroup => (
-                  <tr {...headerGroup.getHeaderGroupProps()}>
-                    {headerGroup.headers.map((column, index) => (
-                      <th
-                        {...column.getHeaderProps(column.getSortByToggleProps())}
-                        className={`py-3 px-4 font-semibold text-sm text-left whitespace-nowrap ${index === 0 ? 'sticky left-0 z-30' : ''}`}
-                      >
-                        <div className="flex items-center">
-                          {index === 0 ? (
-                            <div className="sticky left-0 bg-gray-200">{column.render('Header')}</div>
-                          ) : (
-                            column.render('Header')
-                          )}
-                          <span>
-                            {column.isSorted
-                              ? column.isSortedDesc
-                                ? ' 🔽'
-                                : ' 🔼'
-                              : ''}
-                          </span>
-                          <div
-                            {...column.getResizerProps()}
-                            className="resizer"
-                            style={{
-                              display: 'inline-block',
-                              width: '10px',
-                              height: '100%',
-                              position: 'absolute',
-                              right: '0',
-                              top: '0',
-                              transform: 'translateX(50%)',
-                              zIndex: 1,
-                              touchAction: 'none',
-                            }}
-                          />
-                        </div>
-                      </th>
-                    ))}
-                  </tr>
-                ))}
-                <tr>
-                  {headerGroups[0].headers.map(column => (
-                    <th key={column.id}>
-                      <input
-                        type="text"
-                        onChange={e => setFilter(column.id, e.target.value)}
-                        placeholder={`Buscar ${column.render('Header')}`}
-                        className="w-full px-2 py-1 border rounded"
-                      />
-                    </th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody {...getTableBodyProps()}>
-                {rows.map((row, rowIndex) => {
-                  prepareRow(row);
-                  return (
-                    <tr
-                      {...row.getRowProps()}
-                      className={`${rowIndex % 2 === 0 ? 'bg-gray-50' : 'bg-white'} hover:bg-gray-100 transition-colors duration-200`}
-                    >
-                      {row.cells.map((cell, colIndex) => (
-                        <td
-                          {...cell.getCellProps()}
-                          className={`py-2 px-4 border-b border-gray-200 ${colIndex === 0 ? 'sticky left-0 z-10' : ''}`}
+    <div className="p-2">
+      <div className="h-2" />
+      <div 
+        ref={tableContainerRef}
+        className="overflow-x-auto"
+        style={{ position: 'relative', width: '100%' }}
+      >
+        <table className="w-full border-collapse border border-gray-300">
+          <thead>
+            {table.getHeaderGroups().map(headerGroup => (
+              <tr key={headerGroup.id}>
+                {headerGroup.headers.map(header => (
+                  <th
+                    key={header.id}
+                    className="border border-gray-300 bg-gray-100 p-2 relative"
+                    style={{ width: header.getSize(), minWidth: header.getSize() }}
+                  >
+                    {header.isPlaceholder ? null : (
+                      <div>
+                        <div
+                          {...{
+                            className: header.column.getCanSort()
+                              ? 'cursor-pointer select-none'
+                              : '',
+                            onClick: header.column.getToggleSortingHandler(),
+                          }}
                         >
-                          {colIndex === 0 ? (
-                            <div className={`${rowIndex % 2 === 0 ? 'bg-gray-50' : 'bg-white'} hover:bg-gray-100`}>
-                              {cell.render('Cell')}
-                            </div>
-                          ) : (
-                            cell.render('Cell')
+                          {flexRender(
+                            header.column.columnDef.header,
+                            header.getContext()
                           )}
-                        </td>
-                      ))}
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
-        </div>
+                          {{
+                            asc: ' 🔼',
+                            desc: ' 🔽',
+                          }[header.column.getIsSorted() as string] ?? null}
+                        </div>
+                        {header.column.getCanFilter() ? (
+                          <div>
+                            <input
+                              value={(header.column.getFilterValue() ?? '') as string}
+                              onChange={e =>
+                                header.column.setFilterValue(e.target.value)
+                              }
+                              placeholder={`Filter ${header.column.columnDef.header}`}
+                              className="w-full border p-1 mt-1 text-sm"
+                            />
+                          </div>
+                        ) : null}
+                      </div>
+                    )}
+                    <div
+                      onMouseDown={(e) => {
+                        document.addEventListener("selectstart", preventDefault);
+                        header.getResizeHandler()(e);
+                      }}
+                      onTouchStart={header.getResizeHandler()}
+                      onMouseUp={() => {
+                        document.removeEventListener("selectstart", preventDefault);
+                      }}
+                      onMouseLeave={() => {
+                        document.removeEventListener("selectstart", preventDefault);
+                      }}
+                      className={`resizer ${
+                        header.column.getIsResizing() ? 'isResizing' : ''
+                      }`}
+                      style={{
+                        position: 'absolute',
+                        right: 0,
+                        top: 0,
+                        height: '100%',
+                        width: '5px',
+                        cursor: 'col-resize',
+                        zIndex: 1,
+                      }}
+                    />
+                  </th>
+                ))}
+              </tr>
+            ))}
+          </thead>
+          <tbody>
+            {table.getRowModel().rows.map(row => (
+              <tr key={row.id}>
+                {row.getVisibleCells().map(cell => (
+                  <td 
+                    key={cell.id} 
+                    className="border border-gray-300 p-2"
+                    style={{ minWidth: cell.column.getSize() }}
+                  >
+                    {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                  </td>
+                ))}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      <div className="h-2" />
+      <div className="flex items-center gap-2">
+        <button
+          className="border rounded p-1"
+          onClick={() => table.setPageIndex(0)}
+          disabled={!table.getCanPreviousPage()}
+        >
+          {'<<'}
+        </button>
+        <button
+          className="border rounded p-1"
+          onClick={() => table.previousPage()}
+          disabled={!table.getCanPreviousPage()}
+        >
+          {'<'}
+        </button>
+        <button
+          className="border rounded p-1"
+          onClick={() => table.nextPage()}
+          disabled={!table.getCanNextPage()}
+        >
+          {'>'}
+        </button>
+        <button
+          className="border rounded p-1"
+          onClick={() => table.setPageIndex(table.getPageCount() - 1)}
+          disabled={!table.getCanNextPage()}
+        >
+          {'>>'}
+        </button>
+        <span className="flex items-center gap-1">
+          <div>Page</div>
+          <strong>
+            {table.getState().pagination.pageIndex + 1} of{' '}
+            {table.getPageCount()}
+          </strong>
+        </span>
+        <span className="flex items-center gap-1">
+          | Go to page:
+          <input
+            type="number"
+            defaultValue={table.getState().pagination.pageIndex + 1}
+            onChange={e => {
+              const page = e.target.value ? Number(e.target.value) - 1 : 0;
+              table.setPageIndex(page);
+            }}
+            className="border p-1 rounded w-16"
+          />
+        </span>
+        <select
+          value={table.getState().pagination.pageSize}
+          onChange={e => {
+            table.setPageSize(Number(e.target.value));
+          }}
+          className="border p-1 rounded"
+        >
+          {[10, 20, 30, 40, 50].map(pageSize => (
+            <option key={pageSize} value={pageSize}>
+              Show {pageSize}
+            </option>
+          ))}
+        </select>
+      </div>
+    </div>
   );
 };
 

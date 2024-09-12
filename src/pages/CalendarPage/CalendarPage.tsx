@@ -28,7 +28,7 @@ const Recursos: React.FC = () => {
   };
   
   // Ejemplo de uso:
-  const tableData = generateTableData(20, 100);
+  const tableData = generateTableData(30, 1000);
 
   return (
     <div className="flex flex-col h-full ">
