@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { NavLink } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 
 import HomeIcon from '../../components/Icons/HomeIcon';
 import FolderIcon from '../../components/Icons/FolderIcon';
@@ -13,14 +13,14 @@ interface SidebarProps {
 }
 
 const Sidebar: React.FC<SidebarProps> = ({ isSidebarOpen }) => {
-  const [isCollaborationOpen, setIsCollaborationOpen] = useState(true);
+
+  const [isCollaborationOpen, setIsCollaborationOpen] = useState(false);
 
   const toggleCollaborationMenu = () => {
     setIsCollaborationOpen(!isCollaborationOpen);
   };
 
-  // Estilo para el enlace activo
-  const activeStyle = "bg-amber-300 bg-opacity-50 rounded-xl p-2";
+
 
   return (
     <div
@@ -60,34 +60,21 @@ const Sidebar: React.FC<SidebarProps> = ({ isSidebarOpen }) => {
             className={`${isCollaborationOpen && "bg-white/20 rounded-xl mb-3 p-2"} overflow-hidden transition-all duration-300 ${isCollaborationOpen ? 'max-h-screen' : 'max-h-0'
               }`}
           >
-            <NavLink to="/dashboard/calendar" className={({ isActive }) => 
-                `flex items-center space-x-4 mb-4 ${isActive ? activeStyle : ''}`
-              }>
+            <Link to="/dashboard/calendar" className="flex items-center space-x-4 mb-4">
               <HomeIcon className="w-6 h-6 text-white" />
               {isSidebarOpen && <span className="text-white">Calendario</span>}
               
-            </NavLink>
+            </Link>
 
-            <NavLink to="/dashboard/tipoRecurso" className={({ isActive }) => 
-                `flex items-center space-x-4 mb-4 ${isActive ? activeStyle : ''}`
-              }>
+            <Link to="/dashboard/tipoRecurso" className="flex items-center space-x-4 mb-4">
               <CalendarIcon className="w-6 h-6 text-white" />
               {isSidebarOpen && <span className="text-white">TipoRecurso</span>}
-            </NavLink>
+            </Link>
 
-            <NavLink to="/dashboard/cargo" className={({ isActive }) => 
-                `flex items-center space-x-4 mb-4 ${isActive ? activeStyle : ''}`
-              }>
+            <Link to="/dashboard/cargo" className="flex items-center space-x-4 mb-4">
               <CogIcon className="w-6 h-6 text-white" />
               {isSidebarOpen && <span className="text-white">Cargos</span>}
-            </NavLink>
-
-            <NavLink to="/dashboard/recurso" className={({ isActive }) => 
-                `flex items-center space-x-4 mb-4 ${isActive ? activeStyle : ''}`
-              }>
-              <ChevronUpIcon className="w-6 h-6 text-white" />
-              {isSidebarOpen && <span className="text-white">Recursos</span>}
-            </NavLink>
+            </Link>
 
             
 

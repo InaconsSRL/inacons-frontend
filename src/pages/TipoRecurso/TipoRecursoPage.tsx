@@ -2,37 +2,36 @@ import React, { useState, useEffect } from 'react';
 import Button from '../../components/Buttons/Button';
 import Modal from '../../components/Modal/Modal';
 import TableComponent from '../../components/Table/TableComponent';
-import FormComponent from './CargoFormComponent'; // Asegúrate de importar el nuevo componente
+import FormComponent from './TipoRecursoFormComponent';
 
 import { useDispatch, useSelector } from 'react-redux';
-import { fetchCargos, addCargo, updateCargo } from '../../slices/cargoSlice';
+import { fetchTiposRecurso, addTipoRecurso, updateTipoRecurso } from '../../slices/tipoRecursoSlice';
 import { RootState, AppDispatch } from '../../store/store';
 
-const CargosComponent: React.FC = () => {
+const TipoRecursoComponent: React.FC = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [editingCargo, setEditingCargo] = useState<{ id: string; nombre: string; descripcion: string } | null>(null);
+  const [editingTipoRecurso, setEditingTipoRecurso] = useState<{ id: string; nombre: string } | null>(null);
 
   const dispatch = useDispatch<AppDispatch>();
-  const { cargos, loading, error } = useSelector((state: RootState) => state.cargo);
+  const { tiposRecurso, loading, error } = useSelector((state: RootState) => state.tipoRecurso);
 
   useEffect(() => {
-    dispatch(fetchCargos());
+    dispatch(fetchTiposRecurso());
   }, [dispatch]);
 
-  const handleSubmit = (data: { nombre: string; descripcion: string }) => {
-    const { nombre, descripcion } = data.value;
-    if (editingCargo) {
-      dispatch(updateCargo({ updateCargoId: editingCargo.id, nombre, descripcion }));
+  const handleSubmit = (data: { nombre: string }) => {
+
+    if (editingTipoRecurso) {
+      dispatch(updateTipoRecurso({ id: editingTipoRecurso.id, ...data.value }));
     } else {
-      dispatch(addCargo(data.value));
+      dispatch(addTipoRecurso(data.value));
     }
     setIsModalOpen(false);
-    setEditingCargo(null);
+    setEditingTipoRecurso(null);
   };
-  
 
-  const handleEdit = (cargo: { id: string; nombre: string; descripcion: string }) => {
-    setEditingCargo(cargo);
+  const handleEdit = (tipoRecurso: { id: string; nombre: string }) => {
+    setEditingTipoRecurso(tipoRecurso);
     setIsModalOpen(true);
   };
 
@@ -40,21 +39,21 @@ const CargosComponent: React.FC = () => {
   if (error) return <div>Error: {error}</div>;
 
   const handleButtonClick = () => {
-    setEditingCargo(null);
+    setEditingTipoRecurso(null);
     setIsModalOpen(true);
   };
 
   const handleCloseModal = () => {
     setIsModalOpen(false);
-    setEditingCargo(null);
+    setEditingTipoRecurso(null);
   };
 
   const tableData = {
-    headers: [ "descripcion", "nombre", "opciones"],
-    rows: cargos.map(cargo => ({
-      ...cargo,
+    headers: ["nombre", "opciones"],
+    rows: tiposRecurso.map(tipoRecurso => ({
+      ...tipoRecurso,
       opciones: (
-        <Button text='Editar' color='transp' className='text-black' onClick={() => handleEdit(cargo)}></Button>
+        <Button text='Editar' color='transp' className='text-black' onClick={() => handleEdit(tipoRecurso)}></Button>
       )
     }))
   };
@@ -62,15 +61,15 @@ const CargosComponent: React.FC = () => {
   return (
     <div className="flex flex-col h-full ">
       <div className="x text-white p-4 flex items-center justify-between">
-        <h1 className="text-2xl font-bold">Cargos ☺</h1>
+        <h1 className="text-2xl font-bold">Tipos de Recurso ☺</h1>
       </div>
 
       <div className="flex flex-1 overflow-hidden rounded-xl">
         <main className="w-full flex flex-col flex-grow p-4 bg-white overflow-hidden">
           <div className="flex justify-between items-center mb-4">
-            <h2 className="text-xl font-bold">Tabla de Cargos</h2>
+            <h2 className="text-xl font-bold">Tabla de Tipos de Recurso</h2>
             <div className="flex items-center space-x-2">
-              <Button text='+ Crear Cargo' color='verde' onClick={handleButtonClick} className="rounded">
+              <Button text='+ Crear Tipo de Recurso' color='verde' onClick={handleButtonClick} className="rounded">
                 
               </Button>
             </div>
@@ -85,7 +84,7 @@ const CargosComponent: React.FC = () => {
 
       <Modal isOpen={isModalOpen} onClose={handleCloseModal}>
         <FormComponent
-          initialValues={editingCargo || undefined}
+          initialValues={editingTipoRecurso || undefined}
           onSubmit={handleSubmit}
         />
       </Modal>
@@ -93,4 +92,4 @@ const CargosComponent: React.FC = () => {
   );
 };
 
-export default CargosComponent;
+export default TipoRecursoComponent;
