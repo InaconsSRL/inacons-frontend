@@ -10,6 +10,7 @@ import CalendarPage from './pages/CalendarPage/CalendarPage';
 import TipoRecursoComponent from './pages/TipoRecurso/TipoRecursoPage';
 import CargosComponent from './pages/Cargos/CargosComponent';
 import RecursosPage from './pages/Recursos/RecursosPage';
+import UsuariosPage from './pages/usuarios/UsuariosPage';
 
 const App: React.FC = () => {
   const user = useSelector((state: RootState) => state.user);
@@ -24,6 +25,7 @@ const App: React.FC = () => {
           <Route path="tipoRecurso" element={<TipoRecursoComponent />} />
           <Route path="cargo" element={<CargosComponent />} />
           <Route path="recurso" element={<RecursosPage />} />
+          <Route path="usuario" element={<UsuariosPage />} />
         </Route>
       </Routes>
     </AnimatePresence>

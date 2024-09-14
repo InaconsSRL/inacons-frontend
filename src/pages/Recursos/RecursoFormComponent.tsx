@@ -7,11 +7,11 @@ const recursoSchema = z.object({
   nombre: z.string().min(1, 'El nombre es requerido'),
   descripcion: z.string().min(1, 'La descripción es requerida'),
   cantidad: z.number().min(0, 'La cantidad debe ser mayor o igual a 0'),
-  unidadId: z.string().min(1, 'La unidad es requerida'),
-  precioActual: z.number().min(0, 'El precio actual debe ser mayor o igual a 0'),
-  tipoRecursoId: z.string().min(1, 'El tipo de recurso es requerido'),
-  clasificacionRecursoId: z.string().min(1, 'La clasificación de recurso es requerida'),
-  presupuesto: z.boolean(),
+  unidad_id: z.string().min(1, 'La unidad es requerida'),
+  precio_actual: z.number().min(0, 'El precio actual debe ser mayor o igual a 0'),
+  tipo_recurso_id: z.string().min(1, 'El tipo de recurso es requerido'),
+  clasificacion_recurso_id: z.string().min(1, 'La clasificación de recurso es requerida'),
+  presupuesto: z.boolean().optional(),
 });
 
 type RecursoFormData = z.infer<typeof recursoSchema>;
@@ -19,25 +19,41 @@ type RecursoFormData = z.infer<typeof recursoSchema>;
 interface FormComponentProps {
   initialValues?: RecursoFormData;
   onSubmit: (data: RecursoFormData) => void;
+  options: {
+    unidades: Array<{ id: string; nombre: string }>;
+    tiposRecurso: Array<{ id: string; nombre: string }>;
+    clasificaciones: Array<{ id: string; nombre: string; childs?: Array<{ id: string; nombre: string }> }>;
+  };
 }
 
-const RecursoFormComponent: React.FC<FormComponentProps> = ({ initialValues, onSubmit }) => {
+const RecursoFormComponent: React.FC<FormComponentProps> = ({ initialValues, onSubmit, options }) => {
   const form = useForm<RecursoFormData>({
     defaultValues: initialValues || {
       codigo: '',
       nombre: '',
       descripcion: '',
       cantidad: 0,
-      unidadId: '',
-      precioActual: 0,
-      tipoRecursoId: '',
-      clasificacionRecursoId: '',
+      unidad_id: '',
+      precio_actual: 0,
+      tipo_recurso_id: '',
+      clasificacion_recurso_id: '',
       presupuesto: false,
     },
     onSubmit: async (values) => {
       onSubmit(values);
     },
   });
+
+  const renderClasificaciones = (clasificaciones: Array<{ id: string; nombre: string; childs?: Array<{ id: string; nombre: string }> }>) => {
+    return clasificaciones.map(clasificacion => (
+      <React.Fragment key={clasificacion.id}>
+        <option value={clasificacion.id}>{clasificacion.nombre}</option>
+        {clasificacion.childs && clasificacion.childs.map(child => (
+          <option key={child.id} value={child.id}>&nbsp;&nbsp;{child.nombre}</option>
+        ))}
+      </React.Fragment>
+    ));
+  };
 
   return (
     <form
@@ -153,23 +169,27 @@ const RecursoFormComponent: React.FC<FormComponentProps> = ({ initialValues, onS
       </div>
 
       <div>
-        <label htmlFor="unidadId">Unidad:</label>
+        <label htmlFor="unidad_id">Unidad:</label>
         <form.Field
-          name="unidadId"
+          name="unidad_id"
           validate={(value) => {
-            const result = recursoSchema.shape.unidadId.safeParse(value);
+            const result = recursoSchema.shape.unidad_id.safeParse(value);
             return result.success ? undefined : result.error.message;
           }}
         >
           {(field) => (
             <>
-              <input
-                id="unidadId"
-                placeholder="ID de la unidad"
+              <select
+                id="unidad_id"
                 value={field.state.value}
                 onBlur={field.handleBlur}
                 onChange={(e) => field.handleChange(e.target.value)}
-              />
+              >
+                <option value="">Seleccione una unidad</option>
+                {options.unidades.map(unidad => (
+                  <option key={unidad.id} value={unidad.id}>{unidad.nombre}</option>
+                ))}
+              </select>
               {field.state.meta.touchedErrors ? (
                 <span>{field.state.meta.touchedErrors}</span>
               ) : null}
@@ -179,18 +199,18 @@ const RecursoFormComponent: React.FC<FormComponentProps> = ({ initialValues, onS
       </div>
 
       <div>
-        <label htmlFor="precioActual">Precio Actual:</label>
+        <label htmlFor="precio_actual">Precio Actual:</label>
         <form.Field
-          name="precioActual"
+          name="precio_actual"
           validate={(value) => {
-            const result = recursoSchema.shape.precioActual.safeParse(Number(value));
+            const result = recursoSchema.shape.precio_actual.safeParse(Number(value));
             return result.success ? undefined : result.error.message;
           }}
         >
           {(field) => (
             <>
               <input
-                id="precioActual"
+                id="precio_actual"
                 type="number"
                 step="0.01"
                 placeholder="Precio actual del recurso"
@@ -207,23 +227,27 @@ const RecursoFormComponent: React.FC<FormComponentProps> = ({ initialValues, onS
       </div>
 
       <div>
-        <label htmlFor="tipoRecursoId">Tipo de Recurso:</label>
+        <label htmlFor="tipo_recurso_id">Tipo de Recurso:</label>
         <form.Field
-          name="tipoRecursoId"
+          name="tipo_recurso_id"
           validate={(value) => {
-            const result = recursoSchema.shape.tipoRecursoId.safeParse(value);
+            const result = recursoSchema.shape.tipo_recurso_id.safeParse(value);
             return result.success ? undefined : result.error.message;
           }}
         >
           {(field) => (
             <>
-              <input
-                id="tipoRecursoId"
-                placeholder="ID del tipo de recurso"
+              <select
+                id="tipo_recurso_id"
                 value={field.state.value}
                 onBlur={field.handleBlur}
                 onChange={(e) => field.handleChange(e.target.value)}
-              />
+              >
+                <option value="">Seleccione un tipo de recurso</option>
+                {options.tiposRecurso.map(tipo => (
+                  <option key={tipo.id} value={tipo.id}>{tipo.nombre}</option>
+                ))}
+              </select>
               {field.state.meta.touchedErrors ? (
                 <span>{field.state.meta.touchedErrors}</span>
               ) : null}
@@ -233,23 +257,25 @@ const RecursoFormComponent: React.FC<FormComponentProps> = ({ initialValues, onS
       </div>
 
       <div>
-        <label htmlFor="clasificacionRecursoId">Clasificación de Recurso:</label>
+        <label htmlFor="clasificacion_recurso_id">Clasificación de Recurso:</label>
         <form.Field
-          name="clasificacionRecursoId"
+          name="clasificacion_recurso_id"
           validate={(value) => {
-            const result = recursoSchema.shape.clasificacionRecursoId.safeParse(value);
+            const result = recursoSchema.shape.clasificacion_recurso_id.safeParse(value);
             return result.success ? undefined : result.error.message;
           }}
         >
           {(field) => (
             <>
-              <input
-                id="clasificacionRecursoId"
-                placeholder="ID de la clasificación de recurso"
+              <select
+                id="clasificacion_recurso_id"
                 value={field.state.value}
                 onBlur={field.handleBlur}
                 onChange={(e) => field.handleChange(e.target.value)}
-              />
+              >
+                <option value="">Seleccione una clasificación</option>
+                {renderClasificaciones(options.clasificaciones)}
+              </select>
               {field.state.meta.touchedErrors ? (
                 <span>{field.state.meta.touchedErrors}</span>
               ) : null}

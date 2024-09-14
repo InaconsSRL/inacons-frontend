@@ -4,6 +4,7 @@ import { userReducer } from '../slices/userSlice';
 import { cargoReducer } from '../slices/cargoSlice';
 import { tipoRecursoReducer } from '../slices/tipoRecursoSlice';
 import { recursoReducer } from '../slices/recursoSlice';
+import { usuarioReducer } from '../slices/usuarioSlice';
 
 export const store = configureStore({
     reducer: {
@@ -11,6 +12,7 @@ export const store = configureStore({
         cargo: cargoReducer,
         tipoRecurso: tipoRecursoReducer,
         recurso: recursoReducer,
+        usuario: usuarioReducer,
     },
 });
 

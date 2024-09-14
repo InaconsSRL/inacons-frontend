@@ -9,11 +9,11 @@ interface Recurso {
   descripcion: string;
   fecha: string;
   cantidad: number;
-  unidad: string;
+  unidad_id: string;
   precio_actual: number;
   presupuesto: boolean;
-  tipo_recurso: string;
-  clasificacion_recurso: string;
+  tipo_recurso_id: string;
+  clasificacion_recurso_id: string;
 }
 
 interface RecursoState {
@@ -43,7 +43,7 @@ export const fetchRecursos = createAsyncThunk(
 
 export const addRecurso = createAsyncThunk(
   'recurso/addRecurso',
-  async (recursoData: Omit<Recurso, 'id'>, { rejectWithValue }) => {
+  async (recursoData: Omit<Recurso, 'id' | 'fecha'>, { rejectWithValue }) => {
     try {
       return await addRecursoService(recursoData);
     } catch (error) {

@@ -89,6 +89,13 @@ const Sidebar: React.FC<SidebarProps> = ({ isSidebarOpen }) => {
               {isSidebarOpen && <span className="text-white">Recursos</span>}
             </NavLink>
 
+            <NavLink to="/dashboard/usuario" className={({ isActive }) => 
+                `flex items-center space-x-4 mb-4 ${isActive ? activeStyle : ''}`
+              }>
+              <ChevronDownIcon className="w-6 h-6 text-white" />
+              {isSidebarOpen && <span className="text-white">Usuarios</span>}
+            </NavLink>
+
             
 
           </div>
