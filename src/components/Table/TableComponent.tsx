@@ -19,9 +19,9 @@ type TableData = {
   rows: TableRow[];
 };
 
-
 interface TableComponentProps {
   tableData: TableData;
+  maxCharacters?: number; // New prop for maximum characters to display
 }
 
 const preventDefault = (e: Event) => {
@@ -29,7 +29,7 @@ const preventDefault = (e: Event) => {
   e.stopPropagation();
 };
 
-const TableComponent: React.FC<TableComponentProps> = ({ tableData }) => {
+const TableComponent: React.FC<TableComponentProps> = ({ tableData, maxCharacters = 14 }) => {
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
   const [columnResizeMode] = useState<ColumnResizeMode>('onChange');
@@ -41,11 +41,32 @@ const TableComponent: React.FC<TableComponentProps> = ({ tableData }) => {
     };
   }, []);
 
+  const calculateMaxChars = (columnWidth: number) => {
+    // Estimate characters based on column width
+    // You may need to adjust this calculation based on your font and styling
+    return Math.floor(columnWidth / 5 ); // Assuming average character width is 8px
+  };
+
+  const truncateText = (text: string, maxLength: number) => {
+    if (typeof text !== 'string') return text;
+    return text.length > maxLength ? `${text.substring(0, maxLength)}...` : text;
+  };
+
   const columns = useMemo<ColumnDef<TableRow>[]>(() => 
     tableData.headers.map(header => ({
-      header,
+      header: () => header.toUpperCase(),
       accessorKey: header,
-      cell: info => info.getValue(),
+      cell: info => {
+        const value = info.getValue();
+        const columnWidth = info.column.getSize();
+        const dynamicMaxChars = calculateMaxChars(columnWidth);
+        
+        return (
+          <div title={String(value)}>
+            {truncateText(value, dynamicMaxChars)}
+          </div>
+        );
+      },
       footer: props => props.column.id,
     })),
   [tableData.headers]);
@@ -67,21 +88,16 @@ const TableComponent: React.FC<TableComponentProps> = ({ tableData }) => {
   });
 
   return (
-    <div className="p-2">
-      <div className="h-2" />
-      <div 
-        ref={tableContainerRef}
-        className="overflow-x-auto"
-        style={{ position: 'relative', width: '100%' }}
-      >
-        <table className="w-full border-collapse border border-gray-300">
+    <div className="p-2 bg-gray-50 rounded-lg shadow-md">
+      <div className="overflow-x-auto" ref={tableContainerRef}>
+        <table className="w-full border-collapse bg-white">
           <thead>
             {table.getHeaderGroups().map(headerGroup => (
               <tr key={headerGroup.id}>
                 {headerGroup.headers.map(header => (
                   <th
                     key={header.id}
-                    className="border border-gray-300 bg-gray-100 p-2 relative"
+                    className="border-b border-gray-200 bg-gray-100 p-4 text-left text-sm font-semibold text-gray-600 relative"
                     style={{ width: header.getSize(), minWidth: header.getSize() }}
                   >
                     {header.isPlaceholder ? null : (
@@ -89,7 +105,7 @@ const TableComponent: React.FC<TableComponentProps> = ({ tableData }) => {
                         <div
                           {...{
                             className: header.column.getCanSort()
-                              ? 'cursor-pointer select-none'
+                              ? 'cursor-pointer select-none hover:text-blue-600 transition-colors duration-200'
                               : '',
                             onClick: header.column.getToggleSortingHandler(),
                           }}
@@ -99,19 +115,19 @@ const TableComponent: React.FC<TableComponentProps> = ({ tableData }) => {
                             header.getContext()
                           )}
                           {{
-                            asc: ' 🔼',
-                            desc: ' 🔽',
+                            asc: ' ▲',
+                            desc: ' ▼',
                           }[header.column.getIsSorted() as string] ?? null}
                         </div>
                         {header.column.getCanFilter() ? (
-                          <div>
+                          <div className="mt-2">
                             <input
                               value={(header.column.getFilterValue() ?? '') as string}
                               onChange={e =>
                                 header.column.setFilterValue(e.target.value)
                               }
-                              placeholder={`Filter ${header.column.columnDef.header}`}
-                              className="w-full border p-1 mt-1 text-sm"
+                              placeholder={`Filtra`}
+                              className="w-full border border-gray-300 rounded px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                             />
                           </div>
                         ) : null}
@@ -131,16 +147,7 @@ const TableComponent: React.FC<TableComponentProps> = ({ tableData }) => {
                       }}
                       className={`resizer ${
                         header.column.getIsResizing() ? 'isResizing' : ''
-                      }`}
-                      style={{
-                        position: 'absolute',
-                        right: 0,
-                        top: 0,
-                        height: '100%',
-                        width: '5px',
-                        cursor: 'col-resize',
-                        zIndex: 1,
-                      }}
+                      } absolute right-0 top-0 h-full w-1 bg-blue-500 cursor-col-resize opacity-0 hover:opacity-100 transition-opacity duration-200`}
                     />
                   </th>
                 ))}
@@ -148,12 +155,12 @@ const TableComponent: React.FC<TableComponentProps> = ({ tableData }) => {
             ))}
           </thead>
           <tbody>
-            {table.getRowModel().rows.map(row => (
-              <tr key={row.id}>
+            {table.getRowModel().rows.map((row, index) => (
+              <tr key={row.id} className={index % 2 === 0 ? 'bg-gray-50' : 'bg-white hover:bg-gray-100 transition-colors duration-150'}>
                 {row.getVisibleCells().map(cell => (
                   <td 
                     key={cell.id} 
-                    className="border border-gray-300 p-2"
+                    className="border-b border-gray-200 px-0.5 py-0.5 text-sm text-gray-700 text-center"
                     style={{ minWidth: cell.column.getSize() }}
                   >
                     {flexRender(cell.column.columnDef.cell, cell.getContext())}
@@ -164,45 +171,45 @@ const TableComponent: React.FC<TableComponentProps> = ({ tableData }) => {
           </tbody>
         </table>
       </div>
-      <div className="h-2" />
-      <div className="flex items-center gap-2">
-        <button
-          className="border rounded p-1"
-          onClick={() => table.setPageIndex(0)}
-          disabled={!table.getCanPreviousPage()}
-        >
-          {'<<'}
-        </button>
-        <button
-          className="border rounded p-1"
-          onClick={() => table.previousPage()}
-          disabled={!table.getCanPreviousPage()}
-        >
-          {'<'}
-        </button>
-        <button
-          className="border rounded p-1"
-          onClick={() => table.nextPage()}
-          disabled={!table.getCanNextPage()}
-        >
-          {'>'}
-        </button>
-        <button
-          className="border rounded p-1"
-          onClick={() => table.setPageIndex(table.getPageCount() - 1)}
-          disabled={!table.getCanNextPage()}
-        >
-          {'>>'}
-        </button>
-        <span className="flex items-center gap-1">
-          <div>Page</div>
+      <div className="mt-4 flex flex-wrap items-center justify-between gap-4">
+        <div className="flex items-center space-x-2">
+          <button
+            className="px-2 py-1 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
+            onClick={() => table.setPageIndex(0)}
+            disabled={!table.getCanPreviousPage()}
+          >
+            {'<<'}
+          </button>
+          <button
+            className="px-3 py-1 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
+            onClick={() => table.previousPage()}
+            disabled={!table.getCanPreviousPage()}
+          >
+            {'<'}
+          </button>
+          <button
+            className="px-3 py-1 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
+            onClick={() => table.nextPage()}
+            disabled={!table.getCanNextPage()}
+          >
+            {'>'}
+          </button>
+          <button
+            className="px-3 py-1 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
+            onClick={() => table.setPageIndex(table.getPageCount() - 1)}
+            disabled={!table.getCanNextPage()}
+          >
+            {'>>'}
+          </button>
+        </div>
+        <span className="text-sm text-gray-700">
+          Page{' '}
           <strong>
-            {table.getState().pagination.pageIndex + 1} of{' '}
-            {table.getPageCount()}
+            {table.getState().pagination.pageIndex + 1} of {table.getPageCount()}
           </strong>
         </span>
-        <span className="flex items-center gap-1">
-          | Go to page:
+        <div className="flex items-center space-x-2">
+          <span className="text-sm text-gray-700">Go to page:</span>
           <input
             type="number"
             defaultValue={table.getState().pagination.pageIndex + 1}
@@ -210,19 +217,19 @@ const TableComponent: React.FC<TableComponentProps> = ({ tableData }) => {
               const page = e.target.value ? Number(e.target.value) - 1 : 0;
               table.setPageIndex(page);
             }}
-            className="border p-1 rounded w-16"
+            className="w-16 px-2 py-1 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
-        </span>
+        </div>
         <select
           value={table.getState().pagination.pageSize}
           onChange={e => {
             table.setPageSize(Number(e.target.value));
           }}
-          className="border p-1 rounded"
+          className="px-2 py-1 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
         >
-          {[10, 20, 30, 40, 50].map(pageSize => (
+          {[10, 20, 30, 40, 50, 100].map(pageSize => (
             <option key={pageSize} value={pageSize}>
-              Show {pageSize}
+              Mostrar {pageSize}
             </option>
           ))}
         </select>

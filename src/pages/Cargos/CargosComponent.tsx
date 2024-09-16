@@ -62,7 +62,7 @@ const CargosComponent: React.FC = () => {
   };
 
   const tableData = {
-    headers: ["id", "nombre", "descripcion", "opciones"],
+    headers: ["nombre", "descripcion", "opciones"],
     rows: cargos.map(cargo => ({
       ...cargo,
       opciones: (
@@ -122,7 +122,7 @@ const CargosComponent: React.FC = () => {
 
       <AnimatePresence>
         {isModalOpen && (
-          <Modal isOpen={isModalOpen} onClose={handleCloseModal}>
+          <Modal title={editingCargo ? 'Actualizar Cargo' : 'Crear Cargo'} isOpen={isModalOpen} onClose={handleCloseModal}>
             <motion.div
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}

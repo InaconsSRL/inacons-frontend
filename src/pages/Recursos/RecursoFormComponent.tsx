@@ -1,6 +1,7 @@
 import React from 'react';
 import { useForm } from '@tanstack/react-form';
 import { z } from 'zod';
+import Button from '../../components/Buttons/Button'; 
 
 const recursoSchema = z.object({
   codigo: z.string().min(1, 'El código es requerido'),
@@ -54,7 +55,6 @@ const RecursoFormComponent: React.FC<FormComponentProps> = ({ initialValues, onS
       </React.Fragment>
     ));
   };
-
   return (
     <form
       onSubmit={(e) => {
@@ -62,9 +62,10 @@ const RecursoFormComponent: React.FC<FormComponentProps> = ({ initialValues, onS
         e.stopPropagation();
         void form.handleSubmit();
       }}
+      className="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4 max-w-2xl mx-auto"
     >
-      <div>
-        <label htmlFor="codigo">Código:</label>
+      <div className="mb-4">
+        <label htmlFor="codigo" className="block text-gray-700 text-sm font-bold mb-2">Código:</label>
         <form.Field
           name="codigo"
           validate={(value) => {
@@ -80,17 +81,18 @@ const RecursoFormComponent: React.FC<FormComponentProps> = ({ initialValues, onS
                 value={field.state.value}
                 onBlur={field.handleBlur}
                 onChange={(e) => field.handleChange(e.target.value)}
+                className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
               />
               {field.state.meta.touchedErrors ? (
-                <span>{field.state.meta.touchedErrors}</span>
+                <p className="text-red-500 text-xs italic mt-1">{field.state.meta.touchedErrors}</p>
               ) : null}
             </>
           )}
         </form.Field>
       </div>
 
-      <div>
-        <label htmlFor="nombre">Nombre:</label>
+      <div className="mb-4">
+        <label htmlFor="nombre" className="block text-gray-700 text-sm font-bold mb-2">Nombre:</label>
         <form.Field
           name="nombre"
           validate={(value) => {
@@ -106,17 +108,18 @@ const RecursoFormComponent: React.FC<FormComponentProps> = ({ initialValues, onS
                 value={field.state.value}
                 onBlur={field.handleBlur}
                 onChange={(e) => field.handleChange(e.target.value)}
+                className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
               />
               {field.state.meta.touchedErrors ? (
-                <span>{field.state.meta.touchedErrors}</span>
+                <p className="text-red-500 text-xs italic mt-1">{field.state.meta.touchedErrors}</p>
               ) : null}
             </>
           )}
         </form.Field>
       </div>
 
-      <div>
-        <label htmlFor="descripcion">Descripción:</label>
+      <div className="mb-4">
+        <label htmlFor="descripcion" className="block text-gray-700 text-sm font-bold mb-2">Descripción:</label>
         <form.Field
           name="descripcion"
           validate={(value) => {
@@ -132,17 +135,18 @@ const RecursoFormComponent: React.FC<FormComponentProps> = ({ initialValues, onS
                 value={field.state.value}
                 onBlur={field.handleBlur}
                 onChange={(e) => field.handleChange(e.target.value)}
+                className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline h-24"
               />
               {field.state.meta.touchedErrors ? (
-                <span>{field.state.meta.touchedErrors}</span>
+                <p className="text-red-500 text-xs italic mt-1">{field.state.meta.touchedErrors}</p>
               ) : null}
             </>
           )}
         </form.Field>
       </div>
 
-      <div>
-        <label htmlFor="cantidad">Cantidad:</label>
+      <div className="mb-4">
+        <label htmlFor="cantidad" className="block text-gray-700 text-sm font-bold mb-2">Cantidad:</label>
         <form.Field
           name="cantidad"
           validate={(value) => {
@@ -159,17 +163,18 @@ const RecursoFormComponent: React.FC<FormComponentProps> = ({ initialValues, onS
                 value={field.state.value}
                 onBlur={field.handleBlur}
                 onChange={(e) => field.handleChange(Number(e.target.value))}
+                className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
               />
               {field.state.meta.touchedErrors ? (
-                <span>{field.state.meta.touchedErrors}</span>
+                <p className="text-red-500 text-xs italic mt-1">{field.state.meta.touchedErrors}</p>
               ) : null}
             </>
           )}
         </form.Field>
       </div>
 
-      <div>
-        <label htmlFor="unidad_id">Unidad:</label>
+      <div className="mb-4">
+        <label htmlFor="unidad_id" className="block text-gray-700 text-sm font-bold mb-2">Unidad:</label>
         <form.Field
           name="unidad_id"
           validate={(value) => {
@@ -184,6 +189,7 @@ const RecursoFormComponent: React.FC<FormComponentProps> = ({ initialValues, onS
                 value={field.state.value}
                 onBlur={field.handleBlur}
                 onChange={(e) => field.handleChange(e.target.value)}
+                className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
               >
                 <option value="">Seleccione una unidad</option>
                 {options.unidades.map(unidad => (
@@ -191,15 +197,15 @@ const RecursoFormComponent: React.FC<FormComponentProps> = ({ initialValues, onS
                 ))}
               </select>
               {field.state.meta.touchedErrors ? (
-                <span>{field.state.meta.touchedErrors}</span>
+                <p className="text-red-500 text-xs italic mt-1">{field.state.meta.touchedErrors}</p>
               ) : null}
             </>
           )}
         </form.Field>
       </div>
 
-      <div>
-        <label htmlFor="precio_actual">Precio Actual:</label>
+      <div className="mb-4">
+        <label htmlFor="precio_actual" className="block text-gray-700 text-sm font-bold mb-2">Precio Actual:</label>
         <form.Field
           name="precio_actual"
           validate={(value) => {
@@ -217,17 +223,18 @@ const RecursoFormComponent: React.FC<FormComponentProps> = ({ initialValues, onS
                 value={field.state.value}
                 onBlur={field.handleBlur}
                 onChange={(e) => field.handleChange(Number(e.target.value))}
+                className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
               />
               {field.state.meta.touchedErrors ? (
-                <span>{field.state.meta.touchedErrors}</span>
+                <p className="text-red-500 text-xs italic mt-1">{field.state.meta.touchedErrors}</p>
               ) : null}
             </>
           )}
         </form.Field>
       </div>
 
-      <div>
-        <label htmlFor="tipo_recurso_id">Tipo de Recurso:</label>
+      <div className="mb-4">
+        <label htmlFor="tipo_recurso_id" className="block text-gray-700 text-sm font-bold mb-2">Tipo de Recurso:</label>
         <form.Field
           name="tipo_recurso_id"
           validate={(value) => {
@@ -242,6 +249,7 @@ const RecursoFormComponent: React.FC<FormComponentProps> = ({ initialValues, onS
                 value={field.state.value}
                 onBlur={field.handleBlur}
                 onChange={(e) => field.handleChange(e.target.value)}
+                className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
               >
                 <option value="">Seleccione un tipo de recurso</option>
                 {options.tiposRecurso.map(tipo => (
@@ -249,15 +257,15 @@ const RecursoFormComponent: React.FC<FormComponentProps> = ({ initialValues, onS
                 ))}
               </select>
               {field.state.meta.touchedErrors ? (
-                <span>{field.state.meta.touchedErrors}</span>
+                <p className="text-red-500 text-xs italic mt-1">{field.state.meta.touchedErrors}</p>
               ) : null}
             </>
           )}
         </form.Field>
       </div>
 
-      <div>
-        <label htmlFor="clasificacion_recurso_id">Clasificación de Recurso:</label>
+      <div className="mb-4">
+        <label htmlFor="clasificacion_recurso_id" className="block text-gray-700 text-sm font-bold mb-2">Clasificación de Recurso:</label>
         <form.Field
           name="clasificacion_recurso_id"
           validate={(value) => {
@@ -272,47 +280,51 @@ const RecursoFormComponent: React.FC<FormComponentProps> = ({ initialValues, onS
                 value={field.state.value}
                 onBlur={field.handleBlur}
                 onChange={(e) => field.handleChange(e.target.value)}
+                className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
               >
                 <option value="">Seleccione una clasificación</option>
                 {renderClasificaciones(options.clasificaciones)}
               </select>
               {field.state.meta.touchedErrors ? (
-                <span>{field.state.meta.touchedErrors}</span>
+                <p className="text-red-500 text-xs italic mt-1">{field.state.meta.touchedErrors}</p>
               ) : null}
             </>
           )}
         </form.Field>
       </div>
 
-      <div>
-        <label htmlFor="presupuesto">Presupuesto:</label>
-        <form.Field
-          name="presupuesto"
-          validate={(value) => {
-            const result = recursoSchema.shape.presupuesto.safeParse(value);
-            return result.success ? undefined : result.error.message;
-          }}
-        >
-          {(field) => (
-            <>
+      <div className="mb-6">
+        <label className="flex items-center">
+          <form.Field
+            name="presupuesto"
+            validate={(value) => {
+              const result = recursoSchema.shape.presupuesto.safeParse(value);
+              return result.success ? undefined : result.error.message;
+            }}
+          >
+            {(field) => (
               <input
                 id="presupuesto"
                 type="checkbox"
                 checked={field.state.value}
                 onBlur={field.handleBlur}
                 onChange={(e) => field.handleChange(e.target.checked)}
+                className="mr-2 leading-tight"
               />
-              {field.state.meta.touchedErrors ? (
-                <span>{field.state.meta.touchedErrors}</span>
-              ) : null}
-            </>
-          )}
-        </form.Field>
+            )}
+          </form.Field>
+          <span className="text-sm font-bold text-gray-700">Presupuesto</span>
+        </label>
       </div>
 
-      <button type="submit">
-        {initialValues ? 'Actualizar Recurso' : 'Crear Recurso'}
-      </button>
+      <div className="flex items-center justify-center">
+        <Button
+          text={initialValues ? 'Actualizar Recurso' : 'Crear Recurso'}
+          onClick={() => form.handleSubmit()}
+          color="verde"
+          className="w-auto px-6 py-2 text-sm font-medium"
+        />
+      </div>
     </form>
   );
 };

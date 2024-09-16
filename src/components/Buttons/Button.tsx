@@ -3,22 +3,22 @@ import React, { useState } from 'react';
 interface ButtonProps {
   onClick?: () => void;
   color?: 'verde' | 'blanco' | 'transp';
-  options?: Array<{ label: string; action: () => void } | string>; // Acepta objetos o strings
+  options?: Array<{ label: string; action: () => void } | string>;
   className?: string;
-  text?:string;
+  text?: string;
 }
 
-const Button: React.FC<ButtonProps> = ({ onClick, color = 'verde', options = [], className = '', text }) => {
+const Button: React.FC<ButtonProps> = ({ onClick, color = 'blanco', options = [], className = '', text }) => {
   const [isOpen, setIsOpen] = useState(false);
 
   const handleButtonClick = () => {
     if (onClick) onClick();
-    if (options.length > 0) setIsOpen(!isOpen); // Si tiene opciones, abre el menú desplegable
+    if (options.length > 0) setIsOpen(!isOpen);
   };
 
   const buttonColors = {
     transp: 'bg-white/10 hover:bg-white/20 active:bg-white/30 text-black/100',
-    verde: 'bg-[#c4f033] hover:bg-[#D2F95F] active:bg-[#B2E232] text-black',
+    verde: 'bg-blue-500 hover:bg-blue-600 active:bg-blue-700 text-white',
     blanco: 'bg-white border border-gray-300 text-black hover:bg-gray-100 active:bg-gray-200',
   };
 
@@ -29,7 +29,6 @@ const Button: React.FC<ButtonProps> = ({ onClick, color = 'verde', options = [],
       option.action();
     }
   };
-
 
   return (
     <div className="relative inline-block">
@@ -45,9 +44,13 @@ const Button: React.FC<ButtonProps> = ({ onClick, color = 'verde', options = [],
           duration-200 
           w-28
           ${className}
+          flex items-center justify-between
         `}
       >
-        {text} <span className='text-xs'>{options.length > 0 && (isOpen ? "▲" : "▼")}</span>
+        <span className="truncate whitespace-nowrap sm:whitespace-normal">{text}</span>
+        {options.length > 0 && (
+          <span className='text-xs ml-1 flex-shrink-0'>{isOpen ? "▲" : "▼"}</span>
+        )}
       </button>
 
       {options.length > 0 && (

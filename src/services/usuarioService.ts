@@ -66,11 +66,28 @@ export const getAllUsuariosAndCargosService = async () => {
   }
 };
 
+const removeTypename = (obj: any): any => {
+  if (Array.isArray(obj)) {
+    return obj.map(removeTypename);
+  } else if (obj !== null && typeof obj === 'object') {
+    const newObj: any = {};
+    for (const key in obj) {
+      if (key !== '__typename') {
+        newObj[key] = removeTypename(obj[key]);
+      }
+    }
+    return newObj;
+  }
+  return obj;
+};
+
 export const createUsuarioService = async (usuarioData: any) => {
   try {
+    const cleanedData = removeTypename(usuarioData);
+    console.log(cleanedData)
     const response = await client.mutate({
       mutation: CREATE_USUARIO_MUTATION,
-      variables: { data: usuarioData },
+      variables: { data: cleanedData },
     });
     if (response.errors) {
       throw new Error(response.errors[0]?.message || 'Error desconocido');
@@ -83,12 +100,13 @@ export const createUsuarioService = async (usuarioData: any) => {
 };
 
 export const updateUsuarioService = async (usuario: any) => {
-  console.log(usuario)
   try {
     const { id, ...data } = usuario;
+    const cleanedData = removeTypename(data);
+    console.log("este es el id:", id, ", esta es la data limpia:", cleanedData);
     const response = await client.mutate({
       mutation: UPDATE_USUARIO_MUTATION,
-      variables: { updateUsuarioId: id, data },
+      variables: { updateUsuarioId: id, data: cleanedData },
     });
     if (response.errors) {
       throw new Error(response.errors[0]?.message || 'Error desconocido');

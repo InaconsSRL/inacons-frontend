@@ -162,7 +162,7 @@ const RecursosPage: React.FC = () => {
 
       <AnimatePresence>
         {isModalOpen && (
-          <Modal isOpen={isModalOpen} onClose={handleCloseModal}>
+          <Modal title={editingRecurso ? 'Actualizar Recurso' : 'Crear Recurso'} isOpen={isModalOpen} onClose={handleCloseModal}>
             <motion.div
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}

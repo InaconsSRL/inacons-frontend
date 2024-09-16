@@ -127,7 +127,7 @@ const UsuariosPage: React.FC = () => {
 
       <AnimatePresence>
         {isModalOpen && (
-          <Modal isOpen={isModalOpen} onClose={handleCloseModal}>
+          <Modal isOpen={isModalOpen} onClose={handleCloseModal} title={editingUsuario ? 'Actualizar Usuario' : 'Crear Usuario'}>
             <motion.div
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}

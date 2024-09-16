@@ -103,7 +103,7 @@ const TipoRecursoComponent: React.FC = () => {
           >
             <h2 className="text-xl font-bold">Tabla de Tipos de Recurso</h2>
             <div className="flex items-center space-x-2">
-              <Button text='+ Crear Tipo de Recurso' color='verde' onClick={handleButtonClick} className="rounded" />
+              <Button text='+ Crear' color='verde' onClick={handleButtonClick} className="rounded" />
             </div>
           </motion.div>
           <motion.div 
@@ -121,7 +121,7 @@ const TipoRecursoComponent: React.FC = () => {
 
       <AnimatePresence>
         {isModalOpen && (
-          <Modal isOpen={isModalOpen} onClose={handleCloseModal}>
+          <Modal title={editingTipoRecurso ? 'Actualizar Tipo de Recurso' : 'Crear Tipo de Recurso'} isOpen={isModalOpen} onClose={handleCloseModal}>
             <motion.div
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}

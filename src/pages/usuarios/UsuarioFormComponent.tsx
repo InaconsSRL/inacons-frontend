@@ -1,16 +1,21 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useForm } from '@tanstack/react-form';
 import { z } from 'zod';
+import EyeIcon from '../../components/Icons/EyeIcon';
+import EyeSlashIcon from '../../components/Icons/EyeSlashIcon';
+import Button from '../../components/Buttons/Button';
+
 
 const usuarioSchema = z.object({
   nombres: z.string().min(1, 'El nombre es requerido'),
   apellidos: z.string().min(1, 'Los apellidos son requeridos'),
-  dni: z.string().min(8, 'El DNI debe tener al menos 8 caracteres'),
+  dni: z.number().int().min(10000000, 'El DNI debe tener al menos 8 dígitos'),
   usuario: z.string().min(1, 'El usuario es requerido'),
   contrasenna: z.string().min(6, 'La contraseña debe tener al menos 6 caracteres'),
   cargo_id: z.string().min(1, 'El cargo es requerido'),
   rol_id: z.string().min(1, 'El rol es requerido'),
 });
+
 
 type UsuarioFormData = z.infer<typeof usuarioSchema>;
 
@@ -27,11 +32,12 @@ interface FormComponentProps {
 }
 
 const UsuarioFormComponent: React.FC<FormComponentProps> = ({ initialValues, onSubmit, cargos }) => {
+  const [showPassword, setShowPassword] = useState(false);
   const form = useForm<UsuarioFormData>({
     defaultValues: initialValues || {
       nombres: '',
       apellidos: '',
-      dni: '',
+      dni: 0,
       usuario: '',
       contrasenna: '',
       cargo_id: '',
@@ -42,6 +48,10 @@ const UsuarioFormComponent: React.FC<FormComponentProps> = ({ initialValues, onS
     },
   });
 
+  const togglePasswordVisibility = () => {
+    setShowPassword(!showPassword);
+  };
+
   return (
     <form
       onSubmit={(e) => {
@@ -49,10 +59,13 @@ const UsuarioFormComponent: React.FC<FormComponentProps> = ({ initialValues, onS
         e.stopPropagation();
         void form.handleSubmit();
       }}
+      className="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4 max-w-md mx-auto"
     >
-      {['nombres', 'apellidos', 'dni', 'usuario', 'contrasenna', 'rol_id'].map((field) => (
-        <div key={field}>
-          <label htmlFor={field}>{field.charAt(0).toUpperCase() + field.slice(1)}:</label>
+      {['nombres', 'apellidos', 'usuario', 'rol_id'].map((field) => (
+        <div key={field} className="mb-4">
+          <label htmlFor={field} className="block text-gray-700 text-sm font-bold mb-2">
+            {field.charAt(0).toUpperCase() + field.slice(1)}:
+          </label>
           <form.Field
             name={field as keyof UsuarioFormData}
             validate={(value) => {
@@ -68,17 +81,86 @@ const UsuarioFormComponent: React.FC<FormComponentProps> = ({ initialValues, onS
                   value={fieldProps.state.value}
                   onBlur={fieldProps.handleBlur}
                   onChange={(e) => fieldProps.handleChange(e.target.value)}
+                  className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
                 />
                 {fieldProps.state.meta.touchedErrors ? (
-                  <span>{fieldProps.state.meta.touchedErrors}</span>
+                  <p className="text-red-500 text-xs italic mt-1">{fieldProps.state.meta.touchedErrors}</p>
                 ) : null}
               </>
             )}
           </form.Field>
         </div>
       ))}
-      <div>
-        <label htmlFor="cargo_id">Cargo:</label>
+      <div className="mb-4">
+        <label htmlFor="dni" className="block text-gray-700 text-sm font-bold mb-2">DNI:</label>
+        <form.Field
+          name="dni"
+          validate={(value) => {
+            const result = usuarioSchema.shape.dni.safeParse(value);
+            return result.success ? undefined : result.error.message;
+          }}
+        >
+          {(fieldProps) => (
+            <>
+              <input
+                id="dni"
+                type="number"
+                placeholder="Ingrese DNI"
+                value={fieldProps.state.value || ''}
+                onBlur={fieldProps.handleBlur}
+                onChange={(e) => {
+                  const value = e.target.value === '' ? 0 : parseInt(e.target.value, 10);
+                  fieldProps.handleChange(value);
+                }}
+                className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+              />
+              {fieldProps.state.meta.touchedErrors ? (
+                <p className="text-red-500 text-xs italic mt-1">{fieldProps.state.meta.touchedErrors}</p>
+              ) : null}
+            </>
+          )}
+        </form.Field>
+      </div>
+      <div className="mb-4">
+        <label htmlFor="contrasenna" className="block text-gray-700 text-sm font-bold mb-2">Contraseña:</label>
+        <form.Field
+          name="contrasenna"
+          validate={(value) => {
+            const result = usuarioSchema.shape.contrasenna.safeParse(value);
+            return result.success ? undefined : result.error.message;
+          }}
+        >
+          {(fieldProps) => (
+            <div className="relative">
+              <input
+                id="contrasenna"
+                type={showPassword ? 'text' : 'password'}
+                placeholder="Ingrese contraseña"
+                value={fieldProps.state.value}
+                onBlur={fieldProps.handleBlur}
+                onChange={(e) => fieldProps.handleChange(e.target.value)}
+                className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline pr-10"
+              />
+              <button
+                type="button"
+                onClick={togglePasswordVisibility}
+                className="absolute inset-y-0 right-0 pr-3 flex items-center"
+              >
+                {showPassword ? (
+                  <EyeSlashIcon className="h-5 w-5 text-gray-500" />
+                ) : (
+                  <EyeIcon className="h-5 w-5 text-gray-500" />
+                )}
+              </button>
+              {fieldProps.state.meta.touchedErrors ? (
+                <p className="text-red-500 text-xs italic mt-1">{fieldProps.state.meta.touchedErrors}</p>
+              ) : null}
+            </div>
+          )}
+        </form.Field>
+      </div>
+      <div className="mb-4">
+        <label htmlFor="cargo_id" className="block text-gray-700 text-sm font-bold mb-2">Cargo:</label>
         <form.Field
           name="cargo_id"
           validate={(value) => {
@@ -93,6 +175,7 @@ const UsuarioFormComponent: React.FC<FormComponentProps> = ({ initialValues, onS
                 value={fieldProps.state.value}
                 onBlur={fieldProps.handleBlur}
                 onChange={(e) => fieldProps.handleChange(e.target.value)}
+                className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
               >
                 <option value="">Seleccione un cargo</option>
                 {cargos.map((cargo) => (
@@ -102,15 +185,20 @@ const UsuarioFormComponent: React.FC<FormComponentProps> = ({ initialValues, onS
                 ))}
               </select>
               {fieldProps.state.meta.touchedErrors ? (
-                <span>{fieldProps.state.meta.touchedErrors}</span>
+                <p className="text-red-500 text-xs italic mt-1">{fieldProps.state.meta.touchedErrors}</p>
               ) : null}
             </>
           )}
         </form.Field>
       </div>
-      <button type="submit">
-        {initialValues ? 'Actualizar Usuario' : 'Crear Usuario'}
-      </button>
+      <div className="flex items-center justify-center mt-6">
+        <Button
+          text={initialValues ? 'Actualizar Usuario' : 'Crear Usuario'}
+          onClick={() => form.handleSubmit()}
+          color="verde"
+          className="w-auto px-6 py-2 text-sm font-medium"
+        />
+      </div>
     </form>
   );
 };
