@@ -1,12 +1,25 @@
 import React, { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import Button from '../../components/Buttons/Button';
 import Modal from '../../components/Modal/Modal';
 import TableComponent from '../../components/Table/TableComponent';
-import FormComponent from './CargoFormComponent'; // Asegúrate de importar el nuevo componente
+import FormComponent from './CargoFormComponent';
 
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchCargos, addCargo, updateCargo } from '../../slices/cargoSlice';
 import { RootState, AppDispatch } from '../../store/store';
+
+const pageVariants = {
+  initial: { opacity: 0, y: 20 },
+  in: { opacity: 1, y: 0 },
+  out: { opacity: 0, y: -20 }
+};
+
+const pageTransition = {
+  type: 'tween',
+  ease: 'anticipate',
+  duration: 0.5
+};
 
 const CargosComponent: React.FC = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -29,15 +42,14 @@ const CargosComponent: React.FC = () => {
     setIsModalOpen(false);
     setEditingCargo(null);
   };
-  
 
   const handleEdit = (cargo: { id: string; nombre: string; descripcion: string }) => {
     setEditingCargo(cargo);
     setIsModalOpen(true);
   };
 
-  if (loading) return <div>Cargando...</div>;
-  if (error) return <div>Error: {error}</div>;
+  if (loading) return <motion.div initial="initial" animate="in" exit="out" variants={pageVariants} transition={pageTransition}>Cargando...</motion.div>;
+  if (error) return <motion.div initial="initial" animate="in" exit="out" variants={pageVariants} transition={pageTransition}>Error: {error}</motion.div>;
 
   const handleButtonClick = () => {
     setEditingCargo(null);
@@ -50,7 +62,7 @@ const CargosComponent: React.FC = () => {
   };
 
   const tableData = {
-    headers: [ "id","nombre", "descripcion",  "opciones"],
+    headers: ["id", "nombre", "descripcion", "opciones"],
     rows: cargos.map(cargo => ({
       ...cargo,
       opciones: (
@@ -60,36 +72,72 @@ const CargosComponent: React.FC = () => {
   };
 
   return (
-    <div className="flex flex-col h-full ">
-      <div className="x text-white p-4 flex items-center justify-between">
+    <motion.div 
+      className="flex flex-col h-full"
+      initial="initial"
+      animate="in"
+      exit="out"
+      variants={pageVariants}
+      transition={pageTransition}
+    >
+      <motion.div 
+        className="x text-white p-4 flex items-center justify-between"
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.2 }}
+      >
         <h1 className="text-2xl font-bold">Cargos ☺</h1>
-      </div>
+      </motion.div>
 
-      <div className="flex flex-1 overflow-hidden rounded-xl">
+      <motion.div 
+        className="flex flex-1 overflow-hidden rounded-xl"
+        initial={{ opacity: 0, scale: 0.95 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ delay: 0.4 }}
+      >
         <main className="w-full flex flex-col flex-grow p-4 bg-white overflow-hidden">
-          <div className="flex justify-between items-center mb-4">
+          <motion.div 
+            className="flex justify-between items-center mb-4"
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.6 }}
+          >
             <h2 className="text-xl font-bold">Tabla de Cargos</h2>
             <div className="flex items-center space-x-2">
-              <Button text='+ Crear Cargo' color='verde' onClick={handleButtonClick} className="rounded">
-                
-              </Button>
+              <Button text='+ Crear Cargo' color='verde' onClick={handleButtonClick} className="rounded" />
             </div>
-          </div>
-          <div className="flex-grow border rounded-lg overflow-hidden">
+          </motion.div>
+          <motion.div 
+            className="flex-grow border rounded-lg overflow-hidden"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.8 }}
+          >
             <div className="h-full overflow-auto">
               <TableComponent tableData={tableData} />
             </div>
-          </div>
+          </motion.div>
         </main>
-      </div>
+      </motion.div>
 
-      <Modal isOpen={isModalOpen} onClose={handleCloseModal}>
-        <FormComponent
-          initialValues={editingCargo || undefined}
-          onSubmit={handleSubmit}
-        />
-      </Modal>
-    </div>
+      <AnimatePresence>
+        {isModalOpen && (
+          <Modal isOpen={isModalOpen} onClose={handleCloseModal}>
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.9 }}
+              transition={{ duration: 0.3 }}
+            >
+              <FormComponent
+                initialValues={editingCargo || undefined}
+                onSubmit={handleSubmit}
+              />
+            </motion.div>
+          </Modal>
+        )}
+      </AnimatePresence>
+    </motion.div>
   );
 };
 

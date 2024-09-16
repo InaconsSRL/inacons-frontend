@@ -1,7 +1,29 @@
 import React, { useState } from 'react';
+import { motion } from 'framer-motion';
 import Button from '../../components/Buttons/Button';
 import Modal from '../../components/Modal/Modal';
 import TableComponent from '../../components/Table/TableComponent';
+
+const pageVariants = {
+  initial: {
+    opacity: 0,
+    x: "-100vw",
+  },
+  in: {
+    opacity: 1,
+    x: 0,
+  },
+  out: {
+    opacity: 0,
+    x: "100vw",
+  },
+};
+
+const pageTransition = {
+  type: "tween",
+  ease: "anticipate",
+  duration: 0.5,
+};
 
 const Recursos: React.FC = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -27,13 +49,24 @@ const Recursos: React.FC = () => {
     return { headers, rows };
   };
   
-  // Ejemplo de uso:
   const tableData = generateTableData(30, 1000);
 
   return (
-    <div className="flex flex-col h-full ">
+    <motion.div
+      className="flex flex-col h-full"
+      initial="initial"
+      animate="in"
+      exit="out"
+      variants={pageVariants}
+      transition={pageTransition}
+    >
       {/* Section A: Titles */}
-      <header className="bg-white p-2 shadow-md rounded-xl h-16">
+      <motion.header 
+        className="bg-white p-2 shadow-md rounded-xl h-16"
+        initial={{ opacity: 0, y: -50 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.2 }}
+      >
         <nav className="flex items-center space-x-4">
           <a href="#" className="text-gray-600">Mi calendario</a>
           <a href="#" className="text-blue-600 font-medium">Calendario de la compañía</a>
@@ -41,10 +74,15 @@ const Recursos: React.FC = () => {
           <div className="flex-grow"></div>
           <button className="text-gray-600">Más</button>
         </nav>
-      </header>
+      </motion.header>
 
       {/* Section B: Subtitles */}
-      <div className="x text-white p-4 flex items-center justify-between">
+      <motion.div 
+        className="x text-white p-4 flex items-center justify-between"
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.4 }}
+      >
         <h1 className="text-2xl font-bold">Calendario ☼</h1>
         <div className="flex space-x-2">
           <Button onClick={handleButtonClick} text='Terminar' />
@@ -58,9 +96,14 @@ const Recursos: React.FC = () => {
           <Button color='transp' text='Calendarios' />
           <Button color='transp' text='⚙️' />
         </div>
-      </div>
+      </motion.div>
 
-      <div className="flex flex-1 overflow-hidden rounded-xl">
+      <motion.div 
+        className="flex flex-1 overflow-hidden rounded-xl"
+        initial={{ opacity: 0, scale: 0.9 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ delay: 0.6 }}
+      >
         {/* Section C: Tables */}
         <main className="w-full flex flex-col flex-grow p-4 bg-white overflow-hidden">
           <div className="flex justify-between items-center mb-4">
@@ -84,19 +127,24 @@ const Recursos: React.FC = () => {
               &lt; Editar actividad &gt;
             </button>
           </div>
-          {/* Mini calendar would go here */}
           <div className="flex-grow border rounded-lg overflow-hidden">
             <div className="h-full overflow-auto">
               {[...Array(10)].map((_, index) => (
-                <div key={index} className="p-2 border-b hover:bg-gray-200 transition-colors">
+                <motion.div 
+                  key={index} 
+                  className="p-2 border-b hover:bg-gray-200 transition-colors"
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: 0.1 * index }}
+                >
                   SubActividad {index + 1}
-                </div>
+                </motion.div>
               ))}
             </div>
           </div>
         </aside>
-      </div>
-    </div>
+      </motion.div>
+    </motion.div>
   );
 };
 

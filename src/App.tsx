@@ -17,18 +17,28 @@ const App: React.FC = () => {
   const location = useLocation();
 
   return (
-    <AnimatePresence mode="sync">
-      <Routes location={location} key={location.pathname}>
-        <Route path="/" element={<Login />} />
-        <Route path="/dashboard" element={user.token ? <Dashboard /> : <Login to="/" />}>
-          <Route path="calendar" element={<CalendarPage />} />
-          <Route path="tipoRecurso" element={<TipoRecursoComponent />} />
-          <Route path="cargo" element={<CargosComponent />} />
-          <Route path="recurso" element={<RecursosPage />} />
-          <Route path="usuario" element={<UsuariosPage />} />
-        </Route>
-      </Routes>
-    </AnimatePresence>
+    <Routes>
+      <Route path="/" element={<Login />} />
+      <Route 
+        path="/dashboard" 
+        element={user.token ? <Dashboard /> : <Login to="/" />}
+      >
+        <Route
+          path="*"
+          element={
+            <AnimatePresence mode="wait">
+              <Routes location={location} key={location.pathname}>
+                <Route path="calendar" element={<CalendarPage />} />
+                <Route path="tipoRecurso" element={<TipoRecursoComponent />} />
+                <Route path="cargo" element={<CargosComponent />} />
+                <Route path="recurso" element={<RecursosPage />} />
+                <Route path="usuario" element={<UsuariosPage />} />
+              </Routes>
+            </AnimatePresence>
+          }
+        />
+      </Route>
+    </Routes>
   );
 };
 

@@ -1,10 +1,24 @@
 import React, { useState, useMemo } from 'react';
 import { useQuery, useMutation } from '@apollo/client';
+import { motion, AnimatePresence } from 'framer-motion';
 import Button from '../../components/Buttons/Button';
 import Modal from '../../components/Modal/Modal';
 import TableComponent from '../../components/Table/TableComponent';
 import RecursoFormComponent from './RecursoFormComponent';
 import { LIST_RECURSOS_QUERY, ADD_RECURSO_MUTATION, UPDATE_RECURSO_MUTATION } from '../../services/recursoService';
+import LoaderPage from '../../components/Loader/LoaderPage';
+
+const pageVariants = {
+  initial: { opacity: 0, y: 20 },
+  in: { opacity: 1, y: 0 },
+  out: { opacity: 0, y: -20 }
+};
+
+const pageTransition = {
+  type: 'tween',
+  ease: 'anticipate',
+  duration: 0.5
+};
 
 const RecursosPage: React.FC = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -94,44 +108,81 @@ const RecursosPage: React.FC = () => {
     };
   }, [data]);
 
-  if (loading) return <div>Cargando...</div>;
-  if (error) return <div>Error: {error.message}</div>;
+  if (loading) return <LoaderPage />;
+  if (error) return <motion.div initial="initial" animate="in" exit="out" variants={pageVariants} transition={pageTransition}>Error: {error.message}</motion.div>;
 
   return (
-    <div className="flex flex-col h-full ">
-      <div className="x text-white p-4 flex items-center justify-between">
+    <motion.div 
+      className="flex flex-col h-full"
+      initial="initial"
+      animate="in"
+      exit="out"
+      variants={pageVariants}
+      transition={pageTransition}
+    >
+      <motion.div 
+        className="x text-white p-4 flex items-center justify-between"
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.2 }}
+      >
         <h1 className="text-2xl font-bold">Recursos ☺</h1>
-      </div>
+      </motion.div>
 
-      <div className="flex flex-1 overflow-hidden rounded-xl">
+      <motion.div 
+        className="flex flex-1 overflow-hidden rounded-xl"
+        initial={{ opacity: 0, scale: 0.95 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ delay: 0.4 }}
+      >
         <main className="w-full flex flex-col flex-grow p-4 bg-white overflow-hidden">
-          <div className="flex justify-between items-center mb-4">
+          <motion.div 
+            className="flex justify-between items-center mb-4"
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.6 }}
+          >
             <h2 className="text-xl font-bold">Tabla de Recursos</h2>
             <div className="flex items-center space-x-2">
-              <Button text='+ Crear Recurso' color='verde' onClick={handleButtonClick} className="rounded">
-              </Button>
+              <Button text='+ Crear Recurso' color='verde' onClick={handleButtonClick} className="rounded" />
             </div>
-          </div>
-          <div className="flex-grow border rounded-lg overflow-hidden">
+          </motion.div>
+          <motion.div 
+            className="flex-grow border rounded-lg overflow-hidden"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.8 }}
+          >
             <div className="h-full overflow-auto">
               <TableComponent tableData={tableData} />
             </div>
-          </div>
+          </motion.div>
         </main>
-      </div>
+      </motion.div>
 
-      <Modal isOpen={isModalOpen} onClose={handleCloseModal}>
-        <RecursoFormComponent
-          initialValues={editingRecurso || undefined}
-          onSubmit={handleSubmit}
-          options={{
-            unidades: data.listUnidad,
-            tiposRecurso: data.listTipoRecurso,
-            clasificaciones: data.listClasificacionRecurso
-          }}
-        />
-      </Modal>
-    </div>
+      <AnimatePresence>
+        {isModalOpen && (
+          <Modal isOpen={isModalOpen} onClose={handleCloseModal}>
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.9 }}
+              transition={{ duration: 0.3 }}
+            >
+              <RecursoFormComponent
+                initialValues={editingRecurso || undefined}
+                onSubmit={handleSubmit}
+                options={{
+                  unidades: data.listUnidad,
+                  tiposRecurso: data.listTipoRecurso,
+                  clasificaciones: data.listClasificacionRecurso
+                }}
+              />
+            </motion.div>
+          </Modal>
+        )}
+      </AnimatePresence>
+    </motion.div>
   );
 };
 
