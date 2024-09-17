@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect, useRef } from 'react';
+import React, { useState, useMemo, useEffect, useRef, ReactNode } from 'react';
 import {
   useReactTable,
   getCoreRowModel,
@@ -12,7 +12,7 @@ import {
   ColumnFiltersState,
 } from '@tanstack/react-table';
 
-type TableRow = Record<string, string | number | boolean>;
+type TableRow = Record<string, string | number | boolean | ReactNode>;
 
 type TableData = {
   headers: string[];
@@ -43,13 +43,21 @@ const TableComponent: React.FC<TableComponentProps> = ({ tableData, maxCharacter
 
   const calculateMaxChars = (columnWidth: number) => {
     // Estimate characters based on column width
-    // You may need to adjust this calculation based on your font and styling
-    return Math.floor(columnWidth / 5 ); // Assuming average character width is 8px
+    return Math.max(Math.floor(columnWidth / 5), maxCharacters); 
   };
 
-  const truncateText = (text: string, maxLength: number) => {
-    if (typeof text !== 'string') return text;
+  const truncateText = (text: string, maxLength: number): string => {
     return text.length > maxLength ? `${text.substring(0, maxLength)}...` : text;
+  };
+
+  const renderCellContent = (value: unknown, maxLength: number): ReactNode => {
+    if (React.isValidElement(value)) {
+      return value; // If it's a React element, return it as is
+    }
+    if (typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean') {
+      return truncateText(String(value), maxLength);
+    }
+    return String(value); // Fallback for other types
   };
 
   const columns = useMemo<ColumnDef<TableRow>[]>(() => 
@@ -62,14 +70,14 @@ const TableComponent: React.FC<TableComponentProps> = ({ tableData, maxCharacter
         const dynamicMaxChars = calculateMaxChars(columnWidth);
         
         return (
-          <div title={String(value)}>
-            {truncateText(value, dynamicMaxChars)}
+          <div title={typeof value === 'string' ? value : ''}>
+            {renderCellContent(value, dynamicMaxChars)}
           </div>
         );
       },
       footer: props => props.column.id,
     })),
-  [tableData.headers]);
+  [tableData.headers, maxCharacters]);
 
   const table = useReactTable({
     data: tableData.rows,
@@ -160,7 +168,7 @@ const TableComponent: React.FC<TableComponentProps> = ({ tableData, maxCharacter
                 {row.getVisibleCells().map(cell => (
                   <td 
                     key={cell.id} 
-                    className="border-b border-gray-200 px-0.5 py-0.5 text-sm text-gray-700 text-center"
+                    className="border-b border-gray-200 px-0.5 py-0.5 text-sm text-gray-700 text-left pl-3"
                     style={{ minWidth: cell.column.getSize() }}
                   >
                     {flexRender(cell.column.columnDef.cell, cell.getContext())}

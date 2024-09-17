@@ -21,6 +21,12 @@ const initialState: CargoState = {
   error: null,
 };
 
+// Función auxiliar para manejar errores
+const handleError = (error: unknown): string => {
+  if (error instanceof Error) return error.message;
+  return String(error);
+};
+
 // Thunks
 export const fetchCargos = createAsyncThunk(
   'cargo/fetchCargos',
@@ -28,7 +34,7 @@ export const fetchCargos = createAsyncThunk(
     try {
       return await listCargosService();
     } catch (error) {
-      return rejectWithValue(error.message);
+      return rejectWithValue(handleError(error));
     }
   }
 );
@@ -39,7 +45,7 @@ export const addCargo = createAsyncThunk(
     try {
       return await addCargoService(cargoData);
     } catch (error) {
-      return rejectWithValue(error.message);
+      return rejectWithValue(handleError(error));
     }
   }
 );
@@ -50,7 +56,7 @@ export const updateCargo = createAsyncThunk(
     try {
       return await updateCargoService(cargo);
     } catch (error) {
-      return rejectWithValue(error.message);
+      return rejectWithValue(handleError(error));
     }
   }
 );

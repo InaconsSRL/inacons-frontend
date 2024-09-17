@@ -1,43 +1,26 @@
+import { ApolloClient, InMemoryCache, HttpLink, from } from '@apollo/client';
+import { onError } from "@apollo/client/link/error";
 
-import { ApolloClient, InMemoryCache } from '@apollo/client';
-
-const client = new ApolloClient({
-    uri: import.meta.env.VITE_GRAPHQL_URI,
-    cache: new InMemoryCache(),
-    // Puedes agregar un link de error para manejar errores de red
-    onError: (error) => {
-        console.error("Error en Apollo Client:", error);
-    }
+// Creamos un link de error
+const errorLink = onError(({ graphQLErrors, networkError }) => {
+  if (graphQLErrors)
+    graphQLErrors.forEach(({ message, locations, path }) =>
+      console.log(
+        `[GraphQL error]: Message: ${message}, Location: ${locations}, Path: ${path}`
+      )
+    );
+  if (networkError) console.log(`[Network error]: ${networkError}`);
 });
 
-
-
-export default client;
-
-/*
-import { ApolloClient, InMemoryCache, HttpLink, ApolloLink, onError } from '@apollo/client';
-
-// Crear un link para manejar errores
-const errorLink = onError(({ networkError, graphQLErrors }) => {
-    if (networkError) {
-        console.error('Network Error:', networkError);
-    }
-    if (graphQLErrors) {
-        graphQLErrors.forEach(({ message, locations, path }) =>
-            console.error(`[GraphQL error]: Message: ${message}, Location: ${locations}, Path: ${path}`)
-        );
-    }
-});
-
+// Creamos un link HTTP
 const httpLink = new HttpLink({
-    uri: import.meta.env.VITE_GRAPHQL_URIS,
+  uri: import.meta.env.VITE_GRAPHQL_URI,
 });
 
+// Creamos el cliente Apollo
 const client = new ApolloClient({
-    link: ApolloLink.from([errorLink, httpLink]),
-    cache: new InMemoryCache(),
+  link: from([errorLink, httpLink]), // Combinamos los links
+  cache: new InMemoryCache()
 });
 
 export default client;
-
-*/

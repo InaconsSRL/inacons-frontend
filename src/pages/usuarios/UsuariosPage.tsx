@@ -9,6 +9,28 @@ import { useDispatch, useSelector } from 'react-redux';
 import { fetchUsuariosAndCargos, addUsuario, updateUsuario } from '../../slices/usuarioSlice';
 import { RootState, AppDispatch } from '../../store/store';
 
+// Definición de interfaces
+interface Usuario {
+  id: string;
+  nombres: string;
+  apellidos: string;
+  dni: number;
+  usuario: string;
+  contrasenna: string;
+  cargo_id: string;
+  rol_id: string;
+}
+
+interface UsuarioFormData {
+  nombres: string;
+  apellidos: string;
+  dni: number;
+  usuario: string;
+  contrasenna: string;
+  cargo_id: string;
+  rol_id: string;
+}
+
 const pageVariants = {
   initial: { opacity: 0, y: 20 },
   in: { opacity: 1, y: 0 },
@@ -23,7 +45,7 @@ const pageTransition = {
 
 const UsuariosPage: React.FC = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [editingUsuario, setEditingUsuario] = useState<any | null>(null);
+  const [editingUsuario, setEditingUsuario] = useState<Usuario | null>(null);
 
   const dispatch = useDispatch<AppDispatch>();
   const { usuarios, cargos, loading, error } = useSelector((state: RootState) => state.usuario);
@@ -32,17 +54,17 @@ const UsuariosPage: React.FC = () => {
     dispatch(fetchUsuariosAndCargos());
   }, [dispatch]);
 
-  const handleSubmit = (data: any) => {
+  const handleSubmit = (data: UsuarioFormData) => {
     if (editingUsuario) {
-      dispatch(updateUsuario({ id: editingUsuario.id, ...data.value }));
+      dispatch(updateUsuario({ id: editingUsuario.id, ...data }));
     } else {
-      dispatch(addUsuario(data.value));
+      dispatch(addUsuario(data));
     }
     setIsModalOpen(false);
     setEditingUsuario(null);
   };
 
-  const handleEdit = (usuario: any) => {
+  const handleEdit = (usuario: Usuario) => {
     setEditingUsuario(usuario);
     setIsModalOpen(true);
   };

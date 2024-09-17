@@ -8,6 +8,8 @@ interface ButtonProps {
   text?: string;
 }
 
+type Option = { label: string; action: () => void } | string;
+
 const Button: React.FC<ButtonProps> = ({ onClick, color = 'blanco', options = [], className = '', text }) => {
   const [isOpen, setIsOpen] = useState(false);
 
@@ -22,7 +24,7 @@ const Button: React.FC<ButtonProps> = ({ onClick, color = 'blanco', options = []
     blanco: 'bg-white border border-gray-300 text-black hover:bg-gray-100 active:bg-gray-200',
   };
 
-  const handleOptionClick = (option: any) => {
+  const handleOptionClick = (option: Option) => {
     if (typeof option === 'string') {
       alert(`Opción seleccionada: ${option}`);
     } else {

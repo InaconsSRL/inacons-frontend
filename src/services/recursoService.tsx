@@ -68,6 +68,32 @@ export const UPDATE_RECURSO_MUTATION = gql`
   }
 `;
 
+
+interface AddRecursoInput {
+  codigo: string;
+  nombre: string;
+  descripcion: string;
+  cantidad: number;
+  unidad_id: string;
+  precio_actual: number;
+  tipo_recurso_id: string;
+  clasificacion_recurso_id: string;
+}
+
+interface UpdateRecursoInput {
+  id: string;
+  codigo?: string;
+  nombre?: string;
+  descripcion?: string;
+  fecha?: string;
+  cantidad?: number;
+  unidad_id?: string;
+  precio_actual?: number;
+  presupuesto?: boolean;
+  tipo_recurso_id?: string;
+  clasificacion_recurso_id?: string;
+}
+
 export const listRecursosService = async () => {
   try {
     const response = await client.query({
@@ -83,7 +109,7 @@ export const listRecursosService = async () => {
   }
 };
 
-export const addRecursoService = async (recursoData) => {
+export const addRecursoService = async (recursoData: AddRecursoInput) => {
   try {
     const response = await client.mutate({
       mutation: ADD_RECURSO_MUTATION,
@@ -108,7 +134,7 @@ export const addRecursoService = async (recursoData) => {
   }
 };
 
-export const updateRecursoService = async (recursoData) => {
+export const updateRecursoService = async (recursoData: UpdateRecursoInput) => {
   try {
     const response = await client.mutate({
       mutation: UPDATE_RECURSO_MUTATION,

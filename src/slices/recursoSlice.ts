@@ -29,6 +29,12 @@ const initialState: RecursoState = {
   error: null,
 };
 
+// Función auxiliar para manejar errores
+const handleError = (error: unknown): string => {
+  if (error instanceof Error) return handleError(error);
+  return String(error);
+};
+
 // Thunks
 export const fetchRecursos = createAsyncThunk(
   'recurso/fetchRecursos',
@@ -36,7 +42,7 @@ export const fetchRecursos = createAsyncThunk(
     try {
       return await listRecursosService();
     } catch (error) {
-      return rejectWithValue(error.message);
+      return rejectWithValue(handleError(error));
     }
   }
 );
@@ -47,7 +53,7 @@ export const addRecurso = createAsyncThunk(
     try {
       return await addRecursoService(recursoData);
     } catch (error) {
-      return rejectWithValue(error.message);
+      return rejectWithValue(handleError(error));
     }
   }
 );
@@ -58,7 +64,7 @@ export const updateRecurso = createAsyncThunk(
     try {
       return await updateRecursoService(recursoData);
     } catch (error) {
-      return rejectWithValue(error.message);
+      return rejectWithValue(handleError(error));
     }
   }
 );

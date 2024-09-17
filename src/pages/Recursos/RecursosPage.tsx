@@ -8,6 +8,62 @@ import RecursoFormComponent from './RecursoFormComponent';
 import { LIST_RECURSOS_QUERY, ADD_RECURSO_MUTATION, UPDATE_RECURSO_MUTATION } from '../../services/recursoService';
 import LoaderPage from '../../components/Loader/LoaderPage';
 
+// Definición de interfaces
+interface Recurso {
+  id: string;
+  codigo: string;
+  nombre: string;
+  descripcion: string;
+  cantidad: number;
+  unidad_id: string;
+  precio_actual: number;
+  tipo_recurso_id: string;
+  clasificacion_recurso_id: string;
+  presupuesto: boolean;
+}
+
+interface Unidad {
+  id: string;
+  nombre: string;
+}
+
+interface TipoRecurso {
+  id: string;
+  nombre: string;
+}
+
+interface ClasificacionRecurso {
+  id: string;
+  nombre: string;
+  childs?: ClasificacionRecurso[];
+  parent?: ClasificacionRecurso;
+}
+
+interface QueryData {
+  listRecurso: Recurso[];
+  listUnidad: Unidad[];
+  listTipoRecurso: TipoRecurso[];
+  listClasificacionRecurso: ClasificacionRecurso[];
+}
+
+interface RecursoFormData {
+  codigo: string;
+  nombre: string;
+  descripcion: string;
+  cantidad: number;
+  unidad_id: string;
+  precio_actual: number;
+  tipo_recurso_id: string;
+  clasificacion_recurso_id: string;
+  presupuesto?: boolean;
+}
+
+interface RecursoFormOptions {
+  unidades: Unidad[];
+  tiposRecurso: TipoRecurso[];
+  clasificaciones: ClasificacionRecurso[];
+}
+
 const pageVariants = {
   initial: { opacity: 0, y: 20 },
   in: { opacity: 1, y: 0 },
@@ -22,13 +78,13 @@ const pageTransition = {
 
 const RecursosPage: React.FC = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [editingRecurso, setEditingRecurso] = useState<any | null>(null);
+  const [editingRecurso, setEditingRecurso] = useState<Recurso | null>(null);
 
-  const { loading, error, data, refetch } = useQuery(LIST_RECURSOS_QUERY);
+  const { loading, error, data, refetch } = useQuery<QueryData>(LIST_RECURSOS_QUERY);
   const [addRecurso] = useMutation(ADD_RECURSO_MUTATION);
   const [updateRecurso] = useMutation(UPDATE_RECURSO_MUTATION);
 
-  const handleSubmit = async (formData: any) => {
+  const handleSubmit = async (formData: RecursoFormData) => {
     if (editingRecurso) {
       await updateRecurso({
         variables: {
@@ -44,7 +100,7 @@ const RecursosPage: React.FC = () => {
     refetch();
   };
 
-  const handleEdit = (recurso: any) => {
+  const handleEdit = (recurso: Recurso) => {
     setEditingRecurso(recurso);
     setIsModalOpen(true);
   };
@@ -62,13 +118,13 @@ const RecursosPage: React.FC = () => {
   const tableData = useMemo(() => {
     if (!data) return { headers: [], rows: [] };
 
-    const getNameById = (list: any[], id: string) => {
+    const getNameById = (list: { id: string; nombre: string }[], id: string) => {
       const item = list.find(item => item.id === id);
       return item ? item.nombre : 'N/A';
     };
 
     const getClasificacionNombre = (id: string) => {
-      const findClasificacion = (clasificaciones: any[], targetId: string): any => {
+      const findClasificacion = (clasificaciones: ClasificacionRecurso[], targetId: string): ClasificacionRecurso | null => {
         for (const clasificacion of clasificaciones) {
           if (clasificacion.id === targetId) {
             return clasificacion;
@@ -95,7 +151,7 @@ const RecursosPage: React.FC = () => {
 
     return {
       headers: ["codigo", "nombre", "descripcion", "cantidad", "unidad_id", "precio_actual", "tipo_recurso_id", "clasificacion_recurso_id", "presupuesto", "opciones"],
-      rows: data.listRecurso.map((recurso: any) => ({
+      rows: data.listRecurso.map((recurso: Recurso) => ({
         ...recurso,
         unidad_id: getNameById(data.listUnidad, recurso.unidad_id),
         tipo_recurso_id: getNameById(data.listTipoRecurso, recurso.tipo_recurso_id),
@@ -173,10 +229,10 @@ const RecursosPage: React.FC = () => {
                 initialValues={editingRecurso || undefined}
                 onSubmit={handleSubmit}
                 options={{
-                  unidades: data.listUnidad,
-                  tiposRecurso: data.listTipoRecurso,
-                  clasificaciones: data.listClasificacionRecurso
-                }}
+                  unidades: data?.listUnidad || [],
+                  tiposRecurso: data?.listTipoRecurso || [],
+                  clasificaciones: data?.listClasificacionRecurso || []
+                } as RecursoFormOptions}
               />
             </motion.div>
           </Modal>

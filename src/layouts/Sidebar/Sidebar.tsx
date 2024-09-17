@@ -1,13 +1,17 @@
 import React, { useState } from 'react';
 import { NavLink } from 'react-router-dom';
 
-import HomeIcon from '../../components/Icons/HomeIcon';
-import FolderIcon from '../../components/Icons/FolderIcon';
-import CalendarIcon from '../../components/Icons/CalendarIcon';
-import CogIcon from '../../components/Icons/CogIcon';
-import ChevronDownIcon from '../../components/Icons/ChevronDownIcon'; // Icono para mostrar que se puede desplegar
-import ChevronUpIcon from '../../components/Icons/ChevronUpIcon';
-
+import { 
+  FiHome, 
+  FiFolder,
+  FiUsers, 
+  FiChevronDown, 
+  FiChevronUp, 
+  FiBold, 
+  FiShare, 
+  FiArchive, 
+  FiBriefcase 
+} from 'react-icons/fi';
 interface SidebarProps {
   isSidebarOpen: boolean;
 }
@@ -20,7 +24,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isSidebarOpen }) => {
   };
 
   // Estilo para el enlace activo
-  const activeStyle = "bg-amber-300 bg-opacity-50 rounded-xl p-2";
+  const activeStyle = "bg-sky-300 bg-opacity-50 rounded-xl py-2 pl-2 -m-2 ";
 
   return (
     <div
@@ -30,7 +34,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isSidebarOpen }) => {
       <nav className="flex flex-col items-start p-4 h-full overflow-y-auto">
         {/* Inicio */}
         <div className="flex items-center space-x-4 mb-4">
-          <HomeIcon className="w-6 h-6 text-white" />
+          <FiHome className="w-6 h-6 text-white" />
           {isSidebarOpen && <span className="text-white">Inicio</span>}
         </div>
 
@@ -41,15 +45,15 @@ const Sidebar: React.FC<SidebarProps> = ({ isSidebarOpen }) => {
             onClick={toggleCollaborationMenu}
           >
             <div className="flex items-center">
-              <FolderIcon className="w-6 h-6 text-white" />
-              {isSidebarOpen && <span className="text-white pl-3">Opciones 1</span>}
+              <FiFolder className="w-6 h-6 text-white" />
+              {isSidebarOpen && <span className="text-white pl-3">Modulo_Recursos</span>}
             </div>
             {isSidebarOpen && (
               <span>
                 {isCollaborationOpen ? (
-                  <ChevronUpIcon className="w-4 h-4 text-white" />
+                  <FiChevronUp className="w-4 h-4 text-white" />
                 ) : (
-                  <ChevronDownIcon className="w-4 h-4 text-white" />
+                  <FiChevronDown className="w-4 h-4 text-white" />
                 )}
               </span>
             )}
@@ -57,42 +61,42 @@ const Sidebar: React.FC<SidebarProps> = ({ isSidebarOpen }) => {
 
           {/* Submenú con transición */}
           <div
-            className={`${isCollaborationOpen && "bg-white/20 rounded-xl mb-3 p-2"} overflow-hidden transition-all duration-300 ${isCollaborationOpen ? 'max-h-screen' : 'max-h-0'
+            className={`${isCollaborationOpen && " bg-white/20 rounded-xl"} pt-3 -m-2 pl-2 overflow-hidden transition-all duration-300 ${isCollaborationOpen ? 'max-h-screen' : 'max-h-0'
               }`}
           >
             <NavLink to="/dashboard/calendar" className={({ isActive }) => 
                 `flex items-center space-x-4 mb-4 ${isActive ? activeStyle : ''}`
               }>
-              <HomeIcon className="w-6 h-6 text-white" />
-              {isSidebarOpen && <span className="text-white">Calendario</span>}
+              <FiBold className="w-6 h-6 text-white" />
+              {isSidebarOpen && <span className="text-white">Forma Basica</span>}
               
             </NavLink>
 
             <NavLink to="/dashboard/tipoRecurso" className={({ isActive }) => 
                 `flex items-center space-x-4 mb-4 ${isActive ? activeStyle : ''}`
               }>
-              <CalendarIcon className="w-6 h-6 text-white" />
+              <FiShare className="w-6 h-6 text-white" />
               {isSidebarOpen && <span className="text-white">TipoRecurso</span>}
             </NavLink>
 
             <NavLink to="/dashboard/cargo" className={({ isActive }) => 
                 `flex items-center space-x-4 mb-4 ${isActive ? activeStyle : ''}`
               }>
-              <CogIcon className="w-6 h-6 text-white" />
+              <FiBriefcase className="w-6 h-6 text-white" />
               {isSidebarOpen && <span className="text-white">Cargos</span>}
             </NavLink>
 
             <NavLink to="/dashboard/recurso" className={({ isActive }) => 
                 `flex items-center space-x-4 mb-4 ${isActive ? activeStyle : ''}`
               }>
-              <ChevronUpIcon className="w-6 h-6 text-white" />
+              <FiArchive className="w-6 h-6 text-white" />
               {isSidebarOpen && <span className="text-white">Recursos</span>}
             </NavLink>
 
             <NavLink to="/dashboard/usuario" className={({ isActive }) => 
                 `flex items-center space-x-4 mb-4 ${isActive ? activeStyle : ''}`
               }>
-              <ChevronDownIcon className="w-6 h-6 text-white" />
+              <FiUsers className="w-6 h-6 text-white" />
               {isSidebarOpen && <span className="text-white">Usuarios</span>}
             </NavLink>
 

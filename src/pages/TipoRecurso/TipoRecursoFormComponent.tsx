@@ -3,7 +3,7 @@ import { useForm } from '@tanstack/react-form';
 import { z } from 'zod';
 import Button from '../../components/Buttons/Button';
 
-// Definimos el esquema de validación
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const tipoRecursoSchema = z.object({
   nombre: z.string().min(1, 'El nombre es requerido'),
 });
@@ -19,7 +19,7 @@ const TipoRecursoFormComponent: React.FC<FormComponentProps> = ({ initialValues,
   const form = useForm<TipoRecursoFormData>({
     defaultValues: initialValues || { nombre: '' },
     onSubmit: async (values) => {
-      onSubmit(values);
+      onSubmit(values.value);
     },
   });
 
@@ -36,14 +36,10 @@ const TipoRecursoFormComponent: React.FC<FormComponentProps> = ({ initialValues,
         <label htmlFor="nombre" className="block text-gray-700 text-sm font-bold mb-2">
           Nombre:
         </label>
+        
         <form.Field
           name="nombre"
-          validate={(value) => {
-            const result = tipoRecursoSchema.shape.nombre.safeParse(value);
-            return result.success ? undefined : result.error.message;
-          }}
-        >
-          {(field) => (
+          children={(field) => (
             <>
               <input
                 id="nombre"
@@ -53,12 +49,12 @@ const TipoRecursoFormComponent: React.FC<FormComponentProps> = ({ initialValues,
                 onChange={(e) => field.handleChange(e.target.value)}
                 className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
               />
-              {field.state.meta.touchedErrors ? (
-                <p className="text-red-500 text-xs italic mt-1">{field.state.meta.touchedErrors}</p>
+              {field.state.meta.errors ? (
+                <p className="text-red-500 text-xs italic mt-1">{field.state.meta.errors}</p>
               ) : null}
             </>
           )}
-        </form.Field>
+        />
       </div>
       <div className="flex items-center justify-center mt-6">
         <Button

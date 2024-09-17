@@ -7,6 +7,13 @@ interface UserState {
     token: string | null;
 }
 
+// Definimos una interfaz para la carga útil de la acción de login
+interface LoginPayload {
+    usuario: string;
+    id: string;
+    token: string;
+}
+
 const initialState: UserState = {
     id: null,
     username: null,
@@ -24,7 +31,7 @@ const userSlice = createSlice({
         },
     },
     extraReducers: (builder) => {
-        builder.addCase(loginUser.fulfilled, (state, action: PayloadAction<any>) => {
+        builder.addCase(loginUser.fulfilled, (state, action: PayloadAction<LoginPayload>) => {
             const { usuario, id, token } = action.payload;
             state.id = id;
             state.username = usuario;

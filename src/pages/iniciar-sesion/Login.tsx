@@ -2,13 +2,13 @@ import React, { useState } from 'react';
 import { useDispatch } from 'react-redux';
 import { loginUser } from '../../actions/userActions';
 import { useNavigate } from 'react-router-dom';
-import EyeIcon from '../../components/Icons/EyeIcon';
-import EyeSlashIcon from '../../components/Icons/EyeSlashIcon';
 import Loader from '../../components/Loader/Loader';
 import Logo from '../../assets/logo.svg'
+import { FiEye, FiEyeOff } from 'react-icons/fi';
+import { AppDispatch } from '../../store/store';
 
 const Login: React.FC = () => {
-  const dispatch = useDispatch();
+  const dispatch = useDispatch<AppDispatch>();
   const navigate = useNavigate();
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
@@ -85,9 +85,9 @@ const Login: React.FC = () => {
                   className="focus:outline-none align-middle mr-1"
                 >
                   {mostrarPass ? (
-                    <EyeSlashIcon className="h-6 w-6 text-gray-500 cursor-pointer" />
+                    <FiEyeOff className="h-6 w-6 text-gray-500 cursor-pointer" />
                   ) : (
-                    <EyeIcon className="h-6 w-6 text-gray-500 cursor-pointer" />
+                    <FiEye className="h-6 w-6 text-gray-500 cursor-pointer" />
                   )}
                 </button>
               )}

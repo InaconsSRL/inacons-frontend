@@ -20,6 +20,12 @@ const initialState: TipoRecursoState = {
   error: null,
 };
 
+// Función auxiliar para manejar errores
+const handleError = (error: unknown): string => {
+  if (error instanceof Error) return error.message;
+  return String(error);
+};
+
 // Thunks
 export const fetchTiposRecurso = createAsyncThunk(
   'tipoRecurso/fetchTiposRecurso',
@@ -27,7 +33,7 @@ export const fetchTiposRecurso = createAsyncThunk(
     try {
       return await listTipoRecursoService();
     } catch (error) {
-      return rejectWithValue(error.message);
+      return rejectWithValue(handleError(error));
     }
   }
 );
@@ -39,7 +45,7 @@ export const addTipoRecurso = createAsyncThunk(
       console.log(tipoRecursoData)
       return await addTipoRecursoService(tipoRecursoData);
     } catch (error) {
-      return rejectWithValue(error.message);
+      return rejectWithValue(handleError(error));
     }
   }
 );
@@ -52,7 +58,7 @@ export const updateTipoRecurso = createAsyncThunk(
       console.log(tipoRecurso)
       return await updateTipoRecursoService(tipoRecurso);      
     } catch (error) {
-      return rejectWithValue(error.message);
+      return rejectWithValue(handleError(error));
     }
   }
 );

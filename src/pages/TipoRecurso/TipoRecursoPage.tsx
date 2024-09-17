@@ -34,9 +34,9 @@ const TipoRecursoComponent: React.FC = () => {
 
   const handleSubmit = (data: { nombre: string }) => {
     if (editingTipoRecurso) {
-      dispatch(updateTipoRecurso({ id: editingTipoRecurso.id, ...data.value }));
+      dispatch(updateTipoRecurso({ id: editingTipoRecurso.id, ...data }));
     } else {
-      dispatch(addTipoRecurso(data.value));
+      dispatch(addTipoRecurso(data));
     }
     setIsModalOpen(false);
     setEditingTipoRecurso(null);

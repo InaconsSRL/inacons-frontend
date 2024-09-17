@@ -1,6 +1,39 @@
 import { gql } from '@apollo/client';
 import client from '../apolloClient';
 
+// Definición de tipos
+interface Usuario {
+  id: string;
+  nombres: string;
+  apellidos: string;
+  dni: string;
+  usuario: string;
+  contrasenna: string;
+  cargo_id: string;
+  rol_id: string;
+}
+
+interface Cargo {
+  id: string;
+  nombre: string;
+  descripcion: string;
+}
+
+interface UsuarioInput {
+  nombres: string;
+  apellidos: string;
+  dni: string;
+  usuario: string;
+  contrasenna: string;
+  cargo_id: string;
+  rol_id: string;
+}
+
+interface QueryResponse {
+  getAllUsuarios: Usuario[];
+  listCargo: Cargo[];
+}
+
 const GET_ALL_USUARIOS_AND_CARGOS_QUERY = gql`
   query Query {
     getAllUsuarios {
@@ -51,9 +84,9 @@ const UPDATE_USUARIO_MUTATION = gql`
   }
 `;
 
-export const getAllUsuariosAndCargosService = async () => {
+export const getAllUsuariosAndCargosService = async (): Promise<QueryResponse> => {
   try {
-    const response = await client.query({
+    const response = await client.query<QueryResponse>({
       query: GET_ALL_USUARIOS_AND_CARGOS_QUERY,
     });
     if (response.errors) {
@@ -66,11 +99,11 @@ export const getAllUsuariosAndCargosService = async () => {
   }
 };
 
-const removeTypename = (obj: any): any => {
+const removeTypename = <T>(obj: T): T => {
   if (Array.isArray(obj)) {
-    return obj.map(removeTypename);
+    return obj.map(removeTypename) as T;
   } else if (obj !== null && typeof obj === 'object') {
-    const newObj: any = {};
+    const newObj = {} as T;
     for (const key in obj) {
       if (key !== '__typename') {
         newObj[key] = removeTypename(obj[key]);
@@ -81,37 +114,37 @@ const removeTypename = (obj: any): any => {
   return obj;
 };
 
-export const createUsuarioService = async (usuarioData: any) => {
+export const createUsuarioService = async (usuarioData: UsuarioInput): Promise<Usuario> => {
   try {
     const cleanedData = removeTypename(usuarioData);
-    console.log(cleanedData)
-    const response = await client.mutate({
+    console.log(cleanedData);
+    const response = await client.mutate<{ createUsuario: Usuario }>({
       mutation: CREATE_USUARIO_MUTATION,
       variables: { data: cleanedData },
     });
     if (response.errors) {
       throw new Error(response.errors[0]?.message || 'Error desconocido');
     }
-    return response.data.createUsuario;
+    return response.data!.createUsuario;
   } catch (error) {
     console.error('Error al crear el usuario:', error);
     throw error;
   }
 };
 
-export const updateUsuarioService = async (usuario: any) => {
+export const updateUsuarioService = async (usuario: Usuario): Promise<Usuario> => {
   try {
     const { id, ...data } = usuario;
     const cleanedData = removeTypename(data);
     console.log("este es el id:", id, ", esta es la data limpia:", cleanedData);
-    const response = await client.mutate({
+    const response = await client.mutate<{ updateUsuario: Usuario }>({
       mutation: UPDATE_USUARIO_MUTATION,
       variables: { updateUsuarioId: id, data: cleanedData },
     });
     if (response.errors) {
       throw new Error(response.errors[0]?.message || 'Error desconocido');
     }
-    return response.data.updateUsuario;
+    return response.data!.updateUsuario;
   } catch (error) {
     console.error('Error al actualizar el usuario:', error);
     throw error;

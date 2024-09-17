@@ -1,6 +1,4 @@
 import React, { useState } from 'react';
-import { useSelector } from 'react-redux';
-import { RootState } from '../../store/store';
 import { Outlet } from 'react-router-dom';
 
 import Header from '../Header/Header';
@@ -8,10 +6,8 @@ import Sidebar from '../Sidebar/Sidebar';
 import Footer from '../Footer/Footer';
 
 import bg from '../../assets/bgmedia.webp';
-import LoaderPage from '../../components/Loader/LoaderPage';
 
 const Dashboard: React.FC = () => {
-  const user = useSelector((state: RootState) => state.user);
   const [isSidebarOpen, setSidebarOpen] = useState(true);
 
   const toggleSidebar = () => {

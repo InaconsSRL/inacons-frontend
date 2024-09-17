@@ -5,7 +5,7 @@ interface Usuario {
   id: string;
   nombres: string;
   apellidos: string;
-  dni: string;
+  dni: number;
   usuario: string;
   contrasenna: string;
   cargo_id: string;

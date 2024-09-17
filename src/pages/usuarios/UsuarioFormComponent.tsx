@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
-import { useForm } from '@tanstack/react-form';
+import { useForm, FieldApi } from '@tanstack/react-form';
 import { z } from 'zod';
 import EyeIcon from '../../components/Icons/EyeIcon';
 import EyeSlashIcon from '../../components/Icons/EyeSlashIcon';
 import Button from '../../components/Buttons/Button';
 
-
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const usuarioSchema = z.object({
   nombres: z.string().min(1, 'El nombre es requerido'),
   apellidos: z.string().min(1, 'Los apellidos son requeridos'),
@@ -15,7 +15,6 @@ const usuarioSchema = z.object({
   cargo_id: z.string().min(1, 'El cargo es requerido'),
   rol_id: z.string().min(1, 'El rol es requerido'),
 });
-
 
 type UsuarioFormData = z.infer<typeof usuarioSchema>;
 
@@ -44,7 +43,7 @@ const UsuarioFormComponent: React.FC<FormComponentProps> = ({ initialValues, onS
       rol_id: '',
     },
     onSubmit: async (values) => {
-      onSubmit(values);
+      onSubmit(values.value);
     },
   });
 
@@ -68,23 +67,19 @@ const UsuarioFormComponent: React.FC<FormComponentProps> = ({ initialValues, onS
           </label>
           <form.Field
             name={field as keyof UsuarioFormData}
-            validate={(value) => {
-              const result = usuarioSchema.shape[field as keyof UsuarioFormData].safeParse(value);
-              return result.success ? undefined : result.error.message;
-            }}
           >
-            {(fieldProps) => (
+            {(fieldProps: FieldApi<UsuarioFormData, keyof UsuarioFormData>) => (
               <>
                 <input
                   id={field}
                   placeholder={`Ingrese ${field}`}
-                  value={fieldProps.state.value}
+                  value={fieldProps.state.value as string}
                   onBlur={fieldProps.handleBlur}
                   onChange={(e) => fieldProps.handleChange(e.target.value)}
                   className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
                 />
-                {fieldProps.state.meta.touchedErrors ? (
-                  <p className="text-red-500 text-xs italic mt-1">{fieldProps.state.meta.touchedErrors}</p>
+                {fieldProps.state.meta.errors ? (
+                  <p className="text-red-500 text-xs italic mt-1">{fieldProps.state.meta.errors}</p>
                 ) : null}
               </>
             )}
@@ -95,12 +90,8 @@ const UsuarioFormComponent: React.FC<FormComponentProps> = ({ initialValues, onS
         <label htmlFor="dni" className="block text-gray-700 text-sm font-bold mb-2">DNI:</label>
         <form.Field
           name="dni"
-          validate={(value) => {
-            const result = usuarioSchema.shape.dni.safeParse(value);
-            return result.success ? undefined : result.error.message;
-          }}
         >
-          {(fieldProps) => (
+          {(fieldProps: FieldApi<UsuarioFormData, "dni">) => (
             <>
               <input
                 id="dni"
@@ -114,8 +105,8 @@ const UsuarioFormComponent: React.FC<FormComponentProps> = ({ initialValues, onS
                 }}
                 className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
               />
-              {fieldProps.state.meta.touchedErrors ? (
-                <p className="text-red-500 text-xs italic mt-1">{fieldProps.state.meta.touchedErrors}</p>
+              {fieldProps.state.meta.errors ? (
+                <p className="text-red-500 text-xs italic mt-1">{fieldProps.state.meta.errors}</p>
               ) : null}
             </>
           )}
@@ -125,12 +116,8 @@ const UsuarioFormComponent: React.FC<FormComponentProps> = ({ initialValues, onS
         <label htmlFor="contrasenna" className="block text-gray-700 text-sm font-bold mb-2">Contraseña:</label>
         <form.Field
           name="contrasenna"
-          validate={(value) => {
-            const result = usuarioSchema.shape.contrasenna.safeParse(value);
-            return result.success ? undefined : result.error.message;
-          }}
         >
-          {(fieldProps) => (
+          {(fieldProps: FieldApi<UsuarioFormData, "contrasenna">) => (
             <div className="relative">
               <input
                 id="contrasenna"
@@ -152,8 +139,8 @@ const UsuarioFormComponent: React.FC<FormComponentProps> = ({ initialValues, onS
                   <EyeIcon className="h-5 w-5 text-gray-500" />
                 )}
               </button>
-              {fieldProps.state.meta.touchedErrors ? (
-                <p className="text-red-500 text-xs italic mt-1">{fieldProps.state.meta.touchedErrors}</p>
+              {fieldProps.state.meta.errors ? (
+                <p className="text-red-500 text-xs italic mt-1">{fieldProps.state.meta.errors}</p>
               ) : null}
             </div>
           )}
@@ -163,12 +150,8 @@ const UsuarioFormComponent: React.FC<FormComponentProps> = ({ initialValues, onS
         <label htmlFor="cargo_id" className="block text-gray-700 text-sm font-bold mb-2">Cargo:</label>
         <form.Field
           name="cargo_id"
-          validate={(value) => {
-            const result = usuarioSchema.shape.cargo_id.safeParse(value);
-            return result.success ? undefined : result.error.message;
-          }}
         >
-          {(fieldProps) => (
+          {(fieldProps: FieldApi<UsuarioFormData, "cargo_id">) => (
             <>
               <select
                 id="cargo_id"
@@ -184,8 +167,8 @@ const UsuarioFormComponent: React.FC<FormComponentProps> = ({ initialValues, onS
                   </option>
                 ))}
               </select>
-              {fieldProps.state.meta.touchedErrors ? (
-                <p className="text-red-500 text-xs italic mt-1">{fieldProps.state.meta.touchedErrors}</p>
+              {fieldProps.state.meta.errors ? (
+                <p className="text-red-500 text-xs italic mt-1">{fieldProps.state.meta.errors}</p>
               ) : null}
             </>
           )}
