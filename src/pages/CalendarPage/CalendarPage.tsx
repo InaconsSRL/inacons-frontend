@@ -25,6 +25,9 @@ const pageTransition = {
   duration: 0.5,
 };
 
+// Definimos un tipo para las filas de la tabla
+type TableRow = Record<string, string>;
+
 const Recursos: React.FC = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
 
@@ -36,21 +39,21 @@ const Recursos: React.FC = () => {
     setIsModalOpen(false);
   };
 
-  const generateTableData = (n: number, m: number) => {
+  const generateTableData = (n: number, m: number): { headers: string[]; rows: TableRow[] } => {
     const headers = Array(n).fill(null).map((_, index) => `Columna ${index + 1}`);
     const rows = Array(m).fill(null).map((_, rowIndex) => {
-      const row: Record<string, any> = {};
+      const row: TableRow = {};
       headers.forEach((header, colIndex) => {
         row[header] = `Fila ${rowIndex + 1}, Col ${colIndex + 1}`;
       });
       return row;
     });
-  
+
     return { headers, rows };
   };
-  
-  const tableData = generateTableData(30, 1000);
 
+  const tableData = generateTableData(30, 1000);
+  
   return (
     <motion.div
       className="flex flex-col h-full"

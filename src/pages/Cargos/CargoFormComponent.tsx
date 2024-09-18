@@ -1,9 +1,9 @@
 import React from 'react';
-import { useForm } from '@tanstack/react-form';
+import { useForm, FieldApi } from '@tanstack/react-form';
 import { z } from 'zod';
 import Button from '../../components/Buttons/Button'; // Import the custom Button component
 
-// Definimos el esquema de validación
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const cargoSchema = z.object({
   nombre: z.string().min(1, 'El nombre es requerido'),
   descripcion: z.string().min(1, 'La descripción es requerida'),
@@ -20,7 +20,7 @@ const CargoFormComponent: React.FC<FormComponentProps> = ({ initialValues, onSub
   const form = useForm<CargoFormData>({
     defaultValues: initialValues || { nombre: '', descripcion: '' },
     onSubmit: async (values) => {
-      onSubmit(values);
+      onSubmit(values.value);
     },
   });
 
@@ -39,12 +39,7 @@ const CargoFormComponent: React.FC<FormComponentProps> = ({ initialValues, onSub
         </label>
         <form.Field
           name="nombre"
-          validate={(value) => {
-            const result = cargoSchema.shape.nombre.safeParse(value);
-            return result.success ? undefined : result.error.message;
-          }}
-        >
-          {(field) => (
+          children={(field: FieldApi<CargoFormData, 'nombre'>) => (
             <>
               <input
                 id="nombre"
@@ -54,12 +49,12 @@ const CargoFormComponent: React.FC<FormComponentProps> = ({ initialValues, onSub
                 onChange={(e) => field.handleChange(e.target.value)}
                 className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
               />
-              {field.state.meta.touchedErrors ? (
-                <p className="text-red-500 text-xs italic mt-1">{field.state.meta.touchedErrors}</p>
+              {field.state.meta.errors ? (
+                <p className="text-red-500 text-xs italic mt-1">{field.state.meta.errors[0]}</p>
               ) : null}
             </>
           )}
-        </form.Field>
+        />
       </div>
       <div className="mb-4">
         <label htmlFor="descripcion" className="block text-gray-700 text-sm font-bold mb-2">
@@ -67,12 +62,7 @@ const CargoFormComponent: React.FC<FormComponentProps> = ({ initialValues, onSub
         </label>
         <form.Field
           name="descripcion"
-          validate={(value) => {
-            const result = cargoSchema.shape.descripcion.safeParse(value);
-            return result.success ? undefined : result.error.message;
-          }}
-        >
-          {(field) => (
+          children={(field: FieldApi<CargoFormData, 'descripcion'>) => (
             <>
               <textarea
                 id="descripcion"
@@ -82,12 +72,12 @@ const CargoFormComponent: React.FC<FormComponentProps> = ({ initialValues, onSub
                 onChange={(e) => field.handleChange(e.target.value)}
                 className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline h-24"
               />
-              {field.state.meta.touchedErrors ? (
-                <p className="text-red-500 text-xs italic mt-1">{field.state.meta.touchedErrors}</p>
+              {field.state.meta.errors ? (
+                <p className="text-red-500 text-xs italic mt-1">{field.state.meta.errors[0]}</p>
               ) : null}
             </>
           )}
-        </form.Field>
+        />
       </div>
       <div className="flex items-center justify-center mt-6">
         <Button

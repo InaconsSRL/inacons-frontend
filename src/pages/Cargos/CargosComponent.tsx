@@ -9,6 +9,13 @@ import { useDispatch, useSelector } from 'react-redux';
 import { fetchCargos, addCargo, updateCargo } from '../../slices/cargoSlice';
 import { RootState, AppDispatch } from '../../store/store';
 
+// Definimos la interfaz Cargo
+interface Cargo {
+  id: string;
+  nombre: string;
+  descripcion: string;
+}
+
 const pageVariants = {
   initial: { opacity: 0, y: 20 },
   in: { opacity: 1, y: 0 },
@@ -23,7 +30,7 @@ const pageTransition = {
 
 const CargosComponent: React.FC = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [editingCargo, setEditingCargo] = useState<{ id: string; nombre: string; descripcion: string } | null>(null);
+  const [editingCargo, setEditingCargo] = useState<Cargo | null>(null);
 
   const dispatch = useDispatch<AppDispatch>();
   const { cargos, loading, error } = useSelector((state: RootState) => state.cargo);
@@ -33,17 +40,16 @@ const CargosComponent: React.FC = () => {
   }, [dispatch]);
 
   const handleSubmit = (data: { nombre: string; descripcion: string }) => {
-    const { nombre, descripcion } = data.value;
     if (editingCargo) {
-      dispatch(updateCargo({ updateCargoId: editingCargo.id, nombre, descripcion }));
+      dispatch(updateCargo({ id: editingCargo.id, ...data }));
     } else {
-      dispatch(addCargo(data.value));
+      dispatch(addCargo(data));
     }
     setIsModalOpen(false);
     setEditingCargo(null);
   };
 
-  const handleEdit = (cargo: { id: string; nombre: string; descripcion: string }) => {
+  const handleEdit = (cargo: Cargo) => {
     setEditingCargo(cargo);
     setIsModalOpen(true);
   };

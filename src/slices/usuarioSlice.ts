@@ -32,13 +32,19 @@ const initialState: UsuarioState = {
   error: null,
 };
 
+// Función auxiliar para manejar errores
+const handleError = (error: unknown): string => {
+  if (error instanceof Error) return error.message;
+  return String(error);
+};
+
 export const fetchUsuariosAndCargos = createAsyncThunk(
   'usuario/fetchUsuariosAndCargos',
   async (_, { rejectWithValue }) => {
     try {
       return await getAllUsuariosAndCargosService();
     } catch (error) {
-      return rejectWithValue(error.message);
+      return rejectWithValue(handleError(error));
     }
   }
 );
@@ -49,7 +55,7 @@ export const addUsuario = createAsyncThunk(
     try {
       return await createUsuarioService(usuarioData);
     } catch (error) {
-      return rejectWithValue(error.message);
+      return rejectWithValue(handleError(error));
     }
   }
 );
@@ -60,7 +66,7 @@ export const updateUsuario = createAsyncThunk(
     try {
       return await updateUsuarioService(usuario);
     } catch (error) {
-      return rejectWithValue(error.message);
+      return rejectWithValue(handleError(error));
     }
   }
 );
