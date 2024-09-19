@@ -8,6 +8,7 @@ import FormComponent from './TipoRecursoFormComponent';
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchTiposRecurso, addTipoRecurso, updateTipoRecurso } from '../../slices/tipoRecursoSlice';
 import { RootState, AppDispatch } from '../../store/store';
+import LoaderPage from '../../components/Loader/LoaderPage';
 
 const pageVariants = {
   initial: { opacity: 0, y: 20 },
@@ -47,7 +48,7 @@ const TipoRecursoComponent: React.FC = () => {
     setIsModalOpen(true);
   };
 
-  if (loading) return <motion.div initial="initial" animate="in" exit="out" variants={pageVariants} transition={pageTransition}>Cargando...</motion.div>;
+  if (loading) return <LoaderPage />;
   if (error) return <motion.div initial="initial" animate="in" exit="out" variants={pageVariants} transition={pageTransition}>Error: {error}</motion.div>;
 
   const handleButtonClick = () => {
@@ -94,7 +95,7 @@ const TipoRecursoComponent: React.FC = () => {
         animate={{ opacity: 1, scale: 1 }}
         transition={{ delay: 0.4 }}
       >
-        <main className="w-full flex flex-col flex-grow p-4 bg-white overflow-hidden">
+        <main className="w-full flex flex-col flex-grow p-4 bg-white/80 overflow-hidden">
           <motion.div 
             className="flex justify-between items-center mb-4"
             initial={{ opacity: 0, y: -10 }}

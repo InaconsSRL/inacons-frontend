@@ -192,8 +192,8 @@ const HomePage = () => {
   };
 
   return (
-    <div className='h-[84vh] '>
-      <Box sx={{ backgroundColor: '#f4f6f8', minHeight: '84vh', py: 2 }}>
+    <div className='h-[84vh] bg-white opacity-95 rounded-xl'>
+      <Box sx={{ backgroundColor: '#CCC', minHeight: '84vh', py: 2, borderRadius: '10px' }}>
       <Box sx={{ px: { xs: 2, md: 8 }, mb: 8 }}>
         <Typography variant="h4" fontWeight="bold" color="primary" gutterBottom>
           Bienvenido a tu ERP

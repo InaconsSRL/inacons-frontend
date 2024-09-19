@@ -5,7 +5,7 @@ import Header from '../Header/Header';
 import Sidebar from '../Sidebar/Sidebar';
 import Footer from '../Footer/Footer';
 
-import bg from '../../assets/bgmedia.webp';
+import bg from '../../assets/bgmedia.webp'
 
 const Dashboard: React.FC = () => {
   const [isSidebarOpen, setSidebarOpen] = useState(true);

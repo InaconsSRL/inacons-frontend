@@ -105,7 +105,7 @@ const TableComponent: React.FC<TableComponentProps> = ({ tableData, maxCharacter
                 {headerGroup.headers.map(header => (
                   <th
                     key={header.id}
-                    className="border-b border-gray-200 bg-gray-100 p-4 text-left text-sm font-semibold text-gray-600 relative"
+                    className="border-b border-gray-200 bg-black/10 p-4 text-left text-sm font-semibold text-gray-600 relative"
                     style={{ width: header.getSize(), minWidth: header.getSize() }}
                   >
                     {header.isPlaceholder ? null : (
@@ -217,7 +217,7 @@ const TableComponent: React.FC<TableComponentProps> = ({ tableData, maxCharacter
           </strong>
         </span>
         <div className="flex items-center space-x-2">
-          <span className="text-sm text-gray-700">Go to page:</span>
+          <span className="text-sm text-gray-700">Página:</span>
           <input
             type="number"
             defaultValue={table.getState().pagination.pageIndex + 1}

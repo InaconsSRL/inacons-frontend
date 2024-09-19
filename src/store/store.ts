@@ -5,6 +5,8 @@ import { cargoReducer } from '../slices/cargoSlice';
 import { tipoRecursoReducer } from '../slices/tipoRecursoSlice';
 import { recursoReducer } from '../slices/recursoSlice';
 import { usuarioReducer } from '../slices/usuarioSlice';
+import { unidadReducer } from '../slices/unidadSlice';
+import { tipoClasificacionRecursoReducer } from '../slices/tipoClasificacionRecursoSlice'
 
 export const store = configureStore({
     reducer: {
@@ -13,6 +15,8 @@ export const store = configureStore({
         tipoRecurso: tipoRecursoReducer,
         recurso: recursoReducer,
         usuario: usuarioReducer,
+        unidad: unidadReducer,
+        tipoClasificacionRecurso: tipoClasificacionRecursoReducer
     },
 });
 

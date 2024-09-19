@@ -10,7 +10,9 @@ import {
   FiBold, 
   FiShare, 
   FiArchive, 
-  FiBriefcase 
+  FiBriefcase, 
+  FiCommand,
+  FiType
 } from 'react-icons/fi';
 interface SidebarProps {
   isSidebarOpen: boolean;
@@ -98,6 +100,18 @@ const Sidebar: React.FC<SidebarProps> = ({ isSidebarOpen }) => {
               }>
               <FiUsers className="w-6 h-6 text-white" />
               {isSidebarOpen && <span className="text-white">Usuarios</span>}
+            </NavLink>
+            <NavLink to="/dashboard/unidad" className={({ isActive }) => 
+                `flex items-center space-x-4 mb-4 ${isActive ? activeStyle : ''}`
+              }>
+              <FiCommand className="w-6 h-6 text-white" />
+              {isSidebarOpen && <span className="text-white">Unidades</span>}
+            </NavLink>
+            <NavLink to="/dashboard/tipoClasificacionRecurso" className={({ isActive }) => 
+                `flex items-center space-x-4 mb-4 ${isActive ? activeStyle : ''}`
+              }>
+              <FiType className="w-6 h-6 text-white" />
+              {isSidebarOpen && <span className="text-white">TipoClas.Recurso</span>}
             </NavLink>
 
             

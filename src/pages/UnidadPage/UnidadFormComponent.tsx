@@ -4,19 +4,19 @@ import { z } from 'zod';
 import Button from '../../components/Buttons/Button';
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-const tipoRecursoSchema = z.object({
+const unidadSchema = z.object({
   nombre: z.string().min(1, 'El nombre es requerido'),
 });
 
-type TipoRecursoFormData = z.infer<typeof tipoRecursoSchema>;
+type UnidadFormData = z.infer<typeof unidadSchema>;
 
 interface FormComponentProps {
-  initialValues?: TipoRecursoFormData;
-  onSubmit: (data: TipoRecursoFormData) => void;
+  initialValues?: UnidadFormData;
+  onSubmit: (data: UnidadFormData) => void;
 }
 
-const TipoRecursoFormComponent: React.FC<FormComponentProps> = ({ initialValues, onSubmit }) => {
-  const form = useForm<TipoRecursoFormData>({
+const UnidadFormComponent: React.FC<FormComponentProps> = ({ initialValues, onSubmit }) => {
+  const form = useForm<UnidadFormData>({
     defaultValues: initialValues || { nombre: '' },
     onSubmit: async (values) => {
       onSubmit(values.value);
@@ -43,7 +43,7 @@ const TipoRecursoFormComponent: React.FC<FormComponentProps> = ({ initialValues,
             <>
               <input
                 id="nombre"
-                placeholder="Nombre del tipo de recurso"
+                placeholder="Nombre de la unidad"
                 value={field.state.value}
                 onBlur={field.handleBlur}
                 onChange={(e) => field.handleChange(e.target.value)}
@@ -58,7 +58,7 @@ const TipoRecursoFormComponent: React.FC<FormComponentProps> = ({ initialValues,
       </div>
       <div className="flex items-center justify-center mt-6">
         <Button
-          text={initialValues ? 'Actualizar Tipo de Recurso' : 'Crear Tipo de Recurso'}
+          text={initialValues ? 'Actualizar Unidad' : 'Crear Unidad'}
           color="verde"
           className="w-auto px-6 py-2 text-sm font-medium"
         />
@@ -67,4 +67,4 @@ const TipoRecursoFormComponent: React.FC<FormComponentProps> = ({ initialValues,
   );
 };
 
-export default TipoRecursoFormComponent;
+export default UnidadFormComponent;

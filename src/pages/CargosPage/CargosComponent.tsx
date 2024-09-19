@@ -8,6 +8,7 @@ import FormComponent from './CargoFormComponent';
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchCargos, addCargo, updateCargo } from '../../slices/cargoSlice';
 import { RootState, AppDispatch } from '../../store/store';
+import LoaderPage from '../../components/Loader/LoaderPage';
 
 // Definimos la interfaz Cargo
 interface Cargo {
@@ -54,7 +55,7 @@ const CargosComponent: React.FC = () => {
     setIsModalOpen(true);
   };
 
-  if (loading) return <motion.div initial="initial" animate="in" exit="out" variants={pageVariants} transition={pageTransition}>Cargando...</motion.div>;
+  if (loading) return <LoaderPage />;
   if (error) return <motion.div initial="initial" animate="in" exit="out" variants={pageVariants} transition={pageTransition}>Error: {error}</motion.div>;
 
   const handleButtonClick = () => {
@@ -101,7 +102,8 @@ const CargosComponent: React.FC = () => {
         animate={{ opacity: 1, scale: 1 }}
         transition={{ delay: 0.4 }}
       >
-        <main className="w-full flex flex-col flex-grow p-4 bg-white overflow-hidden">
+        {/* Seccion C */}
+        <main className="w-full flex flex-col flex-grow p-4 bg-white/80 overflow-hidden">
           <motion.div 
             className="flex justify-between items-center mb-4"
             initial={{ opacity: 0, y: -10 }}
@@ -110,7 +112,7 @@ const CargosComponent: React.FC = () => {
           >
             <h2 className="text-xl font-bold">Tabla de Cargos</h2>
             <div className="flex items-center space-x-2">
-              <Button text='+ Crear Cargo' color='verde' onClick={handleButtonClick} className="rounded" />
+              <Button text='+ Cargo' color='verde' onClick={handleButtonClick} className="rounded" />
             </div>
           </motion.div>
           <motion.div 

@@ -3,33 +3,20 @@ import { motion, AnimatePresence } from 'framer-motion';
 import Button from '../../components/Buttons/Button';
 import Modal from '../../components/Modal/Modal';
 import TableComponent from '../../components/Table/TableComponent';
-import UsuarioFormComponent from './UsuarioFormComponent';
+import FormComponent from './TipoClasificacionRecursoFormComponent';
 
 import { useDispatch, useSelector } from 'react-redux';
-import { fetchUsuariosAndCargos, addUsuario, updateUsuario } from '../../slices/usuarioSlice';
+import { fetchClasificacionesRecurso, addClasificacionRecurso, updateClasificacionRecurso } from '../../slices/tipoClasificacionRecursoSlice';
 import { RootState, AppDispatch } from '../../store/store';
 import LoaderPage from '../../components/Loader/LoaderPage';
 
-// Definición de interfaces
-interface Usuario {
+interface ClasificacionRecurso {
+  __typename: string;
   id: string;
-  nombres: string;
-  apellidos: string;
-  dni: number;
-  usuario: string;
-  contrasenna: string;
-  cargo_id: string;
-  rol_id: string;
-}
-
-interface UsuarioFormData {
-  nombres: string;
-  apellidos: string;
-  dni: number;
-  usuario: string;
-  contrasenna: string;
-  cargo_id: string;
-  rol_id: string;
+  nombre: string;
+  parent_id: string | null;
+  childs: ClasificacionRecurso[];
+  parent?: ClasificacionRecurso;
 }
 
 const pageVariants = {
@@ -44,29 +31,29 @@ const pageTransition = {
   duration: 0.5
 };
 
-const UsuariosPage: React.FC = () => {
+const TipoClasificacionRecursoComponent: React.FC = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [editingUsuario, setEditingUsuario] = useState<Usuario | null>(null);
+  const [editingClasificacionRecurso, setEditingClasificacionRecurso] = useState<ClasificacionRecurso | null>(null);
 
   const dispatch = useDispatch<AppDispatch>();
-  const { usuarios, cargos, loading, error } = useSelector((state: RootState) => state.usuario);
+  const { clasificacionesRecurso, loading, error } = useSelector((state: RootState) => state.tipoClasificacionRecurso);
 
   useEffect(() => {
-    dispatch(fetchUsuariosAndCargos());
+    dispatch(fetchClasificacionesRecurso());
   }, [dispatch]);
 
-  const handleSubmit = (data: UsuarioFormData) => {
-    if (editingUsuario) {
-      dispatch(updateUsuario({ id: editingUsuario.id, ...data }));
+  const handleSubmit = (data: { nombre: string; parentId: string | null }) => {
+    if (editingClasificacionRecurso) {
+      dispatch(updateClasificacionRecurso({ id: editingClasificacionRecurso.id, ...data }));
     } else {
-      dispatch(addUsuario(data));
+      dispatch(addClasificacionRecurso(data));
     }
     setIsModalOpen(false);
-    setEditingUsuario(null);
+    setEditingClasificacionRecurso(null);
   };
 
-  const handleEdit = (usuario: Usuario) => {
-    setEditingUsuario(usuario);
+  const handleEdit = (clasificacionRecurso: ClasificacionRecurso) => {
+    setEditingClasificacionRecurso(clasificacionRecurso);
     setIsModalOpen(true);
   };
 
@@ -74,27 +61,43 @@ const UsuariosPage: React.FC = () => {
   if (error) return <motion.div initial="initial" animate="in" exit="out" variants={pageVariants} transition={pageTransition}>Error: {error}</motion.div>;
 
   const handleButtonClick = () => {
-    setEditingUsuario(null);
+    setEditingClasificacionRecurso(null);
     setIsModalOpen(true);
   };
 
   const handleCloseModal = () => {
     setIsModalOpen(false);
-    setEditingUsuario(null);
+    setEditingClasificacionRecurso(null);
   };
 
-  const getCargoNombre = (cargo_id: string) => {
-    const cargo = cargos.find(c => c.id === cargo_id);
-    return cargo ? cargo.nombre : 'Desconocido';
+  const getClasificacionNombre = (clasificacion: ClasificacionRecurso): string => {
+    let nombre = clasificacion.nombre;
+    if (clasificacion.parent) {
+      nombre = `${getClasificacionNombre(clasificacion.parent)} > ${nombre}`;
+    }
+    return nombre;
   };
+
+  const flattenClasificaciones = (clasificaciones: ClasificacionRecurso[], parent?: ClasificacionRecurso): ClasificacionRecurso[] => {
+    return clasificaciones.reduce((acc: ClasificacionRecurso[], clasificacion) => {
+      const newClasificacion = { ...clasificacion, parent };
+      return [
+        ...acc,
+        newClasificacion,
+        ...flattenClasificaciones(clasificacion.childs, newClasificacion)
+      ];
+    }, []);
+  };
+
+  const flatClasificaciones = flattenClasificaciones(clasificacionesRecurso);
 
   const tableData = {
-    headers: ["nombres", "apellidos", "dni", "usuario", "cargo", "rol_id", "opciones"],
-    rows: usuarios.map(usuario => ({
-      ...usuario,
-      cargo: getCargoNombre(usuario.cargo_id),
+    headers: ["nombre", "opciones"],
+    rows: flatClasificaciones.map(clasificacionRecurso => ({
+      ...clasificacionRecurso,
+      nombre: getClasificacionNombre(clasificacionRecurso),
       opciones: (
-        <Button text='Editar' color='transp' className='text-black' onClick={() => handleEdit(usuario)}></Button>
+        <Button text='Editar' color='transp' className='text-black' onClick={() => handleEdit(clasificacionRecurso)}></Button>
       )
     }))
   };
@@ -114,7 +117,7 @@ const UsuariosPage: React.FC = () => {
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.2 }}
       >
-        <h1 className="text-2xl font-bold">Usuarios</h1>
+        <h1 className="text-2xl font-bold">Clasificaciones de Recurso ☺</h1>
       </motion.div>
 
       <motion.div 
@@ -130,9 +133,9 @@ const UsuariosPage: React.FC = () => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.6 }}
           >
-            <h2 className="text-xl font-bold">Tabla de Usuarios</h2>
+            <h2 className="text-xl font-bold">Tabla de Clasificaciones de Recurso</h2>
             <div className="flex items-center space-x-2">
-              <Button text='+ Usuario' color='verde' onClick={handleButtonClick} className="rounded" />
+              <Button text='+ Crear' color='verde' onClick={handleButtonClick} className="rounded" />
             </div>
           </motion.div>
           <motion.div 
@@ -150,17 +153,16 @@ const UsuariosPage: React.FC = () => {
 
       <AnimatePresence>
         {isModalOpen && (
-          <Modal isOpen={isModalOpen} onClose={handleCloseModal} title={editingUsuario ? 'Actualizar Usuario' : 'Crear Usuario'}>
+          <Modal title={editingClasificacionRecurso ? 'Actualizar Clasificación de Recurso' : 'Crear Clasificación de Recurso'} isOpen={isModalOpen} onClose={handleCloseModal}>
             <motion.div
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.9 }}
               transition={{ duration: 0.3 }}
             >
-              <UsuarioFormComponent
-                initialValues={editingUsuario || undefined}
+              <FormComponent
+                initialValues={editingClasificacionRecurso || undefined}
                 onSubmit={handleSubmit}
-                cargos={cargos}
               />
             </motion.div>
           </Modal>
@@ -170,4 +172,4 @@ const UsuariosPage: React.FC = () => {
   );
 };
 
-export default UsuariosPage;
+export default TipoClasificacionRecursoComponent;

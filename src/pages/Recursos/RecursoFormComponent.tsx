@@ -232,7 +232,6 @@ const RecursoFormComponent: React.FC<FormComponentProps> = ({ initialValues, onS
       <div className="flex items-center justify-center">
         <Button
           text={initialValues ? 'Actualizar Recurso' : 'Crear Recurso'}
-          onClick={() => form.handleSubmit()}
           color="verde"
           className="w-auto px-6 py-2 text-sm font-medium"
         />

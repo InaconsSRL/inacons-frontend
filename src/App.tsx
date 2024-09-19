@@ -3,14 +3,16 @@ import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-d
 import { useSelector } from 'react-redux';
 import { RootState } from './store/store';
 
-import Login from './pages/iniciar-sesion/Login';
+import Login from './pages/IniciarSesionPage/Login';
 import Dashboard from './layouts/dashboard/Dashboard';
 import HomePage from './pages/HomePage/HomePage';
 import CalendarPage from './pages/CalendarPage/CalendarPage';
 import TipoRecursoComponent from './pages/TipoRecurso/TipoRecursoPage';
-import CargosComponent from './pages/Cargos/CargosComponent';
+import CargosComponent from './pages/CargosPage/CargosComponent';
 import RecursosPage from './pages/Recursos/RecursosPage';
-import UsuariosPage from './pages/usuarios/UsuariosPage';
+import UsuariosPage from './pages/Usuarios/UsuariosPage';
+import UnidadPage from './pages/UnidadPage/UnidadPage';
+import TipoClasificacionRecursoPage from './pages/TipoClasificacionRecursoPage/TipoClasificacionRecursoPage';
 
 const App: React.FC = () => {
   const user = useSelector((state: RootState) => state.user);
@@ -28,6 +30,9 @@ const App: React.FC = () => {
         <Route path="cargo" element={<CargosComponent />} />
         <Route path="recurso" element={<RecursosPage />} />
         <Route path="usuario" element={<UsuariosPage />} />
+        <Route path="unidad" element={<UnidadPage />} />
+        <Route path="tipoClasificacionRecurso" element={<TipoClasificacionRecursoPage />} />
+
       </Route>
       <Route path="/" element={<Navigate to="/dashboard" replace />} />
     </Routes>

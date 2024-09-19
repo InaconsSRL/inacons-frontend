@@ -82,7 +82,6 @@ const CargoFormComponent: React.FC<FormComponentProps> = ({ initialValues, onSub
       <div className="flex items-center justify-center mt-6">
         <Button
           text={initialValues ? 'Actualizar Cargo' : 'Crear Cargo'}
-          onClick={() => form.handleSubmit()}
           color="verde"
           className="w-auto px-6 py-2 text-sm font-medium"
         />

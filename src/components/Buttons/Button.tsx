@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, ReactNode } from 'react';
 
 interface ButtonProps {
   onClick?: () => void;
@@ -6,11 +6,12 @@ interface ButtonProps {
   options?: Array<{ label: string; action: () => void } | string>;
   className?: string;
   text?: string;
+  icon?: ReactNode; // Nueva prop para el icono
 }
 
 type Option = { label: string; action: () => void } | string;
 
-const Button: React.FC<ButtonProps> = ({ onClick, color = 'blanco', options = [], className = '', text }) => {
+const Button: React.FC<ButtonProps> = ({ onClick, color = 'blanco', options = [], className = '', text, icon }) => {
   const [isOpen, setIsOpen] = useState(false);
 
   const handleButtonClick = () => {
@@ -49,6 +50,7 @@ const Button: React.FC<ButtonProps> = ({ onClick, color = 'blanco', options = []
           flex items-center justify-between
         `}
       >
+        {icon && <span className="mr-2">{icon}</span>}
         <span className="truncate whitespace-nowrap sm:whitespace-normal">{text}</span>
         {options.length > 0 && (
           <span className='text-xs ml-1 flex-shrink-0'>{isOpen ? "▲" : "▼"}</span>

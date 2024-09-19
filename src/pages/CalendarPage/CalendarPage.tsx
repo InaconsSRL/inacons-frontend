@@ -108,7 +108,7 @@ const Recursos: React.FC = () => {
         transition={{ delay: 0.6 }}
       >
         {/* Section C: Tables */}
-        <main className="w-full flex flex-col flex-grow p-4 bg-white overflow-hidden">
+        <main className="w-full flex flex-col flex-grow p-4 bg-white/80 overflow-hidden">
           <div className="flex justify-between items-center mb-4">
             <h2 className="text-xl font-bold">Actividades Septiembres, 2024</h2>
             <div className="flex items-center space-x-2">

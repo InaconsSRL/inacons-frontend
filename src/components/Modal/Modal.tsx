@@ -29,14 +29,14 @@ const Modal: React.FC<ModalProps> = ({ isOpen, onClose, title, children }) => {
   if (!isOpen) return null;
 
   return ReactDOM.createPortal(
-    <div className="fixed inset-0 flex items-center justify-center z-50">
+    <div className="fixed inset-0 flex items-center justify-center z-50 ">
       <div className="fixed inset-0 bg-black opacity-50" onClick={onClose}></div>
       <div>
         <motion.div
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
           exit={{ opacity: 0, scale: 0.9 }}
-          className="bg-white rounded-lg shadow-lg overflow-hidden max-w-[90vw] max-h-[95vh] z-50 flex flex-col relative"
+          className="bg-white opacity-50 rounded-lg shadow-lg overflow-hidden max-w-[90vw] max-h-[95vh] z-50 flex flex-col relative"
           style={{ minWidth: 'min(448px, 90vw)' }}
         >
           <button 

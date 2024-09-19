@@ -2,6 +2,10 @@
 @tailwind components;
 @tailwind utilities;
 
+body {
+  font-family: 'Roboto', sans-serif;
+}
+
 /* Estilos para la barra de desplazamiento */
 ::-webkit-scrollbar {
     width: 8px;
@@ -9,15 +13,15 @@
   }
   
   ::-webkit-scrollbar-track {
-    background: rgba(44, 39, 96, 0.2); 
+    background: rgba(104, 104, 104, 0.2); 
   }
   
   ::-webkit-scrollbar-thumb {
-    background: rgb(73, 79, 154); 
+    background: rgb(193, 193, 193); 
     border-radius: 8px;
   }
   
   ::-webkit-scrollbar-thumb:hover {
-    background: rgb(98, 174, 255);
+    background: rgb(128, 128, 128);
   }
   
