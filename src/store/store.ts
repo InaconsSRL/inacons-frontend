@@ -6,18 +6,18 @@ import { tipoRecursoReducer } from '../slices/tipoRecursoSlice';
 import { recursoReducer } from '../slices/recursoSlice';
 import { usuarioReducer } from '../slices/usuarioSlice';
 import { unidadReducer } from '../slices/unidadSlice';
-import { tipoClasificacionRecursoReducer } from '../slices/tipoClasificacionRecursoSlice'
+import { clasificacionRecursoReducer } from '../slices/clasificacionRecursoSlice';
 
 export const store = configureStore({
-    reducer: {
-        user: userReducer,
-        cargo: cargoReducer,
-        tipoRecurso: tipoRecursoReducer,
-        recurso: recursoReducer,
-        usuario: usuarioReducer,
-        unidad: unidadReducer,
-        tipoClasificacionRecurso: tipoClasificacionRecursoReducer
-    },
+  reducer: {
+    user: userReducer,
+    cargo: cargoReducer,
+    tipoRecurso: tipoRecursoReducer,
+    recurso: recursoReducer,
+    usuario: usuarioReducer,
+    unidad: unidadReducer,
+    clasificacionRecurso: clasificacionRecursoReducer,
+  },
 });
 
 export type RootState = ReturnType<typeof store.getState>;

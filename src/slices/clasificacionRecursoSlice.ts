@@ -1,5 +1,5 @@
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
-import { listClasificacionesRecursoService, addClasificacionRecursoService, updateClasificacionRecursoService } from '../services/tipoClasificacionRecursoService';
+import { listClasificacionRecursoService, addClasificacionRecursoService, updateClasificacionRecursoService } from '../services/clasificacionRecursoService';
 
 // Interfaces
 interface ClasificacionRecurso {
@@ -32,7 +32,7 @@ export const fetchClasificacionesRecurso = createAsyncThunk(
   'clasificacionRecurso/fetchClasificacionesRecurso',
   async (_, { rejectWithValue }) => {
     try {
-      return await listClasificacionesRecursoService();
+      return await listClasificacionRecursoService();
     } catch (error) {
       return rejectWithValue(handleError(error));
     }
@@ -62,7 +62,7 @@ export const updateClasificacionRecurso = createAsyncThunk(
 );
 
 // Slice
-const tipoClasificacionRecursoSlice = createSlice({
+const clasificacionRecursoSlice = createSlice({
   name: 'clasificacionRecurso',
   initialState,
   reducers: {},
@@ -92,4 +92,4 @@ const tipoClasificacionRecursoSlice = createSlice({
   },
 });
 
-export const tipoClasificacionRecursoReducer = tipoClasificacionRecursoSlice.reducer;
+export const clasificacionRecursoReducer = clasificacionRecursoSlice.reducer;

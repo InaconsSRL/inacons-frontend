@@ -41,7 +41,7 @@ const UPDATE_CLASIFICACION_RECURSO_MUTATION = gql`
   }
 `;
 
-export const listClasificacionesRecursoService = async () => {
+export const listClasificacionRecursoService = async () => {
   try {
     const response = await client.query({
       query: LIST_CLASIFICACION_RECURSO_QUERY,
@@ -51,7 +51,7 @@ export const listClasificacionesRecursoService = async () => {
     }
     return response.data.listClasificacionRecurso;
   } catch (error) {
-    console.error('Error al obtener la lista de clasificaciones de recurso:', error);
+    console.error('Error al obtener la lista de clasificaciones de recursos:', error);
     throw error;
   }
 };

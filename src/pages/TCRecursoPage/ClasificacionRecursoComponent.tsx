@@ -3,21 +3,12 @@ import { motion, AnimatePresence } from 'framer-motion';
 import Button from '../../components/Buttons/Button';
 import Modal from '../../components/Modal/Modal';
 import TableComponent from '../../components/Table/TableComponent';
-import FormComponent from './TipoClasificacionRecursoFormComponent';
+import FormComponent from './ClasificacionRecursoFormComponent';
 
 import { useDispatch, useSelector } from 'react-redux';
-import { fetchClasificacionesRecurso, addClasificacionRecurso, updateClasificacionRecurso } from '../../slices/tipoClasificacionRecursoSlice';
+import { fetchClasificacionesRecurso, addClasificacionRecurso, updateClasificacionRecurso } from '../../slices/clasificacionRecursoSlice';
 import { RootState, AppDispatch } from '../../store/store';
 import LoaderPage from '../../components/Loader/LoaderPage';
-
-interface ClasificacionRecurso {
-  __typename: string;
-  id: string;
-  nombre: string;
-  parent_id: string | null;
-  childs: ClasificacionRecurso[];
-  parent?: ClasificacionRecurso;
-}
 
 const pageVariants = {
   initial: { opacity: 0, y: 20 },
@@ -31,12 +22,12 @@ const pageTransition = {
   duration: 0.5
 };
 
-const TipoClasificacionRecursoComponent: React.FC = () => {
+const ClasificacionRecursoComponent: React.FC = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [editingClasificacionRecurso, setEditingClasificacionRecurso] = useState<ClasificacionRecurso | null>(null);
+  const [editingClasificacionRecurso, setEditingClasificacionRecurso] = useState<{ id: string; nombre: string; parentId: string | null } | null>(null);
 
   const dispatch = useDispatch<AppDispatch>();
-  const { clasificacionesRecurso, loading, error } = useSelector((state: RootState) => state.tipoClasificacionRecurso);
+  const { clasificacionesRecurso, loading, error } = useSelector((state: RootState) => state.clasificacionRecurso);
 
   useEffect(() => {
     dispatch(fetchClasificacionesRecurso());
@@ -52,7 +43,7 @@ const TipoClasificacionRecursoComponent: React.FC = () => {
     setEditingClasificacionRecurso(null);
   };
 
-  const handleEdit = (clasificacionRecurso: ClasificacionRecurso) => {
+  const handleEdit = (clasificacionRecurso: { id: string; nombre: string; parentId: string | null }) => {
     setEditingClasificacionRecurso(clasificacionRecurso);
     setIsModalOpen(true);
   };
@@ -70,32 +61,10 @@ const TipoClasificacionRecursoComponent: React.FC = () => {
     setEditingClasificacionRecurso(null);
   };
 
-  const getClasificacionNombre = (clasificacion: ClasificacionRecurso): string => {
-    let nombre = clasificacion.nombre;
-    if (clasificacion.parent) {
-      nombre = `${getClasificacionNombre(clasificacion.parent)} > ${nombre}`;
-    }
-    return nombre;
-  };
-
-  const flattenClasificaciones = (clasificaciones: ClasificacionRecurso[], parent?: ClasificacionRecurso): ClasificacionRecurso[] => {
-    return clasificaciones.reduce((acc: ClasificacionRecurso[], clasificacion) => {
-      const newClasificacion = { ...clasificacion, parent };
-      return [
-        ...acc,
-        newClasificacion,
-        ...flattenClasificaciones(clasificacion.childs, newClasificacion)
-      ];
-    }, []);
-  };
-
-  const flatClasificaciones = flattenClasificaciones(clasificacionesRecurso);
-
   const tableData = {
     headers: ["nombre", "opciones"],
-    rows: flatClasificaciones.map(clasificacionRecurso => ({
+    rows: clasificacionesRecurso.map(clasificacionRecurso => ({
       ...clasificacionRecurso,
-      nombre: getClasificacionNombre(clasificacionRecurso),
       opciones: (
         <Button text='Editar' color='transp' className='text-black' onClick={() => handleEdit(clasificacionRecurso)}></Button>
       )
@@ -172,4 +141,4 @@ const TipoClasificacionRecursoComponent: React.FC = () => {
   );
 };
 
-export default TipoClasificacionRecursoComponent;
+export default ClasificacionRecursoComponent;

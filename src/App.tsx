@@ -12,7 +12,7 @@ import CargosComponent from './pages/CargosPage/CargosComponent';
 import RecursosPage from './pages/Recursos/RecursosPage';
 import UsuariosPage from './pages/Usuarios/UsuariosPage';
 import UnidadPage from './pages/UnidadPage/UnidadPage';
-import TipoClasificacionRecursoPage from './pages/TipoClasificacionRecursoPage/TipoClasificacionRecursoPage';
+import ClasificacionRecursoComponent from './pages/TCRecursoPage/ClasificacionRecursoComponent';
 
 const App: React.FC = () => {
   const user = useSelector((state: RootState) => state.user);
@@ -31,11 +31,11 @@ const App: React.FC = () => {
         <Route path="recurso" element={<RecursosPage />} />
         <Route path="usuario" element={<UsuariosPage />} />
         <Route path="unidad" element={<UnidadPage />} />
-        <Route path="tipoClasificacionRecurso" element={<TipoClasificacionRecursoPage />} />
+        <Route path="clasificacionRecurso" element={<ClasificacionRecursoComponent />} />
 
       </Route>
       <Route path="/" element={<Navigate to="/dashboard" replace />} />
-    </Routes>
+    </Routes> 
   );
 };
 

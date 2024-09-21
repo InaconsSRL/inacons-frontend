@@ -107,11 +107,11 @@ const Sidebar: React.FC<SidebarProps> = ({ isSidebarOpen }) => {
               <FiCommand className="w-6 h-6 text-white" />
               {isSidebarOpen && <span className="text-white">Unidades</span>}
             </NavLink>
-            <NavLink to="/dashboard/tipoClasificacionRecurso" className={({ isActive }) => 
+            <NavLink to="/dashboard/clasificacionRecurso" className={({ isActive }) => 
                 `flex items-center space-x-4 mb-4 ${isActive ? activeStyle : ''}`
               }>
               <FiType className="w-6 h-6 text-white" />
-              {isSidebarOpen && <span className="text-white">TipoClas.Recurso</span>}
+              {isSidebarOpen && <span className="text-white">ClasificacionDeRecurso</span>}
             </NavLink>
 
             

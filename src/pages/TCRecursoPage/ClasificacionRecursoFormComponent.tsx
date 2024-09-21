@@ -5,37 +5,23 @@ import Button from '../../components/Buttons/Button';
 
 const clasificacionRecursoSchema = z.object({
   nombre: z.string().min(1, 'El nombre es requerido'),
-  parentId: z.string().nullable(),
+  parentId: z.string().optional(),
 });
 
 type ClasificacionRecursoFormData = z.infer<typeof clasificacionRecursoSchema>;
 
 interface FormComponentProps {
-  initialValues?: ClasificacionRecursoFormData & { id?: string };
+  initialValues?: ClasificacionRecursoFormData;
   onSubmit: (data: ClasificacionRecursoFormData) => void;
-  clasificacionesRecurso: Array<{ id: string; nombre: string; parent_id: string | null; childs: any[] }>;
 }
 
-const ClasificacionRecursoFormComponent: React.FC<FormComponentProps> = ({ initialValues, onSubmit, clasificacionesRecurso }) => {
+const ClasificacionRecursoFormComponent: React.FC<FormComponentProps> = ({ initialValues, onSubmit }) => {
   const form = useForm<ClasificacionRecursoFormData>({
-    defaultValues: initialValues || { nombre: '', parentId: '' },
+    defaultValues: initialValues || { nombre: '', parentId: null },
     onSubmit: async (values) => {
       onSubmit(values.value);
     },
   });
-
-  const getAvailableParents = () => {
-    if (!initialValues?.id) return clasificacionesRecurso;
-
-    const isDescendant = (parent: any, childId: string): boolean => {
-      if (parent.id === childId) return true;
-      return parent.childs.some((child: any) => isDescendant(child, childId));
-    };
-
-    return clasificacionesRecurso.filter(cr => cr.id !== initialValues.id && !isDescendant(cr, initialValues.id));
-  };
-
-  const availableParents = getAvailableParents();
 
   return (
     <form
@@ -70,30 +56,23 @@ const ClasificacionRecursoFormComponent: React.FC<FormComponentProps> = ({ initi
           )}
         />
       </div>
-
       <div className="mb-4">
         <label htmlFor="parentId" className="block text-gray-700 text-sm font-bold mb-2">
-          Clasificación Padre:
+          Parent ID:
         </label>
         
         <form.Field
           name="parentId"
           children={(field) => (
             <>
-              <select
+              <input
                 id="parentId"
-                value={field.state.value || ''}
+                placeholder="ID del padre"
+                value={field.state.value}
                 onBlur={field.handleBlur}
-                onChange={(e) => field.handleChange(e.target.value === '' ? null : e.target.value)}
+                onChange={(e) => field.handleChange(e.target.value)}
                 className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-              >
-                <option value="">Sin clasificación padre</option>
-                {availableParents.map((cr) => (
-                  <option key={cr.id} value={cr.id}>
-                    {cr.nombre}
-                  </option>
-                ))}
-              </select>
+              />
               {field.state.meta.errors ? (
                 <p className="text-red-500 text-xs italic mt-1">{field.state.meta.errors}</p>
               ) : null}
@@ -101,10 +80,9 @@ const ClasificacionRecursoFormComponent: React.FC<FormComponentProps> = ({ initi
           )}
         />
       </div>
-
       <div className="flex items-center justify-center mt-6">
         <Button
-          text={initialValues?.id ? 'Actualizar Clasificación de Recurso' : 'Crear Clasificación de Recurso'}
+          text={initialValues ? 'Actualizar Clasificación de Recurso' : 'Crear Clasificación de Recurso'}
           color="verde"
           className="w-auto px-6 py-2 text-sm font-medium"
         />
