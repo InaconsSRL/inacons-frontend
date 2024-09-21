@@ -9,6 +9,7 @@ import { LIST_RECURSOS_QUERY, ADD_RECURSO_MUTATION, UPDATE_RECURSO_MUTATION } fr
 import LoaderPage from '../../components/Loader/LoaderPage';
 import { FiEdit } from 'react-icons/fi';
 import ImageCarousel from '../../components/IMG/ImageCarousel';
+import BulkUploadComponent from './BulkUploadComponent';
 
 // Definición de interfaces
 interface Recurso {
@@ -82,8 +83,9 @@ const pageTransition = {
 const RecursosPage: React.FC = () => {
   const [carouselImages, setCarouselImages] = useState<{ id: string; file: string }[] | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isModalOpen2, setIsModalOpen2] = useState(false);
   const [editingRecurso, setEditingRecurso] = useState<Recurso | null>(null);
-  
+
   const { loading, error, data, refetch } = useQuery<QueryData>(LIST_RECURSOS_QUERY);
   const [addRecurso] = useMutation(ADD_RECURSO_MUTATION);
   const [updateRecurso] = useMutation(UPDATE_RECURSO_MUTATION);
@@ -99,10 +101,12 @@ const RecursosPage: React.FC = () => {
     } else {
       // await addRecurso({ variables: formData });
       console.log(formData)
-      await addRecurso({ variables: {
-        precioActual: 0,
-        ...formData
-      } });
+      await addRecurso({
+        variables: {
+          precioActual: 0,
+          ...formData
+        }
+      });
     }
     setIsModalOpen(false);
     setEditingRecurso(null);
@@ -119,9 +123,17 @@ const RecursosPage: React.FC = () => {
     setIsModalOpen(true);
   };
 
+  const handleButtonEnvioMasivoClick = () => {
+    setIsModalOpen2(true);
+  };
+
   const handleCloseModal = () => {
     setIsModalOpen(false);
     setEditingRecurso(null);
+  };
+
+  const handleCloseModal2 = () => {
+    setIsModalOpen2(false);
   };
 
   const tableData = useMemo(() => {
@@ -171,10 +183,10 @@ const RecursosPage: React.FC = () => {
             <img
               src={recurso.imagenes[0].file}
               alt={recurso.nombre}
-              className="object-cover cursor-pointer w-8 h-8"              
+              className="object-cover cursor-pointer w-8 h-8"
             />
             {recurso.imagenes.length > 1 && (
-              <span className="ml-2 text-sm text-gray-400 underline"              
+              <span className="ml-2 text-sm text-gray-400 underline"
               >
                 +{recurso.imagenes.length - 1} más
               </span>
@@ -189,21 +201,21 @@ const RecursosPage: React.FC = () => {
   }, [data]);
 
 
-const handleOpenCarousel = (images: { id: string; file: string }[]) => {
-  console.log(images)
-  setCarouselImages(images);
-};
+  const handleOpenCarousel = (images: { id: string; file: string }[]) => {
+    console.log(images)
+    setCarouselImages(images);
+  };
 
-const handleCloseCarousel = () => {
-  setCarouselImages(null);
-};
+  const handleCloseCarousel = () => {
+    setCarouselImages(null);
+  };
 
   if (loading) return <LoaderPage />;
   if (error) return <motion.div initial="initial" animate="in" exit="out" variants={pageVariants} transition={pageTransition}>Error: {error.message}</motion.div>;
 
   return (
-    
-    <motion.div 
+
+    <motion.div
       className="flex flex-col h-full"
       initial="initial"
       animate="in"
@@ -211,7 +223,7 @@ const handleCloseCarousel = () => {
       variants={pageVariants}
       transition={pageTransition}
     >
-      <motion.div 
+      <motion.div
         className="x text-white p-4 flex items-center justify-between"
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -220,25 +232,29 @@ const handleCloseCarousel = () => {
         <h1 className="text-2xl font-bold">Recursos ☺</h1>
       </motion.div>
 
-      <motion.div 
+      <motion.div
         className="flex flex-1 overflow-hidden rounded-xl"
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ delay: 0.4 }}
       >
         <main className="w-full flex flex-col flex-grow p-4 bg-white/80 overflow-hidden">
-          <motion.div 
+          <motion.div
             className="flex justify-between items-center mb-4"
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.6 }}
           >
             <h2 className="text-xl font-bold">Tabla de Recursos</h2>
+            
+            <div className="flex items-center space-x-2">
+              <Button text='EnvioMasivo' color='verde' onClick={handleButtonEnvioMasivoClick} className='rounded' />
+            </div>
             <div className="flex items-center space-x-2">
               <Button text='+ Recurso' color='verde' onClick={handleButtonClick} className="rounded" />
             </div>
           </motion.div>
-          <motion.div 
+          <motion.div
             className="flex-grow border rounded-lg overflow-hidden"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -273,10 +289,19 @@ const handleCloseCarousel = () => {
           </Modal>
         )}
         {carouselImages && (
-        <Modal isOpen onClose={handleCloseCarousel}>
-          <ImageCarousel images={carouselImages} alt="Recurso" />
-        </Modal>
-    )}
+          <Modal isOpen onClose={handleCloseCarousel}>
+            <ImageCarousel images={carouselImages} alt="Recurso" />
+          </Modal>
+
+
+        )}
+        {(
+          <Modal isOpen={isModalOpen2} onClose={handleCloseModal2}>
+            <BulkUploadComponent />
+          </Modal>
+
+
+        )}
       </AnimatePresence>
     </motion.div>
   );
