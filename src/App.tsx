@@ -9,10 +9,10 @@ import HomePage from './pages/HomePage/HomePage';
 import CalendarPage from './pages/CalendarPage/CalendarPage';
 import TipoRecursoComponent from './pages/TipoRecurso/TipoRecursoPage';
 import CargosComponent from './pages/CargosPage/CargosComponent';
-import RecursosPage from './pages/Recursos/RecursosPage';
-import UsuariosPage from './pages/Usuarios/UsuariosPage';
+import RecursosPage from './pages/RecursosPage/RecursosPage';
+import UsuariosPage from './pages/UsuariosPage/UsuariosPage';
 import UnidadPage from './pages/UnidadPage/UnidadPage';
-import ClasificacionRecursoComponent from './pages/TCRecursoPage/ClasificacionRecursoComponent';
+import ClasificacionRecursoComponent from './pages/ClasificacionRecursoPage/ClasificacionRecursoComponent';
 
 const App: React.FC = () => {
   const user = useSelector((state: RootState) => state.user);

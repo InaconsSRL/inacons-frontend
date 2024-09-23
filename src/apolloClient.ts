@@ -20,7 +20,19 @@ const httpLink = new HttpLink({
 // Creamos el cliente Apollo
 const client = new ApolloClient({
   link: from([errorLink, httpLink]), // Combinamos los links
-  cache: new InMemoryCache()
+  cache: new InMemoryCache(),
+  defaultOptions: {
+    watchQuery: {
+      fetchPolicy: 'network-only',
+      nextFetchPolicy: 'network-only',
+    },
+    query: {
+      fetchPolicy: 'network-only',
+    },
+    mutate: {
+      fetchPolicy: 'no-cache',
+    },
+  },
 });
 
 export default client;

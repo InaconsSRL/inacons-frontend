@@ -248,7 +248,7 @@ const RecursosPage: React.FC = () => {
             <h2 className="text-xl font-bold">Tabla de Recursos</h2>
             
             <div className="flex items-center space-x-2">
-              <Button text='EnvioMasivo' color='verde' onClick={handleButtonEnvioMasivoClick} className='rounded' />
+              <Button text='EnvioMasivo' color='verde' onClick={handleButtonEnvioMasivoClick} className='rounded w-auto bg-emerald-500' />
             </div>
             <div className="flex items-center space-x-2">
               <Button text='+ Recurso' color='verde' onClick={handleButtonClick} className="rounded" />
@@ -296,7 +296,7 @@ const RecursosPage: React.FC = () => {
 
         )}
         {(
-          <Modal isOpen={isModalOpen2} onClose={handleCloseModal2}>
+          <Modal title='Carga Masiva de Recursos'  isOpen={isModalOpen2} onClose={handleCloseModal2}>
             <BulkUploadComponent />
           </Modal>
 

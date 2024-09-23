@@ -5,7 +5,7 @@ import { listClasificacionRecursoService, addClasificacionRecursoService, update
 interface ClasificacionRecurso {
   id: string;
   nombre: string;
-  parentId: string | null;
+  parent_id: string | null;
 }
 
 interface ClasificacionRecursoState {
@@ -41,7 +41,7 @@ export const fetchClasificacionesRecurso = createAsyncThunk(
 
 export const addClasificacionRecurso = createAsyncThunk(
   'clasificacionRecurso/addClasificacionRecurso',
-  async (clasificacionRecursoData: { nombre: string; parentId: string | null }, { rejectWithValue }) => {
+  async (clasificacionRecursoData: { nombre: string; parent_id: string | null }, { rejectWithValue }) => {
     try {
       return await addClasificacionRecursoService(clasificacionRecursoData);
     } catch (error) {
@@ -88,7 +88,7 @@ const clasificacionRecursoSlice = createSlice({
         if (index !== -1) {
           state.clasificacionesRecurso[index] = action.payload;
         }
-      });
+      })
   },
 });
 

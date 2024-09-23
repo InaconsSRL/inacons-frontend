@@ -22,8 +22,8 @@ const LIST_CLASIFICACION_RECURSO_QUERY = gql`
 `;
 
 const ADD_CLASIFICACION_RECURSO_MUTATION = gql`
-  mutation AddClasificacionRecurso($nombre: String!, $parentId: ID) {
-    addClasificacionRecurso(nombre: $nombre, parent_id: $parentId) {
+  mutation AddClasificacionRecurso($nombre: String!, $parent_id: ID) {
+    addClasificacionRecurso(nombre: $nombre, parent_id: $parent_id) {
       id
       nombre
       parent_id
@@ -32,8 +32,8 @@ const ADD_CLASIFICACION_RECURSO_MUTATION = gql`
 `;
 
 const UPDATE_CLASIFICACION_RECURSO_MUTATION = gql`
-  mutation UpdateClasificacionRecurso($updateClasificacionRecursoId: ID!, $nombre: String, $parentId: ID) {
-    updateClasificacionRecurso(id: $updateClasificacionRecursoId, nombre: $nombre, parent_id: $parentId) {
+  mutation UpdateClasificacionRecurso($updateClasificacionRecursoId: ID!, $nombre: String, $parent_id: ID) {
+    updateClasificacionRecurso(id: $updateClasificacionRecursoId, nombre: $nombre, parent_id: $parent_id) {
       id
       nombre
       parent_id
@@ -45,6 +45,7 @@ export const listClasificacionRecursoService = async () => {
   try {
     const response = await client.query({
       query: LIST_CLASIFICACION_RECURSO_QUERY,
+      fetchPolicy: 'network-only',
     });
     if (response.errors) {
       throw new Error(response.errors[0]?.message || 'Error desconocido');
@@ -56,7 +57,7 @@ export const listClasificacionRecursoService = async () => {
   }
 };
 
-export const addClasificacionRecursoService = async (clasificacionRecursoData: { nombre: string; parentId: string | null }) => {
+export const addClasificacionRecursoService = async (clasificacionRecursoData: { nombre: string; parent_id: string | null }) => {
   try {
     const response = await client.mutate({
       mutation: ADD_CLASIFICACION_RECURSO_MUTATION,
@@ -72,11 +73,17 @@ export const addClasificacionRecursoService = async (clasificacionRecursoData: {
   }
 };
 
-export const updateClasificacionRecursoService = async (clasificacionRecurso: { id: string; nombre: string; parentId: string | null }) => {
+export const updateClasificacionRecursoService = async (clasificacionRecurso: { id: string; nombre: string; parent_id: string | null }) => {
+  console.log(clasificacionRecurso);
   try {
+    const variables = {
+      updateClasificacionRecursoId: clasificacionRecurso.id,
+      nombre: clasificacionRecurso.nombre,
+      parent_id: clasificacionRecurso.parent_id,
+    };
     const response = await client.mutate({
       mutation: UPDATE_CLASIFICACION_RECURSO_MUTATION,
-      variables: { updateClasificacionRecursoId: clasificacionRecurso.id, nombre: clasificacionRecurso.nombre, parentId: clasificacionRecurso.parentId },
+      variables,
     });
     if (response.errors) {
       throw new Error(response.errors[0]?.message || 'Error desconocido');
