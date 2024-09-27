@@ -132,7 +132,18 @@ const ClasificacionRecursoComponent: React.FC = () => {
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.2 }}
       >
-        <h1 className="text-2xl font-bold">Clasificaciones de Recurso ☺</h1>
+        <h1 className="text-2xl font-bold">Clasificación por Tipo de Recurso ☺</h1>
+            <div className="flex items-center space-x-2">
+
+              <Button text='Nuevo Tipo De Clasificación de Recurso' color='verde' onClick={handleButtonClick} className="rounded w-full" />
+              <motion.button
+                className="px-4 py-2 bg-gray-200 text-gray-700 rounded hover:bg-gray-300 transition-colors"
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+              >
+                Actualizar
+              </motion.button>
+            </div>
       </motion.div>
 
       <motion.div
@@ -142,17 +153,6 @@ const ClasificacionRecursoComponent: React.FC = () => {
         transition={{ delay: 0.4 }}
       >
         <main className="w-full flex flex-col flex-grow p-4 bg-white/80 overflow-hidden">
-          <motion.div
-            className="flex justify-between items-center mb-4"
-            initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.6 }}
-          >
-            <h2 className="text-xl font-bold">Tabla de Clasificaciones de Recurso</h2>
-            <div className="flex items-center space-x-2">
-              <Button text='+ Crear' color='verde' onClick={handleButtonClick} className="rounded" />
-            </div>
-          </motion.div>
           <motion.div
             className="flex-grow border rounded-lg overflow-hidden"
             initial={{ opacity: 0, y: 20 }}

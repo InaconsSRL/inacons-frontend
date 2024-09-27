@@ -13,6 +13,7 @@ import RecursosPage from './pages/RecursosPage/RecursosPage';
 import UsuariosPage from './pages/UsuariosPage/UsuariosPage';
 import UnidadPage from './pages/UnidadPage/UnidadPage';
 import ClasificacionRecursoComponent from './pages/ClasificacionRecursoPage/ClasificacionRecursoComponent';
+import RequerimintosPageComponent from './pages/RequerimientosPage/RequerimintosPageComponent';
 
 const App: React.FC = () => {
   const user = useSelector((state: RootState) => state.user);
@@ -32,7 +33,7 @@ const App: React.FC = () => {
         <Route path="usuario" element={<UsuariosPage />} />
         <Route path="unidad" element={<UnidadPage />} />
         <Route path="clasificacionRecurso" element={<ClasificacionRecursoComponent />} />
-
+        <Route path="requerimiento" element={<RequerimintosPageComponent />} />
       </Route>
       <Route path="/" element={<Navigate to="/dashboard" replace />} />
     </Routes> 

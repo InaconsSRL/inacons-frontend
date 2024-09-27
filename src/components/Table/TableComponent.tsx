@@ -43,7 +43,7 @@ const TableComponent: React.FC<TableComponentProps> = ({ tableData, maxCharacter
 
   const calculateMaxChars = (columnWidth: number) => {
     // Estimate characters based on column width
-    return Math.max(Math.floor(columnWidth / 5), maxCharacters); 
+    return Math.max(Math.floor(columnWidth / 8), maxCharacters); 
   };
 
   const truncateText = (text: string, maxLength: number): string => {
@@ -52,12 +52,17 @@ const TableComponent: React.FC<TableComponentProps> = ({ tableData, maxCharacter
 
   const renderCellContent = (value: unknown, maxLength: number): ReactNode => {
     if (React.isValidElement(value)) {
-      return value; // If it's a React element, return it as is
+      return value;
     }
     if (typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean') {
-      return truncateText(String(value), maxLength);
+      const stringValue = String(value);
+      return (
+        <div title={stringValue} className="truncate">
+          {truncateText(stringValue, maxLength)}
+        </div>
+      );
     }
-    return String(value); // Fallback for other types
+    return String(value);
   };
 
   const columns = useMemo<ColumnDef<TableRow>[]>(() => 
@@ -69,15 +74,12 @@ const TableComponent: React.FC<TableComponentProps> = ({ tableData, maxCharacter
         const columnWidth = info.column.getSize();
         const dynamicMaxChars = calculateMaxChars(columnWidth);
         
-        return (
-          <div title={typeof value === 'string' ? value : ''}>
-            {renderCellContent(value, dynamicMaxChars)}
-          </div>
-        );
+        return renderCellContent(value, dynamicMaxChars);
       },
       footer: props => props.column.id,
     })),
   [tableData.headers, maxCharacters]);
+
 
   const table = useReactTable({
     data: tableData.rows,
@@ -168,8 +170,13 @@ const TableComponent: React.FC<TableComponentProps> = ({ tableData, maxCharacter
                 {row.getVisibleCells().map(cell => (
                   <td 
                     key={cell.id} 
-                    className="border-b border-gray-200 px-0.5 py-0.5 text-sm text-gray-700 text-left pl-3"
-                    style={{ minWidth: cell.column.getSize() }}
+                    className="border-b border-gray-200 px-2 py-2 text-sm text-gray-700 text-left overflow-hidden"
+                    style={{ 
+                      width: cell.column.getSize(),
+                      maxWidth: cell.column.getSize(),
+                      whiteSpace: 'normal',
+                      wordWrap: 'break-word'
+                    }}
                   >
                     {flexRender(cell.column.columnDef.cell, cell.getContext())}
                   </td>

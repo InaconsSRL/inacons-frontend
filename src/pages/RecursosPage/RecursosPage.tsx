@@ -179,11 +179,11 @@ const RecursosPage: React.FC = () => {
         clasificacion_recurso_id: getClasificacionNombre(recurso.clasificacion_recurso_id),
         presupuesto: recurso.presupuesto ? 'Sí' : 'No',
         imagenes: recurso.imagenes && recurso.imagenes.length > 0 ? (
-          <div className="flex items-center" onClick={() => handleOpenCarousel(recurso.imagenes)}>
+          <div className="flex items-center cursor-pointer" onClick={() => handleOpenCarousel(recurso.imagenes)}>
             <img
               src={recurso.imagenes[0].file}
               alt={recurso.nombre}
-              className="object-cover cursor-pointer w-8 h-8"
+              className="object-cover w-8 h-8"
             />
             {recurso.imagenes.length > 1 && (
               <span className="ml-2 text-sm text-gray-400 underline"
@@ -224,12 +224,28 @@ const RecursosPage: React.FC = () => {
       transition={pageTransition}
     >
       <motion.div
-        className="x text-white p-4 flex items-center justify-between"
+        className="x text-white pb-4 px-4 flex items-center justify-between"
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.2 }}
       >
         <h1 className="text-2xl font-bold">Recursos ☺</h1>
+          
+            
+            
+            <div className="flex items-center space-x-2">
+              <Button text='EnvioMasivo' color='verde' onClick={handleButtonEnvioMasivoClick} className='rounded w-auto bg-emerald-500' />
+            </div>
+            <div className="flex items-center space-x-2">
+              <Button text='Nuevo Recurso' color='verde' onClick={handleButtonClick} className="rounded w-full" />
+              <motion.button
+                className="px-4 py-2 bg-gray-200 text-gray-700 rounded hover:bg-gray-300 transition-colors"
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+              >
+                Actualizar
+              </motion.button>
+            </div>
       </motion.div>
 
       <motion.div
@@ -239,21 +255,6 @@ const RecursosPage: React.FC = () => {
         transition={{ delay: 0.4 }}
       >
         <main className="w-full flex flex-col flex-grow p-4 bg-white/80 overflow-hidden">
-          <motion.div
-            className="flex justify-between items-center mb-4"
-            initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.6 }}
-          >
-            <h2 className="text-xl font-bold">Tabla de Recursos</h2>
-            
-            <div className="flex items-center space-x-2">
-              <Button text='EnvioMasivo' color='verde' onClick={handleButtonEnvioMasivoClick} className='rounded w-auto bg-emerald-500' />
-            </div>
-            <div className="flex items-center space-x-2">
-              <Button text='+ Recurso' color='verde' onClick={handleButtonClick} className="rounded" />
-            </div>
-          </motion.div>
           <motion.div
             className="flex-grow border rounded-lg overflow-hidden"
             initial={{ opacity: 0, y: 20 }}

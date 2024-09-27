@@ -23,7 +23,7 @@ const Dashboard: React.FC = () => {
       <Header toggleSidebar={toggleSidebar} isSidebarOpen={isSidebarOpen} />
       <div className="flex flex-1 overflow-hidden pt-16 mb-12">
         <Sidebar isSidebarOpen={isSidebarOpen} />
-        <div className="p-4 flex-1 overflow-auto transition-all duration-500 ease-in-out">
+        <div className="p-4 flex-1 overflow-auto transition-all duration-500 ease-in-out bg-black bg-opacity-20 backdrop-blur-sm">
           <main className="flex-1 overflow-auto">
             <Outlet />
           </main>
