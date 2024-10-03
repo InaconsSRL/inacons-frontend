@@ -32,10 +32,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isSidebarOpen }) => {
         
         <NavLink
           to="/dashboard"
-          className={({ isActive }) =>
-            `flex items-center ${isSidebarOpen ? 'space-x-4 w-full mb-4' : 'justify-center mb-4'}  ${location.pathname === '/dashboard' ? activeStyle : ''
-            }`
-          }
+          className={`flex items-center ${isSidebarOpen ? 'space-x-4 w-full mb-4' : 'justify-center mb-4'}  ${location.pathname === '/dashboard' ? activeStyle : ''}`}
         >
           <FiHome className="w-6 h-6 text-white" />
           {isSidebarOpen && <span className="text-white">Inicio</span>}

@@ -1,34 +1,84 @@
 import React, { useState, useEffect, ChangeEvent, FormEvent } from 'react';
 import { motion } from 'framer-motion';
-import { useSelector } from 'react-redux';
-import { RootState } from '../../store/store';
+import { useDispatch, useSelector } from 'react-redux';
+import { RootState, AppDispatch } from '../../store/store';
 import { FiX } from 'react-icons/fi';
+import { gql } from '@apollo/client';
+import { useMutation } from '@apollo/client';
+import { fetchObras } from '../../slices/obrasSlice';
+import LoaderPage from '../../components/Loader/LoaderPage';
 
 
+// Definimos la interfaz Obra
+interface Obra {
+  id: string;
+  titulo: string;
+  nombre: string;
+  descripcion: string;
+}
+
+const pageVariants = {
+  initial: { opacity: 0, y: 20 },
+  in: { opacity: 1, y: 0 },
+  out: { opacity: 0, y: -20 }
+};
+
+const pageTransition = {
+  type: 'tween',
+  ease: 'anticipate',
+  duration: 0.5
+};
+
+const ADD_REQUERIMIENTO_MUTATION = gql`
+  mutation AddRequerimientoConRecursos($usuarioId: String!, $recursos: [RecursosInput!]!, $sustento: String, $obraId: String) {
+  addRequerimientoConRecursos(usuario_id: $usuarioId, recursos: $recursos, sustento: $sustento, obra_id: $obraId) {
+    id
+    usuario_id
+    presupuesto_id
+    fecha_solicitud
+    estado
+    sustento
+    obra_id
+  }
+}
+`;
+
+const UPDATE_REQUERIMIENTO_MUTATION = gql`
+  mutation UpdateRequerimiento($updateRequerimientoId: ID!, $usuarioId: String, $presupuestoId: String, $fechaSolicitud: String, $estado: String, $sustento: String, $obraId: String) {
+  updateRequerimiento(id: $updateRequerimientoId, usuario_id: $usuarioId, presupuesto_id: $presupuestoId, fecha_solicitud: $fechaSolicitud, estado: $estado, sustento: $sustento, obra_id: $obraId) {
+    id
+    usuario_id
+    presupuesto_id
+    fecha_solicitud
+    estado
+    sustento
+    obra_id
+  }
+}
+`;
 
 interface Recurso {
-  id: number;
+  recurso_id: string;
   codigo: string;
   nombre: string;
   cantidad: number;
 }
 
 interface FormData {
-  obra: string;
+  obraId: string;
   usuarioId: string;
   sustento: string;
   recursos: Recurso[];
 }
 
 interface RecursoListItem {
-  recurso_id: number;
+  id: string;
   codigo: string;
   nombre: string;
 }
 
 interface PedirRequerimientoProps {
   recursosList: RecursoListItem[];
-  onSubmit: (formData: FormData) => void;
 }
 
 interface FocusedResource {
@@ -37,31 +87,45 @@ interface FocusedResource {
   value: string;
 }
 
-const PedirRequerimiento: React.FC<PedirRequerimientoProps> = ({ recursosList, onSubmit }) => {
-  console.log(onSubmit)
-  const user = useSelector((state: RootState) => state.user);
-  const [formData, setFormData] = useState<FormData>({
-    obra: '',
-    usuarioId: user.id ?? '',
-    sustento: '',
-    recursos: [{ id: Date.now(), codigo: '', nombre: '', cantidad: 0 }]
-  });
+const RequerimientoForm: React.FC<PedirRequerimientoProps> = ({ recursosList }) => {
+  const [addRequerimiento, { loading: loadingAdd, error: errorAdd }] = useMutation(ADD_REQUERIMIENTO_MUTATION);
+  const [updateRequerimiento, { loading: loadingUpdate, error: errorUpdate }] = useMutation(UPDATE_REQUERIMIENTO_MUTATION);
   const [filteredResources, setFilteredResources] = useState<RecursoListItem[]>([]);
   const [focusedResource, setFocusedResource] = useState<FocusedResource | null>(null);
+
+  const dispatch = useDispatch<AppDispatch>();
+  const { obras, loading, error } = useSelector((state: RootState) => state.obra);
+
+
+
+
+
+  const user = useSelector((state: RootState) => state.user);
+  const [formData, setFormData] = useState<FormData>({
+    obraId: '',
+    usuarioId: user.id ?? '',
+    sustento: '',
+    recursos: [{ recurso_id: '', codigo: '', nombre: '', cantidad: 0 }]
+  });
+
 
   useEffect(() => {
     if (focusedResource) {
       const { field, value } = focusedResource;
       if (value.length >= 2) {
         const filtered = recursosList.filter(recurso =>
-          recurso[field].toLowerCase().includes(value.toLowerCase())
+          recurso[field].toLowerCase().includes(value.toLowerCase()) &&
+          !formData.recursos.some(selected => selected.recurso_id === recurso.id)
         );
         setFilteredResources(filtered);
       } else {
         setFilteredResources([]);
       }
     }
-  }, [focusedResource, recursosList]);
+  }, [focusedResource, recursosList, formData.recursos]);
+  useEffect(() => {
+    dispatch(fetchObras());
+  }, [dispatch]);
 
   const handleInputChange = (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>, index: number | null = null) => {
     const { name, value } = e.target;
@@ -81,6 +145,7 @@ const PedirRequerimiento: React.FC<PedirRequerimientoProps> = ({ recursosList, o
     const newRecursos = [...formData.recursos];
     newRecursos[index] = {
       ...newRecursos[index],
+      recurso_id: selectedResource.id,
       codigo: selectedResource.codigo,
       nombre: selectedResource.nombre
     };
@@ -92,22 +157,61 @@ const PedirRequerimiento: React.FC<PedirRequerimientoProps> = ({ recursosList, o
   const addNewRow = () => {
     setFormData({
       ...formData,
-      recursos: [...formData.recursos, { id: Date.now(), codigo: '', nombre: '', cantidad: 0 }]
+      recursos: [...formData.recursos, { recurso_id: '', codigo: '', nombre: '', cantidad: 0 }]
     });
+    console.log(formData)
   };
 
-  const removeRow = (id: number) => {
+  const removeRow = (id: string) => {
     setFormData({
       ...formData,
-      recursos: formData.recursos.filter(recurso => recurso.id !== id)
+      recursos: formData.recursos.filter(recurso => recurso.recurso_id !== id)
     });
   };
 
-  const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    console.log(formData);
-    // onSubmit(formData);
+    try {
+      // Llama a la mutación para agregar un requerimiento
+      const recursosModificados = formData.recursos.map(({ nombre, codigo, ...rest }) => ({
+        ...rest,
+        presupuestado: "",
+        tipo_solicitud: "",
+      }));
+      console.log(formData)
+      const { data } = await addRequerimiento({
+        variables: {
+          usuarioId: formData.usuarioId,
+          sustento: formData.sustento,
+          obraId: formData.obraId,
+          recursos: recursosModificados,
+        },
+      });
+      setFormData({
+        obraId: "",
+        usuarioId: "",
+        sustento: "",
+        recursos: [],
+      })
+
+      console.log('Requerimiento agregado:', data.addRequerimiento);
+      // Aquí puedes manejar la respuesta, como limpiar el formulario o mostrar un mensaje
+    } catch (error) {
+      console.error('Error al agregar requerimiento:', error);
+    }
   };
+
+  const handleSelectChange = (e: ChangeEvent<HTMLSelectElement>) => {
+    const { name, value } = e.target;
+    setFormData({ ...formData, [name]: value });
+  };
+
+  if (loadingAdd || loadingUpdate) return <LoaderPage />;
+  if (errorAdd) return alert(`Error en requerimientos: ${errorAdd.message}`);
+  if (errorUpdate) return alert(`Error en recursos: {errorUpdate.message}`);
+  if (loading) return <LoaderPage />;
+  if (error) return <motion.div initial="initial" animate="in" exit="out" variants={pageVariants} transition={pageTransition}>Error: {error}</motion.div>;
+
 
 
 
@@ -124,16 +228,20 @@ const PedirRequerimiento: React.FC<PedirRequerimientoProps> = ({ recursosList, o
           <h3 className='text-xs/tight text-gray-600/30 mb-2'>Userid:{formData.usuarioId.slice(0, 5)} </h3>
           <form onSubmit={handleSubmit} className="space-y-3">
             <div className="grid grid-cols-12 gap-0.5">
-              <input
-                type="text"
-                name="obra"
-                value={formData.obra}
-                onChange={handleInputChange}
-                placeholder="Obra"
+              <select
+                name="obraId"
+                value={formData.obraId}
+                onChange={handleSelectChange}
                 className="px-2 border rounded text-xs col-span-4 md:col-span-1"
                 required
-                autoComplete="off"
-              />
+              >
+                <option value="">Seleccione una obra</option>
+                {obras.map((obra) => (
+                  <option key={obra.id} value={obra.id}>
+                    {obra.nombre}
+                  </option>
+                ))}
+              </select>
               <textarea
                 name="sustento"
                 value={formData.sustento}
@@ -148,7 +256,7 @@ const PedirRequerimiento: React.FC<PedirRequerimientoProps> = ({ recursosList, o
             <h3 className="text-lg font-semibold mb-2">Recursos</h3>
             <div className='overflow-x-auto h-80'>
               {formData.recursos.map((recurso, index) => (
-                <div key={recurso.id} className="grid mb-0.5 grid-cols-12 gap-0.5">
+                <div key={recurso.recurso_id || index} className="grid mb-0.5 grid-cols-12 gap-0.5">
                   <input
                     type="text"
                     name="codigo"
@@ -179,49 +287,36 @@ const PedirRequerimiento: React.FC<PedirRequerimientoProps> = ({ recursosList, o
                   />
                   <button
                     type="button"
-                    onClick={() => removeRow(recurso.id)}
+                    onClick={() => removeRow(recurso.recurso_id)}
                     className="px-0 md:px-2 bg-red-500 text-white flex justify-center items-center p-0 md:p-1 align-middle rounded col-span-1 md:col-span-1"
                   >
                     <FiX className='h-2 w-2 md:h-4 md:w-4' />
                   </button>
                 </div>
               ))}
-              {/* {focusedResource && filteredResources.length > 0 && (
-                <div className="border rounded  max-h-40 overflow-y-auto">
+
+              {focusedResource && filteredResources.length > 0 && (
+                <div
+                  className="border rounded max-h-40 overflow-y-auto bg-amber-200"
+                  style={{
+                    position: 'absolute',
+                    bottom: 50,
+                    left: 150,
+                    zIndex: 50,
+                  }}
+                >
                   {filteredResources.map((resource) => (
                     <div
-                      key={resource.recurso_id}
-                      className="p-2 hover:bg-gray-100 cursor-pointer text-xs z-50"
+                      key={resource.id}
+                      className="p-2 hover:bg-gray-100 cursor-pointer text-[8px] md:text-xs"
                       onClick={() => handleResourceSelection(focusedResource.index, resource)}
                     >
                       {resource.codigo} - {resource.nombre}
                     </div>
                   ))}
                 </div>
-              )} */}
-              
-                {focusedResource && filteredResources.length > 0 && (
-                  <div
-                    className="border rounded max-h-40 overflow-y-auto bg-amber-200"
-                    style={{
-                      position: 'absolute',
-                      bottom: 50,
-                      left: 150,
-                      zIndex: 50,
-                    }}
-                  >
-                    {filteredResources.map((resource) => (
-                      <div
-                        key={resource.recurso_id}
-                        className="p-2 hover:bg-gray-100 cursor-pointer text-[8px] md:text-xs"
-                        onClick={() => handleResourceSelection(focusedResource.index, resource)}
-                      >
-                        {resource.codigo} - {resource.nombre}
-                      </div>
-                    ))}
-                  </div>
-                )}
-              
+              )}
+
 
             </div>
             <div className='flex justify-between'>
@@ -246,4 +341,4 @@ const PedirRequerimiento: React.FC<PedirRequerimientoProps> = ({ recursosList, o
   );
 };
 
-export default PedirRequerimiento;
+export default RequerimientoForm;

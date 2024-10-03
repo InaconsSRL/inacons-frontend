@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useQuery, gql } from '@apollo/client';
-import MaterialRequests from './MaterialRequests';
+import MaterialRequests from './RequerimientosList';
 import Inventory from './Inventory';
-import Suppliers from './Suppliers';
+import RequerimientoForm from './RequerimientoForm';
 import LoaderPage from '../../components/Loader/LoaderPage';
 
 const LIST_RECURSO = gql`
@@ -38,9 +38,6 @@ const pageTransition = {
 };
 
 
-
-const submitHandler = () => {console.log("hola")}
-
 const RequerimintosPageComponent: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'requests' | 'suppliers' | 'inventory'>('requests');
 
@@ -56,7 +53,7 @@ const RequerimintosPageComponent: React.FC = () => {
       case 'inventory':
         return <Inventory />;
       case 'suppliers':
-        return <Suppliers recursosList={recursos} onSubmit={submitHandler} />;
+        return <RequerimientoForm recursosList={recursos} />;
     }
   };
 
