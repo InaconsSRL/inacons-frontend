@@ -15,7 +15,7 @@ const Header: React.FC<HeaderProps> = ({ toggleSidebar, isSidebarOpen }) => {
   const currentTime = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
   
   // Obtener la información del usuario del estado de Redux
-  const username = useSelector((state: RootState) => state.user.username);
+  const username = useSelector((state: RootState) => state.user);
 
   return (
     <header className="fixed top-0 left-0 w-full bg-black bg-opacity-50 backdrop-blur-lg z-20">
@@ -44,7 +44,7 @@ const Header: React.FC<HeaderProps> = ({ toggleSidebar, isSidebarOpen }) => {
           <div className="flex items-center space-x-2">
             <div className="flex items-center text-white">
               <img src={avatar} alt="Avatar" className="h-10 mr-4" />
-              <span>{username || 'Usuario'}</span>
+              <span>{username.user || 'Usuario'}</span>
             </div>
           </div>
 

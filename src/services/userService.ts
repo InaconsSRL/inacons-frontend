@@ -1,21 +1,22 @@
 import { gql } from '@apollo/client';
-import client from '../apolloClient'; 
+import client from '../apolloClient';
 
 const LOGIN_MUTATION = gql`
-    mutation Login($username: String!, $password: String!) {
-        login(usuario: $username, contrasenna: $password) {
+    mutation Login($user: String!, $password: String!) {
+        login(usuario: $user, contrasenna: $password) {
         usuario
         id
-	token
+	    token
+        
         }
     }
 `;
 
-export const loginUserService = async (username: string, password: string) => {
+export const loginUserService = async (user: string, password: string) => {
     try {
         const response = await client.mutate({
             mutation: LOGIN_MUTATION,
-            variables: { username, password },
+            variables: { user, password },
         });
         if (response.errors) {
             throw new Error(response.errors[0]?.message || 'Error desconocido');

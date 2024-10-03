@@ -1,9 +1,10 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import { loginUser } from '../actions/userActions'; 
+import { createAsyncThunk } from '@reduxjs/toolkit';
+import { loginUserService } from '../services/userService';
 
 interface UserState {
     id: string | null;
-    username: string | null;
+    user: string | null;
     token: string | null;
 }
 
@@ -16,9 +17,24 @@ interface LoginPayload {
 
 const initialState: UserState = {
     id: null,
-    username: null,
+    user: null,
     token: null,
 };
+
+export const loginUser = createAsyncThunk(
+    'user/login',
+    async ({ username, password }: { username: string; password: string }, { rejectWithValue }) => {
+        try {
+            const loginData = await loginUserService(username, password);
+            return loginData;
+        } catch (error: unknown) {
+            if (error instanceof Error) {
+                return rejectWithValue(error.message);
+            }
+            return rejectWithValue('An unknown error occurred');
+        }
+    }
+);
 
 const userSlice = createSlice({
     name: 'user',
@@ -26,7 +42,7 @@ const userSlice = createSlice({
     reducers: {
         clearUser: (state) => {
             state.id = null;
-            state.username = null;
+            state.user = null;
             state.token = null;
         },
     },
@@ -34,7 +50,7 @@ const userSlice = createSlice({
         builder.addCase(loginUser.fulfilled, (state, action: PayloadAction<LoginPayload>) => {
             const { usuario, id, token } = action.payload;
             state.id = id;
-            state.username = usuario;
+            state.user = usuario;
             state.token = token;
         });
     },
@@ -42,3 +58,7 @@ const userSlice = createSlice({
 
 export const { clearUser } = userSlice.actions;
 export const userReducer = userSlice.reducer;
+
+
+
+

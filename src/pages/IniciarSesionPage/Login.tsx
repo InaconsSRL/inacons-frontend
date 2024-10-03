@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useDispatch } from 'react-redux';
-import { loginUser } from '../../actions/userActions';
+import { loginUser } from '../../slices/userSlice';
 import { useNavigate } from 'react-router-dom';
 import Loader from '../../components/Loader/Loader';
 import Logo from '../../assets/logo.svg'
