@@ -7,7 +7,6 @@ import { FaCheck } from 'react-icons/fa';
 import Modal from '../../components/Modal/Modal';
 import ObrasPage from '../ObrasPage/ObrasPage';
 
-//const GRAPHQL_URI = import.meta.env.VITE_GRAPHQL_URI;
 
 const GET_REQUERIMIENTOS = gql`
   query GetRequerimientoRecurso {

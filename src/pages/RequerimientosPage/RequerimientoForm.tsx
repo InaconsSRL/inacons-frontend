@@ -10,13 +10,6 @@ import LoaderPage from '../../components/Loader/LoaderPage';
 
 
 // Definimos la interfaz Obra
-interface Obra {
-  id: string;
-  titulo: string;
-  nombre: string;
-  descripcion: string;
-}
-
 const pageVariants = {
   initial: { opacity: 0, y: 20 },
   in: { opacity: 1, y: 0 },
@@ -43,19 +36,19 @@ const ADD_REQUERIMIENTO_MUTATION = gql`
 }
 `;
 
-const UPDATE_REQUERIMIENTO_MUTATION = gql`
-  mutation UpdateRequerimiento($updateRequerimientoId: ID!, $usuarioId: String, $presupuestoId: String, $fechaSolicitud: String, $estado: String, $sustento: String, $obraId: String) {
-  updateRequerimiento(id: $updateRequerimientoId, usuario_id: $usuarioId, presupuesto_id: $presupuestoId, fecha_solicitud: $fechaSolicitud, estado: $estado, sustento: $sustento, obra_id: $obraId) {
-    id
-    usuario_id
-    presupuesto_id
-    fecha_solicitud
-    estado
-    sustento
-    obra_id
-  }
-}
-`;
+// const UPDATE_REQUERIMIENTO_MUTATION = gql`
+//   mutation UpdateRequerimiento($updateRequerimientoId: ID!, $usuarioId: String, $presupuestoId: String, $fechaSolicitud: String, $estado: String, $sustento: String, $obraId: String) {
+//   updateRequerimiento(id: $updateRequerimientoId, usuario_id: $usuarioId, presupuesto_id: $presupuestoId, fecha_solicitud: $fechaSolicitud, estado: $estado, sustento: $sustento, obra_id: $obraId) {
+//     id
+//     usuario_id
+//     presupuesto_id
+//     fecha_solicitud
+//     estado
+//     sustento
+//     obra_id
+//   }
+// }
+// `;
 
 interface Recurso {
   recurso_id: string;
@@ -89,7 +82,7 @@ interface FocusedResource {
 
 const RequerimientoForm: React.FC<PedirRequerimientoProps> = ({ recursosList }) => {
   const [addRequerimiento, { loading: loadingAdd, error: errorAdd }] = useMutation(ADD_REQUERIMIENTO_MUTATION);
-  const [updateRequerimiento, { loading: loadingUpdate, error: errorUpdate }] = useMutation(UPDATE_REQUERIMIENTO_MUTATION);
+  //const [updateRequerimiento, { loading: loadingUpdate, error: errorUpdate }] = useMutation(UPDATE_REQUERIMIENTO_MUTATION);
   const [filteredResources, setFilteredResources] = useState<RecursoListItem[]>([]);
   const [focusedResource, setFocusedResource] = useState<FocusedResource | null>(null);
 
@@ -173,6 +166,7 @@ const RequerimientoForm: React.FC<PedirRequerimientoProps> = ({ recursosList }) 
     e.preventDefault();
     try {
       // Llama a la mutación para agregar un requerimiento
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const recursosModificados = formData.recursos.map(({ nombre, codigo, ...rest }) => ({
         ...rest,
         presupuestado: "",
@@ -206,9 +200,10 @@ const RequerimientoForm: React.FC<PedirRequerimientoProps> = ({ recursosList }) 
     setFormData({ ...formData, [name]: value });
   };
 
-  if (loadingAdd || loadingUpdate) return <LoaderPage />;
-  if (errorAdd) return alert(`Error en requerimientos: ${errorAdd.message}`);
-  if (errorUpdate) return alert(`Error en recursos: {errorUpdate.message}`);
+  //if (loadingAdd || loadingUpdate) return <LoaderPage />;
+  if (loadingAdd) return <LoaderPage />;
+  if (errorAdd) return<div>Error en requerimientos: {errorAdd.message}</div>;
+  //if (errorUpdate) return alert(`Error en recursos: {errorUpdate.message}`);
   if (loading) return <LoaderPage />;
   if (error) return <motion.div initial="initial" animate="in" exit="out" variants={pageVariants} transition={pageTransition}>Error: {error}</motion.div>;
 
