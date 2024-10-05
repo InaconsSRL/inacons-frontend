@@ -1,9 +1,8 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useQuery, gql } from '@apollo/client';
-import MaterialRequests from './RequerimientosList';
+import RequerimientosList from './RequerimientosList';
 import Inventory from './Inventory';
-import RequerimientoForm from './RequerimientoForm';
 import LoaderPage from '../../components/Loader/LoaderPage';
 
 const LIST_RECURSO = gql`
@@ -49,11 +48,11 @@ const RequerimintosPageComponent: React.FC = () => {
     
     switch (activeTab) {
       case 'requests':
-        return <MaterialRequests recursosList={recursos} />;
+        return <RequerimientosList recursosList={recursos} />;
       case 'inventory':
         return <Inventory />;
       case 'suppliers':
-        return <RequerimientoForm recursosList={recursos} />;
+        return <Inventory />;
     }
   };
 

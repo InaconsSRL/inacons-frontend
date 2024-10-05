@@ -7,6 +7,7 @@ import { gql } from '@apollo/client';
 import { useMutation } from '@apollo/client';
 import { fetchObras } from '../../slices/obrasSlice';
 import LoaderPage from '../../components/Loader/LoaderPage';
+import Modal from '../../components/Modal/Modal';
 
 
 // Definimos la interfaz Obra
@@ -72,6 +73,7 @@ interface RecursoListItem {
 
 interface PedirRequerimientoProps {
   recursosList: RecursoListItem[];
+  onClose: () => void;
 }
 
 interface FocusedResource {
@@ -80,11 +82,14 @@ interface FocusedResource {
   value: string;
 }
 
-const RequerimientoForm: React.FC<PedirRequerimientoProps> = ({ recursosList }) => {
+const RequerimientoForm: React.FC<PedirRequerimientoProps> = ({ recursosList, onClose }) => {
   const [addRequerimiento, { loading: loadingAdd, error: errorAdd }] = useMutation(ADD_REQUERIMIENTO_MUTATION);
   //const [updateRequerimiento, { loading: loadingUpdate, error: errorUpdate }] = useMutation(UPDATE_REQUERIMIENTO_MUTATION);
   const [filteredResources, setFilteredResources] = useState<RecursoListItem[]>([]);
   const [focusedResource, setFocusedResource] = useState<FocusedResource | null>(null);
+
+  const [modalIsOpen, setModalIsOpen] = useState(false);
+  const [modalMessage, setModalMessage] = useState('');
 
   const dispatch = useDispatch<AppDispatch>();
   const { obras, loading, error } = useSelector((state: RootState) => state.obra);
@@ -142,37 +147,42 @@ const RequerimientoForm: React.FC<PedirRequerimientoProps> = ({ recursosList }) 
       codigo: selectedResource.codigo,
       nombre: selectedResource.nombre
     };
+    newRecursos.push({ recurso_id: '', codigo: '', nombre: '', cantidad: 0 });
     setFormData({ ...formData, recursos: newRecursos });
     setFilteredResources([]);
     setFocusedResource(null);
   };
 
-  const addNewRow = () => {
+  const removeRow = (index: number) => {
+    const newRecursos = formData.recursos.filter((_, i) => i !== index);
     setFormData({
       ...formData,
-      recursos: [...formData.recursos, { recurso_id: '', codigo: '', nombre: '', cantidad: 0 }]
-    });
-    console.log(formData)
-  };
-
-  const removeRow = (id: string) => {
-    setFormData({
-      ...formData,
-      recursos: formData.recursos.filter(recurso => recurso.recurso_id !== id)
+      recursos: newRecursos
     });
   };
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+
+    // Filtrar recursos vacíos o con cantidad 0
+    const validRecursos = formData.recursos.filter(
+      recurso => recurso.recurso_id && recurso.cantidad > 0
+    );
+
+    if (validRecursos.length === 0) {
+      setModalMessage("Por favor, añade al menos un recurso con cantidad mayor a 0.");
+      setModalIsOpen(true);
+      return;
+    }
+
     try {
-      // Llama a la mutación para agregar un requerimiento
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const recursosModificados = formData.recursos.map(({ nombre, codigo, ...rest }) => ({
+      const recursosModificados = validRecursos.map(({ nombre, codigo, ...rest }) => ({
         ...rest,
         presupuestado: "",
         tipo_solicitud: "",
       }));
-      console.log(formData)
+
       const { data } = await addRequerimiento({
         variables: {
           usuarioId: formData.usuarioId,
@@ -181,19 +191,21 @@ const RequerimientoForm: React.FC<PedirRequerimientoProps> = ({ recursosList }) 
           recursos: recursosModificados,
         },
       });
+
       setFormData({
         obraId: "",
         usuarioId: "",
         sustento: "",
-        recursos: [],
-      })
+        recursos: [{ recurso_id: '', codigo: '', nombre: '', cantidad: 0 }],
+      });
 
       console.log('Requerimiento agregado:', data.addRequerimiento);
-      // Aquí puedes manejar la respuesta, como limpiar el formulario o mostrar un mensaje
+      onClose();
     } catch (error) {
       console.error('Error al agregar requerimiento:', error);
     }
   };
+
 
   const handleSelectChange = (e: ChangeEvent<HTMLSelectElement>) => {
     const { name, value } = e.target;
@@ -202,7 +214,7 @@ const RequerimientoForm: React.FC<PedirRequerimientoProps> = ({ recursosList }) 
 
   //if (loadingAdd || loadingUpdate) return <LoaderPage />;
   if (loadingAdd) return <LoaderPage />;
-  if (errorAdd) return<div>Error en requerimientos: {errorAdd.message}</div>;
+  if (errorAdd) return <div>Error en requerimientos: {errorAdd.message}</div>;
   //if (errorUpdate) return alert(`Error en recursos: {errorUpdate.message}`);
   if (loading) return <LoaderPage />;
   if (error) return <motion.div initial="initial" animate="in" exit="out" variants={pageVariants} transition={pageTransition}>Error: {error}</motion.div>;
@@ -211,23 +223,23 @@ const RequerimientoForm: React.FC<PedirRequerimientoProps> = ({ recursosList }) 
 
 
   return (
-    <motion.div className="flex flex-col h-full">
-      <motion.div className="text-white p-4 flex items-center justify-between">
-        <motion.h1 className="text-lg font-bold">
+    <motion.div className="flex flex-col h-full bg-gradient-to-b from-blue-900 to-blue-800">
+      <motion.div className="text-white p-4 flex items-center justify-between border-b border-blue-700">
+        <motion.h1 className="text-xl font-bold">
           Requerimiento
         </motion.h1>
       </motion.div>
 
-      <motion.div className="flex flex-1 overflow-hidden rounded-md">
-        <main className="w-full flex flex-col flex-grow p-4 bg-white/75 overflow-hidden">
-          <h3 className='text-xs/tight text-gray-600/30 mb-2'>Userid:{formData.usuarioId.slice(0, 5)} </h3>
-          <form onSubmit={handleSubmit} className="space-y-3">
-            <div className="grid grid-cols-12 gap-0.5">
+      <motion.div className="flex flex-1 overflow-hidden rounded-md m-4">
+        <main className="w-full flex flex-col flex-grow p-4 bg-white/95 overflow-hidden rounded-lg shadow-lg">
+          <h3 className='text-xs text-gray-500 mb-2'>Userid: {formData.usuarioId.slice(0, 5)}</h3>
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div className="grid grid-cols-12 gap-2">
               <select
                 name="obraId"
                 value={formData.obraId}
                 onChange={handleSelectChange}
-                className="px-2 border rounded text-xs col-span-4 md:col-span-1"
+                className="px-2 py-1 border border-gray-300 rounded text-sm col-span-4 md:col-span-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 required
               >
                 <option value="">Seleccione una obra</option>
@@ -242,16 +254,16 @@ const RequerimientoForm: React.FC<PedirRequerimientoProps> = ({ recursosList }) 
                 value={formData.sustento}
                 onChange={handleInputChange}
                 placeholder="Sustento"
-                className="w-full p-2 border rounded text-xs col-span-8 md:col-span-11"
+                className="w-full p-2 border border-gray-300 rounded text-sm col-span-8 md:col-span-10 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 rows={1}
                 required
                 autoComplete="off"
               />
             </div>
-            <h3 className="text-lg font-semibold mb-2">Recursos</h3>
-            <div className='overflow-x-auto h-80'>
+            <h3 className="text-lg font-semibold mb-2 text-blue-900">Recursos</h3>
+            <div className='overflow-x-auto max-h-80'>
               {formData.recursos.map((recurso, index) => (
-                <div key={recurso.recurso_id || index} className="grid mb-0.5 grid-cols-12 gap-0.5">
+                <div key={recurso.recurso_id || index} className="grid mb-2 grid-cols-12 gap-2">
                   <input
                     type="text"
                     name="codigo"
@@ -259,7 +271,7 @@ const RequerimientoForm: React.FC<PedirRequerimientoProps> = ({ recursosList }) 
                     onChange={(e) => handleInputChange(e, index)}
                     placeholder="Código"
                     autoComplete="off"
-                    className="px-1 md:px-2 border rounded text-[8px] md:text-xs flex-1 col-span-2 md:col-span-1"
+                    className="px-2 py-1 border border-gray-300 rounded text-sm col-span-2 md:col-span-1 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                   />
                   <input
                     type="text"
@@ -268,7 +280,7 @@ const RequerimientoForm: React.FC<PedirRequerimientoProps> = ({ recursosList }) 
                     onChange={(e) => handleInputChange(e, index)}
                     placeholder="Nombre"
                     autoComplete="off"
-                    className="px-1 md:px-2 border rounded text-[8px] md:text-xs flex-1 col-span-7 md:col-span-9"
+                    className="px-2 py-1 border border-gray-300 rounded text-sm col-span-7 md:col-span-9 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                   />
                   <input
                     type="number"
@@ -276,23 +288,23 @@ const RequerimientoForm: React.FC<PedirRequerimientoProps> = ({ recursosList }) 
                     value={recurso.cantidad}
                     onChange={(e) => handleInputChange(e, index)}
                     placeholder="Cantidad"
-                    className="px-1 md:px-2 border rounded text-[8px] md:text-xs col-span-2 md:col-span-1"
+                    className="px-2 py-1 border border-gray-300 rounded text-sm col-span-2 md:col-span-1 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                     autoComplete="off"
                     min="0"
                   />
                   <button
                     type="button"
-                    onClick={() => removeRow(recurso.recurso_id)}
-                    className="px-0 md:px-2 bg-red-500 text-white flex justify-center items-center p-0 md:p-1 align-middle rounded col-span-1 md:col-span-1"
+                    onClick={() => removeRow(index)}
+                    className="px-2 bg-red-500 text-white flex justify-center items-center rounded col-span-1"
                   >
-                    <FiX className='h-2 w-2 md:h-4 md:w-4' />
+                    <FiX className='h-4 w-4' />
                   </button>
                 </div>
               ))}
 
               {focusedResource && filteredResources.length > 0 && (
                 <div
-                  className="border rounded max-h-40 overflow-y-auto bg-amber-200"
+                  className="border rounded max-h-40 overflow-y-auto bg-white shadow-lg"
                   style={{
                     position: 'absolute',
                     bottom: 50,
@@ -303,7 +315,7 @@ const RequerimientoForm: React.FC<PedirRequerimientoProps> = ({ recursosList }) 
                   {filteredResources.map((resource) => (
                     <div
                       key={resource.id}
-                      className="p-2 hover:bg-gray-100 cursor-pointer text-[8px] md:text-xs"
+                      className="p-2 hover:bg-gray-100 cursor-pointer text-sm"
                       onClick={() => handleResourceSelection(focusedResource.index, resource)}
                     >
                       {resource.codigo} - {resource.nombre}
@@ -311,26 +323,24 @@ const RequerimientoForm: React.FC<PedirRequerimientoProps> = ({ recursosList }) 
                   ))}
                 </div>
               )}
-
-
             </div>
-            <div className='flex justify-between'>
-              <button
-                type="button"
-                onClick={addNewRow}
-                className="p-2 bg-blue-500 text-white text-[8px] md:text-xl rounded mx-2 md:mx-10"
-              >
-                Añadir fila
-              </button>
+            <div className='flex justify-between mt-4'>
+
               <button
                 type="submit"
-                className="p-2 bg-green-500 text-white text-[8px] md:text-xl rounded mx-2 md:mx-10"
+                className="px-4 py-2 bg-green-600 text-white text-sm rounded hover:bg-green-700 transition duration-300"
               >
                 Enviar Requerimiento
               </button>
             </div>
           </form>
         </main>
+        <Modal
+        isOpen={modalIsOpen}
+        title="◈ ATENCION ◈"
+        onClose={() => setModalIsOpen(false)}
+        children={modalMessage}
+      />
       </motion.div>
     </motion.div>
   );

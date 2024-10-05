@@ -84,9 +84,8 @@ const RequerimientosList: React.FC<MaterialRequestsProps> = ({ recursosList }) =
 
   const handleCloseModal = () => {
     setIsModalOpen(false);
-    setIsModalObrasOpen(false);
-    setIsModalRequerimiento(false);
-    setSelectedRequerimiento(null);
+    setIsModalObrasOpen(false)
+    setIsModalRequerimiento(false)
   };
 
   useEffect(() => {
@@ -119,11 +118,6 @@ const RequerimientosList: React.FC<MaterialRequestsProps> = ({ recursosList }) =
     setIsModalObrasOpen(true)
   };
 
-  const handleEditRequerimiento = (id: string) => {
-    setSelectedRequerimiento(id);
-    setIsModalOpen(true);
-  };
-
   const handleSelectRequerimiento = (id: string) => {
     setIsModalOpen(true);
     setSelectedRequerimiento(id);
@@ -146,8 +140,6 @@ const RequerimientosList: React.FC<MaterialRequestsProps> = ({ recursosList }) =
       );
       return recursosActualizados;
     });
-    handleRefresh();
-    handleCloseModal();
   };
 
   const filteredRecursos = recursos.filter(r => r.requerimiento_id === selectedRequerimiento);
