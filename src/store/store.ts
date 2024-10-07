@@ -8,6 +8,7 @@ import { usuarioReducer } from '../slices/usuarioSlice';
 import { unidadReducer } from '../slices/unidadSlice';
 import { clasificacionRecursoReducer } from '../slices/clasificacionRecursoSlice';
 import { obraReducer } from '../slices/obrasSlice';
+import { roleReducer } from '../slices/roleSlice';
 
 export const store = configureStore({
   reducer: {
@@ -18,7 +19,8 @@ export const store = configureStore({
     usuario: usuarioReducer,
     unidad: unidadReducer,
     clasificacionRecurso: clasificacionRecursoReducer,
-    obra: obraReducer
+    obra: obraReducer,
+    role : roleReducer
   },
 });
 

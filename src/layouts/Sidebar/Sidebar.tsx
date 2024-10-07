@@ -3,6 +3,7 @@ import React from 'react';
 import { NavLink } from 'react-router-dom';
 import { FiHome, FiBold, FiShare, FiArchive, FiBriefcase, FiCommand, FiType, FiPackage, FiUsers } from 'react-icons/fi';
 import DropdownMenu from './DropdownMenu';
+import { GiAbstract009, GiThreeFriends } from 'react-icons/gi';
 
 interface SidebarProps {
   isSidebarOpen: boolean;
@@ -23,6 +24,8 @@ const Sidebar: React.FC<SidebarProps> = ({ isSidebarOpen }) => {
 
   const otroModuloItems = [
     { to: "/dashboard/requerimiento", icon: FiPackage, text: "Requerimiento" },
+    { to: "/dashboard/organigrama", icon: GiAbstract009, text: "OrganigramaObras" },
+    { to: "/dashboard/roles", icon: GiThreeFriends, text: "AsignarRoles" },
   ];
 
   return (
