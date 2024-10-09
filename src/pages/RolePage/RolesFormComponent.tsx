@@ -2,25 +2,28 @@ import React from 'react';
 import { Formik, Form, Field, FieldArray } from 'formik';
 import * as Yup from 'yup';
 
+interface MenuPermission {
+  menuID: string;
+  permissions: {
+    ver: boolean;
+    crear: boolean;
+    editar: boolean;
+    eliminar: boolean;
+  };
+  __typename?: string; // Agregar __typename como opcional
+}
+
 interface Role {
   id: string;
   nombre: string;
   descripcion: string;
-  menusPermissions: {
-    menuID: string;
-    permissions: {
-      ver: boolean;
-      crear: boolean;
-      editar: boolean;
-      eliminar: boolean;
-    };
-  }[];
+  menusPermissions: MenuPermission[];
 }
 
 interface Menu {
   id: string;
   nombre: string;
-  posicion: string;
+  posicion: number;
   slug: string;
 }
 
@@ -91,7 +94,7 @@ const RolesFormComponent: React.FC<Props> = ({ initialValues, onSubmit, menus })
         ...menuPermission,
         permissions: {
           ...menuPermission.permissions,
-          __typename: undefined,
+          __typename: undefined, // Si necesitas eliminarlo, puedes hacerlo aquí
         },
       })),
     };
@@ -117,58 +120,63 @@ const RolesFormComponent: React.FC<Props> = ({ initialValues, onSubmit, menus })
           <div>
             <label htmlFor="descripcion" className="block text-sm font-medium text-gray-700">Descripción</label>
             <Field name="descripcion" as="textarea" className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50" />
-            {errors.descripcion && touched.descripcion ? <div className="text-red-500 text-sm mt-1">{errors.descripcion}</div> : null}
+            {errors.descripcion && touched.descripcion ? <div className="text-red-600 text-sm mt-1">{errors.descripcion}</div> : null}
           </div>
 
-          <FieldArray name="menusPermissions">
-            {({ remove }) => (
-              <div>
-                {menus.map((menu, index) => {
-                  const menuPermission = defaultValues.menusPermissions.find(mp => mp.menuID === menu.id);
-                  return (
-                    <div key={menu.id} className="border p-4 mb-4 rounded">
-                      <div className="mb-2 font-medium">{menu.nombre}</div>
-                      <Field name={`menusPermissions.${index}.menuID`} type="hidden" value={menu.id} />
-                      <div className="flex space-x-4">
-                        <label className="flex items-center">
-                          <Field 
-                            type="checkbox" 
-                            name={`menusPermissions.${index}.permissions.ver`} 
-                            className="mr-2"
-                          />
-                          Ver
-                        </label>
-                        <label className="flex items-center">
-                          <Field 
-                            type="checkbox" 
-                            name={`menusPermissions.${index}.permissions.crear`} 
-                            className="mr-2"
-                          />
-                          Crear
-                        </label>
-                        <label className="flex items-center">
-                          <Field 
-                            type="checkbox" 
-                            name={`menusPermissions.${index}.permissions.editar`} 
-                            className="mr-2"
-                          />
-                          Editar
-                        </label>
-                        <label className="flex items-center">
-                          <Field 
-                            type="checkbox" 
-                            name={`menusPermissions.${index}.permissions.eliminar`} 
-                            className="mr-2"
-                          />
-                          Eliminar
-                        </label>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            )}
-          </FieldArray>
+          <div className="overflow-x-auto">
+            <table className="min-w-full bg-gray-50 text-black">
+              <thead>
+                <tr>
+                  <th className="py-2 px-4 text-left text-stone-600 ">Menú</th>
+                  <th className="py-2 px-4 text-center text-stone-600 ">Ver</th>
+                  <th className="py-2 px-4 text-center text-stone-600 ">Crear</th>
+                  <th className="py-2 px-4 text-center text-stone-600 ">Editar</th>
+                  <th className="py-2 px-4 text-center text-stone-600 ">Eliminar</th>
+                </tr>
+              </thead>
+              <tbody>
+                <FieldArray name="menusPermissions">
+                  {() => (
+                    <>
+                      {menus.map((menu, index) => (
+                        <tr key={menu.id} className="border-b border-gray-300">
+                          <td className="py-2 px-4">{menu.nombre}</td>
+                          <td className="py-2 px-4 text-center">
+                            <Field 
+                              type="checkbox" 
+                              name={`menusPermissions.${index}.permissions.crear`} 
+                              className="form-checkbox h-5 w-5 text-blue-500"
+                            />
+                          </td>
+                          <td className="py-2 px-4 text-center">
+                            <Field 
+                              type="checkbox" 
+                              name={`menusPermissions.${index}.permissions.editar`} 
+                              className="form-checkbox h-5 w-5 text-blue-500"
+                            />
+                          </td>
+                          <td className="py-2 px-4 text-center">
+                            <Field 
+                              type="checkbox" 
+                              name={`menusPermissions.${index}.permissions.eliminar`} 
+                              className="form-checkbox h-5 w-5 text-blue-500"
+                            />
+                          </td>
+                          <td className="py-2 px-4 text-center">
+                            <Field 
+                              type="checkbox" 
+                              name={`menusPermissions.${index}.permissions.ver`} 
+                              className="form-checkbox h-5 w-5 text-blue-500"
+                            />
+                          </td>
+                        </tr>
+                      ))}
+                    </>
+                  )}
+                </FieldArray>
+              </tbody>
+            </table>
+          </div>
 
           <button type="submit" className="w-full px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600 transition-colors">
             {initialValues ? 'Actualizar' : 'Crear'} Rol

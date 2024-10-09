@@ -22,7 +22,7 @@ const Organigrama: React.FC = () => {
         projects,
         assignPersonToRole,
         unassignPersonFromRole,
-        (newEmployees) => {/* setEmployees function */ },
+        (newEmployees) => {console.log(newEmployees) },
         showNotification
     );
 

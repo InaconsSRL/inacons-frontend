@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Button from '../../components/Buttons/Button';
 import Modal from '../../components/Modal/Modal';
@@ -6,7 +6,7 @@ import TableComponent from '../../components/Table/TableComponent';
 import FormComponent from './ObrasFormComponent';
 
 import { useDispatch, useSelector } from 'react-redux';
-import { fetchObras, addObra, updateObra } from '../../slices/obrasSlice';
+import { addObra, updateObra } from '../../slices/obrasSlice';
 import { RootState, AppDispatch } from '../../store/store';
 import LoaderPage from '../../components/Loader/LoaderPage';
 
@@ -36,10 +36,6 @@ const ObrasComponent: React.FC = () => {
 
   const dispatch = useDispatch<AppDispatch>();
   const { obras, loading, error } = useSelector((state: RootState) => state.obra);
-  console.log(obras)
-  useEffect(() => {
-    dispatch(fetchObras());
-  }, [dispatch]);
 
   const handleSubmit = (data: { titulo: string; nombre: string; descripcion: string }) => {
     if (editingObra) {

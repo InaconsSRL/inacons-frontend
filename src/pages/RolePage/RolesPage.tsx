@@ -114,7 +114,7 @@ const RolesComponent: React.FC = () => {
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.2 }}
       >
-        <h1 className="text-2xl font-bold text-blue-800">Roles y Permisos</h1>
+        <h1 className="text-2xl font-bold text-white">Roles y Permisos</h1>
 
         <div className="flex items-center space-x-2">
           <Button text='Nuevo Rol' color='verde' onClick={handleButtonClick} className="rounded w-full" />
