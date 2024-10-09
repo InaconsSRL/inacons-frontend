@@ -1,31 +1,29 @@
 import React, { useState, useEffect, ChangeEvent, FormEvent } from 'react';
 import { motion } from 'framer-motion';
-import { useDispatch, useSelector } from 'react-redux';
-import { RootState, AppDispatch } from '../../store/store';
+import { useSelector } from 'react-redux';
+import { RootState } from '../../store/store';
 import { FiX } from 'react-icons/fi';
 import { gql } from '@apollo/client';
 import { useMutation } from '@apollo/client';
-import { fetchObras } from '../../slices/obrasSlice';
 import LoaderPage from '../../components/Loader/LoaderPage';
 import Modal from '../../components/Modal/Modal';
 
-
 // Definimos la interfaz Obra
-const pageVariants = {
-  initial: { opacity: 0, y: 20 },
-  in: { opacity: 1, y: 0 },
-  out: { opacity: 0, y: -20 }
-};
+// const pageVariants = {
+//   initial: { opacity: 0, y: 20 },
+//   in: { opacity: 1, y: 0 },
+//   out: { opacity: 0, y: -20 }
+// };
 
-const pageTransition = {
-  type: 'tween',
-  ease: 'anticipate',
-  duration: 0.5
-};
+// const pageTransition = {
+//   type: 'tween',
+//   ease: 'anticipate',
+//   duration: 0.5
+// };
 
 const ADD_REQUERIMIENTO_MUTATION = gql`
-  mutation AddRequerimientoConRecursos($usuarioId: String!, $recursos: [RecursosInput!]!, $sustento: String, $obraId: String) {
-  addRequerimientoConRecursos(usuario_id: $usuarioId, recursos: $recursos, sustento: $sustento, obra_id: $obraId) {
+  mutation AddRequerimientoConRecursos($usuario_id: String!, $recursos: [RecursosInput!]!, $sustento: String, $obra_id: String) {
+  addRequerimientoConRecursos(usuario_id: $usuario_id, recursos: $recursos, sustento: $sustento, obra_id: $obra_id) {
     id
     usuario_id
     presupuesto_id
@@ -37,19 +35,19 @@ const ADD_REQUERIMIENTO_MUTATION = gql`
 }
 `;
 
-// const UPDATE_REQUERIMIENTO_MUTATION = gql`
-//   mutation UpdateRequerimiento($updateRequerimientoId: ID!, $usuarioId: String, $presupuestoId: String, $fechaSolicitud: String, $estado: String, $sustento: String, $obraId: String) {
-//   updateRequerimiento(id: $updateRequerimientoId, usuario_id: $usuarioId, presupuesto_id: $presupuestoId, fecha_solicitud: $fechaSolicitud, estado: $estado, sustento: $sustento, obra_id: $obraId) {
-//     id
-//     usuario_id
-//     presupuesto_id
-//     fecha_solicitud
-//     estado
-//     sustento
-//     obra_id
-//   }
-// }
-// `;
+const UPDATE_REQUERIMIENTO_MUTATION = gql`
+  mutation UpdateRequerimiento($updateRequerimiento_id: ID!, $usuario_id: String, $presupuesto_id: String, $fechaSolicitud: String, $estado: String, $sustento: String, $obra_id: String) {
+  updateRequerimiento(id: $updateRequerimiento_id, usuario_id: $usuario_id, presupuesto_id: $presupuesto_id, fecha_solicitud: $fechaSolicitud, estado: $estado, sustento: $sustento, obra_id: $obra_id) {
+    id
+    usuario_id
+    presupuesto_id
+    fecha_solicitud
+    estado
+    sustento
+    obra_id
+  }
+}
+`;
 
 interface Recurso {
   recurso_id: string;
@@ -59,8 +57,8 @@ interface Recurso {
 }
 
 interface FormData {
-  obraId: string;
-  usuarioId: string;
+  obra_id: string;
+  usuario_id: string;
   sustento: string;
   recursos: Recurso[];
 }
@@ -71,8 +69,16 @@ interface RecursoListItem {
   nombre: string;
 }
 
+interface Obras{
+  id: string;
+  codigo: string;
+  titulo: string;
+  descriocion: string
+}
+
 interface PedirRequerimientoProps {
   recursosList: RecursoListItem[];
+  obras: Obras[];
   onClose: () => void;
 }
 
@@ -82,29 +88,24 @@ interface FocusedResource {
   value: string;
 }
 
-const RequerimientoForm: React.FC<PedirRequerimientoProps> = ({ recursosList, onClose }) => {
+const RequerimientoForm: React.FC<PedirRequerimientoProps> = ({ recursosList, onClose, obras, requerimiento }) => {
   const [addRequerimiento, { loading: loadingAdd, error: errorAdd }] = useMutation(ADD_REQUERIMIENTO_MUTATION);
-  //const [updateRequerimiento, { loading: loadingUpdate, error: errorUpdate }] = useMutation(UPDATE_REQUERIMIENTO_MUTATION);
+  const [updateRequerimiento, { loading: loadingUpdate, error: errorUpdate }] = useMutation(UPDATE_REQUERIMIENTO_MUTATION);
   const [filteredResources, setFilteredResources] = useState<RecursoListItem[]>([]);
   const [focusedResource, setFocusedResource] = useState<FocusedResource | null>(null);
 
   const [modalIsOpen, setModalIsOpen] = useState(false);
   const [modalMessage, setModalMessage] = useState('');
 
-  const dispatch = useDispatch<AppDispatch>();
-  const { obras, loading, error } = useSelector((state: RootState) => state.obra);
-
-
-
-
-
   const user = useSelector((state: RootState) => state.user);
-  const [formData, setFormData] = useState<FormData>({
-    obraId: '',
-    usuarioId: user.id ?? '',
+  const [formData, setFormData] = useState<FormData>( requerimiento ? requerimiento : {
+    obra_id: '',
+    usuario_id: user.id ?? '',
     sustento: '',
     recursos: [{ recurso_id: '', codigo: '', nombre: '', cantidad: 0 }]
   });
+
+  console.log(requerimiento)
 
 
   useEffect(() => {
@@ -121,9 +122,7 @@ const RequerimientoForm: React.FC<PedirRequerimientoProps> = ({ recursosList, on
       }
     }
   }, [focusedResource, recursosList, formData.recursos]);
-  useEffect(() => {
-    dispatch(fetchObras());
-  }, [dispatch]);
+
 
   const handleInputChange = (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>, index: number | null = null) => {
     const { name, value } = e.target;
@@ -176,33 +175,57 @@ const RequerimientoForm: React.FC<PedirRequerimientoProps> = ({ recursosList, on
     }
 
     try {
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const recursosModificados = validRecursos.map(({ nombre, codigo, ...rest }) => ({
         ...rest,
         presupuestado: "",
         tipo_solicitud: "",
       }));
 
-      const { data } = await addRequerimiento({
-        variables: {
-          usuarioId: formData.usuarioId,
-          sustento: formData.sustento,
-          obraId: formData.obraId,
-          recursos: recursosModificados,
-        },
-      });
+      let result;
 
+      if (requerimiento_id) {
+        // Si hay un requerimiento_id, actualizamos el requerimiento existente
+        result = await updateRequerimiento({
+          variables: {
+            updateRequerimiento_id: requerimiento_id,
+            usuario_id: formData.usuario_id,
+            sustento: formData.sustento,
+            obra_id: formData.obra_id,
+            // Aquí podrías incluir más campos si son necesarios para la actualización
+          },
+        });
+        console.log('Requerimiento actualizado:', result.data.updateRequerimiento);
+      } else {
+        // Si no hay requerimiento_id, creamos uno nuevo
+        result = await addRequerimiento({
+          variables: {
+            usuario_id: formData.usuario_id,
+            sustento: formData.sustento,
+            obra_id: formData.obra_id,
+            recursos: recursosModificados,
+          },
+        });
+        console.log('Requerimiento agregado:', result.data.addRequerimientoConRecursos);
+      }
+
+      // Resetear el formulario
       setFormData({
-        obraId: "",
-        usuarioId: "",
+        obra_id: "",
+        usuario_id: "",
         sustento: "",
         recursos: [{ recurso_id: '', codigo: '', nombre: '', cantidad: 0 }],
       });
 
-      console.log('Requerimiento agregado:', data.addRequerimiento);
+      // Mostrar un mensaje de éxito
+      setModalMessage(requerimiento_id ? "Requerimiento actualizado con éxito" : "Requerimiento agregado con éxito");
+      setModalIsOpen(true);
+
+      // Cerrar el formulario
       onClose();
     } catch (error) {
-      console.error('Error al agregar requerimiento:', error);
+      console.error('Error al procesar el requerimiento:', error);
+      setModalMessage(`Error: ${error.message}`);
+      setModalIsOpen(true);
     }
   };
 
@@ -211,14 +234,15 @@ const RequerimientoForm: React.FC<PedirRequerimientoProps> = ({ recursosList, on
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
   };
+  
+  useEffect(() => {
+    console.log(formData)
+  }, [formData]);
 
-  //if (loadingAdd || loadingUpdate) return <LoaderPage />;
-  if (loadingAdd) return <LoaderPage />;
-  if (errorAdd) return <div>Error en requerimientos: {errorAdd.message}</div>;
-  //if (errorUpdate) return alert(`Error en recursos: {errorUpdate.message}`);
-  if (loading) return <LoaderPage />;
-  if (error) return <motion.div initial="initial" animate="in" exit="out" variants={pageVariants} transition={pageTransition}>Error: {error}</motion.div>;
-
+  if (loadingAdd || loadingUpdate) return <LoaderPage />;
+  //if (loadingAdd) return <LoaderPage />;
+  if (errorAdd) return <div>Error al crear un nuevo requerimiento: {errorAdd.message}</div>;
+  if (errorUpdate) return <div>Error al actualizar el requerimiento: {errorUpdate.message}</div>;
 
 
 
@@ -232,12 +256,12 @@ const RequerimientoForm: React.FC<PedirRequerimientoProps> = ({ recursosList, on
 
       <motion.div className="flex flex-1 overflow-hidden rounded-md m-4">
         <main className="w-full flex flex-col flex-grow p-4 bg-white/95 overflow-hidden rounded-lg shadow-lg">
-          <h3 className='text-xs text-gray-500 mb-2'>Userid: {formData.usuarioId.slice(0, 5)}</h3>
+          <h3 className='text-xs text-gray-500 mb-2'>Userid: {formData.usuario_id.slice(0, 5)}</h3>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="grid grid-cols-12 gap-2">
               <select
-                name="obraId"
-                value={formData.obraId}
+                name="obra_id"
+                value={formData.obra_id}
                 onChange={handleSelectChange}
                 className="px-2 py-1 border border-gray-300 rounded text-sm col-span-4 md:col-span-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 required

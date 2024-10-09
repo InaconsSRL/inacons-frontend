@@ -19,6 +19,7 @@
     "@tanstack/react-form": "^0.32.0",
     "@tanstack/react-table": "^8.20.5",
     "@tanstack/zod-form-adapter": "^0.32.0",
+    "formik": "^2.4.6",
     "framer-motion": "^11.5.4",
     "graphql": "^16.9.0",
     "react": "^18.3.1",
@@ -28,6 +29,7 @@
     "react-router-dom": "^6.26.1",
     "recharts": "^2.12.7",
     "xlsx": "^0.18.5",
+    "yup": "^1.4.0",
     "zod": "^3.23.8"
   },
   "devDependencies": {

@@ -1,9 +1,12 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useQuery, gql } from '@apollo/client';
 import RequerimientosList from './RequerimientosList';
 import Inventory from './Inventory';
 import LoaderPage from '../../components/Loader/LoaderPage';
+import { fetchObras } from '../../slices/obrasSlice';
+import { useDispatch, useSelector } from 'react-redux';
+import { RootState, AppDispatch } from '../../store/store';
 
 const LIST_RECURSO = gql`
   query ListRecurso {
@@ -42,13 +45,23 @@ const RequerimintosPageComponent: React.FC = () => {
 
   const { loading, error, data } = useQuery(LIST_RECURSO);
 
+  
+  const dispatch = useDispatch<AppDispatch>();
+  const { obras, loading: loadingObras, error: errorObras } = useSelector((state: RootState) => state.obra);
+  
+  useEffect(() => {
+    dispatch(fetchObras());
+  }, [dispatch]);
+
+  console.log(obras)
+
   const renderActiveComponent = () => {
     // Pasar los datos de recursos a cada componente
     const recursos = data?.listRecurso || [];
     
     switch (activeTab) {
       case 'requests':
-        return <RequerimientosList recursosList={recursos} />;
+        return <RequerimientosList recursosList={recursos} obras={obras} />;
       case 'inventory':
         return <Inventory />;
       case 'suppliers':
@@ -58,6 +71,9 @@ const RequerimintosPageComponent: React.FC = () => {
 
   if (loading) return <LoaderPage />;
   if (error) return <p>Error al cargar recursos: {error.message}</p>;
+
+  if (loadingObras) return <LoaderPage />;
+  if (errorObras) return <motion.div initial="initial" animate="in" exit="out" variants={pageVariants} transition={pageTransition}>Error: {error}</motion.div>;
 
   return (
     <motion.div

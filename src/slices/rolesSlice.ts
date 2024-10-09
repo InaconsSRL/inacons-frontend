@@ -2,31 +2,26 @@ import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
 import { listRolesAndMenusService, addRoleService, updateRoleService } from '../services/roleService';
 
 // Interfaces
+interface Role {
+  id: string;
+  nombre: string;
+  descripcion: string;
+  menusPermissions: {
+    menuID: string;
+    permissions: {
+      ver: boolean;
+      crear: boolean;
+      editar: boolean;
+      eliminar: boolean;
+    };
+  }[];
+}
+
 interface Menu {
   id: string;
   nombre: string;
   slug: string;
   posicion: number;
-}
-
-interface MenuPermission {
-  menuID: Menu;
-  permissions: {
-    ver: boolean;
-    crear: boolean;
-    editar: boolean;
-    eliminar: boolean;
-  };
-}
-
-interface Role {
-  id: string;
-  nombre: string;
-  descripcion: string;
-  menusPermissions: MenuPermission[];
-  createdAt: string;
-  updatedAt: string;
-  deleted: boolean;
 }
 
 interface RoleState {
@@ -64,7 +59,7 @@ export const fetchRolesAndMenus = createAsyncThunk(
 
 export const addRole = createAsyncThunk(
   'role/addRole',
-  async (roleData: { nombre: string; descripcion: string; menusPermissions: MenuPermission[] }, { rejectWithValue }) => {
+  async (roleData: Omit<Role, 'id'>, { rejectWithValue }) => {
     try {
       return await addRoleService(roleData);
     } catch (error) {

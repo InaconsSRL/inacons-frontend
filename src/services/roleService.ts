@@ -8,12 +8,7 @@ const LIST_ROLES_AND_MENUS_QUERY = gql`
       nombre
       descripcion
       menusPermissions {
-        menuID {
-          id
-          nombre
-          slug
-          posicion
-        }
+        menuID
         permissions {
           ver
           crear
@@ -21,9 +16,6 @@ const LIST_ROLES_AND_MENUS_QUERY = gql`
           eliminar
         }
       }
-      createdAt
-      updatedAt
-      deleted
     }
     listMenus {
       id
@@ -35,18 +27,13 @@ const LIST_ROLES_AND_MENUS_QUERY = gql`
 `;
 
 const ADD_ROLE_MUTATION = gql`
-  mutation AddRole($nombre: String!, $descripcion: String!, $menusPermissions: [MenuPermissionInput!]!) {
+  mutation addRole($nombre: String!, $descripcion: String!, $menusPermissions: [MenuPermissionInput!]!) {
     addRole(nombre: $nombre, descripcion: $descripcion, menusPermissions: $menusPermissions) {
       id
       nombre
       descripcion
       menusPermissions {
-        menuID {
-          id
-          nombre
-          slug
-          posicion
-        }
+        menuID
         permissions {
           ver
           crear
@@ -54,9 +41,6 @@ const ADD_ROLE_MUTATION = gql`
           eliminar
         }
       }
-      createdAt
-      updatedAt
-      deleted
     }
   }
 `;
@@ -68,12 +52,7 @@ const UPDATE_ROLE_MUTATION = gql`
       nombre
       descripcion
       menusPermissions {
-        menuID {
-          id
-          nombre
-          slug
-          posicion
-        }
+        menuID
         permissions {
           ver
           crear
@@ -81,9 +60,6 @@ const UPDATE_ROLE_MUTATION = gql`
           eliminar
         }
       }
-      createdAt
-      updatedAt
-      deleted
     }
   }
 `;

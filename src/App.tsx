@@ -14,7 +14,7 @@ import UsuariosPage from './pages/UsuariosPage/UsuariosPage';
 import UnidadPage from './pages/UnidadPage/UnidadPage';
 import ClasificacionRecursoComponent from './pages/ClasificacionRecursoPage/ClasificacionRecursoComponent';
 import RequerimintosPageComponent from './pages/RequerimientosPage/RequerimintosPageComponent';
-import Organigrama from './pages/OrganigramaPage/Organigrama';
+import Organigrama from './pages/OrganigramaPage/OrganigramaController';
 import RolesPage from './pages/RolePage/RolesPage';
 
 const App: React.FC = () => {

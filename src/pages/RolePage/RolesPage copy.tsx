@@ -1,12 +1,30 @@
-import React, { useState } from 'react';
-import { useQuery, useMutation } from '@apollo/client';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Button from '../../components/Buttons/Button';
 import Modal from '../../components/Modal/Modal';
 import TableComponent from '../../components/Table/TableComponent';
-import RoleFormComponent from './RoleFormComponent';
-import { LIST_ROLES_AND_MENUS_QUERY, ADD_ROLE_MUTATION, UPDATE_ROLE_MUTATION } from '../../services/roleService';
+import RolesFormComponent from './RolesFormComponent';
+
+import { useDispatch, useSelector } from 'react-redux';
+import { fetchRolesAndMenus, addRole, updateRole } from '../../slices/rolesSlice';
+import { RootState, AppDispatch } from '../../store/store';
 import LoaderPage from '../../components/Loader/LoaderPage';
+import MenusPage from '../MenusPage.tsx/MenusPage';
+
+interface Role {
+  id: string;
+  nombre: string;
+  descripcion: string;
+  menusPermissions: {
+    menuID: string;
+    permissions: {
+      ver: boolean;
+      crear: boolean;
+      editar: boolean;
+      eliminar: boolean;
+    };
+  }[];
+}
 
 const pageVariants = {
   initial: { opacity: 0, y: 20 },
@@ -20,79 +38,66 @@ const pageTransition = {
   duration: 0.5
 };
 
-const RolesPage: React.FC = () => {
+const RolesComponent: React.FC = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [editingRole, setEditingRole] = useState(null);
+  const [editingRole, setEditingRole] = useState<Role | null>(null);
+  const [isModalMenusOpen, setIsModalMenusOpen] = useState(false);
 
-  const { loading, error, data, refetch } = useQuery(LIST_ROLES_AND_MENUS_QUERY);
-  const [addRole] = useMutation(ADD_ROLE_MUTATION);
-  const [updateRole] = useMutation(UPDATE_ROLE_MUTATION);
+  const dispatch = useDispatch<AppDispatch>();
+  const { menus, roles, loading, error } = useSelector((state: RootState) => state.role);
 
-  const handleSubmit = async (formData) => {
-    const { nombre, descripcion, menusPermissions } = formData;
-    const menuPermissionInput = menusPermissions.map(mp => ({
-      menuID: mp.menuID.id,
-      permissions: mp.permissions
-    }));
+  console.log(roles)
+  console.log(menus)
 
+  useEffect(() => {
+    dispatch(fetchRolesAndMenus());
+  }, [dispatch]);
+
+  const handleMenusView = () => {
+    setIsModalMenusOpen(true);
+  };
+
+  const handleSubmit = (data: Role) => {
     if (editingRole) {
-      await updateRole({
-        variables: {
-          updateRoleId: editingRole.id,
-          nombre,
-          descripcion,
-          menusPermissions: menuPermissionInput
-        }
-      });
+      dispatch(updateRole(data));
     } else {
-      await addRole({
-        variables: {
-          nombre,
-          descripcion,
-          menusPermissions: menuPermissionInput
-        }
-      });
+      dispatch(addRole(data));
     }
     setIsModalOpen(false);
     setEditingRole(null);
-    refetch();
   };
 
-  const handleEdit = (role) => {
+  const handleEdit = (role: Role) => {
     setEditingRole(role);
     setIsModalOpen(true);
   };
 
-  const handleAddNew = () => {
+  if (loading ) return <LoaderPage />;
+  if (error ) return <motion.div initial="initial" animate="in" exit="out" variants={pageVariants} transition={pageTransition}>Error: {error}</motion.div>;
+
+  const handleButtonClick = () => {
     setEditingRole(null);
     setIsModalOpen(true);
   };
 
   const handleCloseModal = () => {
+    setIsModalMenusOpen(false);
     setIsModalOpen(false);
     setEditingRole(null);
   };
 
-  if (loading) return <LoaderPage />;
-  if (error) return <div>Error: {error.message}</div>;
 
   const tableData = {
-    headers: ["Nombre", "Descripcion", "Creación", "Acciones"],
-    rows: data.listRoles.map(role => ({
-      "Nombre": role.nombre,
-      "Descripcion": role.descripcion,
-      "Creación": new Date(role.createdAt).toLocaleDateString(),
-      "Acciones": (
-        <Button
-          icon={<span>✏️</span>}
-          text="Editar"
-          color="transp"
-          onClick={() => handleEdit(role)}
-        />
+    headers: ["nombre", "descripcion", "opciones"],
+    rows: roles.map((role ) => ({
+      id: role.id,
+      nombre: role.nombre,
+      descripcion: role.descripcion,
+      opciones: (
+        <Button text='Editar' color='transp' className='text-black' onClick={() => handleEdit(role)}></Button>
       )
     }))
   };
-
 
   return (
     <motion.div
@@ -104,13 +109,29 @@ const RolesPage: React.FC = () => {
       transition={pageTransition}
     >
       <motion.div
-        className="text-white pb-4 px-4 flex items-center justify-between"
+        className="x text-white pb-4 px-4 flex items-center justify-between"
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.2 }}
       >
-        <h1 className="text-2xl font-bold">Gestión de Roles</h1>
-        <Button text='Nuevo Rol' color='verde' onClick={handleAddNew} className="rounded w-auto" />
+        <h1 className="text-2xl font-bold text-blue-800">Roles y Permisos</h1>
+
+        <div className="flex items-center space-x-2">
+          <Button text='Nuevo Rol' color='verde' onClick={handleButtonClick} className="rounded w-full" />
+          <motion.button
+            className="px-4 py-2 bg-blue-500 text-white-700 rounded hover:bg-blue-600 transition-colors"
+            onClick={handleMenusView}
+          >
+            Editor de Menus
+          </motion.button>
+          <motion.button
+            className="px-4 py-2 bg-gray-200 text-gray-700 rounded hover:bg-gray-300 transition-colors"
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+          >
+            Actualizar
+          </motion.button>
+        </div>
       </motion.div>
 
       <motion.div
@@ -127,7 +148,7 @@ const RolesPage: React.FC = () => {
             transition={{ delay: 0.8 }}
           >
             <div className="h-full overflow-auto">
-              <TableComponent tableData={tableData} />
+              <TableComponent tableData={ tableData } />
             </div>
           </motion.div>
         </main>
@@ -135,19 +156,24 @@ const RolesPage: React.FC = () => {
 
       <AnimatePresence>
         {isModalOpen && (
-          <Modal title={editingRole ? 'Editar Rol' : 'Crear Nuevo Rol'} isOpen={isModalOpen} onClose={handleCloseModal}>
+          <Modal title={editingRole ? 'Actualizar Rol' : 'Crear Rol'} isOpen={isModalOpen} onClose={handleCloseModal}>
             <motion.div
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.9 }}
               transition={{ duration: 0.3 }}
             >
-              <RoleFormComponent
-                initialValues={editingRole}
+              <RolesFormComponent
+                menus = {menus}
+                initialValues={editingRole || undefined}
                 onSubmit={handleSubmit}
-                menus={data.listMenus}
               />
             </motion.div>
+          </Modal>
+        )}
+        {isModalMenusOpen && (
+          <Modal title={'Todas Las Obras'} isOpen={isModalMenusOpen} onClose={handleCloseModal}>
+            <MenusPage />
           </Modal>
         )}
       </AnimatePresence>
@@ -155,4 +181,4 @@ const RolesPage: React.FC = () => {
   );
 };
 
-export default RolesPage;
+export default RolesComponent;
