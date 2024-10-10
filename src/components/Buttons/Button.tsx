@@ -5,8 +5,8 @@ interface ButtonProps {
   color?: 'verde' | 'blanco' | 'transp';
   options?: Array<{ label: string; action: () => void } | string>;
   className?: string;
-  text?: string;
-  icon?: ReactNode; // Nueva prop para el icono
+  text?: string | ReactNode;
+  icon?: ReactNode;
 }
 
 type Option = { label: string; action: () => void } | string;
@@ -51,7 +51,9 @@ const Button: React.FC<ButtonProps> = ({ onClick, color = 'blanco', options = []
         `}
       >
         {icon && <span className="mr-2">{icon}</span>}
-        <span className="truncate whitespace-nowrap sm:whitespace-normal">{text}</span>
+        <span className="truncate whitespace-nowrap sm:whitespace-normal text-[10px] sm:text-sm">
+          {typeof text === 'string' ? text : React.isValidElement(text) ? text : null}
+        </span>
         {options.length > 0 && (
           <span className='text-xs ml-1 flex-shrink-0'>{isOpen ? "▲" : "▼"}</span>
         )}

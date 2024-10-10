@@ -7,9 +7,10 @@ import { GiAbstract009, GiThreeFriends } from 'react-icons/gi';
 
 interface SidebarProps {
   isSidebarOpen: boolean;
+  toggleSidebar: () => void;
 }
 
-const Sidebar: React.FC<SidebarProps> = ({ isSidebarOpen }) => {
+const Sidebar: React.FC<SidebarProps> = ({ isSidebarOpen, toggleSidebar }) => {
   const activeStyle = "bg-sky-300 bg-opacity-50 rounded-xl py-2 pl-2 -m-2 pr-2";
 
   const moduloRecursosItems = [
@@ -26,11 +27,12 @@ const Sidebar: React.FC<SidebarProps> = ({ isSidebarOpen }) => {
     { to: "/dashboard/requerimiento", icon: FiPackage, text: "Requerimiento" },
     { to: "/dashboard/organigrama", icon: GiAbstract009, text: "OrganigramaObras" },
     { to: "/dashboard/roles", icon: GiThreeFriends, text: "AsignarRoles" },
+    { to: "/dashboard/kanban", icon: GiThreeFriends, text: "Kanban" },
   ];
 
   return (
-    <div className={`bg-black/50 backdrop-blur-lg transition-all duration-500 ease-in-out ${isSidebarOpen ? 'w-64' : 'w-18'}`}>
-      <nav className="flex flex-col items-start p-4 h-full overflow-y-auto">
+    <div className={` bg-black/50 backdrop-blur-lg transition-all duration-500 ease-in-out ${isSidebarOpen ? 'w-full md:w-64 lg:w-64' : 'w-0 md:w-0 lg:w-16 '}`}>
+      <nav className="flex flex-col items-start p-4 h-full overflow-y-auto ">
         
         
         <NavLink
@@ -45,12 +47,14 @@ const Sidebar: React.FC<SidebarProps> = ({ isSidebarOpen }) => {
           title="Recursos"
           items={moduloRecursosItems}
           isSidebarOpen={isSidebarOpen}
+          toggleSidebar={toggleSidebar}
         />
 
         <DropdownMenu
           title="Requerimiento"
           items={otroModuloItems}
           isSidebarOpen={isSidebarOpen}
+          toggleSidebar={toggleSidebar}
         />
 
       </nav>

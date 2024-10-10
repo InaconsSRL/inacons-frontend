@@ -64,17 +64,17 @@ const MenusPage: React.FC = () => {
         setIsModalOpen(true);
     };
 
-    const handleCloseModal = () => {        
+    const handleCloseModal = () => {
         setIsModalOpen(false);
         setEditingMenu(null);
-    };    
+    };
 
     const tableData = {
         headers: ["Nombre", "Link", "Posición", "Opciones"],
         rows: menus.map(menu => ({
             "Nombre": menu.nombre,
             "Link": menu.slug,
-            "Posición":menu.posicion, 
+            "Posición": menu.posicion,
             "Opciones": (
                 <Button text='Editar' color='transp' className='text-black' onClick={() => handleEdit(menu)}></Button>
             )
@@ -101,16 +101,8 @@ const MenusPage: React.FC = () => {
 
                 <div className="flex items-center space-x-2">
                     <Button text='Nuevo Menú' color='verde' onClick={handleButtonClick} className="rounded w-full" />
-                    <motion.button
-                        className="px-4 py-2 bg-gray-200 text-gray-700 rounded hover:bg-gray-300 transition-colors"
-                        whileHover={{ scale: 1.05 }}
-                        whileTap={{ scale: 0.95 }}
-                    >
-                        Actualizar
-                    </motion.button>                    
                 </div>
             </motion.div>
-
             <motion.div
                 className="flex flex-1 overflow-hidden rounded-xl"
                 initial={{ opacity: 0, scale: 0.95 }}
@@ -146,7 +138,7 @@ const MenusPage: React.FC = () => {
                             />
                         </motion.div>
                     </Modal>
-                )}                
+                )}
             </AnimatePresence>
         </motion.div>
     );

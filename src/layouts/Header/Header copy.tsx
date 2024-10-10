@@ -1,6 +1,7 @@
+//import CogIcon from '../../components/Icons/EyeSlashIcon';
 import React from 'react';
 import { useSelector } from 'react-redux';
-import { FiBell, FiMenu, FiX } from 'react-icons/fi';
+import { FiBell, FiMenu, FiSearch, FiX } from 'react-icons/fi';
 import logo from '../../assets/logo.svg'
 import avatar from '../../assets/avatar.webp'
 import { RootState } from '../../store/store';
@@ -13,6 +14,7 @@ interface HeaderProps {
 const Header: React.FC<HeaderProps> = ({ toggleSidebar, isSidebarOpen }) => {
   const currentTime = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
   
+  // Obtener la información del usuario del estado de Redux
   const username = useSelector((state: RootState) => state.user);
 
   return (
@@ -22,11 +24,11 @@ const Header: React.FC<HeaderProps> = ({ toggleSidebar, isSidebarOpen }) => {
           {isSidebarOpen ? <FiX className="w-6 h-6" /> : <FiMenu className="w-6 h-6" />}
         </button>
 
-        <div className="flex items-center mx-2 sm:mx-1 lg:mx-5 lg:ml-5 xl:ml-10">
+        <div className="flex items-center mx-2 sm:mx-1 md:mx-5 lg:ml-5 xl:ml-10">
           <img src={logo} alt="Logo" className="h-10 mr-4" />
         </div>
 
-        {/* <div className="flex items-center flex-grow lg:mx-3">
+        <div className="flex items-center flex-grow md:mx-3">
           <div className="relative w-full max-w-md">
             <input
               type="text"
@@ -35,10 +37,10 @@ const Header: React.FC<HeaderProps> = ({ toggleSidebar, isSidebarOpen }) => {
             />
             <FiSearch className="absolute right-3 top-2 w-5 h-5 text-white" />
           </div>
-        </div> */}
+        </div>
 
         <div className="flex items-center space-x-4 text-center">
-          <span className="text-white text-lg hidden lg:block">{currentTime}</span>
+          <span className="text-white text-lg">{currentTime}</span>
           <div className="flex items-center space-x-2">
             <div className="flex items-center text-white">
               <img src={avatar} alt="Avatar" className="h-10 mr-4" />

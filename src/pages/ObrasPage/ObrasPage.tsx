@@ -9,6 +9,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { addObra, updateObra } from '../../slices/obrasSlice';
 import { RootState, AppDispatch } from '../../store/store';
 import LoaderPage from '../../components/Loader/LoaderPage';
+import { HiRefresh } from 'react-icons/hi';
 
 // Definimos la interfaz Obra
 interface Obra {
@@ -94,13 +95,6 @@ const ObrasComponent: React.FC = () => {
 
         <div className="flex items-center space-x-2">
           <Button text='Nueva Obra' color='verde' onClick={handleButtonClick} className="rounded w-full" />
-          <motion.button
-            className="px-4 py-2 bg-gray-200 text-gray-700 rounded hover:bg-gray-300 transition-colors"
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-          >
-            Actualizar
-          </motion.button>
         </div>
       </motion.div>
 

@@ -13,9 +13,10 @@ interface DropdownMenuProps {
   title: string;
   items: MenuItem[];
   isSidebarOpen: boolean;
+  toggleSidebar: () => void;
 }
 
-const DropdownMenu: React.FC<DropdownMenuProps> = ({ title, items, isSidebarOpen }) => {
+const DropdownMenu: React.FC<DropdownMenuProps> = ({ title, items, isSidebarOpen, toggleSidebar }) => {
   const [isOpen, setIsOpen] = useState(true);
   const location = useLocation();
 
@@ -58,6 +59,7 @@ const DropdownMenu: React.FC<DropdownMenuProps> = ({ title, items, isSidebarOpen
             className={({ isActive }) => 
               `flex items-center space-x-4 mb-4 ${isActive ? activeStyle : ''}`
             }
+            onClick={toggleSidebar}
           >
             <item.icon className="w-6 h-6 text-white" />
             {isSidebarOpen && <span className="text-white">{item.text}</span>}

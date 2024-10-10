@@ -10,7 +10,6 @@ import LoaderPage from '../../components/Loader/LoaderPage';
 import { FiEdit } from 'react-icons/fi';
 import ImageCarousel from '../../components/IMG/ImageCarousel';
 import BulkUploadComponent from './BulkUploadComponent';
-
 // Definición de interfaces
 interface Recurso {
   id: string;
@@ -224,28 +223,23 @@ const RecursosPage: React.FC = () => {
       transition={pageTransition}
     >
       <motion.div
-        className="x text-white pb-4 px-4 flex items-center justify-between"
+        className="x text-white pb-4 px-0 md:px-4 flex items-center justify-between"
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.2 }}
       >
-        <h1 className="text-2xl font-bold">Recursos ☺</h1>
-          
-            
-            
-            <div className="flex items-center space-x-2">
-              <Button text='EnvioMasivo' color='verde' onClick={handleButtonEnvioMasivoClick} className='rounded w-auto bg-emerald-500' />
-            </div>
-            <div className="flex items-center space-x-2">
-              <Button text='Nuevo Recurso' color='verde' onClick={handleButtonClick} className="rounded w-full" />
-              <motion.button
-                className="px-4 py-2 bg-gray-200 text-gray-700 rounded hover:bg-gray-300 transition-colors"
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-              >
-                Actualizar
-              </motion.button>
-            </div>
+        <h1 className="text-2xl font-bold">Recursos</h1>
+
+
+
+        <div className="flex items-center space-x-2">
+          <Button text='EnvioMasivo' color='verde' onClick={handleButtonEnvioMasivoClick} className='rounded w-auto bg-emerald-500' />
+        </div>
+        <div className="flex items-center space-x-2">
+        </div>
+        <div className="flex items-center space-x-2">
+          <Button text='Nuevo Recurso' color='verde' onClick={handleButtonClick} className="rounded w-full" />
+        </div>
       </motion.div>
 
       <motion.div
@@ -297,7 +291,7 @@ const RecursosPage: React.FC = () => {
 
         )}
         {(
-          <Modal title='Carga Masiva de Recursos'  isOpen={isModalOpen2} onClose={handleCloseModal2}>
+          <Modal title='Carga Masiva de Recursos' isOpen={isModalOpen2} onClose={handleCloseModal2}>
             <BulkUploadComponent />
           </Modal>
 

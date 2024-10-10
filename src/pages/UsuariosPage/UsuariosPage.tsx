@@ -118,13 +118,6 @@ const UsuariosPage: React.FC = () => {
 
         <div className="flex items-center space-x-2">
           <Button text='Nuevo Usuario' color='verde' onClick={handleButtonClick} className="rounded w-full" />
-          <motion.button
-            className="px-4 py-2 bg-gray-200 text-gray-700 rounded hover:bg-gray-300 transition-colors"
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-          >
-            Actualizar
-          </motion.button>
         </div>
       </motion.div>
 

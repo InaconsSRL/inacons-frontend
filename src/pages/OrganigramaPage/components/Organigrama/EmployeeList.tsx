@@ -33,7 +33,7 @@ const EmployeeList: React.FC<EmployeeListProps> = ({
     return (
         <div 
             id="employees" 
-            className="w-1/4 p-4 bg-white shadow-lg overflow-y-auto drop-zone" 
+            className="w-1/4 min-w-[170px] max-w-[250px] p-4 bg-white shadow-lg overflow-y-auto drop-zone" 
             onDragOver={dragOver} 
             onDrop={drop}
         >

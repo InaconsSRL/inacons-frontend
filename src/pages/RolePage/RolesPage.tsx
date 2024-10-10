@@ -118,19 +118,11 @@ const RolesComponent: React.FC = () => {
 
         <div className="flex items-center space-x-2">
           <Button text='Nuevo Rol' color='verde' onClick={handleButtonClick} className="rounded w-full" />
-          <motion.button
-            className="px-4 py-2 bg-blue-500 text-white-700 rounded hover:bg-blue-600 transition-colors"
+          <Button
+            className="rounded w-full"
+            color='blanco'
             onClick={handleMenusView}
-          >
-            Editor de Menus
-          </motion.button>
-          <motion.button
-            className="px-4 py-2 bg-gray-200 text-gray-700 rounded hover:bg-gray-300 transition-colors"
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-          >
-            Actualizar
-          </motion.button>
+            text='Lista de Accesos' />          
         </div>
       </motion.div>
 

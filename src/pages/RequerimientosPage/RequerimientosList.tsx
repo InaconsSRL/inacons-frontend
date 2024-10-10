@@ -4,9 +4,11 @@ import TableComponent from '../../components/Table/TableComponent';
 import { useQuery, gql } from '@apollo/client';
 
 import LoaderPage from '../../components/Loader/LoaderPage';
+import Button from '../../components/Buttons/Button';
 import Modal from '../../components/Modal/Modal';
 import ObrasPage from '../ObrasPage/ObrasPage';
 import RequerimientoForm from './RequerimientoForm';
+import { HiRefresh } from 'react-icons/hi';
 
 const GET_REQUERIMIENTOS = gql`
   query GetRequerimientoRecurso {
@@ -138,24 +140,24 @@ const RequerimientosList: React.FC<MaterialRequestsProps> = ({ recursosList, obr
           Lista Requerimientos
         </motion.h1>
         <div className='blue space-x-4'> 
-          <motion.button
-            className="px-4 py-2 bg-blue-500 text-white-700 rounded hover:bg-blue-600 transition-colors"
+          <Button
+            text='Nuevo Requerimiento'
+            className='rounded w-full'
+            color='verde'
             onClick={handleRequerimientoView}
-          >
-            Generar Requerimiento
-          </motion.button>
-          <motion.button
-            className="px-4 py-2 bg-blue-500 text-white-700 rounded hover:bg-blue-600 transition-colors"
+          />
+          <Button
+            text='Editor de Obras'
+            className='rounded w-full'
+            color='verde'
             onClick={handleObrasView}
-          >
-            Editor de Obras
-          </motion.button>
-          <motion.button
-            className="px-4 py-2 bg-green-500 text-white-700 rounded hover:bg-green-600 transition-colors"
+          />
+          <Button
+            text={<HiRefresh className={` text-green-500 ${window.innerWidth < 768 ? 'w-3 h-3' : 'w-4 h-4'}`} />}
+            color='blanco'
             onClick={handleRefresh}
-          >
-            Actualizar
-          </motion.button>
+            className='rounded w-full'
+          />
         </div>
       </motion.div>
 

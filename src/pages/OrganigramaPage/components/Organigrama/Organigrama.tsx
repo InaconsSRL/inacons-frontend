@@ -22,7 +22,7 @@ const Organigrama: React.FC = () => {
         projects,
         assignPersonToRole,
         unassignPersonFromRole,
-        (newEmployees) => {console.log(newEmployees) },
+        (newEmployees) => { console.log(newEmployees) },
         showNotification
     );
 
@@ -47,7 +47,7 @@ const Organigrama: React.FC = () => {
         <div className="flex flex-col h-full bg-gray-100">
             {notification && (
                 <div className={`fixed top-0 left-0 right-0 p-4 text-white text-center ${notification.type === 'error' ? 'bg-red-500' :
-                        notification.type === 'success' ? 'bg-green-500' : 'bg-blue-500'
+                    notification.type === 'success' ? 'bg-green-500' : 'bg-blue-500'
                     }`}>
                     {notification.message}
                 </div>

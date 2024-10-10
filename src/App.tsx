@@ -16,7 +16,7 @@ import ClasificacionRecursoComponent from './pages/ClasificacionRecursoPage/Clas
 import RequerimintosPageComponent from './pages/RequerimientosPage/RequerimintosPageComponent';
 import Organigrama from './pages/OrganigramaPage/OrganigramaController';
 import RolesPage from './pages/RolePage/RolesPage';
-
+import KanbanBoard from './pages/KanBanBoard/KanbanBoard';
 const App: React.FC = () => {
   const user = useSelector((state: RootState) => state.user);
 
@@ -38,6 +38,7 @@ const App: React.FC = () => {
         <Route path="requerimiento" element={<RequerimintosPageComponent />} />
         <Route path="organigrama" element={<Organigrama />} />
         <Route path="roles" element={<RolesPage />} />
+        <Route path="kanban" element={<KanbanBoard />} />
       </Route>
       <Route path="/" element={<Navigate to="/dashboard" replace />} />
     </Routes> 

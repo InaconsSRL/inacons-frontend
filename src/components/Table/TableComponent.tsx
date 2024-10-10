@@ -166,11 +166,11 @@ const TableComponent: React.FC<TableComponentProps> = ({ tableData, maxCharacter
           </thead>
           <tbody>
             {table.getRowModel().rows.map((row, index) => (
-              <tr key={row.id} className={index % 2 === 0 ? 'bg-gray-50' : 'bg-white hover:bg-gray-100 transition-colors duration-150'}>
+              <tr key={row.id} className={`${index % 2 === 0 ? 'bg-gray-50' : 'bg-white hover:bg-gray-100 transition-colors duration-150'}`}>
                 {row.getVisibleCells().map(cell => (
                   <td 
                     key={cell.id} 
-                    className="border-b border-gray-200 px-2 py-2 text-sm text-gray-700 text-left overflow-hidden"
+                    className="border-b border-gray-200 px-1 md:px-2 py-1 md:py-2 text-xs md:text-sm text-gray-700 text-left overflow-hidden"
                     style={{ 
                       width: cell.column.getSize(),
                       maxWidth: cell.column.getSize(),
