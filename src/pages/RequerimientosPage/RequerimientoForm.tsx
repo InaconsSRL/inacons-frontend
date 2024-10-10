@@ -80,6 +80,7 @@ interface PedirRequerimientoProps {
   recursosList: RecursoListItem[];
   obras: Obras[];
   onClose: () => void;
+  requerimiento?: FormData & { id?: string };
 }
 
 interface FocusedResource {
@@ -89,6 +90,7 @@ interface FocusedResource {
 }
 
 const RequerimientoForm: React.FC<PedirRequerimientoProps> = ({ recursosList, onClose, obras, requerimiento }) => {
+  console.log("Requerimiento:", requerimiento)
   const [addRequerimiento, { loading: loadingAdd, error: errorAdd }] = useMutation(ADD_REQUERIMIENTO_MUTATION);
   const [updateRequerimiento, { loading: loadingUpdate, error: errorUpdate }] = useMutation(UPDATE_REQUERIMIENTO_MUTATION);
   const [filteredResources, setFilteredResources] = useState<RecursoListItem[]>([]);
@@ -168,6 +170,8 @@ const RequerimientoForm: React.FC<PedirRequerimientoProps> = ({ recursosList, on
       recurso => recurso.recurso_id && recurso.cantidad > 0
     );
 
+    console.log(validRecursos)
+
     if (validRecursos.length === 0) {
       setModalMessage("Por favor, añade al menos un recurso con cantidad mayor a 0.");
       setModalIsOpen(true);
@@ -175,6 +179,7 @@ const RequerimientoForm: React.FC<PedirRequerimientoProps> = ({ recursosList, on
     }
 
     try {
+      console.log(validRecursos)
       const recursosModificados = validRecursos.map(({ nombre, codigo, ...rest }) => ({
         ...rest,
         presupuestado: "",
@@ -183,11 +188,11 @@ const RequerimientoForm: React.FC<PedirRequerimientoProps> = ({ recursosList, on
 
       let result;
 
-      if (requerimiento_id) {
-        // Si hay un requerimiento_id, actualizamos el requerimiento existente
+      if (requerimiento && requerimiento.id) {
+        // Si hay un requerimiento con ID, actualizamos el requerimiento existente
         result = await updateRequerimiento({
           variables: {
-            updateRequerimiento_id: requerimiento_id,
+            updateRequerimiento_id: requerimiento.id,
             usuario_id: formData.usuario_id,
             sustento: formData.sustento,
             obra_id: formData.obra_id,
@@ -196,7 +201,7 @@ const RequerimientoForm: React.FC<PedirRequerimientoProps> = ({ recursosList, on
         });
         console.log('Requerimiento actualizado:', result.data.updateRequerimiento);
       } else {
-        // Si no hay requerimiento_id, creamos uno nuevo
+        // Si no hay requerimiento con ID, creamos uno nuevo
         result = await addRequerimiento({
           variables: {
             usuario_id: formData.usuario_id,
@@ -217,7 +222,7 @@ const RequerimientoForm: React.FC<PedirRequerimientoProps> = ({ recursosList, on
       });
 
       // Mostrar un mensaje de éxito
-      setModalMessage(requerimiento_id ? "Requerimiento actualizado con éxito" : "Requerimiento agregado con éxito");
+      setModalMessage(requerimiento && requerimiento.id ? "Requerimiento actualizado con éxito" : "Requerimiento agregado con éxito");
       setModalIsOpen(true);
 
       // Cerrar el formulario
@@ -269,7 +274,7 @@ const RequerimientoForm: React.FC<PedirRequerimientoProps> = ({ recursosList, on
                 <option value="">Seleccione una obra</option>
                 {obras.map((obra) => (
                   <option key={obra.id} value={obra.id}>
-                    {obra.nombre}
+                    {obra.titulo}
                   </option>
                 ))}
               </select>

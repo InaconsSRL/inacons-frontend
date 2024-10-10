@@ -36,6 +36,8 @@ const GET_REQUERIMIENTO_RECURSOS = gql`
       cantidad_aprobada
       estado
       tipo_solicitud
+      codigo
+      nombre
     }
   }
 `;
@@ -60,8 +62,6 @@ type Recurso = {
   cantidad_aprobada: number;
   estado: string;
   tipo_solicitud: string;
-  nombre: string;
-  codigo: string;
 };
 
 type MaterialRequestsProps = {
@@ -133,6 +133,7 @@ const RequerimientosList: React.FC<MaterialRequestsProps> = ({ recursosList, obr
     refetchReq();
   };
 
+  console.log(recData)
   return (
     <motion.div className="flex flex-col h-full">
       <motion.div className="bg-blue-600/0 text-white p-4 flex items-center justify-between">
