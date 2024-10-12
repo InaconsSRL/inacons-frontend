@@ -1,13 +1,9 @@
-import React, { useState } from 'react';
-import { Board } from './types/kanban';
+import { useState } from 'react';
 import KanbanColumn from './KanbanColumn';
 import { mockBoard as board } from './mockData/kanbanData';
 
-interface KanbanBoardProps {
-  board: Board;
-}
 
-const KanbanBoard: React.FC<KanbanBoardProps> = () => {
+const KanbanBoard = () => {
   const [searchTerm, setSearchTerm] = useState('');
 
   // Función para filtrar tareas basadas en el término de búsqueda

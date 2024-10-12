@@ -68,7 +68,8 @@ const RecursoFormComponent: React.FC<FormComponentProps> = ({ initialValues, onS
       }}
       className="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4 max-w-2xl mx-auto"
     >
-      <div className="mb-4">
+      {/* Codigo - AUTOGENERABLE 80000*/}
+      {/* <div className="mb-4">
         <label htmlFor="codigo" className="block text-gray-700 text-sm font-bold mb-2">Código:</label>
         <form.Field
           name="codigo"
@@ -88,8 +89,8 @@ const RecursoFormComponent: React.FC<FormComponentProps> = ({ initialValues, onS
             </>
           )}
         />
-      </div>
-
+      </div> */}
+      {/* Nombre */}
       <div className="mb-4">
         <label htmlFor="nombre" className="block text-gray-700 text-sm font-bold mb-2">Nombre:</label>
         <form.Field
@@ -111,20 +112,21 @@ const RecursoFormComponent: React.FC<FormComponentProps> = ({ initialValues, onS
           )}
         />
       </div>
-
+      {/* Precio */}
       <div className="mb-4">
-        <label htmlFor="descripcion" className="block text-gray-700 text-sm font-bold mb-2">Descripción:</label>
+        <label htmlFor="precio_actual" className="block text-gray-700 text-sm font-bold mb-2">Precio Referencial:</label>
         <form.Field
-          name="descripcion"
+          name="precio_actual"
           children={(field) => (
             <>
-              <textarea
-                id="descripcion"
-                placeholder="Descripción del recurso"
+              <input
+                id="precio_actual"
+                placeholder="Nombre del recurso"
                 value={field.state.value}
                 onBlur={field.handleBlur}
+                type='number'
                 onChange={(e) => field.handleChange(e.target.value)}
-                className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline h-24"
+                className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
               />
               {field.state.meta.errors ? (
                 <p className="text-red-500 text-xs italic mt-1">{field.state.meta.errors[0]}</p>
@@ -132,8 +134,8 @@ const RecursoFormComponent: React.FC<FormComponentProps> = ({ initialValues, onS
             </>
           )}
         />
-      </div>
-
+      </div>      
+      {/* Unidad */}
       <div className="mb-4">
         <label htmlFor="unidad_id" className="block text-gray-700 text-sm font-bold mb-2">Unidad:</label>
         <form.Field
@@ -159,7 +161,7 @@ const RecursoFormComponent: React.FC<FormComponentProps> = ({ initialValues, onS
           )}
         />
       </div>
-
+      {/* Tipo Recurso */}
       <div className="mb-4">
         <label htmlFor="tipo_recurso_id" className="block text-gray-700 text-sm font-bold mb-2">Tipo de Recurso:</label>
         <form.Field
@@ -185,7 +187,7 @@ const RecursoFormComponent: React.FC<FormComponentProps> = ({ initialValues, onS
           )}
         />
       </div>
-
+      {/* Clasificacion Recurso */}
       <div className="mb-4">
         <label htmlFor="clasificacion_recurso_id" className="block text-gray-700 text-sm font-bold mb-2">Clasificación de Recurso:</label>
         <form.Field
@@ -209,8 +211,30 @@ const RecursoFormComponent: React.FC<FormComponentProps> = ({ initialValues, onS
           )}
         />
       </div>
+      {/* Descripcion */}
+      <div className="mb-4">
+        <label htmlFor="descripcion" className="block text-gray-700 text-sm font-bold mb-2">Descripción:</label>
+        <form.Field
+          name="descripcion"
+          children={(field) => (
+            <>
+              <textarea
+                id="descripcion"
+                placeholder="Descripción del recurso"
+                value={field.state.value}
+                onBlur={field.handleBlur}
+                onChange={(e) => field.handleChange(e.target.value)}
+                className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline h-24"
+              />
+              {field.state.meta.errors ? (
+                <p className="text-red-500 text-xs italic mt-1">{field.state.meta.errors[0]}</p>
+              ) : null}
+            </>
+          )}
+        />
+      </div>
 
-      <div className="mb-6">
+      {/* <div className="mb-6">
         <label className="flex items-center">
           <form.Field
             name="presupuesto"
@@ -227,7 +251,7 @@ const RecursoFormComponent: React.FC<FormComponentProps> = ({ initialValues, onS
           />
           <span className="text-sm font-bold text-gray-700">Presupuesto</span>
         </label>
-      </div>
+      </div> */}
 
       <div className="flex items-center justify-center">
         <Button

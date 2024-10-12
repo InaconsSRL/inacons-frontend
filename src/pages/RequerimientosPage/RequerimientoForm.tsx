@@ -36,18 +36,32 @@ const ADD_REQUERIMIENTO_MUTATION = gql`
 `;
 
 const UPDATE_REQUERIMIENTO_MUTATION = gql`
-  mutation UpdateRequerimiento($updateRequerimiento_id: ID!, $usuario_id: String, $presupuesto_id: String, $fechaSolicitud: String, $estado: String, $sustento: String, $obra_id: String) {
-  updateRequerimiento(id: $updateRequerimiento_id, usuario_id: $usuario_id, presupuesto_id: $presupuesto_id, fecha_solicitud: $fechaSolicitud, estado: $estado, sustento: $sustento, obra_id: $obra_id) {
+mutation UpdateMasiveRequerimientoConRecursos($requerimiento_id: ID!, $recursos: [RecursosUpdateMasive]) {
+  updateMasiveRequerimientoConRecursos(requerimiento_id: $requerimiento_id, recursos: $recursos) {
     id
-    usuario_id
-    presupuesto_id
-    fecha_solicitud
+    requerimiento_id
+    recurso_id
+    nombre
+    codigo
+    cantidad
+    cantidad_aprobada
     estado
-    sustento
-    obra_id
+    tipo_solicitud
+    presupuestado
   }
 }
 `;
+
+const DELETE_REQUERIMIENTO_RECURSO_MUTATION = gql`
+mutation DeleteRequerimientoRecurso($deleteRequerimientoRecursoId: ID!) {
+  deleteRequerimientoRecurso(id: $deleteRequerimientoRecursoId) {
+    id
+  }
+}
+`
+
+
+
 
 interface Recurso {
   recurso_id: string;
@@ -71,9 +85,9 @@ interface RecursoListItem {
 
 interface Obras{
   id: string;
-  codigo: string;
+  nombre: string;
   titulo: string;
-  descriocion: string
+  descripcion: string
 }
 
 interface PedirRequerimientoProps {
@@ -93,6 +107,8 @@ const RequerimientoForm: React.FC<PedirRequerimientoProps> = ({ recursosList, on
   console.log("Requerimiento:", requerimiento)
   const [addRequerimiento, { loading: loadingAdd, error: errorAdd }] = useMutation(ADD_REQUERIMIENTO_MUTATION);
   const [updateRequerimiento, { loading: loadingUpdate, error: errorUpdate }] = useMutation(UPDATE_REQUERIMIENTO_MUTATION);
+  const [deleteRequerimientoRecurso, { loading: loadingDelete, error: errorDelete }] = useMutation(DELETE_REQUERIMIENTO_RECURSO_MUTATION);
+  
   const [filteredResources, setFilteredResources] = useState<RecursoListItem[]>([]);
   const [focusedResource, setFocusedResource] = useState<FocusedResource | null>(null);
 
@@ -100,15 +116,21 @@ const RequerimientoForm: React.FC<PedirRequerimientoProps> = ({ recursosList, on
   const [modalMessage, setModalMessage] = useState('');
 
   const user = useSelector((state: RootState) => state.user);
-  const [formData, setFormData] = useState<FormData>( requerimiento ? requerimiento : {
-    obra_id: '',
-    usuario_id: user.id ?? '',
-    sustento: '',
-    recursos: [{ recurso_id: '', codigo: '', nombre: '', cantidad: 0 }]
+  const [formData, setFormData] = useState<FormData>(() => {
+    if (requerimiento && requerimiento.id) {
+      return {
+        ...requerimiento,
+        recursos: [...requerimiento.recursos, { recurso_id: '', codigo: '', nombre: '', cantidad: 0 }]
+      };
+    } else {
+      return {
+        obra_id: '',
+        usuario_id: user.id ?? '',
+        sustento: '',
+        recursos: [{ recurso_id: '', codigo: '', nombre: '', cantidad: 0 }]
+      };
+    }
   });
-
-  console.log(requerimiento)
-
 
   useEffect(() => {
     if (focusedResource) {
@@ -154,13 +176,33 @@ const RequerimientoForm: React.FC<PedirRequerimientoProps> = ({ recursosList, on
     setFocusedResource(null);
   };
 
-  const removeRow = (index: number) => {
+  const removeRow = async (index: number) => {
+
     const newRecursos = formData.recursos.filter((_, i) => i !== index);
-    setFormData({
-      ...formData,
-      recursos: newRecursos
-    });
-  };
+       setFormData({
+         ...formData,
+         recursos: newRecursos
+       });
+       console.log(formData)
+   
+       if (requerimiento && requerimiento.id) {
+         try {
+           const recursoToDelete = formData.recursos[index];
+           if (recursoToDelete.id) {
+             await deleteRequerimientoRecurso({
+               variables: { deleteRequerimientoRecursoId: recursoToDelete.id }
+             });
+           }
+         } catch (error) {
+           console.error('Error al eliminar el recurso:', error);
+           setModalMessage(`Error al eliminar el recurso: ${error.message}`);
+           setModalIsOpen(true);
+           return;
+         }
+       }
+   };
+
+  
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -169,9 +211,6 @@ const RequerimientoForm: React.FC<PedirRequerimientoProps> = ({ recursosList, on
     const validRecursos = formData.recursos.filter(
       recurso => recurso.recurso_id && recurso.cantidad > 0
     );
-
-    console.log(validRecursos)
-
     if (validRecursos.length === 0) {
       setModalMessage("Por favor, añade al menos un recurso con cantidad mayor a 0.");
       setModalIsOpen(true);
@@ -186,16 +225,20 @@ const RequerimientoForm: React.FC<PedirRequerimientoProps> = ({ recursosList, on
         tipo_solicitud: "",
       }));
 
+      const recursosModificadosUpdate = validRecursos.map(({ nombre, codigo, cantidad_aprobada, estado, presupuestado, id, tipo_solicitud, requerimiento_id, __typename,  ...rest }) => ({
+        ...rest,
+      }));
+
+      console.log("RecursosModificados", recursosModificados)
+
       let result;
 
       if (requerimiento && requerimiento.id) {
         // Si hay un requerimiento con ID, actualizamos el requerimiento existente
         result = await updateRequerimiento({
           variables: {
-            updateRequerimiento_id: requerimiento.id,
-            usuario_id: formData.usuario_id,
-            sustento: formData.sustento,
-            obra_id: formData.obra_id,
+            requerimiento_id: requerimiento.id,
+            recursos: recursosModificadosUpdate,
             // Aquí podrías incluir más campos si son necesarios para la actualización
           },
         });
@@ -244,11 +287,10 @@ const RequerimientoForm: React.FC<PedirRequerimientoProps> = ({ recursosList, on
     console.log(formData)
   }, [formData]);
 
-  if (loadingAdd || loadingUpdate) return <LoaderPage />;
-  //if (loadingAdd) return <LoaderPage />;
+  if (loadingAdd || loadingUpdate || loadingDelete) return <LoaderPage />;
   if (errorAdd) return <div>Error al crear un nuevo requerimiento: {errorAdd.message}</div>;
   if (errorUpdate) return <div>Error al actualizar el requerimiento: {errorUpdate.message}</div>;
-
+  if (errorDelete) return <div>Error al eliminar el recurso del requerimiento: {errorDelete.message}</div>;
 
 
   return (
@@ -274,7 +316,7 @@ const RequerimientoForm: React.FC<PedirRequerimientoProps> = ({ recursosList, on
                 <option value="">Seleccione una obra</option>
                 {obras.map((obra) => (
                   <option key={obra.id} value={obra.id}>
-                    {obra.titulo}
+                    {obra.nombre}
                   </option>
                 ))}
               </select>

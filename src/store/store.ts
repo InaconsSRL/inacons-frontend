@@ -10,6 +10,9 @@ import { clasificacionRecursoReducer } from '../slices/clasificacionRecursoSlice
 import { obraReducer } from '../slices/obrasSlice';
 import { roleReducer } from '../slices/rolesSlice';
 import { menuReducer } from '../slices/menuSlice';
+import { proveedorReducer } from '../slices/proveedorSlice';
+import { requerimientoReducer } from '../slices/requerimientoSlice';
+import { requerimientoRecursoReducer } from '../slices/requerimientoRecursoSlice';
 
 export const store = configureStore({
   reducer: {
@@ -23,6 +26,9 @@ export const store = configureStore({
     obra: obraReducer,
     role : roleReducer,
     menu: menuReducer,
+    proveedor: proveedorReducer,
+    requerimiento: requerimientoReducer,
+    requerimientoRecurso: requerimientoRecursoReducer,
   },
 });
 

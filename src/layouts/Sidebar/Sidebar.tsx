@@ -1,7 +1,7 @@
 // Sidebar.tsx
 import React from 'react';
 import { NavLink } from 'react-router-dom';
-import { FiHome, FiBold, FiShare, FiArchive, FiBriefcase, FiCommand, FiType, FiPackage, FiUsers } from 'react-icons/fi';
+import { FiHome, FiBold, FiShare, FiArchive, FiBriefcase, FiCommand, FiType, FiPackage, FiUsers, FiPower } from 'react-icons/fi';
 import DropdownMenu from './DropdownMenu';
 import { GiAbstract009, GiThreeFriends } from 'react-icons/gi';
 
@@ -28,6 +28,8 @@ const Sidebar: React.FC<SidebarProps> = ({ isSidebarOpen, toggleSidebar }) => {
     { to: "/dashboard/organigrama", icon: GiAbstract009, text: "OrganigramaObras" },
     { to: "/dashboard/roles", icon: GiThreeFriends, text: "AsignarRoles" },
     { to: "/dashboard/kanban", icon: GiThreeFriends, text: "Kanban" },
+    { to: "/dashboard/proveedor", icon: FiPower, text: "Proveedores" },
+    { to: "/dashboard/requerimientos", icon: FiBriefcase, text: "Requerimientos" },
   ];
 
   return (

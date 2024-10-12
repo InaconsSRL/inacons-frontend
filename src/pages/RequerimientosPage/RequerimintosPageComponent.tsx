@@ -53,8 +53,6 @@ const RequerimintosPageComponent: React.FC = () => {
     dispatch(fetchObras());
   }, [dispatch]);
 
-  console.log(obras)
-
   const renderActiveComponent = () => {
     // Pasar los datos de recursos a cada componente
     const recursos = data?.listRecurso || [];

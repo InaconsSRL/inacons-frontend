@@ -119,6 +119,8 @@ const RequerimientosList: React.FC<MaterialRequestsProps> = ({ recursosList, obr
   const handleEditRequerimiento = (requerimiento: Requerimiento) => {
     const newRecursos = recursos.filter( recurso => recurso.requerimiento_id === requerimiento.id)
     const newRequerimiento = {...requerimiento, recursos: newRecursos}
+    console.log(newRecursos)
+    console.log(newRequerimiento)
     setSelectedRequerimiento(newRequerimiento);
     setIsModalOpen(true);
   };
@@ -132,8 +134,7 @@ const RequerimientosList: React.FC<MaterialRequestsProps> = ({ recursosList, obr
     handleCloseModal();
     refetchReq();
   };
-
-  console.log(recData)
+  
   return (
     <motion.div className="flex flex-col h-full">
       <motion.div className="bg-blue-600/0 text-white p-4 flex items-center justify-between">

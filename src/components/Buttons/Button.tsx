@@ -2,7 +2,7 @@ import React, { useState, ReactNode } from 'react';
 
 interface ButtonProps {
   onClick?: () => void;
-  color?: 'verde' | 'blanco' | 'transp';
+  color?: 'verde' | 'blanco' | 'transp' | 'rojo';
   options?: Array<{ label: string; action: () => void } | string>;
   className?: string;
   text?: string | ReactNode;
@@ -23,6 +23,7 @@ const Button: React.FC<ButtonProps> = ({ onClick, color = 'blanco', options = []
     transp: 'bg-white/10 hover:bg-white/20 active:bg-white/30 text-black/100',
     verde: 'bg-blue-500 hover:bg-blue-600 active:bg-blue-700 text-white',
     blanco: 'bg-white border border-gray-300 text-black hover:bg-gray-100 active:bg-gray-200',
+    rojo: 'bg-red-500 hover:bg-red-600 active:bg-red-700 text-white',
   };
 
   const handleOptionClick = (option: Option) => {
