@@ -6,6 +6,9 @@ export default {
   ],
   theme: {
     extend: {
+      fontFamily: {
+        'sans': ['Roboto', 'sans-serif'],
+      },
       boxShadow: {
         'neumorph': '1px 1px 0px #838787, -1px -1px 0px #939999',
       },

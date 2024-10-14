@@ -2,8 +2,10 @@
 @tailwind components;
 @tailwind utilities;
 
-body {
-  font-family: 'Roboto', sans-serif;
+@layer base {
+  html {
+    font-family: 'Roboto', sans-serif;
+  }
 }
 
 /* Estilos para la barra de desplazamiento */
@@ -24,4 +26,3 @@ body {
   ::-webkit-scrollbar-thumb:hover {
     background: rgb(128, 128, 128);
   }
-  

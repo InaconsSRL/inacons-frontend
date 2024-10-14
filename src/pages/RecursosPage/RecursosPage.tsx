@@ -10,6 +10,7 @@ import LoaderPage from '../../components/Loader/LoaderPage';
 import { FiEdit } from 'react-icons/fi';
 import ImageCarousel from '../../components/IMG/ImageCarousel';
 import BulkUploadComponent from './BulkUploadComponent';
+import NewRecursosPage from './NewRecursosForm';
 // Definición de interfaces
 interface Recurso {
   id: string;
@@ -83,6 +84,7 @@ const RecursosPage: React.FC = () => {
   const [carouselImages, setCarouselImages] = useState<{ id: string; file: string }[] | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isModalOpen2, setIsModalOpen2] = useState(false);
+  const [isModalOpenNewRecursos, setIsModalOpenNewRecursos] = useState(false);
   const [editingRecurso, setEditingRecurso] = useState<Recurso | null>(null);
 
   const { loading, error, data, refetch } = useQuery<QueryData>(LIST_RECURSOS_QUERY);
@@ -122,17 +124,20 @@ const RecursosPage: React.FC = () => {
     setIsModalOpen(true);
   };
 
+  const handleButtonNewRecursoClick = () => {
+    setEditingRecurso(null);
+    setIsModalOpenNewRecursos(true);
+  };
+
   const handleButtonEnvioMasivoClick = () => {
     setIsModalOpen2(true);
   };
 
   const handleCloseModal = () => {
     setIsModalOpen(false);
-    setEditingRecurso(null);
-  };
-
-  const handleCloseModal2 = () => {
     setIsModalOpen2(false);
+    setIsModalOpenNewRecursos(false)
+    setEditingRecurso(null);
   };
 
   const tableData = useMemo(() => {
@@ -239,6 +244,7 @@ const RecursosPage: React.FC = () => {
         </div>
         <div className="flex items-center space-x-2">
           <Button text='Nuevo Recurso' color='verde' onClick={handleButtonClick} className="rounded w-full" />
+          <Button text='Nuevo NewRecurso' color='verde' onClick={handleButtonNewRecursoClick} className="rounded w-full" />
         </div>
       </motion.div>
 
@@ -291,8 +297,21 @@ const RecursosPage: React.FC = () => {
 
         )}
         {(
-          <Modal title='Carga Masiva de Recursos' isOpen={isModalOpen2} onClose={handleCloseModal2}>
+          <Modal title='Carga Masiva de Recursos' isOpen={isModalOpen2} onClose={handleCloseModal}>
             <BulkUploadComponent />
+          </Modal>
+
+
+        )}
+        {(
+          <Modal title='Recursos' isOpen={isModalOpenNewRecursos} onClose={handleCloseModal}>
+            <NewRecursosPage initialValues={editingRecurso || undefined}
+                onSubmit={handleSubmit}
+                options={{
+                  unidades: data?.listUnidad || [],
+                  tiposRecurso: data?.listTipoRecurso || [],
+                  clasificaciones: data?.listClasificacionRecurso || []
+                } as RecursoFormOptions} />
           </Modal>
 
 

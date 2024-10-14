@@ -46,10 +46,10 @@ const Modal: React.FC<ModalProps> = ({ isOpen, onClose, title, children }) => {
           >
             &times;
           </button>
-          <div className="p-4 border-b">
-            <h2 className="text-xl font-semibold pr-8">{title}</h2>
+          <div className="p-4 border-b bg-blue-900">
+            <h2 className="text-xl text-white font-semibold pr-8">{title}</h2>
           </div>
-          <div className="p-4 overflow-auto flex-grow">
+          <div className="p-4 overflow-auto flex-grow bg-slate-300">
             {children}
           </div>
         </motion.div>

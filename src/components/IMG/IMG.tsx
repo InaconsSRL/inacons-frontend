@@ -28,7 +28,8 @@ const IMG: React.FC<IMGProps> = ({ src, alt, onFullScreenChange, keya, className
 
     useEffect(() => {
         const handleKeyPress = (e: KeyboardEvent): void => {
-            if (e.key === "Escape") {
+            if (e.key === "Escape" && isOpen) {
+                e.preventDefault();
                 e.stopPropagation();
                 handleClose();
             }
@@ -36,13 +37,13 @@ const IMG: React.FC<IMGProps> = ({ src, alt, onFullScreenChange, keya, className
 
         if (isOpen) {
             document.body.classList.add("overflow-hidden");
-            window.addEventListener("keydown", handleKeyPress);
+            window.addEventListener("keydown", handleKeyPress, true);
         } else {
             document.body.classList.remove("overflow-hidden");
         }
 
         return () => {
-            window.removeEventListener("keydown", handleKeyPress);
+            window.removeEventListener("keydown", handleKeyPress, true);
             document.body.classList.remove("overflow-hidden");
         };
     }, [isOpen]);

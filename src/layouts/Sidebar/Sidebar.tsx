@@ -13,20 +13,27 @@ interface SidebarProps {
 const Sidebar: React.FC<SidebarProps> = ({ isSidebarOpen, toggleSidebar }) => {
   const activeStyle = "bg-sky-300 bg-opacity-50 rounded-xl py-2 pl-2 -m-2 pr-2";
 
-  const moduloRecursosItems = [
+  const moduloOtrosItems = [
     { to: "/dashboard/calendar", icon: FiBold, text: "Forma Básica" },
-    { to: "/dashboard/tipoRecurso", icon: FiShare, text: "Tipo Recurso" },
-    { to: "/dashboard/cargo", icon: FiBriefcase, text: "Cargos" },
-    { to: "/dashboard/recurso", icon: FiArchive, text: "Recursos" },
+    { to: "/dashboard/organigrama", icon: GiAbstract009, text: "OrganigramaObras" },
+  ];
+
+  const moduloAdministracionItems = [
     { to: "/dashboard/usuario", icon: FiUsers, text: "Usuarios" },
+    { to: "/dashboard/roles", icon: GiThreeFriends, text: "AsignarRoles" },
+    { to: "/dashboard/cargo", icon: FiBriefcase, text: "Cargos" },
+  ];
+
+  const moduloRecursosItems = [
+    { to: "/dashboard/recurso", icon: FiArchive, text: "Recursos" },
+    { to: "/dashboard/tipoRecurso", icon: FiShare, text: "Tipo Recurso" },
     { to: "/dashboard/unidad", icon: FiCommand, text: "Unidades" },
-    { to: "/dashboard/clasificacionRecurso", icon: FiType, text: "Clasificación de Recurso" },
+    { to: "/dashboard/clasificacionRecurso", icon: FiType, text: "Clase de Recurso" },
+    { to: "/dashboard/tipoCosto", icon: FiType, text: "Tipo de Costo" },
   ];
 
   const otroModuloItems = [
     { to: "/dashboard/requerimiento", icon: FiPackage, text: "Requerimiento" },
-    { to: "/dashboard/organigrama", icon: GiAbstract009, text: "OrganigramaObras" },
-    { to: "/dashboard/roles", icon: GiThreeFriends, text: "AsignarRoles" },
     { to: "/dashboard/kanban", icon: GiThreeFriends, text: "Kanban" },
     { to: "/dashboard/proveedor", icon: FiPower, text: "Proveedores" },
     { to: "/dashboard/requerimientos", icon: FiBriefcase, text: "Requerimientos" },
@@ -45,6 +52,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isSidebarOpen, toggleSidebar }) => {
           {isSidebarOpen && <span className="text-white">Inicio</span>}
         </NavLink>
 
+
         <DropdownMenu
           title="Recursos"
           items={moduloRecursosItems}
@@ -59,6 +67,19 @@ const Sidebar: React.FC<SidebarProps> = ({ isSidebarOpen, toggleSidebar }) => {
           toggleSidebar={toggleSidebar}
         />
 
+        <DropdownMenu
+          title="Administración"
+          items={moduloAdministracionItems}
+          isSidebarOpen={isSidebarOpen}
+          toggleSidebar={toggleSidebar}
+        />
+
+        <DropdownMenu
+          title="Otros"
+          items={moduloOtrosItems}
+          isSidebarOpen={isSidebarOpen}
+          toggleSidebar={toggleSidebar}
+        />
       </nav>
     </div>
   );
