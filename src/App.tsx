@@ -19,6 +19,7 @@ import RolesPage from './pages/RolePage/RolesPage';
 import KanbanBoard from './pages/KanBanBoard/KanbanBoard';
 import ProveedorComponent from './pages/ProveedorPage/ProveedorComponent';
 import RequerimientosComponent from './pages/RequerimientosPage/RequerimientosComponent';
+import TipoCostoRecursoComponent from './pages/TipoCostoRecursoPage/TipoCostoRecursoComponent';
 const App: React.FC = () => {
   const user = useSelector((state: RootState) => state.user);
 
@@ -43,6 +44,7 @@ const App: React.FC = () => {
         <Route path="kanban" element={<KanbanBoard />} />
         <Route path="proveedor" element={<ProveedorComponent />} />
         <Route path="requerimientos" element={<RequerimientosComponent />} />
+        <Route path="tipoCostoRecurso" element={<TipoCostoRecursoComponent />} />
       </Route>
       <Route path="/" element={<Navigate to="/dashboard" replace />} />
     </Routes> 

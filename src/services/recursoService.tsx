@@ -11,10 +11,10 @@ export const LIST_RECURSOS_QUERY = gql`
     cantidad
     unidad_id
     precio_actual
-    presupuesto
     tipo_recurso_id
     clasificacion_recurso_id
     fecha
+    vigente
     imagenes {
       id
       file
@@ -52,7 +52,6 @@ export const ADD_RECURSO_MUTATION = gql`
     cantidad
     unidad_id
     precio_actual
-    presupuesto
     tipo_recurso_id
     clasificacion_recurso_id
     }
@@ -60,15 +59,14 @@ export const ADD_RECURSO_MUTATION = gql`
 `;
 
 export const UPDATE_RECURSO_MUTATION = gql`
-  mutation UpdateRecurso($updateRecursoId: ID!, $codigo: String, $nombre: String, $descripcion: String, $fecha: String, $cantidad: Int, $unidad_id: String, $precioActual: Float, $presupuesto: Boolean, $tipo_recurso_id: String, $clasificacion_recurso_id: String) {
-    updateRecurso(id: $updateRecursoId, codigo: $codigo, nombre: $nombre, descripcion: $descripcion, fecha: $fecha, cantidad: $cantidad, unidad_id: $unidad_id, precio_actual: $precioActual, presupuesto: $presupuesto, tipo_recurso_id: $tipo_recurso_id, clasificacion_recurso_id: $clasificacion_recurso_id) {
+  mutation UpdateRecurso($updateRecursoId: ID!, $codigo: String, $nombre: String, $descripcion: String, $fecha: String, $cantidad: Int, $unidad_id: String, $precioActual: Float, $tipo_recurso_id: String, $clasificacion_recurso_id: String) {
+    updateRecurso(id: $updateRecursoId, codigo: $codigo, nombre: $nombre, descripcion: $descripcion, fecha: $fecha, cantidad: $cantidad, unidad_id: $unidad_id, precio_actual: $precioActual, tipo_recurso_id: $tipo_recurso_id, clasificacion_recurso_id: $clasificacion_recurso_id) {
       id
       codigo
       nombre
       descripcion
       unidad_id
       precio_actual
-      presupuesto
       tipo_recurso_id
       clasificacion_recurso_id
     }
@@ -85,6 +83,7 @@ interface AddRecursoInput {
   precio_actual: number;
   tipo_recurso_id: string;
   clasificacion_recurso_id: string;
+  vigente: boolean;
 }
 
 interface UpdateRecursoInput {
@@ -96,9 +95,9 @@ interface UpdateRecursoInput {
   cantidad?: number;
   unidad_id?: string;
   precio_actual?: number;
-  presupuesto?: boolean;
   tipo_recurso_id?: string;
   clasificacion_recurso_id?: string;
+  vigente: boolean;
 }
 
 export const listRecursosService = async () => {
@@ -122,6 +121,7 @@ export const addRecursoService = async (recursoData: AddRecursoInput) => {
     const response = await client.mutate({
       mutation: ADD_RECURSO_MUTATION,
       variables: {
+        vigente: recursoData.vigente,
         codigo: recursoData.codigo,
         nombre: recursoData.nombre,
         descripcion: recursoData.descripcion,
@@ -147,6 +147,7 @@ export const updateRecursoService = async (recursoData: UpdateRecursoInput) => {
     const response = await client.mutate({
       mutation: UPDATE_RECURSO_MUTATION,
       variables: {
+        vigente: recursoData.vigente,
         updateRecursoId: recursoData.id,
         codigo: recursoData.codigo,
         nombre: recursoData.nombre,
@@ -155,7 +156,6 @@ export const updateRecursoService = async (recursoData: UpdateRecursoInput) => {
         cantidad: recursoData.cantidad,
         unidadId: recursoData.unidad_id,
         precioActual: recursoData.precio_actual,
-        presupuesto: recursoData.presupuesto,
         tipoRecursoId: recursoData.tipo_recurso_id,
         clasificacionRecursoId: recursoData.clasificacion_recurso_id
       },

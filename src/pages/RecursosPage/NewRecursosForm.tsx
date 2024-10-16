@@ -1,20 +1,25 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import IMG from '../../components/IMG/IMG';
 import LoaderPage from '../../components/Loader/LoaderPage';
+import { mockData } from './mockDataHistorial';
+import Modal from '../../components/Modal/Modal';
+import TableComponent from '../../components/Table/TableComponent';
+import { FiXCircle } from 'react-icons/fi';
 
 interface FormData {
-  nombre: string;
+  id?: string;
   codigo: string;
-  clase: string;
-  claseDescripcion: string;
-  tipoRecurso: string;
-  tipoCosto: string;
-  vigente: string;
-  unidad: string;
+  nombre: string;
+  clasificacion_recurso_id: string;
+  tipo_recurso_id: string;
+  tipo_costo_id: string;
+  unidad_id: string;
   descripcion: string;
-  costoPromedio: string;
-  valorUltimaCompra: string;
-  costoInicial: string;
+  imagenes: { id: string; file: string; }[];
+  costo_promedio: string;
+  valor_ultima_compra: string;
+  precio_actual: number;
+  vigente: boolean;
 }
 
 const Select: React.FC<React.SelectHTMLAttributes<HTMLSelectElement>> = (props) => (
@@ -57,22 +62,39 @@ interface ResourceFormProps {
 
 const ResourceForm: React.FC<ResourceFormProps> = ({ initialValues, onSubmit, options }) => {
   const [isLoading, setIsLoading] = useState(false);
+  const [isSelectHistorial, setIsSelectHistorial] = useState(false);
   const [images, setImages] = useState<File[]>([]);
   const [imagePreviews, setImagePreviews] = useState<string[]>([]);
   const [formData, setFormData] = useState<FormData>(initialValues || {
-    nombre: 'New Resource',
-    codigo: '123',
-    clase: '1',
-    claseDescripcion: 'Materiales Auxiliares',
-    tipoRecurso: 'Material',
-    tipoCosto: 'Ultimo de Compra',
-    vigente: 'Si',
-    unidad: '1',
-    descripcion: 'Es una cosa bien buena',
-    costoPromedio: '0',
-    valorUltimaCompra: '0',
-    costoInicial: '0'
+    codigo: '156580',
+    nombre: '',
+    clasificacion_recurso_id: '',
+    tipo_recurso_id: '',
+    tipo_costo_id: '',
+    vigente: false,
+    unidad_id: '',
+    descripcion: '',
+    imagenes: [],
+    costo_promedio: '250',
+    valor_ultima_compra: '360',
+    precio_actual: 0,
   });
+
+  const isEditing = !!initialValues;
+  useEffect(() => {
+    if (initialValues) {
+      setFormData(initialValues);
+      setImagePreviews(initialValues.imagenes?.map((img: any) => img.file || img) || []);
+    }
+  }, [initialValues]);
+
+  useEffect(() => {
+    console.log(formData)
+  }, [formData]);
+  
+  const handleSelectHistorial = () => {
+    setIsSelectHistorial(true);
+  }
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -131,7 +153,7 @@ const ResourceForm: React.FC<ResourceFormProps> = ({ initialValues, onSubmit, op
     setIsLoading(true);
     Promise.all(files.map((file) => compressImage(file)))
       .then((compressedImages) => {
-        const newImages = compressedImages.filter((newImage) => 
+        const newImages = compressedImages.filter((newImage) =>
           !images.some((existingImage) => existingImage.name === newImage.name)
         );
         setImages((prevImages) => [...prevImages, ...newImages]);
@@ -169,51 +191,78 @@ const ResourceForm: React.FC<ResourceFormProps> = ({ initialValues, onSubmit, op
     ));
   };
 
-  console.log(options.clasificaciones)
+  const tableData = {
+    headers: ["Obra", "Fecha", "Tipo", "Nro", "Proveedor", "Unidad", "Cantidad", "Precio", "SubTotal"],
+    filter: [true, true, true, true, true, true, true, true, false],
+    rows: mockData.map((data, index) => ({
+      Obra: data.obra,
+      Fecha: data.fEmision,
+      Tipo: data.tipoDoc,
+      Nro: data.nroDoc,
+      Proveedor: data.proveedor,
+      Unidad: data.uEmb,
+      Cantidad: data.cantidad,
+      Precio: data.precio,
+      SubTotal: data.subTotal,
+      key: `row-${index}`
+    }))
+  };
+
+  if (isSelectHistorial) return <Modal title='Historial de Precios' isOpen={isSelectHistorial} onClose={() => setIsSelectHistorial(false)} > <TableComponent tableData={tableData} /> </Modal>
   if (isLoading) return <div className='flex justify-center items-center h-full bg-blue-900/70 rounded-lg'><LoaderPage /></div>;
 
   return (
     <form onSubmit={handleSubmit} className=" rounded-lg max-w-4xl mx-auto text-xs">
       <div className="bg-gray-200 shadow-md rounded-lg p-6">
-        <div className="flex flex-wrap justify-between mb-4 gap-2 text-[8px] md:text-sm">
+        <div className="flex flex-wrap justify-between mb-4 gap-2 text-[10px] md:text-sm">
           <Button type="button">Nuevo</Button>
           <Button type="button">Duplicar</Button>
           <Button type="button">H.Cambios</Button>
           <Button type="button">Cambio Unidad</Button>
-          <Button type="button">Ver Historial</Button>
+          <Button onClick={handleSelectHistorial} type="button">Ver Historial</Button>
           <Button type="button">Editar</Button>
-          <Button type="submit" variant="primary">Grabar</Button>
+          <Button type="submit" variant="primary">
+            {isEditing ? 'Actualizar Recurso' : 'Crear Recurso'}
+          </Button>
         </div>
 
+        <div className="w-full h-0.5 bg-blue-800/20 rounded-full my-4"></div>
+
+        <div className="mb-4 flex flex-row items-center">
+          <div className='text-sm font-medium text-gray-700 text-end'>
+            Codigo:
+          </div>
+          <div className='ml-2 px-2 h-8 text-gray-400 bg-gray-300 py-1.5 w-32 pr-3 rounded-lg border-solid borde min-w-32'>
+            {formData.codigo}
+          </div>
+        </div>
         <div className="grid grid-cols-1 sm:grid-cols-12 gap-4 mb-4">
           <div className='col-span-1 sm:col-span-8'>
-            <div className="mb-2">
-              <Label htmlFor="codigo">Codigo:</Label>
-              <span>{formData.codigo}</span>
-            </div>
             <div className="mb-2">
               <Label htmlFor="nombre">Nombre</Label>
               <Input id="nombre" name="nombre" value={formData.nombre} onChange={handleInputChange} />
             </div>
             <div className="mb-2">
-              <Label htmlFor="clase">Clase</Label>              
-              <Select id="tipoRecurso" name="tipoRecurso" value={formData.tipoRecurso} onChange={handleInputChange}>
+              <Label htmlFor="clasificacion_recurso_id">Clase</Label>
+              <Select id="clasificacion_recurso_id" name="clasificacion_recurso_id" value={formData.clasificacion_recurso_id} onChange={handleInputChange}>
+                <option>--Elige--</option>
                 {renderClasificaciones(options.clasificaciones)}
               </Select>
             </div>
             <div className='grid grid-cols-1 sm:grid-cols-2 gap-4'>
               <div>
-                <Label htmlFor="tipoRecurso">Tipo de Recurso</Label>
-                <Select id="tipoRecurso" name="tipoRecurso" value={formData.tipoRecurso} onChange={handleInputChange}>
+                <Label htmlFor="tipo_recurso_id">Tipo de Recurso</Label>
+                <Select id="tipo_recurso_id" name="tipo_recurso_id" value={formData.tipo_recurso_id} onChange={handleInputChange}>
+                  <option>--Elige--</option>
                   {options.tiposRecurso.map((tipo) => (
                     <option key={tipo.id} value={tipo.id}>{tipo.nombre}</option>
                   ))}
                 </Select>
               </div>
               <div>
-                <Label htmlFor="tipoCosto">Tipo Costo</Label>
-                <Select id="tipoCosto" name="tipoCosto" value={formData.tipoCosto} onChange={handleInputChange}>
-                  <option>Ultimo de Compra</option>
+                <Label htmlFor="tipo_costo_id">Tipo Costo</Label>
+                <Select id="tipo_costo_id" name="tipo_costo_id" value={formData.tipo_costo_id} onChange={handleInputChange}>
+                  <option>--Elige--</option>
                   <option>Material</option>
                   <option>Mano de Obra</option>
                   <option>Subcontrato</option>
@@ -226,15 +275,25 @@ const ResourceForm: React.FC<ResourceFormProps> = ({ initialValues, onSubmit, op
           <div className='col-span-1 sm:col-span-4'>
             <div className='mb-2'>
               <Label htmlFor="vigente">Vigente</Label>
-              <Select id="vigente" name="vigente" value={formData.vigente} onChange={handleInputChange}>
-                <option>Si</option>
-                <option>No</option>
-              </Select>
+              <div className="flex items-center mt-1">
+                <input
+                  type="checkbox"
+                  id="vigente"
+                  name="vigente"
+                  checked={formData.vigente}
+                  onChange={(e) => setFormData({ ...formData, vigente: e.target.checked })}
+                  className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                />
+                <label htmlFor="vigente" className="ml-2 block text-sm text-gray-900">
+                  {formData.vigente ? 'Sí' : 'No'}
+                </label>
+              </div>
             </div>
             <div className='mb-2'>
-              <Label htmlFor="unidad">Unidad</Label>
-              <Select id="unidad" name="unidad" value={formData.unidad} onChange={handleInputChange}>
-                {options.unidades.map((unidad) => (
+              <Label htmlFor="unidad_id">Unidad</Label>
+              <Select id="unidad_id" name="unidad_id" value={formData.unidad_id} onChange={handleInputChange}>
+                <option>--Elige--</option>
+                {options.unidades.map(unidad => (
                   <option key={unidad.id} value={unidad.id}>{unidad.nombre}</option>
                 ))}
               </Select>
@@ -243,12 +302,12 @@ const ResourceForm: React.FC<ResourceFormProps> = ({ initialValues, onSubmit, op
 
           <div className="col-span-1 sm:col-span-12 mb-4">
             <Label htmlFor="descripcion">Descripcion</Label>
-            <textarea 
-              id="descripcion" 
-              name="descripcion" 
-              value={formData.descripcion} 
-              onChange={handleInputChange} 
-              className='w-full border border-gray-300 rounded-md p-2 mt-1' 
+            <textarea
+              id="descripcion"
+              name="descripcion"
+              value={formData.descripcion}
+              onChange={handleInputChange}
+              className='w-full border border-gray-300 rounded-md p-2 mt-1'
               rows={2}
             ></textarea>
           </div>
@@ -256,24 +315,30 @@ const ResourceForm: React.FC<ResourceFormProps> = ({ initialValues, onSubmit, op
 
         <div className="mb-4">
           <h3 className="font-semibold mb-2">Catálogo</h3>
-          <input
-            type="file"
-            onChange={handleImageChange}
-            multiple
-            accept="image/*"
-            className="w-full p-4 text-sm bg-white border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-          />
-          
-          <div className="mt-4 grid grid-cols-2 sm:grid-cols-4 gap-4">
+          <div>
+            <input
+              type="file"
+              onChange={handleImageChange}
+              multiple
+              accept="image/*"
+              className="w-full p-4 text-sm bg-white border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            />
+            <p className="mt-2 text-sm text-gray-600">
+              {imagePreviews.length} {imagePreviews.length === 1 ? 'imagen mostrada' : 'imágenes mostradas'}
+            </p>
+          </div>
+
+          <div className="mt-4 grid grid-cols-2 sm:grid-cols-4 gap-2 min-h-32 bg-slate-300 items-center justify-center rounded-md">
+            {imagePreviews.length === 0 ? <div className='col-span-4 text-center text-gray-500 w-full'>No hay imagenes que mostrar...</div> : null}
             {imagePreviews.map((preview, index) => (
-              <div key={index} className="relative">
-                <IMG src={preview} alt={`Preview ${index + 1}`} className="w-full h-32 object-cover rounded-md" />
+              <div key={`image-${index}`} className="relative p-2.5 ">
+                <IMG src={preview} key={index} alt={`Preview ${index + 1}`} className="w-full min-h-28 object-cover rounded-md shadow-md shadow-slate-600" />
                 <button
                   type="button"
                   onClick={() => handleRemoveImage(index)}
-                  className="absolute top-0 right-0 bg-red-500 text-white rounded-full p-1 m-1"
+                  className="absolute top-0 right-0 text-white rounded-full"
                 >
-                  X
+                  <FiXCircle className='h-5 w-5 mr-2 text-white bg-red-500 rounded-full'/>
                 </button>
               </div>
             ))}
@@ -283,21 +348,22 @@ const ResourceForm: React.FC<ResourceFormProps> = ({ initialValues, onSubmit, op
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-4">
           <div>
             <Label htmlFor="costoPromedio">Costo Promedio</Label>
-            <Input id="costoPromedio" name="costoPromedio" value={formData.costoPromedio} onChange={handleInputChange} />
+            <div className='min-w-32 mt-2 min-h-8 ml-2 px-2 text-gray-400 bg-gray-300 py-1.5 pr-3 rounded-md border-solid borde'> {formData.costo_promedio}
+            </div>
+
           </div>
           <div>
             <Label htmlFor="valorUltimaCompra">Valor Última Compra</Label>
-            <Input id="valorUltimaCompra" name="valorUltimaCompra" value={formData.valorUltimaCompra} onChange={handleInputChange} />
+            <div className='min-w-32 mt-2 min-h-8 ml-2 px-2 text-gray-400 bg-gray-300 py-1.5 pr-3 rounded-md border-solid borde'> {formData.valor_ultima_compra}
+            </div>
           </div>
           <div>
             <Label htmlFor="costoInicial">Costo Inicial</Label>
-            <Input id="costoInicial" name="costoInicial" value={formData.costoInicial} onChange={handleInputChange} />
+            <Input id="costoInicial" name="costoInicial" value={formData.precio_actual || ''} onChange={handleInputChange} />
           </div>
         </div>
         <div className="flex flex-wrap justify-between mt-4 gap-2">
           <Button type="button">Ver Precios</Button>
-          <Button type="button">Grabar Costo</Button>
-          <Button type="button">Grabar Duración</Button>
         </div>
       </div>
     </form>

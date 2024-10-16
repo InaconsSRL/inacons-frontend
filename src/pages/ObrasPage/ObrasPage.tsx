@@ -9,7 +9,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { addObra, updateObra } from '../../slices/obrasSlice';
 import { RootState, AppDispatch } from '../../store/store';
 import LoaderPage from '../../components/Loader/LoaderPage';
-import { HiRefresh } from 'react-icons/hi';
+import { FiEdit } from 'react-icons/fi';
 
 // Definimos la interfaz Obra
 interface Obra {
@@ -67,11 +67,12 @@ const ObrasComponent: React.FC = () => {
   };
 
   const tableData = {
+    filter: [true, true, true, false],
     headers: ["titulo", "nombre", "descripcion", "opciones"],
     rows: obras.map(obra => ({
       ...obra,
       opciones: (
-        <Button text='Editar' color='transp' className='text-black' onClick={() => handleEdit(obra)}></Button>
+        <Button text={<FiEdit size={18} className='text-blue-500'/>} color='transp' className='text-black' onClick={() => handleEdit(obra)}></Button>
       )
     }))
   };

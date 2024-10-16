@@ -32,10 +32,10 @@ const ObraFormComponent: React.FC<FormComponentProps> = ({ initialValues, onSubm
         e.stopPropagation();
         void form.handleSubmit();
       }}
-      className="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4 max-w-md mx-auto"
+      className="bg-gradient-to-b from-white to-gray-100 shadow-lg rounded-lg px-6 sm:px-8 py-8 mb-4 max-w-md mx-auto border border-gray-200"
     >
-      <div className="mb-4">
-        <label htmlFor="titulo" className="block text-gray-700 text-sm font-bold mb-2">
+      <div className="mb-6">
+        <label htmlFor="titulo" className="block text-blue-700 text-sm font-semibold mb-2">
           Título:
         </label>
         <form.Field
@@ -48,7 +48,7 @@ const ObraFormComponent: React.FC<FormComponentProps> = ({ initialValues, onSubm
                 value={field.state.value}
                 onBlur={field.handleBlur}
                 onChange={(e) => field.handleChange(e.target.value)}
-                className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                className="shadow-sm appearance-none border border-gray-300 rounded-md w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition duration-150 ease-in-out"
               />
               {field.state.meta.errors ? (
                 <p className="text-red-500 text-xs italic mt-1">{field.state.meta.errors[0]}</p>
@@ -57,8 +57,8 @@ const ObraFormComponent: React.FC<FormComponentProps> = ({ initialValues, onSubm
           )}
         />
       </div>
-      <div className="mb-4">
-        <label htmlFor="nombre" className="block text-gray-700 text-sm font-bold mb-2">
+      <div className="mb-6">
+        <label htmlFor="nombre" className="block text-blue-700 text-sm font-semibold mb-2">
           Nombre:
         </label>
         <form.Field
@@ -71,7 +71,7 @@ const ObraFormComponent: React.FC<FormComponentProps> = ({ initialValues, onSubm
                 value={field.state.value}
                 onBlur={field.handleBlur}
                 onChange={(e) => field.handleChange(e.target.value)}
-                className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                className="shadow-sm appearance-none border border-gray-300 rounded-md w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition duration-150 ease-in-out"
               />
               {field.state.meta.errors ? (
                 <p className="text-red-500 text-xs italic mt-1">{field.state.meta.errors[0]}</p>
@@ -80,21 +80,21 @@ const ObraFormComponent: React.FC<FormComponentProps> = ({ initialValues, onSubm
           )}
         />
       </div>
-      <div className="mb-4">
-        <label htmlFor="descripcion" className="block text-gray-700 text-sm font-bold mb-2">
-          Descripcion:
+      <div className="mb-6">
+        <label htmlFor="descripcion" className="block text-blue-700 text-sm font-semibold mb-2">
+          Descripción:
         </label>
         <form.Field
           name="descripcion"
           children={(field: FieldApi<ObraFormData, 'descripcion'>) => (
             <>
-              <input
+              <textarea
                 id="descripcion"
-                placeholder="Descripcion de la obra"
+                placeholder="Descripción de la obra"
                 value={field.state.value}
                 onBlur={field.handleBlur}
                 onChange={(e) => field.handleChange(e.target.value)}
-                className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                className="shadow-sm appearance-none border border-gray-300 rounded-md w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition duration-150 ease-in-out h-32 resize-none"
               />
               {field.state.meta.errors ? (
                 <p className="text-red-500 text-xs italic mt-1">{field.state.meta.errors[0]}</p>
@@ -103,11 +103,11 @@ const ObraFormComponent: React.FC<FormComponentProps> = ({ initialValues, onSubm
           )}
         />
       </div>
-      <div className="flex items-center justify-center mt-6">
+      <div className="flex items-center justify-center mt-8">
         <Button
           text={initialValues ? 'Actualizar Obra' : 'Crear Obra'}
           color="verde"
-          className="w-auto px-6 py-2 text-sm font-medium"
+          className="w-full sm:w-auto px-6 py-3 text-sm font-medium rounded-md shadow-sm hover:shadow-md transition duration-150 ease-in-out"
         />
       </div>
     </form>

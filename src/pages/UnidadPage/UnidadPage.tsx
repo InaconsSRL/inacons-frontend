@@ -62,6 +62,7 @@ const UnidadPage: React.FC = () => {
   };
 
   const tableData = {
+    filter: [true, false],
     headers: ["nombre", "opciones"],
     rows: unidades.map(unidad => ({
       ...unidad,

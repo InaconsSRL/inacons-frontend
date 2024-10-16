@@ -3,19 +3,17 @@ import { motion, AnimatePresence } from 'framer-motion';
 import Button from '../../components/Buttons/Button';
 import Modal from '../../components/Modal/Modal';
 import TableComponent from '../../components/Table/TableComponent';
-import FormComponent from './CargoFormComponent';
+import FormComponent from './TipoCostoRecursoFormComponent';
 
 import { useDispatch, useSelector } from 'react-redux';
-import { fetchCargos, addCargo, updateCargo } from '../../slices/cargoSlice';
+import { fetchTipoCostoRecursos, addTipoCostoRecurso, updateTipoCostoRecurso } from '../../slices/tipoCostoRecursoSlice';
 import { RootState, AppDispatch } from '../../store/store';
 import LoaderPage from '../../components/Loader/LoaderPage';
 import { FiEdit } from 'react-icons/fi';
 
-// Definimos la interfaz Cargo
-interface Cargo {
+interface TipoCostoRecurso {
   id: string;
   nombre: string;
-  descripcion: string;
 }
 
 const pageVariants = {
@@ -30,29 +28,30 @@ const pageTransition = {
   duration: 0.5
 };
 
-const CargosComponent: React.FC = () => {
+const TipoCostoRecursoComponent: React.FC = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [editingCargo, setEditingCargo] = useState<Cargo | null>(null);
+  const [editingTipoCostoRecurso, setEditingTipoCostoRecurso] = useState<TipoCostoRecurso | null>(null);
 
   const dispatch = useDispatch<AppDispatch>();
-  const { cargos, loading, error } = useSelector((state: RootState) => state.cargo);
 
   useEffect(() => {
-    dispatch(fetchCargos());
-  }, [dispatch]);
+    dispatch(fetchTipoCostoRecursos());
+}, [dispatch]);
 
-  const handleSubmit = (data: { nombre: string; descripcion: string }) => {
-    if (editingCargo) {
-      dispatch(updateCargo({ id: editingCargo.id, ...data }));
+  const { tipoCostoRecursos, loading, error } = useSelector((state: RootState) => state.tipoCostoRecurso);
+
+  const handleSubmit = (data: { nombre: string }) => {
+    if (editingTipoCostoRecurso) {
+      dispatch(updateTipoCostoRecurso({ id: editingTipoCostoRecurso.id, ...data }));
     } else {
-      dispatch(addCargo(data));
+      dispatch(addTipoCostoRecurso(data));
     }
     setIsModalOpen(false);
-    setEditingCargo(null);
+    setEditingTipoCostoRecurso(null);
   };
 
-  const handleEdit = (cargo: Cargo) => {
-    setEditingCargo(cargo);
+  const handleEdit = (tipoCostoRecurso: TipoCostoRecurso) => {
+    setEditingTipoCostoRecurso(tipoCostoRecurso);
     setIsModalOpen(true);
   };
 
@@ -60,22 +59,22 @@ const CargosComponent: React.FC = () => {
   if (error) return <motion.div initial="initial" animate="in" exit="out" variants={pageVariants} transition={pageTransition}>Error: {error}</motion.div>;
 
   const handleButtonClick = () => {
-    setEditingCargo(null);
+    setEditingTipoCostoRecurso(null);
     setIsModalOpen(true);
   };
 
   const handleCloseModal = () => {
     setIsModalOpen(false);
-    setEditingCargo(null);
+    setEditingTipoCostoRecurso(null);
   };
 
   const tableData = {
-    filter: [true, true, false],
-    headers: ["nombre", "descripcion", "opciones"],
-    rows: cargos.map(cargo => ({
-      ...cargo,
+    filter: [true, false],
+    headers: ["nombre", "opciones"],
+    rows: tipoCostoRecursos.map(tipoCostoRecurso => ({
+      ...tipoCostoRecurso,
       opciones: (
-        <Button text={<FiEdit size={18} className='text-blue-500'/>} color='transp' className='text-black' onClick={() => handleEdit(cargo)}></Button>
+        <Button text={<FiEdit size={18} className='text-blue-500'/>} color='transp' className='text-black' onClick={() => handleEdit(tipoCostoRecurso)}></Button>
       )
     }))
   };
@@ -95,19 +94,11 @@ const CargosComponent: React.FC = () => {
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.2 }}
       >
-        <h1 className="text-2xl font-bold">Cargos ☺</h1>
-
+        <h1 className="text-2xl font-bold text-blue-800">Tipos de Costo de Recurso</h1>
 
         <div className="flex items-center space-x-2">
-          <Button text='Nuevo Cargo' color='verde' onClick={handleButtonClick} className="rounded w-full" />
-          {/* <Button
-            text={<HiRefresh className={` text-green-500 ${window.innerWidth < 768 ? 'w-3 h-3' : 'w-4 h-4'}`} />}
-            color='blanco'
-            onClick={() => { }}
-            className="rounded w-full"
-          /> */}
+          <Button text='Nuevo Tipo de Costo' color='verde' onClick={handleButtonClick} className="rounded w-full" />
         </div>
-
       </motion.div>
 
       <motion.div
@@ -116,7 +107,6 @@ const CargosComponent: React.FC = () => {
         animate={{ opacity: 1, scale: 1 }}
         transition={{ delay: 0.4 }}
       >
-        {/* Seccion C */}
         <main className="w-full flex flex-col flex-grow p-4 bg-white/80 overflow-hidden">
           <motion.div
             className="flex-grow border rounded-lg overflow-hidden"
@@ -133,7 +123,7 @@ const CargosComponent: React.FC = () => {
 
       <AnimatePresence>
         {isModalOpen && (
-          <Modal title={editingCargo ? 'Actualizar Cargo' : 'Crear Cargo'} isOpen={isModalOpen} onClose={handleCloseModal}>
+          <Modal title={editingTipoCostoRecurso ? 'Actualizar Tipo de Costo' : 'Crear Tipo de Costo'} isOpen={isModalOpen} onClose={handleCloseModal}>
             <motion.div
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
@@ -141,7 +131,7 @@ const CargosComponent: React.FC = () => {
               transition={{ duration: 0.3 }}
             >
               <FormComponent
-                initialValues={editingCargo || undefined}
+                initialValues={editingTipoCostoRecurso || undefined}
                 onSubmit={handleSubmit}
               />
             </motion.div>
@@ -152,4 +142,4 @@ const CargosComponent: React.FC = () => {
   );
 };
 
-export default CargosComponent;
+export default TipoCostoRecursoComponent;

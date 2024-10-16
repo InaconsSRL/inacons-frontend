@@ -110,63 +110,63 @@ const RolesFormComponent: React.FC<Props> = ({ initialValues, onSubmit, menus })
       }}
     >
       {({ errors, touched }) => (
-        <Form className="space-y-4">
+        <Form className="space-y-6 bg-white/65 shadow-md rounded-lg p-8 text-xs md:text-base">
           <div>
-            <label htmlFor="nombre" className="block text-sm font-medium text-gray-700">Nombre</label>
-            <Field name="nombre" type="text" className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50" />
+            <label htmlFor="nombre" className="block text-sm font-medium text-gray-700 mb-2">Nombre</label>
+            <Field name="nombre" type="text" className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 py-2 px-4" />
             {errors.nombre && touched.nombre ? <div className="text-red-500 text-sm mt-1">{errors.nombre}</div> : null}
           </div>
 
           <div>
-            <label htmlFor="descripcion" className="block text-sm font-medium text-gray-700">Descripción</label>
-            <Field name="descripcion" as="textarea" className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50" />
+            <label htmlFor="descripcion" className="block text-sm font-medium text-gray-700 mb-2">Descripción</label>
+            <Field name="descripcion" as="textarea" className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 py-2 px-4" />
             {errors.descripcion && touched.descripcion ? <div className="text-red-600 text-sm mt-1">{errors.descripcion}</div> : null}
           </div>
 
-          <div className="overflow-x-auto">
-            <table className="min-w-full bg-gray-50 text-black">
-              <thead>
+          <div className="overflow-x-auto bg-gray-50 rounded-lg shadow text-[8px] md:text-base">
+            <table className="min-w-full text-black">
+              <thead className="bg-gray-300">
                 <tr>
-                  <th className="py-2 px-4 text-left text-stone-600 ">Menú</th>
-                  <th className="py-2 px-4 text-center text-stone-600 ">Ver</th>
-                  <th className="py-2 px-4 text-center text-stone-600 ">Crear</th>
-                  <th className="py-2 px-4 text-center text-stone-600 ">Editar</th>
-                  <th className="py-2 px-4 text-center text-stone-600 ">Eliminar</th>
+                  <th className="py-2 px-2 md:py-3 md:px-6 text-left text-[8px] md:text-base font-medium text-gray-500 uppercase tracking-wider">Menú</th>
+                  <th className="py-2 px-2 md:py-3 md:px-6 text-center text-[8px] md:text-base font-medium text-gray-500 uppercase tracking-wider">Ver</th>
+                  <th className="py-2 px-2 md:py-3 md:px-6 text-center text-[8px] md:text-base font-medium text-gray-500 uppercase tracking-wider">Crear</th>
+                  <th className="py-2 px-2 md:py-3 md:px-6 text-center text-[8px] md:text-base font-medium text-gray-500 uppercase tracking-wider">Editar</th>
+                  <th className="py-2 px-2 md:py-3 md:px-6 text-center text-[8px] md:text-base font-medium text-gray-500 uppercase tracking-wider">Eliminar</th>
                 </tr>
               </thead>
-              <tbody>
+              <tbody className="bg-white divide-y divide-gray-200 text-[10px] md:text-base">
                 <FieldArray name="menusPermissions">
                   {() => (
                     <>
                       {menus.map((menu, index) => (
-                        <tr key={menu.id} className="border-b border-gray-300">
-                          <td className="py-2 px-4">{menu.nombre}</td>
-                          <td className="py-2 px-4 text-center">
+                        <tr key={menu.id} className="hover:bg-gray-50">
+                          <td className="py-2 px-2 md:py-3 md:px-6 text-[10px] md:text-base font-medium text-gray-600">{menu.nombre}</td>
+                          <td className="py-2 px-2 md:py-3 md:px-6  text-center">
                             <Field 
                               type="checkbox" 
                               name={`menusPermissions.${index}.permissions.crear`} 
-                              className="form-checkbox h-5 w-5 text-blue-500"
+                              className="form-checkbox h-3 w-3 md:h-4 md:w-4 text-indigo-600 transition duration-150 ease-in-out"
                             />
                           </td>
-                          <td className="py-2 px-4 text-center">
+                          <td className="py-2 px-2 md:py-3 md:px-6  text-center">
                             <Field 
                               type="checkbox" 
                               name={`menusPermissions.${index}.permissions.editar`} 
-                              className="form-checkbox h-5 w-5 text-blue-500"
+                              className="form-checkbox h-3 w-3 md:h-4 md:w-4   text-indigo-600 transition duration-150 ease-in-out"
                             />
                           </td>
-                          <td className="py-2 px-4 text-center">
+                          <td className="py-2 px-2 md:py-3 md:px-6  text-center">
                             <Field 
                               type="checkbox" 
                               name={`menusPermissions.${index}.permissions.eliminar`} 
-                              className="form-checkbox h-5 w-5 text-blue-500"
+                              className="form-checkbox h-3 w-3 md:h-4 md:w-4   text-indigo-600 transition duration-150 ease-in-out"
                             />
                           </td>
-                          <td className="py-2 px-4 text-center">
+                          <td className="py-2 px-2 md:py-3 md:px-6  text-center">
                             <Field 
                               type="checkbox" 
                               name={`menusPermissions.${index}.permissions.ver`} 
-                              className="form-checkbox h-5 w-5 text-blue-500"
+                              className="form-checkbox h-3 w-3 md:h-4 md:w-4   text-indigo-600 transition duration-150 ease-in-out"
                             />
                           </td>
                         </tr>
@@ -178,7 +178,7 @@ const RolesFormComponent: React.FC<Props> = ({ initialValues, onSubmit, menus })
             </table>
           </div>
 
-          <button type="submit" className="w-full px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600 transition-colors">
+          <button type="submit" className="w-full px-4 py-2 bg-green-500 text-white rounded-md hover:bg-green-600 transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-opacity-50">
             {initialValues ? 'Actualizar' : 'Crear'} Rol
           </button>
         </Form>

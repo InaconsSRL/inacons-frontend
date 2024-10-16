@@ -13,7 +13,7 @@ import { menuReducer } from '../slices/menuSlice';
 import { proveedorReducer } from '../slices/proveedorSlice';
 import { requerimientoReducer } from '../slices/requerimientoSlice';
 import { requerimientoRecursoReducer } from '../slices/requerimientoRecursoSlice';
-
+import { tipoCostoRecursoReducer } from '../slices/tipoCostoRecursoSlice';
 export const store = configureStore({
   reducer: {
     user: userReducer,
@@ -29,6 +29,7 @@ export const store = configureStore({
     proveedor: proveedorReducer,
     requerimiento: requerimientoReducer,
     requerimientoRecurso: requerimientoRecursoReducer,
+    tipoCostoRecurso: tipoCostoRecursoReducer,
   },
 });
 

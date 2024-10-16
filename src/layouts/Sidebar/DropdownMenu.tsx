@@ -62,7 +62,7 @@ const DropdownMenu: React.FC<DropdownMenuProps> = ({ title, items, isSidebarOpen
             onClick={toggleSidebar}
           >
             <item.icon className="w-6 h-6 text-white" />
-            {isSidebarOpen && <span className="text-white">{item.text}</span>}
+            {isSidebarOpen && <span className="text-white whitespace-nowrap overflow-hidden text-ellipsis">{item.text}</span>}
           </NavLink>
         ))}
       </div>

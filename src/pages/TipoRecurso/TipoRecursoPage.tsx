@@ -62,6 +62,7 @@ const TipoRecursoComponent: React.FC = () => {
   };
 
   const tableData = {
+    filter: [true, false],
     headers: ["nombre", "opciones"],
     rows: tiposRecurso.map(tipoRecurso => ({
       ...tipoRecurso,
@@ -86,13 +87,15 @@ const TipoRecursoComponent: React.FC = () => {
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.2 }}
       >
-        <h1 className="text-ms md:text-2xl font-bold">Tipos de Recurso</h1>
+        <div className='flex flex-col md:flex-row items-center justify-between w-full'>
+        <h1 className="text-ms md:text-2xl font-bold ">Tipos de Recurso</h1>
         <div className="flex items-center space-x-2">
           <Button
             text='Nuevo Tipo de Recurso'
             color='verde'
             onClick={handleButtonClick}
             className="rounded w-full" />
+        </div>
         </div>
       </motion.div>
       <motion.div
@@ -116,29 +119,7 @@ const TipoRecursoComponent: React.FC = () => {
 
 
         </main>
-        {/* Section D: Samples */}
-        <aside className="w-64 hidden md:flex flex-col flex-grow p-4 bg-gray-100 overflow-hidden">
-          <div className="flex justify-between items-center mb-4">
-            <button className="px-4 py-2 bg-gray-200 text-gray-700 rounded hover:bg-gray-300 transition-colors w-full">
-              Detalles
-            </button>
-          </div>
-          <div className="flex-grow border rounded-lg overflow-auto h-96">
-            <div className="overflow-auto">
-              {[...Array(30)].map((_, index) => (
-                <motion.div
-                  key={index}
-                  className="p-2 border-b hover:bg-gray-200 transition-colors"
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: 0.1 * index }}
-                >
-                  SubDetalle {index + 1}
-                </motion.div>
-              ))}
-            </div>
-          </div>
-        </aside>
+        
       </motion.div>
 
       <AnimatePresence>

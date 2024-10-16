@@ -5,11 +5,10 @@ interface IMGProps {
     src: string;
     alt: string;
     onFullScreenChange?: (isFullScreen: boolean) => void;
-    keya?: string | number;
     className?: string;
 }
 
-const IMG: React.FC<IMGProps> = ({ src, alt, onFullScreenChange, keya, className }) => {
+const IMG: React.FC<IMGProps> = ({ src, alt, onFullScreenChange, className }) => {
     const [isOpen, setIsOpen] = useState<boolean>(false);
 
     const handleOpen = (): void => {
@@ -77,7 +76,6 @@ const IMG: React.FC<IMGProps> = ({ src, alt, onFullScreenChange, keya, className
     return (
         <>
             <img
-                key={keya}
                 src={src}
                 alt={alt}
                 className={`cursor-pointer ${className || ''} w-8 h-8`}

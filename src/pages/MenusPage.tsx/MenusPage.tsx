@@ -9,6 +9,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { fetchMenus, addMenu, updateMenu } from '../../slices/menuSlice';
 import { RootState, AppDispatch } from '../../store/store';
 import LoaderPage from '../../components/Loader/LoaderPage';
+import { FiEdit } from 'react-icons/fi';
 
 // Definimos la interfaz Menu
 interface Menu {
@@ -70,13 +71,14 @@ const MenusPage: React.FC = () => {
     };
 
     const tableData = {
+        filter: [true, true, true, false],
         headers: ["Nombre", "Link", "Posición", "Opciones"],
         rows: menus.map(menu => ({
             "Nombre": menu.nombre,
             "Link": menu.slug,
             "Posición": menu.posicion,
             "Opciones": (
-                <Button text='Editar' color='transp' className='text-black' onClick={() => handleEdit(menu)}></Button>
+                <Button text={<FiEdit size={18} className='text-blue-500'/>} color='transp' className='text-black' onClick={() => handleEdit(menu)}></Button>
             )
         }))
     };

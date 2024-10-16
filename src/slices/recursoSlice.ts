@@ -11,9 +11,9 @@ interface Recurso {
   cantidad: number;
   unidad_id: string;
   precio_actual: number;
-  presupuesto: boolean;
   tipo_recurso_id: string;
   clasificacion_recurso_id: string;
+  vigente: boolean;
 }
 
 interface RecursoState {

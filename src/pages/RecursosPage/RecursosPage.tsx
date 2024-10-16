@@ -4,7 +4,6 @@ import { motion, AnimatePresence } from 'framer-motion';
 import Button from '../../components/Buttons/Button';
 import Modal from '../../components/Modal/Modal';
 import TableComponent from '../../components/Table/TableComponent';
-import RecursoFormComponent from './RecursoFormComponent';
 import { LIST_RECURSOS_QUERY, ADD_RECURSO_MUTATION, UPDATE_RECURSO_MUTATION } from '../../services/recursoService';
 import LoaderPage from '../../components/Loader/LoaderPage';
 import { FiEdit } from 'react-icons/fi';
@@ -13,17 +12,19 @@ import BulkUploadComponent from './BulkUploadComponent';
 import NewRecursosPage from './NewRecursosForm';
 // Definición de interfaces
 interface Recurso {
-  id: string;
+  id?: string;
   codigo: string;
   nombre: string;
-  descripcion: string;
-  cantidad: number;
-  unidad_id: string;
-  precio_actual: number;
-  tipo_recurso_id: string;
   clasificacion_recurso_id: string;
-  presupuesto: boolean;
-  imagenes: { id: string; file: string }[];
+  tipo_recurso_id: string;
+  tipo_costo_id: string;
+  vigente: boolean;
+  unidad_id: string;
+  descripcion: string;
+  imagenes: { id: string; file: string }[]; 
+  costo_promedio: string;
+  valor_ultima_compra: string;
+  precio_actual: number,
 }
 
 interface Unidad {
@@ -50,18 +51,6 @@ interface QueryData {
   listClasificacionRecurso: ClasificacionRecurso[];
 }
 
-interface RecursoFormData {
-  codigo: string;
-  nombre: string;
-  descripcion: string;
-  cantidad: number;
-  unidad_id: string;
-  precio_actual: number;
-  tipo_recurso_id: string;
-  clasificacion_recurso_id: string;
-  presupuesto?: boolean;
-}
-
 interface RecursoFormOptions {
   unidades: Unidad[];
   tiposRecurso: TipoRecurso[];
@@ -80,18 +69,31 @@ const pageTransition = {
   duration: 0.5
 };
 
+const recursoInicial = {
+  codigo: '',
+  nombre: '',
+  clasificacion_recurso_id: '',
+  tipo_recurso_id: '',
+  tipo_costo_id: '',
+  vigente: false,
+  unidad_id: '',
+  descripcion: '',
+  imagenes: [],
+  costo_promedio: '',
+  valor_ultima_compra: '',
+  precio_actual: 0,
+}
 const RecursosPage: React.FC = () => {
   const [carouselImages, setCarouselImages] = useState<{ id: string; file: string }[] | null>(null);
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [isModalOpen2, setIsModalOpen2] = useState(false);
+  const [isModalOpenBulkResources, setIsModalOpenBulkResources] = useState(false);
   const [isModalOpenNewRecursos, setIsModalOpenNewRecursos] = useState(false);
-  const [editingRecurso, setEditingRecurso] = useState<Recurso | null>(null);
+  const [editingRecurso, setEditingRecurso] = useState<Recurso>(recursoInicial);
 
   const { loading, error, data, refetch } = useQuery<QueryData>(LIST_RECURSOS_QUERY);
   const [addRecurso] = useMutation(ADD_RECURSO_MUTATION);
   const [updateRecurso] = useMutation(UPDATE_RECURSO_MUTATION);
 
-  const handleSubmit = async (formData: RecursoFormData) => {
+  const handleSubmit = async (formData: Recurso) => {
     if (editingRecurso) {
       await updateRecurso({
         variables: {
@@ -100,7 +102,6 @@ const RecursosPage: React.FC = () => {
         }
       });
     } else {
-      // await addRecurso({ variables: formData });
       console.log(formData)
       await addRecurso({
         variables: {
@@ -109,35 +110,28 @@ const RecursosPage: React.FC = () => {
         }
       });
     }
-    setIsModalOpen(false);
-    setEditingRecurso(null);
+    setEditingRecurso(recursoInicial);
     refetch();
   };
 
-  const handleEdit = (recurso: Recurso) => {
+  const handleEditNewRecursos = (recurso: Recurso) => {
     setEditingRecurso(recurso);
-    setIsModalOpen(true);
-  };
-
-  const handleButtonClick = () => {
-    setEditingRecurso(null);
-    setIsModalOpen(true);
+    setIsModalOpenNewRecursos(true);
   };
 
   const handleButtonNewRecursoClick = () => {
-    setEditingRecurso(null);
+    setEditingRecurso(recursoInicial);
     setIsModalOpenNewRecursos(true);
   };
 
   const handleButtonEnvioMasivoClick = () => {
-    setIsModalOpen2(true);
+    setIsModalOpenBulkResources(true);
   };
 
   const handleCloseModal = () => {
-    setIsModalOpen(false);
-    setIsModalOpen2(false);
+    setIsModalOpenBulkResources(false);
     setIsModalOpenNewRecursos(false)
-    setEditingRecurso(null);
+    setEditingRecurso(recursoInicial);
   };
 
   const tableData = useMemo(() => {
@@ -175,13 +169,13 @@ const RecursosPage: React.FC = () => {
     };
 
     return {
-      headers: ["codigo", "nombre", "descripcion", "cantidad", "unidad_id", "precio_actual", "clasificacion_recurso_id", "tipo_recurso_id", "presupuesto", "imagenes", "opcion"],
+      filter: [true, true, true, true, true, true, true, true, true, false],
+      headers: ["codigo", "nombre", "descripcion", "cantidad", "unidad_id", "precio_actual", "clasificacion_recurso_id", "tipo_recurso_id", "imagenes", "opcion"],
       rows: data.listRecurso.map((recurso: Recurso) => ({
         ...recurso,
         unidad_id: getNameById(data.listUnidad, recurso.unidad_id),
         tipo_recurso_id: getNameById(data.listTipoRecurso, recurso.tipo_recurso_id),
         clasificacion_recurso_id: getClasificacionNombre(recurso.clasificacion_recurso_id),
-        presupuesto: recurso.presupuesto ? 'Sí' : 'No',
         imagenes: recurso.imagenes && recurso.imagenes.length > 0 ? (
           <div className="flex items-center cursor-pointer" onClick={() => handleOpenCarousel(recurso.imagenes)}>
             <img
@@ -198,7 +192,9 @@ const RecursosPage: React.FC = () => {
           </div>
         ) : 'Sin imagen',
         opcion: (
-          <Button icon={<FiEdit />} text="" color='transp' className='text-blue-500' onClick={() => handleEdit(recurso)}></Button>
+          <>
+            <Button icon={<FiEdit />} text="" color='transp' className='text-blue-500' onClick={() => handleEditNewRecursos(recurso)}></Button>
+          </>
         )
       }))
     };
@@ -243,7 +239,6 @@ const RecursosPage: React.FC = () => {
         <div className="flex items-center space-x-2">
         </div>
         <div className="flex items-center space-x-2">
-          <Button text='Nuevo Recurso' color='verde' onClick={handleButtonClick} className="rounded w-full" />
           <Button text='Nuevo NewRecurso' color='verde' onClick={handleButtonNewRecursoClick} className="rounded w-full" />
         </div>
       </motion.div>
@@ -268,53 +263,35 @@ const RecursosPage: React.FC = () => {
         </main>
       </motion.div>
 
-      <AnimatePresence>
-        {isModalOpen && (
-          <Modal title={editingRecurso ? 'Actualizar Recurso' : 'Crear Recurso'} isOpen={isModalOpen} onClose={handleCloseModal}>
-            <motion.div
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.9 }}
-              transition={{ duration: 0.3 }}
-            >
-              <RecursoFormComponent
-                initialValues={editingRecurso || undefined}
-                onSubmit={handleSubmit}
-                options={{
-                  unidades: data?.listUnidad || [],
-                  tiposRecurso: data?.listTipoRecurso || [],
-                  clasificaciones: data?.listClasificacionRecurso || []
-                } as RecursoFormOptions}
-              />
-            </motion.div>
-          </Modal>
-        )}
+      <AnimatePresence key="carouselImages">
         {carouselImages && (
           <Modal isOpen onClose={handleCloseCarousel}>
             <ImageCarousel images={carouselImages} alt="Recurso" />
           </Modal>
-
-
         )}
-        {(
-          <Modal title='Carga Masiva de Recursos' isOpen={isModalOpen2} onClose={handleCloseModal}>
+      </AnimatePresence>
+      
+      <AnimatePresence key="bulkResources">
+        {isModalOpenBulkResources && (
+          <Modal title='Carga Masiva de Recursos' isOpen={isModalOpenBulkResources} onClose={handleCloseModal}>
             <BulkUploadComponent />
           </Modal>
-
-
         )}
-        {(
+      </AnimatePresence>
+      
+      <AnimatePresence key="newRecursos">
+        {isModalOpenNewRecursos && (
           <Modal title='Recursos' isOpen={isModalOpenNewRecursos} onClose={handleCloseModal}>
-            <NewRecursosPage initialValues={editingRecurso || undefined}
-                onSubmit={handleSubmit}
-                options={{
-                  unidades: data?.listUnidad || [],
-                  tiposRecurso: data?.listTipoRecurso || [],
-                  clasificaciones: data?.listClasificacionRecurso || []
-                } as RecursoFormOptions} />
+            <NewRecursosPage
+              initialValues={editingRecurso}
+              onSubmit={handleSubmit}
+              options={{
+                unidades: data?.listUnidad || [],
+                tiposRecurso: data?.listTipoRecurso || [],
+                clasificaciones: data?.listClasificacionRecurso || []
+              } as RecursoFormOptions}
+            />
           </Modal>
-
-
         )}
       </AnimatePresence>
     </motion.div>

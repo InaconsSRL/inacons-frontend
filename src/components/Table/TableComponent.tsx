@@ -16,12 +16,13 @@ type TableRow = Record<string, string | number | boolean | ReactNode>;
 
 type TableData = {
   headers: string[];
+  filter?: boolean[];
   rows: TableRow[];
 };
 
 interface TableComponentProps {
   tableData: TableData;
-  maxCharacters?: number; // New prop for maximum characters to display
+  maxCharacters?: number;
 }
 
 const preventDefault = (e: Event) => {
@@ -29,7 +30,7 @@ const preventDefault = (e: Event) => {
   e.stopPropagation();
 };
 
-const TableComponent: React.FC<TableComponentProps> = ({ tableData, maxCharacters = 14 }) => {
+const TableComponent: React.FC<TableComponentProps> = ({ tableData, maxCharacters = 48 }) => {
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
   const [columnResizeMode] = useState<ColumnResizeMode>('onChange');
@@ -42,8 +43,7 @@ const TableComponent: React.FC<TableComponentProps> = ({ tableData, maxCharacter
   }, []);
 
   const calculateMaxChars = (columnWidth: number) => {
-    // Estimate characters based on column width
-    return Math.max(Math.floor(columnWidth / 8), maxCharacters); 
+    return Math.max(Math.floor(columnWidth / 8), maxCharacters);
   };
 
   const truncateText = (text: string, maxLength: number): string => {
@@ -66,9 +66,10 @@ const TableComponent: React.FC<TableComponentProps> = ({ tableData, maxCharacter
   };
 
   const columns = useMemo<ColumnDef<TableRow>[]>(() => 
-    tableData.headers.map(header => ({
+    tableData.headers.map((header, index) => ({
       header: () => header.toUpperCase(),
       accessorKey: header,
+      enableColumnFilter: tableData.filter ? tableData.filter[index] : true,
       cell: info => {
         const value = info.getValue();
         const columnWidth = info.column.getSize();
@@ -78,8 +79,7 @@ const TableComponent: React.FC<TableComponentProps> = ({ tableData, maxCharacter
       },
       footer: props => props.column.id,
     })),
-  [tableData.headers, maxCharacters]);
-
+  [tableData.headers, tableData.filter, maxCharacters]);
 
   const table = useReactTable({
     data: tableData.rows,
@@ -100,7 +100,7 @@ const TableComponent: React.FC<TableComponentProps> = ({ tableData, maxCharacter
   return (
     <div className="p-2 bg-gray-50 rounded-lg shadow-md">
       <div className="overflow-x-auto" ref={tableContainerRef}>
-        <table className="w-full border-collapse bg-white">
+        <table className="w-full border-collapse bg-white table-fixed">
           <thead>
             {table.getHeaderGroups().map(headerGroup => (
               <tr key={headerGroup.id}>
@@ -129,7 +129,7 @@ const TableComponent: React.FC<TableComponentProps> = ({ tableData, maxCharacter
                             desc: ' ▼',
                           }[header.column.getIsSorted() as string] ?? null}
                         </div>
-                        {header.column.getCanFilter() ? (
+                        {header.column.getCanFilter() && (tableData.filter ? tableData.filter[header.index] : true) ? (
                           <div className="mt-2">
                             <input
                               value={(header.column.getFilterValue() ?? '') as string}
@@ -218,13 +218,13 @@ const TableComponent: React.FC<TableComponentProps> = ({ tableData, maxCharacter
           </button>
         </div>
         <span className="text-sm text-gray-700">
-          Page{' '}
+          Página{' '}
           <strong>
-            {table.getState().pagination.pageIndex + 1} of {table.getPageCount()}
+            {table.getState().pagination.pageIndex + 1} de {table.getPageCount()}
           </strong>
         </span>
         <div className="flex items-center space-x-2">
-          <span className="text-sm text-gray-700">Página:</span>
+          <span className="text-sm text-gray-700">Ir a página:</span>
           <input
             type="number"
             defaultValue={table.getState().pagination.pageIndex + 1}

@@ -9,6 +9,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { fetchProveedores, addProveedor, updateProveedor } from '../../slices/proveedorSlice';
 import { RootState, AppDispatch } from '../../store/store';
 import LoaderPage from '../../components/Loader/LoaderPage';
+import { FiEdit } from 'react-icons/fi';
 
 interface Proveedor {
   id: string;
@@ -69,11 +70,12 @@ const ProveedorComponent: React.FC = () => {
   };
 
   const tableData = {
+    filter: [true, true, false],
     headers: ["razon_social", "ruc", "opciones"],
     rows: proveedores.map(proveedor => ({
       ...proveedor,
       opciones: (
-        <Button text='Editar' color='transp' className='text-black' onClick={() => handleEdit(proveedor)}></Button>
+        <Button text={<FiEdit size={18} className='text-blue-500'/>} color='transp' className='text-black' onClick={() => handleEdit(proveedor)}></Button>
       )
     }))
   };
