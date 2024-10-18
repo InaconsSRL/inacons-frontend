@@ -16,8 +16,6 @@ interface FormData {
   unidad_id: string;
   descripcion: string;
   imagenes: { id: string; file: string; }[];
-  costo_promedio: string;
-  valor_ultima_compra: string;
   precio_actual: number;
   vigente: boolean;
 }
@@ -66,21 +64,70 @@ const ResourceForm: React.FC<ResourceFormProps> = ({ initialValues, onSubmit, op
   const [isSelectHistorial, setIsSelectHistorial] = useState(false);
   const [images, setImages] = useState<File[]>([]);
   const [imagePreviews, setImagePreviews] = useState<string[]>([]);
-  const [formData, setFormData] = useState<FormData>(initialValues || {
-    codigo: '156580',
-    nombre: '',
-    clasificacion_recurso_id: '',
-    tipo_recurso_id: '',
-    tipo_costo_recurso_id: '',
-    vigente: false,
-    unidad_id: '',
-    descripcion: '',
-    imagenes: [],
-    costo_promedio: '250',
-    valor_ultima_compra: '360',
-    precio_actual: 0,
-  });
-  console.log(initialValues)
+  const [formData, setFormData] = useState<FormData>(initialValues);
+
+  const [uploadingImage, setUploadingImage] = useState(false);
+
+  const handleImageUpload = async (file: File) => {
+    if (!formData.id) {
+      console.error('No se puede subir la imagen sin un ID de recurso');
+      return;
+    }
+
+    setUploadingImage(true);
+
+    const compressedImage = await compressImage(file);
+    
+    const formDataForUpload = new FormData();
+    formDataForUpload.append('operations', JSON.stringify({
+      query: `
+        mutation ($recursoId: ID!, $files: [Upload!]!) {
+          uploadImagenRecurso(recursoId: $recursoId, files: $files) {
+            file
+            id
+          }
+        }
+      `,
+      variables: {
+        recursoId: formData.id,
+        files: [null]
+      }
+    }));
+
+    formDataForUpload.append('map', JSON.stringify({ "0": ["variables.files.0"] }));
+    formDataForUpload.append('0', compressedImage);
+
+    try {
+      const response = await fetch('https://inacons-30db36fa833f.herokuapp.com/graphql', {
+        method: 'POST',
+        body: formDataForUpload,
+      });
+
+      const result = await response.json();
+
+      if (result.errors) {
+        console.error('Error al subir la imagen:', result.errors);
+        alert('Error al subir la imagen.');
+      } else {
+        alert('Imagen subida exitosamente!');
+        // Actualizar el estado local con la nueva imagen
+        const newImage = result.data.uploadImagenRecurso[0];
+        setFormData(prevData => ({
+          ...prevData,
+          imagenes: Array.isArray(prevData.imagenes) 
+            ? [...prevData.imagenes, { ...newImage, __typename: "ImagenRecurso" }] 
+            : [{ ...newImage, __typename: "ImagenRecurso" }]
+        }));
+        setImagePreviews(prevPreviews => [...prevPreviews, newImage.file]);
+      }
+    } catch (error) {
+      console.error('Error al subir la imagen:', error);
+      alert('Error al subir la imagen.');
+    } finally {
+      setUploadingImage(false);
+    }
+  };
+
   const isEditing = !!initialValues.codigo;
   useEffect(() => {
     if (initialValues) {
@@ -88,10 +135,6 @@ const ResourceForm: React.FC<ResourceFormProps> = ({ initialValues, onSubmit, op
       setImagePreviews(initialValues.imagenes?.map((img: any) => img.file || img) || []);
     }
   }, [initialValues]);
-
-  useEffect(() => {
-    console.log(formData)
-  }, [formData]);
   
   const handleSelectHistorial = () => {
     setIsSelectHistorial(true);
@@ -149,7 +192,14 @@ const ResourceForm: React.FC<ResourceFormProps> = ({ initialValues, onSubmit, op
     });
   };
 
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      await handleImageUpload(file);
+    }
+  };
+
+  /* const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
     setIsLoading(true);
     Promise.all(files.map((file) => compressImage(file)))
@@ -166,18 +216,20 @@ const ResourceForm: React.FC<ResourceFormProps> = ({ initialValues, onSubmit, op
       .finally(() => {
         setIsLoading(false);
       });
-  };
+  }; */
 
   const handleRemoveImage = (index: number) => {
-    setImages((prevImages) => prevImages.filter((_, i) => i !== index));
-    setImagePreviews((prevPreviews) => prevPreviews.filter((_, i) => i !== index));
+    setFormData(prevData => ({
+      ...prevData,
+      imagenes: Array.isArray(prevData.imagenes) ? prevData.imagenes.filter((_, i) => i !== index) : []
+    }));
+    setImagePreviews(prevPreviews => prevPreviews.filter((_, i) => i !== index));
   };
 
   const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
+    e.preventDefault();   
     onSubmit(formData);
     console.log('Form Data:', formData);
-    console.log('Images:', images);
     // Aquí puedes enviar los datos del formulario y las imágenes a tu backend
   };
 
@@ -210,7 +262,7 @@ const ResourceForm: React.FC<ResourceFormProps> = ({ initialValues, onSubmit, op
   };
 
   if (isSelectHistorial) return <Modal title='Historial de Precios' isOpen={isSelectHistorial} onClose={() => setIsSelectHistorial(false)} > <TableComponent tableData={tableData} /> </Modal>
-  if (isLoading) return <div className='flex justify-center items-center h-full bg-blue-900/70 rounded-lg'><LoaderPage /></div>;
+  if (isLoading || uploadingImage) return <div className='flex justify-center items-center h-full bg-blue-900/70 rounded-lg'><LoaderPage /></div>;
 
   return (
     <form onSubmit={handleSubmit} className="rounded-lg max-w-4xl mx-auto text-xs transform origin-top-left">
@@ -317,7 +369,7 @@ const ResourceForm: React.FC<ResourceFormProps> = ({ initialValues, onSubmit, op
           </div>
         </div>
 
-        <div className="mb-4">
+        {/* <div className="mb-4">
           <h3 className="font-semibold mb-2">Catálogo</h3>
           <div>
             <input
@@ -347,18 +399,50 @@ const ResourceForm: React.FC<ResourceFormProps> = ({ initialValues, onSubmit, op
               </div>
             ))}
           </div>
+        </div> */}
+        {formData.id && (
+        <div className="mb-4">
+          <h3 className="font-semibold mb-2">Catálogo</h3>
+          <div>
+            <input
+              type="file"
+              onChange={handleImageChange}
+              accept="image/*"
+              className="w-full p-4 text-sm bg-white border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            />
+            <p className="mt-2 text-sm text-gray-600">
+              {imagePreviews.length} {imagePreviews.length === 1 ? 'imagen mostrada' : 'imágeness mostradas'}
+            </p>
+          </div>
+
+          <div className="mt-4 grid grid-cols-2 sm:grid-cols-4 gap-2 min-h-32 bg-slate-300 items-center justify-center rounded-md">
+            {imagePreviews.length === 0 ? <div className='col-span-4 text-center text-gray-500 w-full'>No hay imágenes que mostrar...</div> : null}
+            {imagePreviews.map((preview, index) => (
+              <div key={`image-${index}`} className="relative p-2.5 ">
+                <IMG src={preview} key={index} alt={`Preview ${index + 1}`} className="w-full min-h-28 object-cover rounded-md shadow-md shadow-slate-600" />
+                <button
+                  type="button"
+                  onClick={() => handleRemoveImage(index)}
+                  className="absolute top-0 right-0 text-white rounded-full"
+                >
+                  <FiXCircle className='h-5 w-5 mr-2 text-white bg-red-500 rounded-full'/>
+                </button>
+              </div>
+            ))}
+          </div>
         </div>
+      )}
 
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <div>
             <Label htmlFor="costoPromedio">Costo Promedio</Label>
-            <div className='min-w-32 mt-2 min-h-8 ml-2 px-2 text-gray-400 bg-gray-300 py-1.5 pr-3 rounded-md border-solid borde'> {formData.costo_promedio}
+            <div className='min-w-32 mt-2 min-h-8 ml-2 px-2 text-gray-400 bg-gray-300 py-1.5 pr-3 rounded-md border-solid borde'> 125
             </div>
 
           </div>
           <div>
             <Label htmlFor="valorUltimaCompra">Valor Última Compra</Label>
-            <div className='min-w-32 mt-2 min-h-8 ml-2 px-2 text-gray-400 bg-gray-300 py-1.5 pr-3 rounded-md border-solid borde'> {formData.valor_ultima_compra}
+            <div className='min-w-32 mt-2 min-h-8 ml-2 px-2 text-gray-400 bg-gray-300 py-1.5 pr-3 rounded-md border-solid borde'> 169
             </div>
           </div>
           

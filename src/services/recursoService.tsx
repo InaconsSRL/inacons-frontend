@@ -59,16 +59,19 @@ export const ADD_RECURSO_MUTATION = gql`
     codigo
     nombre
     descripcion
+    cantidad
     unidad_id
     precio_actual
-    vigente
     tipo_recurso_id
     tipo_costo_recurso_id
     clasificacion_recurso_id
+    fecha
+    vigente
     imagenes {
       id
       file
     }
+
   }
 }
 `;
@@ -80,12 +83,14 @@ export const UPDATE_RECURSO_MUTATION = gql`
     codigo
     nombre
     descripcion
+    cantidad
     unidad_id
     precio_actual
-    vigente
     tipo_recurso_id
     tipo_costo_recurso_id
     clasificacion_recurso_id
+    fecha
+    vigente
     imagenes {
       id
       file
@@ -105,8 +110,6 @@ interface AddRecursoInput {
   clasificacion_recurso_id: string;
   vigente: boolean;
   tipo_costo_recurso_id?: string;
-  costo_promedio?: number;
-  valor_ultima_compra?: number;
 }
 
 interface UpdateRecursoInput {

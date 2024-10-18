@@ -1,4 +1,4 @@
-// PersonList.tsx
+/* // PersonList.tsx
 import React from 'react';
 import { Person } from './types';
 
@@ -29,3 +29,4 @@ const PersonList: React.FC<PersonListProps> = ({ people, onEdit, onDelete }) => 
 
 export default PersonList
 
+ */

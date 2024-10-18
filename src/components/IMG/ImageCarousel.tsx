@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { FiChevronLeft, FiChevronRight, FiX } from 'react-icons/fi';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -30,6 +30,27 @@ const ImageCarousel: React.FC<ImageCarouselProps> = ({ images, alt }) => {
   const toggleFullscreen = () => {
     setIsFullscreen(!isFullscreen);
   };
+
+  const handleKeyDown = useCallback((event: KeyboardEvent) => {
+    if (event.key === 'Escape' && isFullscreen) {
+      event.preventDefault();
+      setIsFullscreen(false);
+    }
+  }, [isFullscreen]);
+
+  useEffect(() => {
+    const handleGlobalKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape' && isFullscreen) {
+        event.preventDefault();
+        setIsFullscreen(false);
+      }
+    };
+
+    document.addEventListener('keydown', handleGlobalKeyDown);
+    return () => {
+      document.removeEventListener('keydown', handleGlobalKeyDown);
+    };
+  }, [isFullscreen]);
 
   const direction = currentIndex > prevIndex ? 1 : -1;
 
@@ -115,11 +136,15 @@ const ImageCarousel: React.FC<ImageCarouselProps> = ({ images, alt }) => {
 
       {/* Vista de pantalla completa */}
       {isFullscreen && (
-        <div className="fixed inset-0 bg-black/50 bg-opacity-90 z-50 flex items-center justify-center">
+        <div 
+          className="fixed inset-0 bg-black/50 bg-opacity-90 z-50 flex items-center justify-center"
+          onClick={toggleFullscreen}
+        >
           <img
             src={images[currentIndex].file}
             alt={`${alt} - Imagen ${currentIndex + 1}`}
             className="max-w-full max-h-full object-contain"
+            onClick={(e) => e.stopPropagation()}
           />
           <button
             className="absolute top-4 right-4 text-white hover:text-gray-300 transition-colors duration-200"

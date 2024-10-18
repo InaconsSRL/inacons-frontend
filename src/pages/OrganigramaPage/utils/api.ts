@@ -1,4 +1,4 @@
-const API_URL = "https://offline.smartaccesorios.shop/.organiobra/api.php";
+export const API_URL = "https://offline.smartaccesorios.shop/.organiobra/api.php";
 
 export const fetchProjects = async () => {
     const response = await fetch(`${API_URL}?action=getProjects`);

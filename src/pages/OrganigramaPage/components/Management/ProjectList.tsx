@@ -1,4 +1,4 @@
-// ProjectList.tsx
+/* // ProjectList.tsx
 import React from 'react';
 import { Project } from './types';
 
@@ -28,3 +28,4 @@ export const ProjectList: React.FC<ProjectListProps> = ({ projects, onEdit, onDe
 };
 
 
+ */

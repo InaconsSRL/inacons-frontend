@@ -12,9 +12,39 @@ interface Recurso {
   unidad_id: string;
   precio_actual: number;
   tipo_recurso_id: string;
-  clasificacion_recurso_id: string;
+  clasificacion_recurso_id: string;  
+  tipo_costo_recurso_id: string;
   vigente: boolean;
 }
+
+interface RecursoAdd {
+  codigo: string;
+  nombre: string;
+  descripcion: string;
+  unidad_id: string;
+  precio_actual: number,  
+  tipo_recurso_id: string;
+  clasificacion_recurso_id: string;
+  tipo_costo_recurso_id: string;
+  vigente: boolean;
+  imagenes: { id: string; file: string }[];
+}
+
+interface RecursoUpdate {
+  id: string;
+  codigo: string;
+  nombre: string;
+  descripcion: string;
+  unidad_id: string;
+  precio_actual: number,  
+  tipo_recurso_id: string;
+  clasificacion_recurso_id: string;
+  tipo_costo_recurso_id: string;
+  vigente: boolean;
+  imagenes: { id: string; file: string }[];
+}
+
+
 
 interface ListDataQueryResult {
   listTipoRecurso: Array<{
@@ -87,7 +117,7 @@ export const fetchListData = createAsyncThunk(
 
 export const addRecurso = createAsyncThunk(
   'recurso/addRecurso',
-  async (recursoData: Omit<Recurso, 'id' | 'fecha'>, { rejectWithValue }) => {
+  async (recursoData: Omit<RecursoAdd, 'id' | 'fecha'>, { rejectWithValue }) => {
     try {
       return await addRecursoService(recursoData);
     } catch (error) {
@@ -98,9 +128,12 @@ export const addRecurso = createAsyncThunk(
 
 export const updateRecurso = createAsyncThunk(
   'recurso/updateRecurso',
-  async (recursoData: Recurso, { rejectWithValue }) => {
+  async (recursoData: RecursoUpdate, { rejectWithValue }) => {
     try {
-      return await updateRecursoService(recursoData);
+      console.log("Se envio", recursoData)
+      const response = await updateRecursoService(recursoData);
+      console.log("Se recibio", response)
+      return response;
     } catch (error) {
       return rejectWithValue(handleError(error));
     }

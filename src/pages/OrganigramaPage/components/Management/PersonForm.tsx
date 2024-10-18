@@ -1,4 +1,4 @@
-// PersonForm.tsx
+/* // PersonForm.tsx
 import React, { useState, useEffect } from 'react';
 import { Person } from './types';
 
@@ -71,3 +71,4 @@ export const PersonForm: React.FC<PersonFormProps> = ({ person, onSubmit, onCanc
 };
 
 
+ */

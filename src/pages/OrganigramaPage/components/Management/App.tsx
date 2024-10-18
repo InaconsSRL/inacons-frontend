@@ -1,4 +1,4 @@
-// App.tsx
+/* // App.tsx
 import React, { useState, useEffect } from 'react';
 import { Person, Project, ProjectRole } from './types';
 import { api } from './api';
@@ -132,4 +132,4 @@ const App: React.FC = () => {
   );
 };
 
-export default App;
+export default App; */

@@ -10,7 +10,7 @@ import { FiEdit } from 'react-icons/fi';
 import ImageCarousel from '../../components/IMG/ImageCarousel';
 import BulkUploadComponent from './BulkUploadComponent';
 import NewRecursosPage from './NewRecursosForm';
-import { RootState } from '../../store/store';
+import { RootState, AppDispatch } from '../../store/store';
 
 // Definición de interfaces
 interface Recurso {
@@ -23,10 +23,35 @@ interface Recurso {
   vigente: boolean;
   unidad_id: string;
   descripcion: string;
-  imagenes: { id: string; file: string }[]; 
-  costo_promedio: string;
-  valor_ultima_compra: string;
+  imagenes: { id: string; file: string }[]; // Añadir esta línea
   precio_actual: number,
+}
+
+interface RecursoAdd {
+  codigo: string;
+  nombre: string;
+  descripcion: string;
+  unidad_id: string;
+  precio_actual: number,  
+  tipo_recurso_id: string;
+  clasificacion_recurso_id: string;
+  tipo_costo_recurso_id: string;
+  vigente: boolean;
+  imagenes: { id: string; file: string }[];
+}
+
+interface RecursoUpdate {
+  id: string;
+  codigo: string;
+  nombre: string;
+  descripcion: string;
+  unidad_id: string;
+  precio_actual: number,  
+  tipo_recurso_id: string;
+  clasificacion_recurso_id: string;
+  tipo_costo_recurso_id: string;
+  vigente: boolean;
+  imagenes: { id: string; file: string }[];
 }
 
 interface Unidad {
@@ -79,13 +104,11 @@ const recursoInicial = {
   unidad_id: '',
   descripcion: '',
   imagenes: [],
-  costo_promedio: '',
-  valor_ultima_compra: '',
   precio_actual: 0,
 }
 
 const RecursosPage: React.FC = () => {
-  const dispatch = useDispatch();
+  const dispatch = useDispatch<AppDispatch>();
   const { recursos, listData, loading, error } = useSelector((state: RootState) => state.recurso);
 
   const [carouselImages, setCarouselImages] = useState<{ id: string; file: string }[] | null>(null);
@@ -98,11 +121,12 @@ const RecursosPage: React.FC = () => {
     dispatch(fetchListData());
   }, [dispatch]);
 
-  const handleSubmit = async (formData: Recurso) => {
+  const handleSubmit = (formData: RecursoAdd | RecursoUpdate) => {
+    console.log(formData)
     if (editingRecurso.id) {
-      dispatch(updateRecurso(formData));
+      dispatch(updateRecurso(formData as RecursoUpdate));
     } else {
-      dispatch(addRecurso(formData));
+      dispatch(addRecurso(formData as RecursoAdd));
     }
     setEditingRecurso(recursoInicial);
     setIsModalOpenNewRecursos(false);
@@ -162,13 +186,17 @@ const RecursosPage: React.FC = () => {
       return 'N/A';
     };
 
+    console.log(recursos[0])
+
     return {
-      filter: [true, true, true, true, true, true, true, true, true, false],
-      headers: ["codigo", "nombre", "descripcion", "cantidad", "unidad_id", "precio_actual", "clasificacion_recurso_id", "tipo_recurso_id", "imagenes", "opcion"],
-      rows: recursos.map((recurso: Recurso) => ({
+      filter: [true, true, true, true, true, true, true, true, true,true, true, false, false],
+      headers: ["fecha", "vigente", "codigo", "nombre", "descripcion", "cantidad", "unidad_id", "precio_actual", "tipo_recurso_id", "tipo_costo_recurso_id","clasificacion_recurso_id",  "imagenes", "opcion"],
+      rows: recursos.map((recurso: any) => ({
         ...recurso,
+        fecha: new Date(recurso.fecha).toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric' }) === 'Invalid Date' ? new Date().toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric' }) : new Date(recurso.fecha).toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric' }),
         unidad_id: getNameById(listData.listUnidad, recurso.unidad_id),
         tipo_recurso_id: getNameById(listData.listTipoRecurso, recurso.tipo_recurso_id),
+        tipo_costo_recurso_id: getNameById(listData.listTipoCostoRecurso, recurso.tipo_costo_recurso_id),
         clasificacion_recurso_id: getClasificacionNombre(recurso.clasificacion_recurso_id),
         imagenes: recurso.imagenes && recurso.imagenes.length > 0 ? (
           <div className="flex items-center cursor-pointer" onClick={() => handleOpenCarousel(recurso.imagenes)}>

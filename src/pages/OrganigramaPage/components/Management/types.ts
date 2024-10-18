@@ -1,4 +1,4 @@
-s// types.ts
+/* // types.ts
 export interface Person {
     id?: number;
     name: string;
@@ -46,4 +46,4 @@ export interface Person {
     createProjectRole: (role: ProjectRole) => axios.post<{id: string}>(`${API_URL}`, { table: 'project_roles', ...role }),
     updateProjectRole: (role: ProjectRole) => axios.put(`${API_URL}`, { table: 'project_roles', ...role }),
     deleteProjectRole: (projectId: number, roleId: string) => axios.delete(`${API_URL}?table=project_roles&project_id=${projectId}&role_id=${roleId}`),
-  };
+  }; */

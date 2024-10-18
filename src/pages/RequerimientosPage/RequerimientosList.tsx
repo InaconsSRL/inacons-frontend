@@ -44,14 +44,15 @@ const GET_REQUERIMIENTO_RECURSOS = gql`
 
 type Requerimiento = {
   id: string;
-  obra_id: number;
+  obra_id: string;
   usuario: string;
-  usuario_id: number;
+  usuario_id: string; // Cambiado a string
   presupuesto_id: string;
   fecha_solicitud: string;
   estado: string;
   sustento: string;
   codigo: string;
+  recursos: Recurso[];
 };
 
 type Recurso = {
@@ -62,14 +63,25 @@ type Recurso = {
   cantidad_aprobada: number;
   estado: string;
   tipo_solicitud: string;
+  codigo: string;
+  nombre: string;
 };
 
-type MaterialRequestsProps = {
+
+interface Obra {
+  id: string;
+  titulo: string;
+  nombre: string;
+  descripcion: string;
+}
+
+type RequerimientoFormProps = {
+  obras: Obra[]; // Cambiado de Obra a Obra[]
   recursosList: Recurso[];
-  obras: [];
+  requerimiento?: Requerimiento;
 };
 
-const RequerimientosList: React.FC<MaterialRequestsProps> = ({ recursosList, obras }) => {
+const RequerimientosList: React.FC<RequerimientoFormProps> = ({ recursosList, obras }) => {
   const { data: reqData, loading: reqLoading, error: reqError, refetch: refetchReq } = useQuery(GET_REQUERIMIENTOS);
   const { data: recData, loading: recLoading, error: recError, refetch: refetchRec } = useQuery(GET_REQUERIMIENTO_RECURSOS);
 
@@ -117,15 +129,17 @@ const RequerimientosList: React.FC<MaterialRequestsProps> = ({ recursosList, obr
   };
 
   const handleEditRequerimiento = (requerimiento: Requerimiento) => {
-    const newRecursos = recursos.filter( recurso => recurso.requerimiento_id === requerimiento.id)
-    const newRequerimiento = {...requerimiento, recursos: newRecursos}
-    console.log(newRecursos)
-    console.log(newRequerimiento)
+    const newRecursos = recursos.filter(recurso => recurso.requerimiento_id === requerimiento.id);
+    const newRequerimiento = {
+      ...requerimiento,
+      recursos: newRecursos,
+      obra_id: requerimiento.obra_id.toString() // Asegurarse de que sea string
+    };
     setSelectedRequerimiento(newRequerimiento);
     setIsModalOpen(true);
   };
 
-  const handleRequerimientoSubmit = (updatedRequerimiento: Requerimiento) => {
+  /* const handleRequerimientoSubmit = (updatedRequerimiento: Requerimiento) => {
     setRequerimientos(prevRequerimientos => 
       prevRequerimientos.map(req => 
         req.id === updatedRequerimiento.id ? updatedRequerimiento : req
@@ -133,7 +147,7 @@ const RequerimientosList: React.FC<MaterialRequestsProps> = ({ recursosList, obr
     );
     handleCloseModal();
     refetchReq();
-  };
+  }; */
   
   return (
     <motion.div className="flex flex-col h-full">
@@ -191,7 +205,6 @@ const RequerimientosList: React.FC<MaterialRequestsProps> = ({ recursosList, obr
               recursosList={recursosList} 
               onClose={handleCloseModal} 
               requerimiento={selectedRequerimiento}
-              onSubmit={handleRequerimientoSubmit}
             />
           </Modal>
         )}
@@ -203,13 +216,9 @@ const RequerimientosList: React.FC<MaterialRequestsProps> = ({ recursosList, obr
         {isModalRequerimiento && (
           <Modal title={'Crear Requerimiento'} isOpen={isModalRequerimiento} onClose={handleCloseModal}>
             <RequerimientoForm 
-              obras = {obras}
+              obras={obras}
               recursosList={recursosList} 
               onClose={handleCloseModal}
-              onSubmit={(newRequerimiento) => {
-                setRequerimientos(prev => [...prev, newRequerimiento]);
-                handleCloseModal();
-              }}
             />
           </Modal>
         )}

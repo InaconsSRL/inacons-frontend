@@ -64,10 +64,18 @@ mutation DeleteRequerimientoRecurso($deleteRequerimientoRecursoId: ID!) {
 
 
 interface Recurso {
+  id?: string;
   recurso_id: string;
   codigo: string;
   nombre: string;
   cantidad: number;
+  // Añade las propiedades faltantes
+  cantidad_aprobada?: number;
+  estado?: string;
+  presupuestado?: string;
+  tipo_solicitud?: string;
+  requerimiento_id?: string;
+  __typename?: string;
 }
 
 interface FormData {
@@ -90,7 +98,7 @@ interface Obras{
   descripcion: string
 }
 
-interface PedirRequerimientoProps {
+interface RequerimientoFormProps {
   recursosList: RecursoListItem[];
   obras: Obras[];
   onClose: () => void;
@@ -103,7 +111,7 @@ interface FocusedResource {
   value: string;
 }
 
-const RequerimientoForm: React.FC<PedirRequerimientoProps> = ({ recursosList, onClose, obras, requerimiento }) => {
+const RequerimientoForm: React.FC<RequerimientoFormProps> = ({ recursosList, onClose, obras, requerimiento }) => {
   console.log("Requerimiento:", requerimiento)
   const [addRequerimiento, { loading: loadingAdd, error: errorAdd }] = useMutation(ADD_REQUERIMIENTO_MUTATION);
   const [updateRequerimiento, { loading: loadingUpdate, error: errorUpdate }] = useMutation(UPDATE_REQUERIMIENTO_MUTATION);
@@ -195,7 +203,7 @@ const RequerimientoForm: React.FC<PedirRequerimientoProps> = ({ recursosList, on
            }
          } catch (error) {
            console.error('Error al eliminar el recurso:', error);
-           setModalMessage(`Error al eliminar el recurso: ${error.message}`);
+           setModalMessage(`Error al eliminar el recurso: ${error instanceof Error ? error.message : 'Error desconocido'}`);
            setModalIsOpen(true);
            return;
          }
@@ -225,7 +233,7 @@ const RequerimientoForm: React.FC<PedirRequerimientoProps> = ({ recursosList, on
         tipo_solicitud: "",
       }));
 
-      const recursosModificadosUpdate = validRecursos.map(({ nombre, codigo, cantidad_aprobada, estado, presupuestado, id, tipo_solicitud, requerimiento_id, __typename,  ...rest }) => ({
+      const recursosModificadosUpdate = validRecursos.map(({ nombre, codigo, cantidad_aprobada, estado, presupuestado, id, tipo_solicitud, requerimiento_id, __typename, ...rest }) => ({
         ...rest,
       }));
 
@@ -272,7 +280,7 @@ const RequerimientoForm: React.FC<PedirRequerimientoProps> = ({ recursosList, on
       onClose();
     } catch (error) {
       console.error('Error al procesar el requerimiento:', error);
-      setModalMessage(`Error: ${error.message}`);
+      setModalMessage(`Error: ${error instanceof Error ? error.message : 'Error desconocido'}`);
       setModalIsOpen(true);
     }
   };

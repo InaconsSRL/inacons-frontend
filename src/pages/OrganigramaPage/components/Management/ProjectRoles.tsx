@@ -1,4 +1,4 @@
-// ProjectRoles.tsx
+/* // ProjectRoles.tsx
 import React, { useState, useEffect } from 'react';
 import { ProjectRole, Person } from './types';
 import { api } from './api';
@@ -76,4 +76,4 @@ export const ProjectRoles: React.FC<ProjectRolesProps> = ({ projectId }) => {
       </ul>
     </div>
   );
-};
+}; */

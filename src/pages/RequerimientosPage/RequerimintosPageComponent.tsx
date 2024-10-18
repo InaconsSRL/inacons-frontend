@@ -39,6 +39,13 @@ const pageTransition = {
   duration: 0.5,
 };
 
+interface Obra {
+  id: string;
+  titulo: string;
+  nombre: string;
+  descripcion: string;
+}
+
 
 const RequerimintosPageComponent: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'requests' | 'suppliers' | 'inventory'>('requests');
@@ -54,12 +61,11 @@ const RequerimintosPageComponent: React.FC = () => {
   }, [dispatch]);
 
   const renderActiveComponent = () => {
-    // Pasar los datos de recursos a cada componente
     const recursos = data?.listRecurso || [];
     
     switch (activeTab) {
       case 'requests':
-        return <RequerimientosList recursosList={recursos} obras={obras} />;
+        return <RequerimientosList recursosList={recursos} obras={obras as Obra[]} />;
       case 'inventory':
         return <Inventory />;
       case 'suppliers':
