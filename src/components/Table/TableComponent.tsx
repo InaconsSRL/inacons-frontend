@@ -11,6 +11,7 @@ import {
   SortingState,
   ColumnFiltersState,
 } from '@tanstack/react-table';
+import backImage from '../../assets/bgmedia.webp'
 
 type TableRow = Record<string, string | number | boolean | ReactNode>;
 
@@ -98,16 +99,24 @@ const TableComponent: React.FC<TableComponentProps> = ({ tableData, maxCharacter
   });
 
   return (
-    <div className="p-2 bg-gray-50 rounded-lg shadow-md">
+    <div className="p-2 bg-gray-50/50 rounded-lg shadow-md">
       <div className="overflow-x-auto" ref={tableContainerRef}>
         <table className="w-full border-collapse bg-white table-fixed">
           <thead>
             {table.getHeaderGroups().map(headerGroup => (
-              <tr key={headerGroup.id}>
+              <tr className="rounded-lg" key={headerGroup.id} style={{ 
+                minWidth: 'screen',
+                backgroundImage: `url(${backImage})`,
+                backgroundSize: 'cover',
+                backgroundPosition: 'center',
+                backgroundRepeat: 'no-repeat',
+                backgroundAttachment: 'fixed',
+                backgroundBlendMode: 'overlay'
+              }}>
                 {headerGroup.headers.map(header => (
                   <th
                     key={header.id}
-                    className="border-b border-gray-200 bg-black/10 p-4 text-left text-sm font-semibold text-gray-600 relative"
+                    className="border-b border-gray-200 bg-white/85 p-4 text-left text-sm font-semibold text-gray-600 relative"
                     style={{ width: header.getSize(), minWidth: header.getSize() }}
                   >
                     {header.isPlaceholder ? null : (
@@ -115,7 +124,7 @@ const TableComponent: React.FC<TableComponentProps> = ({ tableData, maxCharacter
                         <div
                           {...{
                             className: header.column.getCanSort()
-                              ? 'cursor-pointer select-none hover:text-blue-600 transition-colors duration-200'
+                              ? `cursor-pointer select-none ${header.column.getIsSorted() ? 'text-blue-600' : 'hover:text-blue-600'} transition-colors duration-200`
                               : '',
                             onClick: header.column.getToggleSortingHandler(),
                           }}
@@ -124,20 +133,22 @@ const TableComponent: React.FC<TableComponentProps> = ({ tableData, maxCharacter
                             header.column.columnDef.header,
                             header.getContext()
                           )}
-                          {{
-                            asc: ' ▲',
-                            desc: ' ▼',
-                          }[header.column.getIsSorted() as string] ?? null}
+                          <span className="text-blue-600">
+                            {{
+                              asc: ' ▲',
+                              desc: ' ▼',
+                            }[header.column.getIsSorted() as string] ?? null}
+                          </span>
                         </div>
                         {header.column.getCanFilter() && (tableData.filter ? tableData.filter[header.index] : true) ? (
-                          <div className="mt-2">
+                          <div className="mt-1">
                             <input
                               value={(header.column.getFilterValue() ?? '') as string}
                               onChange={e =>
                                 header.column.setFilterValue(e.target.value)
                               }
-                              placeholder={`Filtra`}
-                              className="w-full border border-gray-300 rounded px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                              placeholder={`✎`}
+                              className="w-full border border-slate-400 bg-slate-100 rounded-xl px-2 py-0.5 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500"
                             />
                           </div>
                         ) : null}
@@ -224,7 +235,7 @@ const TableComponent: React.FC<TableComponentProps> = ({ tableData, maxCharacter
           </strong>
         </span>
         <div className="flex items-center space-x-2">
-          <span className="text-sm text-gray-700">Ir a página:</span>
+          <span className="text-sm text-blue-700">Ir a página:</span>
           <input
             type="number"
             defaultValue={table.getState().pagination.pageIndex + 1}
@@ -232,7 +243,7 @@ const TableComponent: React.FC<TableComponentProps> = ({ tableData, maxCharacter
               const page = e.target.value ? Number(e.target.value) - 1 : 0;
               table.setPageIndex(page);
             }}
-            className="w-16 px-2 py-1 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-16 px-2 py-1 text-sm text-center border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
         </div>
         <select

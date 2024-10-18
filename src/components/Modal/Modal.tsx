@@ -48,7 +48,7 @@ const Modal: React.FC<ModalProps> = ({ isOpen, onClose, title, children }) => {
           exit={{ opacity: 0, scale: 0.9 }}
           className="rounded-lg shadow-lg overflow-hidden max-w-[90vw] max-h-[95vh] z-50 flex flex-col relative"
           style={{ 
-            minWidth: 'min(448px, 90vw)',
+            minWidth: 'screen',
             backgroundImage: `url(${backImage})`,
             backgroundSize: 'cover',
             backgroundPosition: 'center',

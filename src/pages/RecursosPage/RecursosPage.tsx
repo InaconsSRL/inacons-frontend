@@ -1,15 +1,17 @@
-import React, { useState, useMemo } from 'react';
-import { useQuery, useMutation } from '@apollo/client';
+import React, { useState, useMemo, useEffect } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
 import { motion, AnimatePresence } from 'framer-motion';
 import Button from '../../components/Buttons/Button';
 import Modal from '../../components/Modal/Modal';
 import TableComponent from '../../components/Table/TableComponent';
-import { LIST_RECURSOS_QUERY, ADD_RECURSO_MUTATION, UPDATE_RECURSO_MUTATION } from '../../services/recursoService';
+import { fetchRecursos, fetchListData, addRecurso, updateRecurso } from '../../slices/recursoSlice';
 import LoaderPage from '../../components/Loader/LoaderPage';
 import { FiEdit } from 'react-icons/fi';
 import ImageCarousel from '../../components/IMG/ImageCarousel';
 import BulkUploadComponent from './BulkUploadComponent';
 import NewRecursosPage from './NewRecursosForm';
+import { RootState } from '../../store/store';
+
 // Definición de interfaces
 interface Recurso {
   id?: string;
@@ -17,7 +19,7 @@ interface Recurso {
   nombre: string;
   clasificacion_recurso_id: string;
   tipo_recurso_id: string;
-  tipo_costo_id: string;
+  tipo_costo_recurso_id: string;
   vigente: boolean;
   unidad_id: string;
   descripcion: string;
@@ -37,6 +39,11 @@ interface TipoRecurso {
   nombre: string;
 }
 
+interface TipoCostoRecurso {
+  id: string;
+  nombre: string;
+}
+
 interface ClasificacionRecurso {
   id: string;
   nombre: string;
@@ -44,19 +51,12 @@ interface ClasificacionRecurso {
   parent?: ClasificacionRecurso;
 }
 
-interface QueryData {
-  listRecurso: Recurso[];
-  listUnidad: Unidad[];
-  listTipoRecurso: TipoRecurso[];
-  listClasificacionRecurso: ClasificacionRecurso[];
-}
-
 interface RecursoFormOptions {
   unidades: Unidad[];
   tiposRecurso: TipoRecurso[];
   clasificaciones: ClasificacionRecurso[];
+  tipoCostoRecursos: TipoCostoRecurso[];
 }
-
 const pageVariants = {
   initial: { opacity: 0, y: 20 },
   in: { opacity: 1, y: 0 },
@@ -74,7 +74,7 @@ const recursoInicial = {
   nombre: '',
   clasificacion_recurso_id: '',
   tipo_recurso_id: '',
-  tipo_costo_id: '',
+  tipo_costo_recurso_id: '',
   vigente: false,
   unidad_id: '',
   descripcion: '',
@@ -83,35 +83,29 @@ const recursoInicial = {
   valor_ultima_compra: '',
   precio_actual: 0,
 }
+
 const RecursosPage: React.FC = () => {
+  const dispatch = useDispatch();
+  const { recursos, listData, loading, error } = useSelector((state: RootState) => state.recurso);
+
   const [carouselImages, setCarouselImages] = useState<{ id: string; file: string }[] | null>(null);
   const [isModalOpenBulkResources, setIsModalOpenBulkResources] = useState(false);
   const [isModalOpenNewRecursos, setIsModalOpenNewRecursos] = useState(false);
   const [editingRecurso, setEditingRecurso] = useState<Recurso>(recursoInicial);
 
-  const { loading, error, data, refetch } = useQuery<QueryData>(LIST_RECURSOS_QUERY);
-  const [addRecurso] = useMutation(ADD_RECURSO_MUTATION);
-  const [updateRecurso] = useMutation(UPDATE_RECURSO_MUTATION);
+  useEffect(() => {
+    dispatch(fetchRecursos());
+    dispatch(fetchListData());
+  }, [dispatch]);
 
   const handleSubmit = async (formData: Recurso) => {
-    if (editingRecurso) {
-      await updateRecurso({
-        variables: {
-          updateRecursoId: editingRecurso.id,
-          ...formData
-        }
-      });
+    if (editingRecurso.id) {
+      dispatch(updateRecurso(formData));
     } else {
-      console.log(formData)
-      await addRecurso({
-        variables: {
-          precioActual: 0,
-          ...formData
-        }
-      });
+      dispatch(addRecurso(formData));
     }
     setEditingRecurso(recursoInicial);
-    refetch();
+    setIsModalOpenNewRecursos(false);
   };
 
   const handleEditNewRecursos = (recurso: Recurso) => {
@@ -135,7 +129,7 @@ const RecursosPage: React.FC = () => {
   };
 
   const tableData = useMemo(() => {
-    if (!data) return { headers: [], rows: [] };
+    if (!recursos || !listData) return { headers: [], rows: [] };
 
     const getNameById = (list: { id: string; nombre: string }[], id: string) => {
       const item = list.find(item => item.id === id);
@@ -158,7 +152,7 @@ const RecursosPage: React.FC = () => {
         return null;
       };
 
-      const clasificacion = findClasificacion(data.listClasificacionRecurso, id);
+      const clasificacion = findClasificacion(listData.listClasificacionRecurso, id);
       if (clasificacion) {
         if (clasificacion.parent) {
           return `${clasificacion.parent.nombre} > ${clasificacion.nombre}`;
@@ -171,10 +165,10 @@ const RecursosPage: React.FC = () => {
     return {
       filter: [true, true, true, true, true, true, true, true, true, false],
       headers: ["codigo", "nombre", "descripcion", "cantidad", "unidad_id", "precio_actual", "clasificacion_recurso_id", "tipo_recurso_id", "imagenes", "opcion"],
-      rows: data.listRecurso.map((recurso: Recurso) => ({
+      rows: recursos.map((recurso: Recurso) => ({
         ...recurso,
-        unidad_id: getNameById(data.listUnidad, recurso.unidad_id),
-        tipo_recurso_id: getNameById(data.listTipoRecurso, recurso.tipo_recurso_id),
+        unidad_id: getNameById(listData.listUnidad, recurso.unidad_id),
+        tipo_recurso_id: getNameById(listData.listTipoRecurso, recurso.tipo_recurso_id),
         clasificacion_recurso_id: getClasificacionNombre(recurso.clasificacion_recurso_id),
         imagenes: recurso.imagenes && recurso.imagenes.length > 0 ? (
           <div className="flex items-center cursor-pointer" onClick={() => handleOpenCarousel(recurso.imagenes)}>
@@ -198,11 +192,9 @@ const RecursosPage: React.FC = () => {
         )
       }))
     };
-  }, [data]);
-
+  }, [recursos, listData]);
 
   const handleOpenCarousel = (images: { id: string; file: string }[]) => {
-    console.log(images)
     setCarouselImages(images);
   };
 
@@ -211,10 +203,9 @@ const RecursosPage: React.FC = () => {
   };
 
   if (loading) return <LoaderPage />;
-  if (error) return <motion.div initial="initial" animate="in" exit="out" variants={pageVariants} transition={pageTransition}>Error: {error.message}</motion.div>;
+  if (error) return <motion.div initial="initial" animate="in" exit="out" variants={pageVariants} transition={pageTransition}>Error: {error}</motion.div>;
 
   return (
-
     <motion.div
       className="flex flex-col h-full"
       initial="initial"
@@ -286,9 +277,10 @@ const RecursosPage: React.FC = () => {
               initialValues={editingRecurso}
               onSubmit={handleSubmit}
               options={{
-                unidades: data?.listUnidad || [],
-                tiposRecurso: data?.listTipoRecurso || [],
-                clasificaciones: data?.listClasificacionRecurso || []
+                unidades: listData?.listUnidad || [],
+                tiposRecurso: listData?.listTipoRecurso || [],
+                clasificaciones: listData?.listClasificacionRecurso || [],
+                tipoCostoRecursos: listData?.listTipoCostoRecurso || []
               } as RecursoFormOptions}
             />
           </Modal>

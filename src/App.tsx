@@ -7,7 +7,7 @@ import Login from './pages/IniciarSesionPage/Login';
 import Dashboard from './layouts/dashboard/Dashboard';
 import HomePage from './pages/HomePage/HomePage';
 import CalendarPage from './pages/CalendarPage/CalendarPage';
-import TipoRecursoComponent from './pages/TipoRecurso/TipoRecursoPage';
+import TipoRecursoComponent from './pages/TipoRecursoPage/TipoRecursoPage';
 import CargosComponent from './pages/CargosPage/CargosComponent';
 import RecursosPage from './pages/RecursosPage/RecursosPage';
 import UsuariosPage from './pages/UsuariosPage/UsuariosPage';

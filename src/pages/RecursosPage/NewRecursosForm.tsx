@@ -12,7 +12,7 @@ interface FormData {
   nombre: string;
   clasificacion_recurso_id: string;
   tipo_recurso_id: string;
-  tipo_costo_id: string;
+  tipo_costo_recurso_id: string;
   unidad_id: string;
   descripcion: string;
   imagenes: { id: string; file: string; }[];
@@ -45,7 +45,7 @@ const Button: React.FC<React.ButtonHTMLAttributes<HTMLButtonElement> & { variant
 );
 
 const Label: React.FC<React.LabelHTMLAttributes<HTMLLabelElement>> = (props) => (
-  <label {...props} className="block text-sm font-medium text-gray-700 mb-1">
+  <label {...props} className="block text-xs font-medium text-gray-700 mb-1">
     {props.children}
   </label>
 );
@@ -54,6 +54,7 @@ interface ResourceFormProps {
   initialValues: FormData;
   onSubmit: (data: FormData) => void;
   options: {
+    tipoCostoRecursos: Array<{ id: string; nombre: string }>;
     unidades: Array<{ id: string; nombre: string }>;
     tiposRecurso: Array<{ id: string; nombre: string }>;
     clasificaciones: Array<{ id: string; nombre: string; childs?: Array<{ id: string; nombre: string }> }>;
@@ -70,7 +71,7 @@ const ResourceForm: React.FC<ResourceFormProps> = ({ initialValues, onSubmit, op
     nombre: '',
     clasificacion_recurso_id: '',
     tipo_recurso_id: '',
-    tipo_costo_id: '',
+    tipo_costo_recurso_id: '',
     vigente: false,
     unidad_id: '',
     descripcion: '',
@@ -79,8 +80,8 @@ const ResourceForm: React.FC<ResourceFormProps> = ({ initialValues, onSubmit, op
     valor_ultima_compra: '360',
     precio_actual: 0,
   });
-
-  const isEditing = !!initialValues;
+  console.log(initialValues)
+  const isEditing = !!initialValues.codigo;
   useEffect(() => {
     if (initialValues) {
       setFormData(initialValues);
@@ -100,7 +101,7 @@ const ResourceForm: React.FC<ResourceFormProps> = ({ initialValues, onSubmit, op
     const { name, value } = e.target;
     setFormData(prevData => ({
       ...prevData,
-      [name]: value
+      [name]: name === 'precio_actual' ? parseFloat(value) || 0 : value
     }));
   };
 
@@ -212,12 +213,13 @@ const ResourceForm: React.FC<ResourceFormProps> = ({ initialValues, onSubmit, op
   if (isLoading) return <div className='flex justify-center items-center h-full bg-blue-900/70 rounded-lg'><LoaderPage /></div>;
 
   return (
-    <form onSubmit={handleSubmit} className=" rounded-lg max-w-4xl mx-auto text-xs">
-      <div className="bg-gray-200 shadow-md rounded-lg p-6">
-        <div className="flex flex-wrap justify-between mb-4 gap-2 text-[10px] md:text-sm">
+    <form onSubmit={handleSubmit} className="rounded-lg max-w-4xl mx-auto text-xs transform origin-top-left">
+      <div className="bg-gray-200 shadow-md rounded-lg px-4 py-2  ">
+        <div className="flex flex-wrap justify-between p-2 gap-2 rounded-lg text-[10px] md:text-xs bg-gray-300">
           <Button type="button">Nuevo</Button>
           <Button type="button">Duplicar</Button>
           <Button type="button">H.Cambios</Button>
+          <Button type="button">H.Precios</Button>
           <Button type="button">Cambio Unidad</Button>
           <Button onClick={handleSelectHistorial} type="button">Ver Historial</Button>
           <Button type="button">Editar</Button>
@@ -260,22 +262,20 @@ const ResourceForm: React.FC<ResourceFormProps> = ({ initialValues, onSubmit, op
                 </Select>
               </div>
               <div>
-                <Label htmlFor="tipo_costo_id">Tipo Costo</Label>
-                <Select id="tipo_costo_id" name="tipo_costo_id" value={formData.tipo_costo_id} onChange={handleInputChange}>
+                <Label htmlFor="tipo_costo_recurso_id">Tipo Costo</Label>
+                <Select id="tipo_costo_recurso_id" name="tipo_costo_recurso_id" value={formData.tipo_costo_recurso_id} onChange={handleInputChange}>
                   <option>--Elige--</option>
-                  <option>Material</option>
-                  <option>Mano de Obra</option>
-                  <option>Subcontrato</option>
-                  <option>Maquinaria</option>
-                  <option>...</option>
+                  {options.tipoCostoRecursos.map((tipo) => (
+                    <option key={tipo.id} value={tipo.id}>{tipo.nombre}</option>
+                  ))}
                 </Select>
               </div>
             </div>
           </div>
           <div className='col-span-1 sm:col-span-4'>
-            <div className='mb-2'>
+            <div className='mb-4'>
               <Label htmlFor="vigente">Vigente</Label>
-              <div className="flex items-center mt-1">
+              <div className="flex items-center mt-3 ">
                 <input
                   type="checkbox"
                   id="vigente"
@@ -298,9 +298,13 @@ const ResourceForm: React.FC<ResourceFormProps> = ({ initialValues, onSubmit, op
                 ))}
               </Select>
             </div>
+            <div className='mb-2'>
+            <Label htmlFor="precio_actual">Costo Inicial</Label>
+            <Input type='number' id="precio_actual" name="precio_actual" value={formData.precio_actual || ''} onChange={handleInputChange} />
+          </div>
           </div>
 
-          <div className="col-span-1 sm:col-span-12 mb-4">
+          <div className="col-span-1 sm:col-span-12 mb-0">
             <Label htmlFor="descripcion">Descripcion</Label>
             <textarea
               id="descripcion"
@@ -308,7 +312,7 @@ const ResourceForm: React.FC<ResourceFormProps> = ({ initialValues, onSubmit, op
               value={formData.descripcion}
               onChange={handleInputChange}
               className='w-full border border-gray-300 rounded-md p-2 mt-1'
-              rows={2}
+              rows={1}
             ></textarea>
           </div>
         </div>
@@ -345,7 +349,7 @@ const ResourceForm: React.FC<ResourceFormProps> = ({ initialValues, onSubmit, op
           </div>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-4">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <div>
             <Label htmlFor="costoPromedio">Costo Promedio</Label>
             <div className='min-w-32 mt-2 min-h-8 ml-2 px-2 text-gray-400 bg-gray-300 py-1.5 pr-3 rounded-md border-solid borde'> {formData.costo_promedio}
@@ -357,13 +361,7 @@ const ResourceForm: React.FC<ResourceFormProps> = ({ initialValues, onSubmit, op
             <div className='min-w-32 mt-2 min-h-8 ml-2 px-2 text-gray-400 bg-gray-300 py-1.5 pr-3 rounded-md border-solid borde'> {formData.valor_ultima_compra}
             </div>
           </div>
-          <div>
-            <Label htmlFor="costoInicial">Costo Inicial</Label>
-            <Input id="costoInicial" name="costoInicial" value={formData.precio_actual || ''} onChange={handleInputChange} />
-          </div>
-        </div>
-        <div className="flex flex-wrap justify-between mt-4 gap-2">
-          <Button type="button">Ver Precios</Button>
+          
         </div>
       </div>
     </form>

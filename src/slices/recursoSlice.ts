@@ -1,5 +1,5 @@
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
-import { listRecursosService, addRecursoService, updateRecursoService } from '../services/recursoService';
+import { listRecursosService, addRecursoService, updateRecursoService, listDataService } from '../services/recursoService';
 
 // Interfaces
 interface Recurso {
@@ -16,8 +16,34 @@ interface Recurso {
   vigente: boolean;
 }
 
+interface ListDataQueryResult {
+  listTipoRecurso: Array<{
+    id: string;
+    nombre: string;
+  }>;
+  listUnidad: Array<{
+    id: string;
+    nombre: string;
+  }>;
+  listClasificacionRecurso: Array<{
+    id: string;
+    nombre: string;
+    parent_id: string | null;
+    childs: Array<{
+      nombre: string;
+      id: string;
+      parent_id: string;
+    }>;
+  }>;
+  listTipoCostoRecurso: Array<{
+    id: string;
+    nombre: string;
+  }>;
+}
+
 interface RecursoState {
   recursos: Recurso[];
+  listData: ListDataQueryResult | null;
   loading: boolean;
   error: string | null;
 }
@@ -25,13 +51,14 @@ interface RecursoState {
 // Estado inicial
 const initialState: RecursoState = {
   recursos: [],
+  listData: null,
   loading: false,
   error: null,
 };
 
 // Función auxiliar para manejar errores
 const handleError = (error: unknown): string => {
-  if (error instanceof Error) return handleError(error);
+  if (error instanceof Error) return error.message;
   return String(error);
 };
 
@@ -41,6 +68,17 @@ export const fetchRecursos = createAsyncThunk(
   async (_, { rejectWithValue }) => {
     try {
       return await listRecursosService();
+    } catch (error) {
+      return rejectWithValue(handleError(error));
+    }
+  }
+);
+
+export const fetchListData = createAsyncThunk(
+  'recurso/fetchListData',
+  async (_, { rejectWithValue }) => {
+    try {
+      return await listDataService();
     } catch (error) {
       return rejectWithValue(handleError(error));
     }
@@ -85,6 +123,18 @@ const recursoSlice = createSlice({
         state.recursos = action.payload;
       })
       .addCase(fetchRecursos.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
+      })
+      .addCase(fetchListData.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(fetchListData.fulfilled, (state, action: PayloadAction<ListDataQueryResult>) => {
+        state.loading = false;
+        state.listData = action.payload;
+      })
+      .addCase(fetchListData.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload as string;
       })
