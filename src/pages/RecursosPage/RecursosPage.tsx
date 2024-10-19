@@ -23,7 +23,7 @@ interface Recurso {
   vigente: boolean;
   unidad_id: string;
   descripcion: string;
-  imagenes: { id: string; file: string }[]; // Añadir esta línea
+  imagenes: { id: string; file: string }[];
   precio_actual: number,
 }
 
@@ -121,15 +121,24 @@ const RecursosPage: React.FC = () => {
     dispatch(fetchListData());
   }, [dispatch]);
 
-  const handleSubmit = (formData: RecursoAdd | RecursoUpdate) => {
-    console.log(formData)
-    if (editingRecurso.id) {
-      dispatch(updateRecurso(formData as RecursoUpdate));
-    } else {
-      dispatch(addRecurso(formData as RecursoAdd));
+  const handleSubmit = async (formData: RecursoAdd | RecursoUpdate): Promise<{ id: string; codigo: string } | undefined> => {
+    try {
+      let result: Recurso | undefined;
+      if ('id' in formData) {
+        await dispatch(updateRecurso(formData as RecursoUpdate));
+        setIsModalOpenNewRecursos(false);
+      } else {
+        const action = await dispatch(addRecurso(formData as RecursoAdd));
+        if (addRecurso.fulfilled.match(action)) {
+          result = action.payload as Recurso;
+        }
+      }
+      setEditingRecurso(recursoInicial);
+      return result ? { id: result.id!, codigo: result.codigo } : undefined;
+    } catch (error) {
+      console.error('Error al guardar el recurso:', error);
+      return undefined;
     }
-    setEditingRecurso(recursoInicial);
-    setIsModalOpenNewRecursos(false);
   };
 
   const handleEditNewRecursos = (recurso: Recurso) => {

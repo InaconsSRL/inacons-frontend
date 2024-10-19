@@ -1,5 +1,5 @@
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
-import { listRecursosService, addRecursoService, updateRecursoService, listDataService } from '../services/recursoService';
+import { listRecursosService, addRecursoService, updateRecursoService, listDataService, deleteImagenRecursoService } from '../services/recursoService';
 
 // Interfaces
 interface Recurso {
@@ -15,6 +15,7 @@ interface Recurso {
   clasificacion_recurso_id: string;  
   tipo_costo_recurso_id: string;
   vigente: boolean;
+  imagenes: { id: string; file: string }[];
 }
 
 interface RecursoAdd {
@@ -32,19 +33,17 @@ interface RecursoAdd {
 
 interface RecursoUpdate {
   id: string;
-  codigo: string;
-  nombre: string;
-  descripcion: string;
-  unidad_id: string;
-  precio_actual: number,  
-  tipo_recurso_id: string;
-  clasificacion_recurso_id: string;
-  tipo_costo_recurso_id: string;
+  codigo?: string;
+  nombre?: string;
+  descripcion?: string;
+  unidad_id?: string;
+  precio_actual?: number,  
+  tipo_recurso_id?: string;
+  clasificacion_recurso_id?: string;
+  tipo_costo_recurso_id?: string;
   vigente: boolean;
-  imagenes: { id: string; file: string }[];
+  imagenes?: { id: string; file: string }[];
 }
-
-
 
 interface ListDataQueryResult {
   listTipoRecurso: Array<{
@@ -140,6 +139,17 @@ export const updateRecurso = createAsyncThunk(
   }
 );
 
+export const deleteImagenRecurso = createAsyncThunk(
+  'recurso/deleteImagenRecurso',
+  async (id: string, { rejectWithValue }) => {
+    try {
+      return await deleteImagenRecursoService(id);
+    } catch (error) {
+      return rejectWithValue(handleError(error));
+    }
+  }
+);
+
 // Slice
 const recursoSlice = createSlice({
   name: 'recurso',
@@ -178,6 +188,14 @@ const recursoSlice = createSlice({
         const index = state.recursos.findIndex(recurso => recurso.id === action.payload.id);
         if (index !== -1) {
           state.recursos[index] = action.payload;
+        }
+      })
+      .addCase(deleteImagenRecurso.fulfilled, (state, action: PayloadAction<{ id: string, recurso_id: string }>) => {
+        const recursoIndex = state.recursos.findIndex(recurso => recurso.id === action.payload.recurso_id);
+        if (recursoIndex !== -1) {
+          state.recursos[recursoIndex].imagenes = state.recursos[recursoIndex].imagenes.filter(
+            imagen => imagen.id !== action.payload.id
+          );
         }
       });
   },

@@ -1,10 +1,13 @@
 import React, { useEffect, useState } from 'react';
+import { useDispatch } from 'react-redux';
 import IMG from '../../components/IMG/IMG';
 import LoaderPage from '../../components/Loader/LoaderPage';
 import { mockData } from './mockDataHistorial';
 import Modal from '../../components/Modal/Modal';
 import TableComponent from '../../components/Table/TableComponent';
 import { FiXCircle } from 'react-icons/fi';
+
+import { deleteImagenRecurso } from '../../slices/recursoSlice';
 
 interface FormData {
   id?: string;
@@ -50,7 +53,7 @@ const Label: React.FC<React.LabelHTMLAttributes<HTMLLabelElement>> = (props) => 
 
 interface ResourceFormProps {
   initialValues: FormData;
-  onSubmit: (data: FormData) => void;
+  onSubmit: (data: FormData) => Promise<{ id: string; codigo: string; imagenes?: { id: string; file: string; }[] } | undefined>;
   options: {
     tipoCostoRecursos: Array<{ id: string; nombre: string }>;
     unidades: Array<{ id: string; nombre: string }>;
@@ -60,13 +63,18 @@ interface ResourceFormProps {
 }
 
 const ResourceForm: React.FC<ResourceFormProps> = ({ initialValues, onSubmit, options }) => {
+  console.log("InitialValues", initialValues)
+  const dispatch = useDispatch();
   const [isLoading, setIsLoading] = useState(false);
   const [isSelectHistorial, setIsSelectHistorial] = useState(false);
-  const [images, setImages] = useState<File[]>([]);
+  /* const [images, setImages] = useState<File[]>([]); */
   const [imagePreviews, setImagePreviews] = useState<string[]>([]);
   const [formData, setFormData] = useState<FormData>(initialValues);
 
   const [uploadingImage, setUploadingImage] = useState(false);
+  const [isEditing, setIsEditing] = useState(!!initialValues.codigo);
+
+  
 
   const handleImageUpload = async (file: File) => {
     if (!formData.id) {
@@ -128,7 +136,6 @@ const ResourceForm: React.FC<ResourceFormProps> = ({ initialValues, onSubmit, op
     }
   };
 
-  const isEditing = !!initialValues.codigo;
   useEffect(() => {
     if (initialValues) {
       setFormData(initialValues);
@@ -199,38 +206,71 @@ const ResourceForm: React.FC<ResourceFormProps> = ({ initialValues, onSubmit, op
     }
   };
 
-  /* const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = Array.from(e.target.files || []);
-    setIsLoading(true);
-    Promise.all(files.map((file) => compressImage(file)))
-      .then((compressedImages) => {
-        const newImages = compressedImages.filter((newImage) =>
-          !images.some((existingImage) => existingImage.name === newImage.name)
-        );
-        setImages((prevImages) => [...prevImages, ...newImages]);
-        setImagePreviews((prevPreviews) => [
-          ...prevPreviews,
-          ...newImages.map((image) => URL.createObjectURL(image)),
-        ]);
-      })
-      .finally(() => {
-        setIsLoading(false);
-      });
-  }; */
-
-  const handleRemoveImage = (index: number) => {
-    setFormData(prevData => ({
-      ...prevData,
-      imagenes: Array.isArray(prevData.imagenes) ? prevData.imagenes.filter((_, i) => i !== index) : []
-    }));
-    setImagePreviews(prevPreviews => prevPreviews.filter((_, i) => i !== index));
+  const handleDeleteImage = async (imageId: string) => {
+    try {
+      await dispatch(deleteImagenRecurso(imageId) as any);
+      setFormData(prevData => ({
+        ...prevData,
+        imagenes: Array.isArray(prevData.imagenes) ? prevData.imagenes.filter(img => img.id !== imageId) : []
+      }));
+      setImagePreviews(prevPreviews => prevPreviews.filter((_, i) => 
+        formData.imagenes[i].id !== imageId
+      ));
+      alert('Imagen eliminada exitosamente');
+    } catch (error) {
+      console.error('Error al eliminar la imagen:', error);
+      alert('Error al eliminar la imagen');
+    }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();   
-    onSubmit(formData);
-    console.log('Form Data:', formData);
-    // Aquí puedes enviar los datos del formulario y las imágenes a tu backend
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsLoading(true);
+    try {
+      const response = await onSubmit(formData);
+      if (response) {
+        setFormData(prevData => ({
+          ...prevData,
+          id: response.id,
+          codigo: response.codigo,
+          imagenes: response.imagenes || [],
+        }));
+        setIsEditing(true);
+        alert('Recurso creado exitosamente. Ahora puedes añadir imágenes.');
+      }
+    } catch (error) {
+      console.error('Error al crear el recurso:', error);
+      alert('Error al crear el recurso.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleDuplicate = async () => {
+    const { id, ...dataWithoutId } = formData;
+    const duplicatedData = {
+      ...dataWithoutId,
+      nombre: `${formData.nombre} copy`,
+    };
+    try {
+      const response = await onSubmit(duplicatedData);
+      console.log("Respuesta de duplicación:", response); // Añade este log
+      if (response && response.id && response.codigo) {
+        setFormData({
+          ...duplicatedData,
+          id: response.id,
+          codigo: response.codigo,
+          imagenes: [],
+        });
+        setIsEditing(true);
+        alert('Recurso duplicado exitosamente.');
+      } else {
+        throw new Error('La respuesta no contiene id o código');
+      }
+    } catch (error) {
+      console.error('Error al duplicar el recurso:', error);
+      alert('Error al duplicar el recurso.');
+    }
   };
 
   const renderClasificaciones = (clasificaciones: Array<{ id: string; nombre: string; childs?: Array<{ id: string; nombre: string }> }>) => {
@@ -269,7 +309,7 @@ const ResourceForm: React.FC<ResourceFormProps> = ({ initialValues, onSubmit, op
       <div className="bg-gray-200 shadow-md rounded-lg px-4 py-2  ">
         <div className="flex flex-wrap justify-between p-2 gap-2 rounded-lg text-[10px] md:text-xs bg-gray-300">
           <Button type="button">Nuevo</Button>
-          <Button type="button">Duplicar</Button>
+          <Button type="button" onClick={handleDuplicate}>Duplicar</Button>
           <Button type="button">H.Cambios</Button>
           <Button type="button">H.Precios</Button>
           <Button type="button">Cambio Unidad</Button>
@@ -369,37 +409,6 @@ const ResourceForm: React.FC<ResourceFormProps> = ({ initialValues, onSubmit, op
           </div>
         </div>
 
-        {/* <div className="mb-4">
-          <h3 className="font-semibold mb-2">Catálogo</h3>
-          <div>
-            <input
-              type="file"
-              onChange={handleImageChange}
-              multiple
-              accept="image/*"
-              className="w-full p-4 text-sm bg-white border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            />
-            <p className="mt-2 text-sm text-gray-600">
-              {imagePreviews.length} {imagePreviews.length === 1 ? 'imagen mostrada' : 'imágenes mostradas'}
-            </p>
-          </div>
-
-          <div className="mt-4 grid grid-cols-2 sm:grid-cols-4 gap-2 min-h-32 bg-slate-300 items-center justify-center rounded-md">
-            {imagePreviews.length === 0 ? <div className='col-span-4 text-center text-gray-500 w-full'>No hay imagenes que mostrar...</div> : null}
-            {imagePreviews.map((preview, index) => (
-              <div key={`image-${index}`} className="relative p-2.5 ">
-                <IMG src={preview} key={index} alt={`Preview ${index + 1}`} className="w-full min-h-28 object-cover rounded-md shadow-md shadow-slate-600" />
-                <button
-                  type="button"
-                  onClick={() => handleRemoveImage(index)}
-                  className="absolute top-0 right-0 text-white rounded-full"
-                >
-                  <FiXCircle className='h-5 w-5 mr-2 text-white bg-red-500 rounded-full'/>
-                </button>
-              </div>
-            ))}
-          </div>
-        </div> */}
         {formData.id && (
         <div className="mb-4">
           <h3 className="font-semibold mb-2">Catálogo</h3>
@@ -422,7 +431,7 @@ const ResourceForm: React.FC<ResourceFormProps> = ({ initialValues, onSubmit, op
                 <IMG src={preview} key={index} alt={`Preview ${index + 1}`} className="w-full min-h-28 object-cover rounded-md shadow-md shadow-slate-600" />
                 <button
                   type="button"
-                  onClick={() => handleRemoveImage(index)}
+                  onClick={() => handleDeleteImage(formData.imagenes[index].id)}
                   className="absolute top-0 right-0 text-white rounded-full"
                 >
                   <FiXCircle className='h-5 w-5 mr-2 text-white bg-red-500 rounded-full'/>

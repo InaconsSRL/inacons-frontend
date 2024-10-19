@@ -99,6 +99,16 @@ export const UPDATE_RECURSO_MUTATION = gql`
 }
 `;
 
+export const DELETE_IMAGEN_RECURSO_MUTATION = gql`
+  mutation DeleteImagenRecurso($id: ID!) {
+    deleteImagenRecurso(id: $id) {
+      id
+      recurso_id
+      file
+      fecha
+    }
+  }
+`;
 
 interface AddRecursoInput {
   codigo: string;
@@ -212,6 +222,22 @@ export const updateRecursoService = async (recursoData: UpdateRecursoInput) => {
     return response.data.updateRecurso;
   } catch (error) {
     console.error('Error al actualizar el recurso:', error);
+    throw error;
+  }
+};
+
+export const deleteImagenRecursoService = async (id: string) => {
+  try {
+    const response = await client.mutate({
+      mutation: DELETE_IMAGEN_RECURSO_MUTATION,
+      variables: { id },
+    });
+    if (response.errors) {
+      throw new Error(response.errors[0]?.message || 'Error desconocido');
+    }
+    return response.data.deleteImagenRecurso;
+  } catch (error) {
+    console.error('Error al eliminar la imagen del recurso:', error);
     throw error;
   }
 };
