@@ -20,7 +20,7 @@ const Button: React.FC<ButtonProps> = ({ onClick, color = 'blanco', options = []
   };
 
   const buttonColors = {
-    transp: 'bg-white/10 hover:bg-white/20 active:bg-white/30 text-black/100',
+    transp: 'bg-white/10 hover:bg-white/20 active:bg-white/30 text-blue-500',
     verde: 'bg-blue-500 hover:bg-blue-600 active:bg-blue-700 text-white',
     blanco: 'bg-white border border-gray-300 text-black hover:bg-gray-100 active:bg-gray-200',
     rojo: 'bg-red-500 hover:bg-red-600 active:bg-red-700 text-white',
@@ -44,7 +44,6 @@ const Button: React.FC<ButtonProps> = ({ onClick, color = 'blanco', options = []
           px-4 
           rounded 
           transition-colors 
-          text-gray-700
           duration-200 
           w-28
           ${className}

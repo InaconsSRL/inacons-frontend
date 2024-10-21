@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect } from 'react';
 import { FiChevronLeft, FiChevronRight, FiX } from 'react-icons/fi';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -31,12 +31,12 @@ const ImageCarousel: React.FC<ImageCarouselProps> = ({ images, alt }) => {
     setIsFullscreen(!isFullscreen);
   };
 
-  const handleKeyDown = useCallback((event: KeyboardEvent) => {
+/*   const handleKeyDown = useCallback((event: KeyboardEvent) => {
     if (event.key === 'Escape' && isFullscreen) {
       event.preventDefault();
       setIsFullscreen(false);
     }
-  }, [isFullscreen]);
+  }, [isFullscreen]); */
 
   useEffect(() => {
     const handleGlobalKeyDown = (event: KeyboardEvent) => {
@@ -71,13 +71,13 @@ const ImageCarousel: React.FC<ImageCarouselProps> = ({ images, alt }) => {
 
   return (
     <div className="relative w-full max-w-3xl mx-auto overflow-hidden rounded-lg shadow-2xl bg-gradient-to-r from-slate-500/10 via-blue-500/10 to-slate-500/10">
-      <div className="w-full h-80 relative">
+      <div className="w-auto min-w-[300px] h-80 relative">
         <AnimatePresence custom={direction} initial={false}>
           <motion.img
             key={images[currentIndex].id}
             src={images[currentIndex].file}
             alt={`${alt} - Imagen ${currentIndex + 1}`}
-            className="w-full h-80 object-cover absolute top-0 left-0 cursor-pointer"
+            className="w-full h-full object-cover absolute top-0 left-0 cursor-pointer"
             variants={variants}
             initial="enter"
             animate="center"

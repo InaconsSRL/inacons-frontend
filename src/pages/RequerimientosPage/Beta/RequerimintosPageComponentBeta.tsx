@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useQuery, gql } from '@apollo/client';
-import RequerimientosList from './RequerimientosList';
-import Inventory from './Inventory';
-import LoaderPage from '../../components/Loader/LoaderPage';
-import { fetchObras } from '../../slices/obrasSlice';
+import RequerimientosList from './RequerimientosListBeta';
+import Inventory from '../Inventory';
+import LoaderPage from '../../../components/Loader/LoaderPage';
+import { fetchObras } from '../../../slices/obrasSlice';
 import { useDispatch, useSelector } from 'react-redux';
-import { RootState, AppDispatch } from '../../store/store';
+import { RootState, AppDispatch } from '../../../store/store';
 
 const LIST_RECURSO = gql`
   query ListRecurso {

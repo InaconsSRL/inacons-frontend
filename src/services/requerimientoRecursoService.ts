@@ -10,7 +10,6 @@ const GET_REQUERIMIENTO_RECURSO_BY_REQUERIMIENTO_ID = gql`
       cantidad
       cantidad_aprobada
       estado
-      tipo_solicitud
       presupuestado
       nombre
       codigo

@@ -8,6 +8,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { fetchRequerimientos, addRequerimiento, updateRequerimiento } from '../../slices/requerimientoSlice';
 import { RootState, AppDispatch } from '../../store/store';
 import LoaderPage from '../../components/Loader/LoaderPage';
+import { FiEdit } from 'react-icons/fi';
 
 interface Requerimiento {
   id: string;
@@ -73,11 +74,16 @@ const RequerimientosComponent: React.FC = () => {
   };
 
   const tableData = {
-    headers: ["codigo", "usuario", "fecha_solicitud", "estado", "sustento", "opciones"],
+    headers: ["obra", "fecha emision", "vence", "estado",  "codigo", "descripcion", "solicita",  "opciones"],
     rows: requerimientos.map(req => ({
       ...req,
+      solicita: req.usuario,
+      obra: req.codigo.split('-')[1],
+      descripcion: req.sustento,
+      "fecha emision": new Date(req.fecha_solicitud).toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric' }),
+      "vence": new Date(new Date(req.fecha_solicitud).getTime() + 2 * 24 * 60 * 60 * 1000).toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric' }),
       opciones: (
-        <Button text='Editar' color='transp' className='text-black' onClick={() => handleEdit(req)}></Button>
+        <Button icon={<FiEdit />} text="" color='transp' className='text-blue-500' onClick={() => handleEdit(req)}></Button>
       )
     }))
   };
@@ -98,7 +104,7 @@ const RequerimientosComponent: React.FC = () => {
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.2 }}
       >
-        <h1 className="text-2xl font-bold text-blue-800">Requerimientos</h1>
+        <h1 className="text-2xl font-bold text-blue-50">Requerimientos</h1>
         <Button text='Nuevo Requerimiento' color='verde' onClick={handleButtonClick} className="rounded w-auto" />
       </motion.div>
 

@@ -1,0 +1,115 @@
+  .container__background-shapes {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    z-index: 1;
+}
+
+.shape {
+    position: absolute;
+    opacity: 0.7;
+    transition: all 0.5s ease;
+    animation: changeColor 20s infinite alternate;
+    background: linear-gradient(to right, #0ea1e6, #1e67c7);
+}
+
+.shape1 {
+    width: 200px;
+    height: 200px;
+    right: 10%;
+    top: 20%;
+    background: linear-gradient(to right, #0ea1e6, #1e67c7);
+    animation: 
+        moveShape1 25s ease-in-out infinite alternate,
+        changeColor 20s infinite alternate;
+}
+
+.shape2 {
+    width: 150px;
+    height: 150px;
+    left: 15%;
+    bottom: 25%;
+    background: linear-gradient(to right, #0ea1e6, #1e67c7);
+    animation: 
+        moveShape2 30s ease-in-out infinite alternate,
+        changeColor 25s infinite alternate;
+}
+
+.shape3 {
+    width: 250px;
+    height: 250px;
+    left: 50%;
+    top: 50%;
+    background: linear-gradient(to right, #0ea1e6, #1e67c7);
+    animation: 
+        moveShape3 35s ease-in-out infinite alternate,
+        changeColor 30s infinite alternate;
+}
+
+@keyframes moveShape1 {
+    0%, 100% { 
+        transform: 
+            rotate(calc(360deg * var(--random1))) 
+            translate(calc(200px * var(--random2)), calc(200px * var(--random3))) 
+            scale(calc(0.5 + var(--random4)));
+        border-radius: calc(50% * var(--random5));
+    }
+    25%, 75% { 
+        transform: 
+            rotate(calc(360deg * var(--random6))) 
+            translate(calc(-200px * var(--random7)), calc(-200px * var(--random8))) 
+            scale(calc(0.5 + var(--random9)));
+        border-radius: calc(50% * var(--random10));
+    }
+    50% { 
+        transform: 
+            rotate(calc(360deg * var(--random11))) 
+            translate(calc(200px * var(--random12)), calc(-200px * var(--random13))) 
+            scale(calc(0.5 + var(--random14)));
+        border-radius: calc(50% * var(--random15));
+    }
+}
+
+@keyframes moveShape2 {
+    0%, 100% { 
+        transform: 
+            skew(calc(45deg * var(--random16))) 
+            translate(calc(200px * var(--random17)), calc(200px * var(--random18))) 
+            scale(calc(0.5 + var(--random19)));
+        border-radius: calc(50% * var(--random20));
+    }
+    50% { 
+        transform: 
+            skew(calc(-45deg * var(--random21))) 
+            translate(calc(-200px * var(--random22)), calc(-200px * var(--random23))) 
+            scale(calc(0.5 + var(--random24)));
+        border-radius: calc(50% * var(--random25));
+    }
+}
+
+@keyframes moveShape3 {
+    0%, 100% { 
+        transform: 
+            rotate(calc(360deg * var(--random26))) 
+            translate(calc(200px * var(--random27)), calc(200px * var(--random28))) 
+            scale(calc(0.5 + var(--random29)));
+        border-radius: calc(50% * var(--random30));
+    }
+    33%, 66% { 
+        transform: 
+            rotate(calc(360deg * var(--random31))) 
+            translate(calc(-200px * var(--random32)), calc(-200px * var(--random33))) 
+            scale(calc(0.5 + var(--random34)));
+        border-radius: calc(50% * var(--random35));
+    }
+}
+
+
+
+.shape:hover {
+    filter: hue-rotate(calc(360deg * var(--random40)));
+    transform: scale(calc(1 + 0.5 * var(--random41)));
+}

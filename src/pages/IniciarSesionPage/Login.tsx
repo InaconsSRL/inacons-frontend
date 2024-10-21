@@ -1,11 +1,12 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useDispatch } from 'react-redux';
 import { loginUser } from '../../slices/userSlice';
 import { useNavigate } from 'react-router-dom';
 import Loader from '../../components/Loader/Loader';
-import Logo from '../../assets/logo.svg'
+import Logo from '../../assets/logoInacons.png';
 import { FiEye, FiEyeOff } from 'react-icons/fi';
 import { AppDispatch } from '../../store/store';
+import './Login.css';
 
 const Login: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
@@ -15,6 +16,20 @@ const Login: React.FC = () => {
   const [mostrarPass, setMostrarPass] = useState(false);
   const [viewLoader, setViewLoader] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
+
+  useEffect(() => {
+    const setRandomProperties = () => {
+      const root = document.documentElement;
+      for (let i = 1; i <= 41; i++) {
+        root.style.setProperty(`--random${i}`, Math.random().toString());
+      }
+    };
+
+    setRandomProperties();
+    const intervalId = setInterval(setRandomProperties, 15000); // Actualiza cada 5 segundos
+
+    return () => clearInterval(intervalId); // Limpieza al desmontar el componente
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -36,12 +51,19 @@ const Login: React.FC = () => {
   };
 
   return (
-    <div className="flex justify-center items-center h-screen bg-gradient-to-r from-loginRightColor to-loginLeftColor font-[Montserrat] p-4">
+    <div className="relative flex justify-center items-center h-screen overflow-hidden font-[Montserrat] p-4">
+      <div className="absolute inset-0 bg-gradient-to-r from-loginRightColor to-loginLeftColor"></div>
+      
+      <div className="container__background-shapes">
+        <div className="shape shape1"></div>
+        <div className="shape shape2"></div>
+        <div className="shape shape3"></div>
+      </div>
 
-      <div className="flex flex-col items-center p-8 rounded-[20px] bg-white bg-opacity-20 shadow-lg backdrop-blur-lg border border-white/30 max-w-[350px] w-full md:w-auto">
+      <div className="relative z-10 flex flex-col items-center p-8 rounded-[20px] bg-white bg-opacity-20 shadow-lg backdrop-blur-lg border border-white/30 max-w-[350px] w-full md:w-auto">
         <img className="w-full mb-8" src={Logo} alt="Logo" />
         <h1 className="mb-6 mt-2 text-xl font-bold text-center uppercase tracking-wide bg-clip-text text-transparent bg-gradient-to-r from-loginLeftTextColor to-loginRightTextColor">
-          Iniciar Sesión
+          Bienvenido
         </h1>
 
         {viewLoader ? (
@@ -96,15 +118,13 @@ const Login: React.FC = () => {
 
           <button
             type="submit"
-            className=
-            "mt-4 relative overflow-hidden px-8 py-4 rounded-full bg-gradient-to-r from-loginLeftColor to-loginRightColor text-white text-lg font-bold uppercase tracking-wide cursor-pointer transition-all before:content-[''] before:absolute before:top-0 before:left-0 before:w-full before:h-full before:bg-gradient-to-l before:from-loginLeftColor before:to-loginRightColor before:opacity-0 before:transform before:-translate-x-full hover:before:opacity-100 hover:before:translate-x-0 before:transition-all"
+            className="mt-4 relative overflow-hidden px-8 py-4 rounded-full bg-gradient-to-r from-loginLeftColor to-loginRightColor text-white text-lg font-bold uppercase tracking-wide cursor-pointer transition-all before:content-[''] before:absolute before:top-0 before:left-0 before:w-full before:h-full before:bg-gradient-to-l before:from-loginLeftColor before:to-loginRightColor before:opacity-0 before:transform before:-translate-x-full hover:before:opacity-100 hover:before:translate-x-0 before:transition-all"
           >
             <span className="relative z-10">Iniciar Sesión</span>
           </button>
         </form>
       </div>
     </div>
-
   );
 };
 

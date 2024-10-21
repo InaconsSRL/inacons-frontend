@@ -8,7 +8,6 @@ interface RequerimientoRecurso {
   cantidad: number;
   cantidad_aprobada: number | null;
   estado: string;
-  tipo_solicitud: string;
   presupuestado: boolean;
   nombre: string;
   codigo: string;

@@ -40,9 +40,14 @@ export const LIST_DATA_QUERY = gql`
     nombre
     parent_id
     childs {
-      nombre
       id
-      parent_id
+    nombre
+    parent_id
+    childs {
+      id
+    nombre
+    parent_id
+    }
     }
   }
     listTipoCostoRecurso {

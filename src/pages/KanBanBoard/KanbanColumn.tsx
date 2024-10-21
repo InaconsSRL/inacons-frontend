@@ -9,10 +9,10 @@ interface KanbanColumnProps {
 const KanbanColumn: React.FC<KanbanColumnProps> = ({ column }) => {
     return (
       <div className="flex-shrink-0 w-80 bg-white rounded-lg shadow-lg overflow-hidden scale-90 lg:scale-100">
-        <div className="p-4 bg-gray-50 border-b">
-          <h2 className="text-lg font-semibold flex justify-between items-center">
+        <div className="p-4 bg-gray-50 border-b" style={{ backgroundColor: column.color }}>
+          <h2 className="text-lg font-semibold flex justify-between items-center text-white">
             {column.title}
-            <span className="text-sm font-normal bg-blue-100 text-blue-800 px-2 py-1 rounded-full">
+            <span className="text-sm font-normal bg-white bg-opacity-20 text-white px-2 py-1 rounded-full">
               {column.tasks.length}/{column.limit || '∞'}
             </span>
           </h2>

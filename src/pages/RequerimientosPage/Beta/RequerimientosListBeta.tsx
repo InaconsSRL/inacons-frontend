@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import TableComponent from '../../components/Table/TableComponent';
+import TableComponent from '../../../components/Table/TableComponent';
 import { useQuery, gql } from '@apollo/client';
 
-import LoaderPage from '../../components/Loader/LoaderPage';
-import Button from '../../components/Buttons/Button';
-import Modal from '../../components/Modal/Modal';
-import ObrasPage from '../ObrasPage/ObrasPage';
-import RequerimientoForm from './RequerimientoForm';
+import LoaderPage from '../../../components/Loader/LoaderPage';
+import Button from '../../../components/Buttons/Button';
+import Modal from '../../../components/Modal/Modal';
+import ObrasPage from '../../ObrasPage/ObrasPage';
+import RequerimientoForm from './RequerimientoFormBeta';
 import { HiRefresh } from 'react-icons/hi';
 
 const GET_REQUERIMIENTOS = gql`
@@ -35,7 +35,6 @@ const GET_REQUERIMIENTO_RECURSOS = gql`
       cantidad
       cantidad_aprobada
       estado
-      tipo_solicitud
       codigo
       nombre
     }
@@ -62,7 +61,6 @@ type Recurso = {
   cantidad: number;
   cantidad_aprobada: number;
   estado: string;
-  tipo_solicitud: string;
   codigo: string;
   nombre: string;
 };

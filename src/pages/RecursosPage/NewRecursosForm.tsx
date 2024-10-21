@@ -23,6 +23,26 @@ interface FormData {
   vigente: boolean;
 }
 
+interface ResponseData {
+  id: string;
+  codigo: string;
+  nombre: string;
+  clasificacion_recurso_id: string;
+  tipo_recurso_id: string;
+  tipo_costo_recurso_id: string;
+  unidad_id: string;
+  descripcion: string;
+  precio_actual: number;
+  vigente: boolean;
+  imagenes?: { id: string; file: string; }[];
+}
+
+interface Clasificacion {
+  id: string;
+  nombre: string;
+  childs?: Clasificacion[];
+}
+
 const Select: React.FC<React.SelectHTMLAttributes<HTMLSelectElement>> = (props) => (
   <select {...props} className="w-full border rounded-md p-2 mt-1">
     {props.children}
@@ -53,17 +73,16 @@ const Label: React.FC<React.LabelHTMLAttributes<HTMLLabelElement>> = (props) => 
 
 interface ResourceFormProps {
   initialValues: FormData;
-  onSubmit: (data: FormData) => Promise<{ id: string; codigo: string; imagenes?: { id: string; file: string; }[] } | undefined>;
+  onSubmit: (data: FormData) => Promise<ResponseData | undefined>;
   options: {
     tipoCostoRecursos: Array<{ id: string; nombre: string }>;
     unidades: Array<{ id: string; nombre: string }>;
     tiposRecurso: Array<{ id: string; nombre: string }>;
-    clasificaciones: Array<{ id: string; nombre: string; childs?: Array<{ id: string; nombre: string }> }>;
+    clasificaciones: Clasificacion[];
   };
 }
 
 const ResourceForm: React.FC<ResourceFormProps> = ({ initialValues, onSubmit, options }) => {
-  console.log("InitialValues", initialValues)
   const dispatch = useDispatch();
   const [isLoading, setIsLoading] = useState(false);
   const [isSelectHistorial, setIsSelectHistorial] = useState(false);
@@ -73,8 +92,7 @@ const ResourceForm: React.FC<ResourceFormProps> = ({ initialValues, onSubmit, op
 
   const [uploadingImage, setUploadingImage] = useState(false);
   const [isEditing, setIsEditing] = useState(!!initialValues.codigo);
-
-  
+  const [response, setResponse] = useState<ResponseData | null>(null);
 
   const handleImageUpload = async (file: File) => {
     if (!formData.id) {
@@ -136,12 +154,49 @@ const ResourceForm: React.FC<ResourceFormProps> = ({ initialValues, onSubmit, op
     }
   };
 
-  useEffect(() => {
-    if (initialValues) {
-      setFormData(initialValues);
+  /* useEffect(() => {
+    if (response) {
+      setFormData(response);
       setImagePreviews(initialValues.imagenes?.map((img: any) => img.file || img) || []);
+    } else {
+      if (initialValues) {
+        setFormData(initialValues);
+        setImagePreviews(initialValues.imagenes?.map((img: any) => img.file || img) || []);
+      }
     }
-  }, [initialValues]);
+  }, [initialValues, response]); */
+
+  const defaultFormData = {
+    codigo: '',
+    nombre: '',
+    clasificacion_recurso_id: '',
+    tipo_recurso_id: '',
+    tipo_costo_recurso_id: '',
+    unidad_id: '',
+    descripcion: '',
+    imagenes: [],
+    precio_actual: 0,
+    vigente: false,
+  };
+
+  useEffect(() => {
+    if (response && Object.keys(response).length > 0) {
+      setFormData({...defaultFormData, ...response});
+      console.log("response", response)
+      console.log("me quedo con response")
+    } else {
+      if (initialValues && Object.keys(initialValues).length > 0) {
+        setFormData({...defaultFormData, ...initialValues});
+        console.log("me quedo con initialValues")
+      } else {
+        console.log("me quedo con default")
+        setFormData(defaultFormData);
+      }
+    }
+    setImagePreviews((response || initialValues)?.imagenes?.map((img: any) => img.file || img) || []);
+  }, [initialValues, response]);
+
+
   
   const handleSelectHistorial = () => {
     setIsSelectHistorial(true);
@@ -223,62 +278,71 @@ const ResourceForm: React.FC<ResourceFormProps> = ({ initialValues, onSubmit, op
     }
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSubmit = async (e: React.FormEvent | null, dataToSubmit = formData) => {
+    if (e) e.preventDefault();
     setIsLoading(true);
     try {
-      const response = await onSubmit(formData);
+      console.log("dataToSubmit", dataToSubmit)
+      const response = await onSubmit(dataToSubmit) as ResponseData;
       if (response) {
+        setResponse(response);
         setFormData(prevData => ({
           ...prevData,
-          id: response.id,
-          codigo: response.codigo,
-          imagenes: response.imagenes || [],
+          ...response
         }));
         setIsEditing(true);
-        alert('Recurso creado exitosamente. Ahora puedes añadir imágenes.');
+        alert('Recurso creado/actualizado exitosamente. Ahora puedes añadir imágenes.');
       }
     } catch (error) {
-      console.error('Error al crear el recurso:', error);
-      alert('Error al crear el recurso.');
+      console.error('Error al crear/actualizar el recurso:', error);
+      alert('Error al crear/actualizar el recurso.');
     } finally {
       setIsLoading(false);
     }
   };
-
-  const handleDuplicate = async () => {
+  
+  const handleDuplicate = () => {
     const { id, ...dataWithoutId } = formData;
     const duplicatedData = {
       ...dataWithoutId,
       nombre: `${formData.nombre} copy`,
     };
-    try {
-      const response = await onSubmit(duplicatedData);
-      console.log("Respuesta de duplicación:", response); // Añade este log
-      if (response && response.id && response.codigo) {
-        setFormData({
-          ...duplicatedData,
-          id: response.id,
-          codigo: response.codigo,
-          imagenes: [],
-        });
-        setIsEditing(true);
-        alert('Recurso duplicado exitosamente.');
-      } else {
-        throw new Error('La respuesta no contiene id o código');
-      }
-    } catch (error) {
-      console.error('Error al duplicar el recurso:', error);
-      alert('Error al duplicar el recurso.');
-    }
+    handleSubmit(null, duplicatedData);
   };
 
-  const renderClasificaciones = (clasificaciones: Array<{ id: string; nombre: string; childs?: Array<{ id: string; nombre: string }> }>) => {
+  /* const renderClasificaciones = (clasificaciones: Array<{ id: string; nombre: string; childs?: Array<{ id: string; nombre: string }> }>) => {
     return clasificaciones.map(clasificacion => (
       <React.Fragment key={clasificacion.id}>
         <option value={clasificacion.id}>{clasificacion.nombre}</option>
         {clasificacion.childs && clasificacion.childs.map(child => (
           <option key={child.id} value={child.id}>&nbsp;&nbsp;{child.nombre}</option>
+        ))}
+      </React.Fragment>
+    ));
+  }; */
+
+  const renderClasificaciones = (clasificaciones: Clasificacion[]) => {
+    console.log("clasificaciones", clasificaciones)
+    return clasificaciones.map(clasificacion => (
+      <React.Fragment key={clasificacion.id}>
+        <option value="" disabled style={{ color: 'blue', fontWeight: 'bold' }}>
+          {clasificacion.nombre}
+        </option>
+        {clasificacion.childs && clasificacion.childs.map(child => (
+          <React.Fragment key={child.id}>
+            <option value="" disabled className='pl-4 text-green-500 font-bold'>
+              ├─ {child.nombre}
+            </option>
+            {child.childs  && child.childs.map(grandchild   => (
+              <option
+                key={grandchild.id}
+                value={grandchild.id}
+                style={{ color: 'black', paddingLeft: '40px' }}
+              >
+                │  └─ {grandchild.nombre}
+              </option>
+            ))}
+          </React.Fragment>
         ))}
       </React.Fragment>
     ));

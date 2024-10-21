@@ -9,14 +9,14 @@
     display: flex;
     justify-content: center;
     align-items: center;
-    background-color: rgba(0, 124, 58, 0.186);
+    background-color: rgba(206, 206, 206, 0.186);
   }
   
   .bubble {
     width: 20px;
     height: 20px;
     border-radius: 50%;
-    background-image: linear-gradient(to right, #114486, #03aa46);
+    background-image: linear-gradient(to right, #C7EBF6, #004779);
     margin: 0 5px;
     animation: bubbleAnimation 1.5s ease-in-out infinite;
   }

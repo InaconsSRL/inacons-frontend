@@ -1,12 +1,12 @@
 import React, { useState, useEffect, ChangeEvent, FormEvent } from 'react';
 import { motion } from 'framer-motion';
 import { useSelector } from 'react-redux';
-import { RootState } from '../../store/store';
+import { RootState } from '../../../store/store';
 import { FiX } from 'react-icons/fi';
 import { gql } from '@apollo/client';
 import { useMutation } from '@apollo/client';
-import LoaderPage from '../../components/Loader/LoaderPage';
-import Modal from '../../components/Modal/Modal';
+import LoaderPage from '../../../components/Loader/LoaderPage';
+import Modal from '../../../components/Modal/Modal';
 
 // Definimos la interfaz Obra
 // const pageVariants = {

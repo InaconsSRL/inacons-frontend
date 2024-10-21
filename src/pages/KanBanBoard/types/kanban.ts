@@ -17,6 +17,7 @@ export interface Task {
     title: string;
     tasks: Task[];
     limit?: number;
+    color: string;
   }
   
   export interface Board {

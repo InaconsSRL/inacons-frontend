@@ -116,16 +116,21 @@ const RecursosPage: React.FC = () => {
   const [isModalOpenNewRecursos, setIsModalOpenNewRecursos] = useState(false);
   const [editingRecurso, setEditingRecurso] = useState<Recurso>(recursoInicial);
 
+  console.log("listData", listData?.listClasificacionRecurso)
+
   useEffect(() => {
     dispatch(fetchRecursos());
     dispatch(fetchListData());
   }, [dispatch]);
 
-  const handleSubmit = async (formData: RecursoAdd | RecursoUpdate): Promise<{ id: string; codigo: string } | undefined> => {
+  const handleSubmit = async (formData: RecursoAdd | RecursoUpdate): Promise<(Recurso & { id: string; codigo: string }) | undefined> => {
     try {
       let result: Recurso | undefined;
       if ('id' in formData) {
-        await dispatch(updateRecurso(formData as RecursoUpdate));
+        const action = await dispatch(updateRecurso(formData as RecursoUpdate));
+        if (updateRecurso.fulfilled.match(action)) {
+          result = action.payload as Recurso;
+        }
         setIsModalOpenNewRecursos(false);
       } else {
         const action = await dispatch(addRecurso(formData as RecursoAdd));
@@ -134,7 +139,9 @@ const RecursosPage: React.FC = () => {
         }
       }
       setEditingRecurso(recursoInicial);
-      return result ? { id: result.id!, codigo: result.codigo } : undefined;
+      return result && result.id && result.codigo
+        ? { ...result, id: result.id, codigo: result.codigo }
+        : undefined;
     } catch (error) {
       console.error('Error al guardar el recurso:', error);
       return undefined;
