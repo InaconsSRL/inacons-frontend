@@ -35,10 +35,9 @@ const Sidebar: React.FC<SidebarProps> = ({ isSidebarOpen, toggleSidebar }) => {
   ];
 
   const otroModuloItems = [
-    { to: "/dashboard/requerimiento", icon: FiPackage, text: "Requerimiento" },
+    { to: "/dashboard/requerimiento", icon: FiBriefcase, text: "Requerimiento" },
     { to: "/dashboard/kanban", icon: GiThreeFriends, text: "Kanban" },
     { to: "/dashboard/proveedor", icon: FiPower, text: "Proveedores" },
-    { to: "/dashboard/requerimientos", icon: FiBriefcase, text: "Requerimientos" },
   ];
 
   useEffect(() => {
@@ -58,14 +57,12 @@ const Sidebar: React.FC<SidebarProps> = ({ isSidebarOpen, toggleSidebar }) => {
 
   const handleMouseEnter = () => {
     if (!isMobile) {
-      console.log('Mouse entered');
       setIsHovered(true);
     }
   };
 
   const handleMouseLeave = () => {
     if (!isMobile) {
-      console.log('Mouse left');
       setIsHovered(false);
       if (isSidebarOpen) {
         toggleSidebar();

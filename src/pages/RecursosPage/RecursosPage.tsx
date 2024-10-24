@@ -114,18 +114,16 @@ const RecursosPage: React.FC = () => {
   const [isModalOpenBulkResources, setIsModalOpenBulkResources] = useState(false);
   const [isModalOpenNewRecursos, setIsModalOpenNewRecursos] = useState(false);
   const [editingRecurso, setEditingRecurso] = useState<Recurso>(recursoInicial);
-  const [isEditing, setIsEditing] = useState(false);
+  // const [isEditing, setIsEditing] = useState(false);
 
   useEffect(() => {
     dispatch(fetchRecursos());
     dispatch(fetchListData());
   }, [dispatch]);
 
-  useEffect(() => {
-    setIsEditing(editingRecurso !== recursoInicial);
-  }, [editingRecurso]);
-
-  console.log("isEditing", isEditing)
+  // useEffect(() => {
+  //   setIsEditing(editingRecurso !== recursoInicial);
+  // }, [editingRecurso]);
 
   const handleSubmit = async (formData: RecursoAdd | RecursoUpdate): Promise<(Recurso & { id: string; codigo: string }) | undefined> => {
     try {
@@ -205,8 +203,6 @@ const RecursosPage: React.FC = () => {
       }
       return 'N/A';
     };
-
-    console.log(recursos[0])
 
     return {
       filter: [true, true, true, true, true, true, true, true, true,true, true, false, false],

@@ -26,9 +26,15 @@ const Login: React.FC = () => {
     };
 
     setRandomProperties();
-    const intervalId = setInterval(setRandomProperties, 15000); // Actualiza cada 5 segundos
+    const intervalId = setInterval(setRandomProperties, 15000); // Actualiza cada 15 segundos
 
-    return () => clearInterval(intervalId); // Limpieza al desmontar el componente
+    return () => {
+      clearInterval(intervalId); // Limpieza al desmontar el componente
+      const root = document.documentElement;
+      for (let i = 1; i <= 41; i++) {
+        root.style.removeProperty(`--random${i}`);
+      }
+    };
   }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {

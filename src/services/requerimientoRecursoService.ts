@@ -2,33 +2,43 @@ import { gql } from '@apollo/client';
 import client from '../apolloClient';
 
 const GET_REQUERIMIENTO_RECURSO_BY_REQUERIMIENTO_ID = gql`
-  query ($requerimientoId: ID!) {
+    query ($requerimientoId: ID!) {
     getRequerimientoRecursoByRequerimientoId(requerimiento_id: $requerimientoId) {
-      id
-      requerimiento_id
-      recurso_id
-      cantidad
-      cantidad_aprobada
-      estado
-      presupuestado
-      nombre
-      codigo
-    }
+    id
+    requerimiento_id
+    recurso_id
+    nombre
+    codigo
+    cantidad
+    cantidad_aprobada
+    estado
+    notas
+    costo_ref
+    metrado
+    fecha_limit
+    presupuestado
   }
+}
+
 `;
 
 const ADD_REQUERIMIENTO_RECURSO = gql`
-  mutation Mutation($requerimientoId: ID!, $recursoId: ID!, $cantidad: Int!) {
-    addRequerimientoRecurso(requerimiento_id: $requerimientoId, recurso_id: $recursoId, cantidad: $cantidad) {
-      id
-      codigo
-      nombre
-      recurso_id
-      requerimiento_id
-      cantidad
+  mutation Mutation($requerimientoId: ID!, $recursoId: ID!, $cantidad: Int!, $notas: String, $costoRef: Decimal, $fechaLimit: DateTime, $metrado: Decimal) {
+    addRequerimientoRecurso(requerimiento_id: $requerimientoId, recurso_id: $recursoId, cantidad: $cantidad, notas: $notas, costo_ref: $costoRef, fecha_limit: $fechaLimit, metrado: $metrado) {
+    id
+    requerimiento_id
+    recurso_id
+    cantidad
+    codigo
+    costo_ref
+    fecha_limit
+    metrado
+    nombre
+    notas
+    cantidad_aprobada
     }
   }
-`;
+`; 
 
 const DELETE_REQUERIMIENTO_RECURSO = gql`
   mutation Mutation($deleteRequerimientoRecursoId: ID!) {

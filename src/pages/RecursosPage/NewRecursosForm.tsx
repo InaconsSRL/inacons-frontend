@@ -182,14 +182,10 @@ const ResourceForm: React.FC<ResourceFormProps> = ({ initialValues, onSubmit, op
   useEffect(() => {
     if (response && Object.keys(response).length > 0) {
       setFormData({...defaultFormData, ...response});
-      console.log("response", response)
-      console.log("me quedo con response")
     } else {
       if (initialValues && Object.keys(initialValues).length > 0) {
         setFormData({...defaultFormData, ...initialValues});
-        console.log("me quedo con initialValues")
       } else {
-        console.log("me quedo con default")
         setFormData(defaultFormData);
       }
     }
@@ -282,7 +278,6 @@ const ResourceForm: React.FC<ResourceFormProps> = ({ initialValues, onSubmit, op
     if (e) e.preventDefault();
     setIsLoading(true);
     try {
-      console.log("dataToSubmit", dataToSubmit)
       const response = await onSubmit(dataToSubmit) as ResponseData;
       if (response) {
         setResponse(response);
@@ -322,7 +317,6 @@ const ResourceForm: React.FC<ResourceFormProps> = ({ initialValues, onSubmit, op
   }; */
 
   const renderClasificaciones = (clasificaciones: Clasificacion[]) => {
-    console.log("clasificaciones", clasificaciones)
     return clasificaciones.map(clasificacion => (
       <React.Fragment key={clasificacion.id}>
         <option value="" disabled style={{ color: 'blue', fontWeight: 'bold' }}>
@@ -372,13 +366,10 @@ const ResourceForm: React.FC<ResourceFormProps> = ({ initialValues, onSubmit, op
     <form onSubmit={handleSubmit} className="rounded-lg max-w-4xl mx-auto text-xs transform origin-top-left">
       <div className="bg-gray-200 shadow-md rounded-lg px-4 py-2  ">
         <div className="flex flex-wrap justify-between p-2 gap-2 rounded-lg text-[10px] md:text-xs bg-gray-300">
-          <Button type="button">Nuevo</Button>
-          <Button type="button" onClick={handleDuplicate}>Duplicar</Button>
+          {isEditing && <Button type="button" onClick={handleDuplicate}>Duplicar</Button>}          
           <Button type="button">H.Cambios</Button>
           <Button type="button">H.Precios</Button>
-          <Button type="button">Cambio Unidad</Button>
           <Button onClick={handleSelectHistorial} type="button">Ver Historial</Button>
-          <Button type="button">Editar</Button>
           <Button type="submit" variant="primary">
             {isEditing ? 'Actualizar Recurso' : 'Crear Recurso'}
           </Button>

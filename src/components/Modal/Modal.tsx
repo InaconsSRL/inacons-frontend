@@ -2,6 +2,7 @@ import React, { ReactNode, useEffect, useCallback, useRef } from 'react';
 import ReactDOM from 'react-dom';
 import { motion } from 'framer-motion';
 import backImage from '../../assets/bgmedia.webp'
+import { FiXCircle } from 'react-icons/fi';
 
 interface ModalProps {
   isOpen: boolean;
@@ -58,10 +59,10 @@ const Modal: React.FC<ModalProps> = ({ isOpen, onClose, title, children }) => {
         >
           <button 
             onClick={onClose} 
-            className="absolute top-2 right-2 text-gray-500 hover:text-gray-700 z-10"
+            className="absolute top-3.5 right-3.5 text-white  z-10"
             aria-label="Close"
           >
-            &times;
+            <FiXCircle className='h-7 w-7 bg-red-500 hover:bg-red-700 hover:scale-125 rounded-full' />
           </button>
           <div className="p-4 border-b bg-blue-900 bg-opacity-70">
             <h2 className="text-xl text-white font-semibold pr-8">{title}</h2>

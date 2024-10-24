@@ -166,7 +166,6 @@ interface ListDataQueryResult {
 }
 
 export const listRecursosService = async () => {
-  console.log("Listando recursos desde el servicio")
   try {
     const response = await client.query({
       query: LIST_RECURSOS_QUERY,

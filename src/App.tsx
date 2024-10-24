@@ -13,7 +13,6 @@ import RecursosPage from './pages/RecursosPage/RecursosPage';
 import UsuariosPage from './pages/UsuariosPage/UsuariosPage';
 import UnidadPage from './pages/UnidadPage/UnidadPage';
 import ClasificacionRecursoComponent from './pages/ClasificacionRecursoPage/ClasificacionRecursoComponent';
-import RequerimintosPageComponent from './pages/RequerimientosPage/Beta/RequerimintosPageComponentBeta';
 import Organigrama from './pages/OrganigramaPage/OrganigramaController';
 import RolesPage from './pages/RolePage/RolesPage';
 import KanbanBoard from './pages/KanBanBoard/KanbanBoard';
@@ -38,12 +37,11 @@ const App: React.FC = () => {
         <Route path="usuario" element={<UsuariosPage />} />
         <Route path="unidad" element={<UnidadPage />} />
         <Route path="clasificacionRecurso" element={<ClasificacionRecursoComponent />} />
-        <Route path="requerimiento" element={<RequerimintosPageComponent />} />
         <Route path="organigrama" element={<Organigrama />} />
         <Route path="roles" element={<RolesPage />} />
         <Route path="kanban" element={<KanbanBoard />} />
         <Route path="proveedor" element={<ProveedorComponent />} />
-        <Route path="requerimientos" element={<RequerimientosComponent />} />
+        <Route path="requerimiento" element={<RequerimientosComponent />} />
         <Route path="tipoCostoRecurso" element={<TipoCostoRecursoComponent />} />
       </Route>
       <Route path="/" element={<Navigate to="/dashboard" replace />} />

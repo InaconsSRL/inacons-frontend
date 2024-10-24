@@ -48,10 +48,10 @@ const RequerimientosComponent: React.FC = () => {
   const handleSubmit = (data: { usuario_id: string; obra_id: string; sustento: string }) => {
     if (editingRequerimiento) {
       dispatch(updateRequerimiento({ id: editingRequerimiento.id, ...data }));
+      setIsModalOpen(false);
     } else {
       dispatch(addRequerimiento(data));
     }
-    setIsModalOpen(false);
     setEditingRequerimiento(null);
   };
 
@@ -87,8 +87,7 @@ const RequerimientosComponent: React.FC = () => {
       )
     }))
   };
-
-  console.log(editingRequerimiento)
+  
   return (
     <motion.div
       className="flex flex-col h-full"
