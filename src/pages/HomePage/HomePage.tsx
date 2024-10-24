@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import {
   Box,
   Button,
@@ -20,6 +20,7 @@ import {
   XAxis,
   YAxis,
   Tooltip,
+  ResponsiveContainer,
 } from 'recharts';
 
 const HomePage = () => {
@@ -27,6 +28,7 @@ const HomePage = () => {
   const [pendingTasks, setPendingTasks] = useState(7);
   const [revenue, setRevenue] = useState(15000);
   const [projectProgress, setProjectProgress] = useState(65);
+  const chartRef = useRef<HTMLDivElement>(null);
 
   const recentActivities = [
     {
@@ -60,6 +62,7 @@ const HomePage = () => {
     setRevenue(Math.floor(Math.random() * 10000) + 10000);
     setProjectProgress(Math.floor(Math.random() * 30) + 60);
   };
+
 
   return (
     <div className='h-[84vh] bg-white opacity-95 rounded-xl'>
@@ -179,7 +182,7 @@ const HomePage = () => {
           </Grid>
 
           <Grid item xs={12} lg={6}>
-            <Paper sx={{ p: 4 }}>
+            <Paper sx={{ p: 4 }} ref={chartRef}>
               <Typography
                 variant="h6"
                 fontWeight="bold"
@@ -188,18 +191,20 @@ const HomePage = () => {
               >
                 Progreso del Proyecto
               </Typography>
-              <LineChart width={500} height={280} data={projectData}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="name" />
-                <YAxis />
-                <Tooltip />
-                <Line
-                  type="monotone"
-                  dataKey="progress"
-                  stroke="#1976d2"
-                  strokeWidth={2}
-                />
-              </LineChart>
+              <ResponsiveContainer width="100%" height={280}>
+                <LineChart data={projectData}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="name" />
+                  <YAxis />
+                  <Tooltip />
+                  <Line
+                    type="monotone"
+                    dataKey="progress"
+                    stroke="#1976d2"
+                    strokeWidth={2}
+                  />
+                </LineChart>
+              </ResponsiveContainer>
             </Paper>
           </Grid>
         </Grid>

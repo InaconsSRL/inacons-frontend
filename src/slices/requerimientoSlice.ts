@@ -3,14 +3,15 @@ import { listRequerimientosService, addRequerimientoService, updateRequerimiento
 
 interface Requerimiento {
   id: string;
+  codigo: string;
   usuario_id: string;
   usuario: string;
   presupuesto_id: string;
   fecha_solicitud: string;
+  fecha_final: string;
   estado: string;
   sustento: string;
   obra_id: string;
-  codigo: string;
 }
 
 interface RequerimientoState {

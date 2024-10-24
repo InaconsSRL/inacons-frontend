@@ -1,4 +1,5 @@
 import React, { useState, useMemo, useEffect, useRef, ReactNode } from 'react';
+import { motion } from 'framer-motion';
 import {
   useReactTable,
   getCoreRowModel,
@@ -36,6 +37,7 @@ const TableComponent: React.FC<TableComponentProps> = ({ tableData, maxCharacter
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
   const [columnResizeMode] = useState<ColumnResizeMode>('onChange');
   const tableContainerRef = useRef<HTMLDivElement>(null);
+  const [currentPage, setCurrentPage] = useState(1);
 
   useEffect(() => {
     return () => {
@@ -98,21 +100,51 @@ const TableComponent: React.FC<TableComponentProps> = ({ tableData, maxCharacter
     columnResizeMode,
   });
 
+  useEffect(() => {
+    setCurrentPage(table.getState().pagination.pageIndex + 1);
+  }, [table.getState().pagination.pageIndex]);
+
+  const handlePageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const pageCount = table.getPageCount();
+    let page = Number(e.target.value);
+    
+    if (isNaN(page) || page < 1) {
+      page = 1;
+    } else if (page > pageCount) {
+      page = pageCount;
+    }
+    
+    setCurrentPage(page);
+    table.setPageIndex(page - 1);
+  };
+
   return (
-    <div className="p-2 bg-gray-50/50 rounded-lg shadow-md">
+    <motion.div 
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5 }}
+      className="p-2 bg-gray-50/50 rounded-lg shadow-md"
+    >
       <div className="overflow-x-auto" ref={tableContainerRef}>
         <table className="w-full border-collapse bg-white table-fixed">
           <thead>
             {table.getHeaderGroups().map(headerGroup => (
-              <tr className="rounded-lg" key={headerGroup.id} style={{ 
-                minWidth: 'screen',
-                backgroundImage: `url(${backImage})`,
-                backgroundSize: 'cover',
-                backgroundPosition: 'center',
-                backgroundRepeat: 'no-repeat',
-                backgroundAttachment: 'fixed',
-                backgroundBlendMode: 'overlay'
-              }}>
+              <motion.tr 
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.3, delay: 0.2 }}
+                className="rounded-lg" 
+                key={headerGroup.id} 
+                style={{ 
+                  minWidth: 'screen',
+                  backgroundImage: `url(${backImage})`,
+                  backgroundSize: 'cover',
+                  backgroundPosition: 'center',
+                  backgroundRepeat: 'no-repeat',
+                  backgroundAttachment: 'fixed',
+                  backgroundBlendMode: 'overlay'
+                }}
+              >
                 {headerGroup.headers.map(header => (
                   <th
                     key={header.id}
@@ -121,7 +153,8 @@ const TableComponent: React.FC<TableComponentProps> = ({ tableData, maxCharacter
                   >
                     {header.isPlaceholder ? null : (
                       <div>
-                        <div
+                        <motion.div
+                          whileHover={{ scale: 1.05 }}
                           {...{
                             className: header.column.getCanSort()
                               ? `cursor-pointer select-none ${header.column.getIsSorted() ? 'text-blue-600' : 'hover:text-blue-600'} transition-colors duration-200`
@@ -139,9 +172,14 @@ const TableComponent: React.FC<TableComponentProps> = ({ tableData, maxCharacter
                               desc: ' ▼',
                             }[header.column.getIsSorted() as string] ?? null}
                           </span>
-                        </div>
+                        </motion.div>
                         {header.column.getCanFilter() && (tableData.filter ? tableData.filter[header.index] : true) ? (
-                          <div className="mt-1">
+                          <motion.div 
+                            initial={{ opacity: 0, y: -10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ duration: 0.3 }}
+                            className="mt-1"
+                          >
                             <input
                               value={(header.column.getFilterValue() ?? '') as string}
                               onChange={e =>
@@ -150,7 +188,7 @@ const TableComponent: React.FC<TableComponentProps> = ({ tableData, maxCharacter
                               placeholder={`✎`}
                               className="w-full border border-slate-400 bg-slate-100 rounded-xl px-2 py-0.5 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500"
                             />
-                          </div>
+                          </motion.div>
                         ) : null}
                       </div>
                     )}
@@ -172,12 +210,18 @@ const TableComponent: React.FC<TableComponentProps> = ({ tableData, maxCharacter
                     />
                   </th>
                 ))}
-              </tr>
+              </motion.tr>
             ))}
           </thead>
           <tbody>
             {table.getRowModel().rows.map((row, index) => (
-              <tr key={row.id} className={`${index % 2 === 0 ? 'bg-gray-50' : 'bg-white hover:bg-gray-100 transition-colors duration-150'}`}>
+              <motion.tr 
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.3, delay: index * 0.05 }}
+                key={row.id} 
+                className={`${index % 2 === 0 ? 'bg-gray-50' : 'bg-white hover:bg-gray-100 transition-colors duration-150'}`}
+              >
                 {row.getVisibleCells().map(cell => (
                   <td 
                     key={cell.id} 
@@ -192,41 +236,54 @@ const TableComponent: React.FC<TableComponentProps> = ({ tableData, maxCharacter
                     {flexRender(cell.column.columnDef.cell, cell.getContext())}
                   </td>
                 ))}
-              </tr>
+              </motion.tr>
             ))}
           </tbody>
         </table>
       </div>
-      <div className="mt-4 flex flex-wrap items-center justify-between gap-4">
+      <motion.div 
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, delay: 0.3 }}
+        className="mt-4 flex flex-wrap items-center justify-between gap-4"
+      >
         <div className="flex items-center space-x-2">
-          <button
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
             className="px-2 py-1 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
             onClick={() => table.setPageIndex(0)}
             disabled={!table.getCanPreviousPage()}
           >
             {'<<'}
-          </button>
-          <button
+          </motion.button>
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
             className="px-3 py-1 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
             onClick={() => table.previousPage()}
             disabled={!table.getCanPreviousPage()}
           >
             {'<'}
-          </button>
-          <button
+          </motion.button>
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
             className="px-3 py-1 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
             onClick={() => table.nextPage()}
             disabled={!table.getCanNextPage()}
           >
             {'>'}
-          </button>
-          <button
+          </motion.button>
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
             className="px-3 py-1 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
             onClick={() => table.setPageIndex(table.getPageCount() - 1)}
             disabled={!table.getCanNextPage()}
           >
             {'>>'}
-          </button>
+          </motion.button>
         </div>
         <span className="text-sm text-gray-700">
           Página{' '}
@@ -236,17 +293,18 @@ const TableComponent: React.FC<TableComponentProps> = ({ tableData, maxCharacter
         </span>
         <div className="flex items-center space-x-2">
           <span className="text-sm text-blue-700">Ir a página:</span>
-          <input
+          <motion.input
+            whileFocus={{ scale: 1.05 }}
             type="number"
-            defaultValue={table.getState().pagination.pageIndex + 1}
-            onChange={e => {
-              const page = e.target.value ? Number(e.target.value) - 1 : 0;
-              table.setPageIndex(page);
-            }}
+            min={1}
+            max={table.getPageCount()}
+            value={currentPage}
+            onChange={handlePageChange}
             className="w-16 px-2 py-1 text-sm text-center border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
         </div>
-        <select
+        <motion.select
+          whileHover={{ scale: 1.05 }}
           value={table.getState().pagination.pageSize}
           onChange={e => {
             table.setPageSize(Number(e.target.value));
@@ -258,9 +316,9 @@ const TableComponent: React.FC<TableComponentProps> = ({ tableData, maxCharacter
               Mostrar {pageSize}
             </option>
           ))}
-        </select>
-      </div>
-    </div>
+        </motion.select>
+      </motion.div>
+    </motion.div>
   );
 };
 

@@ -110,18 +110,22 @@ const recursoInicial = {
 const RecursosPage: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
   const { recursos, listData, loading, error } = useSelector((state: RootState) => state.recurso);
-
   const [carouselImages, setCarouselImages] = useState<{ id: string; file: string }[] | null>(null);
   const [isModalOpenBulkResources, setIsModalOpenBulkResources] = useState(false);
   const [isModalOpenNewRecursos, setIsModalOpenNewRecursos] = useState(false);
   const [editingRecurso, setEditingRecurso] = useState<Recurso>(recursoInicial);
-
-  console.log("listData", listData?.listClasificacionRecurso)
+  const [isEditing, setIsEditing] = useState(false);
 
   useEffect(() => {
     dispatch(fetchRecursos());
     dispatch(fetchListData());
   }, [dispatch]);
+
+  useEffect(() => {
+    setIsEditing(editingRecurso !== recursoInicial);
+  }, [editingRecurso]);
+
+  console.log("isEditing", isEditing)
 
   const handleSubmit = async (formData: RecursoAdd | RecursoUpdate): Promise<(Recurso & { id: string; codigo: string }) | undefined> => {
     try {
