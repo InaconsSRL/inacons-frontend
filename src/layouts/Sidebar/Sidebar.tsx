@@ -36,6 +36,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isSidebarOpen, toggleSidebar }) => {
 
   const otroModuloItems = [
     { to: "/dashboard/requerimiento", icon: FiBriefcase, text: "Requerimiento" },
+    { to: "/dashboard/reqRecursos", icon: FiPackage, text: "GenerarRequerimiento" },
     { to: "/dashboard/kanban", icon: GiThreeFriends, text: "Kanban" },
     { to: "/dashboard/proveedor", icon: FiPower, text: "Proveedores" },
   ];

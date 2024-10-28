@@ -5,6 +5,7 @@ import { FiEdit2, FiSave, FiX, FiPlus } from 'react-icons/fi';
 import { RootState, AppDispatch } from '../../store/store';
 import { fetchRecursos } from '../../slices/recursoSlice';
 import { fetchObras } from '../../slices/obrasSlice';
+import { addRequerimiento, updateRequerimiento } from '../../slices/requerimientoSlice';
 import { addRequerimientoRecurso, deleteRequerimientoRecurso, fetchRequerimientoRecursos } from '../../slices/requerimientoRecursoSlice';
 import LoaderPage from '../../components/Loader/LoaderPage';
 import Modal from '../../components/Modal/Modal';
@@ -15,9 +16,9 @@ interface RequerimientoFormProps {
     usuario_id: string;
     obra_id: string;
     sustento: string;
+    fecha_final?: string;
     codigo?: string;
   };
-  onSubmit: (data: { usuario_id: string; obra_id: string; sustento: string }) => void;
 }
 
 interface Recurso {
@@ -28,32 +29,22 @@ interface Recurso {
   cantidad: number;
 }
 
-// interface RequerimientoRecurso {
-//   id: string;
-//   requerimiento_id: string;
-//   recurso_id: string;
-//   codigo: string;
-//   nombre: string;
-//   cantidad: number;
-//   unidad_id: string;
-// }
-
-const RequerimientoFormComponent: React.FC<RequerimientoFormProps> = ({ initialValues, onSubmit }) => {
+const RequerimientoFormComponent: React.FC<RequerimientoFormProps> = ({ initialValues }) => {
   const dispatch = useDispatch<AppDispatch>();
   const { recursos, loading: loadingRecursos } = useSelector((state: RootState) => state.recurso);
   const { obras, loading: loadingObras } = useSelector((state: RootState) => state.obra);
   const { requerimientoRecursos, loading: loadingReqRecursos } = useSelector((state: RootState) => state.requerimientoRecurso);
   const user = useSelector((state: RootState) => state.user);
-
-  console.log(obras)
-
   // Estados para el formulario de requerimiento
   const [isEditingRequerimiento, setIsEditingRequerimiento] = useState(!initialValues?.codigo);
   const [requerimientoForm, setRequerimientoForm] = useState({
     usuario_id: initialValues?.usuario_id || user.id || '',
     obra_id: initialValues?.obra_id || '',
-    sustento: initialValues?.sustento || ''
+    sustento: initialValues?.sustento || '',
+    fecha_final: initialValues?.fecha_final || ''
   });
+
+  console.log(initialValues)
 
   // Estados para la gestión de recursos
   const [searchTerm, setSearchTerm] = useState('');
@@ -75,8 +66,50 @@ const RequerimientoFormComponent: React.FC<RequerimientoFormProps> = ({ initialV
   const handleRequerimientoSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      await onSubmit(requerimientoForm);
+      let response: {
+        id: string;
+        codigo: string;
+        usuario_id: string;
+        obra_id: string;
+        sustento: string;
+        fecha_final: string;
+      };
+      if (initialValues?.id) {
+        response = await dispatch(updateRequerimiento({ id: initialValues.id, ...requerimientoForm })).unwrap();
+      } else {
+        response = await dispatch(addRequerimiento(requerimientoForm)).unwrap();
+      }
       setIsEditingRequerimiento(false);
+
+      // Actualizar el valor de "codigo" y otros datos con la respuesta del servidor
+      if (response) {
+        setRequerimientoForm(prev => ({
+          ...prev,
+          codigo: response.codigo,
+          usuario_id: response.usuario_id,
+          obra_id: response.obra_id,
+          sustento: response.sustento,
+          fecha_final: response.fecha_final
+        }));
+        if (initialValues) {
+          initialValues.codigo = response.codigo;
+          initialValues.id = response.id;
+        }
+      }
+      if (initialValues?.id) {
+        response = await dispatch(updateRequerimiento({ id: initialValues.id, ...requerimientoForm })).unwrap();
+      } else {
+        response = await dispatch(addRequerimiento(requerimientoForm)).unwrap();
+      }
+      setIsEditingRequerimiento(false);
+
+      // Actualizar el valor de "codigo" con la respuesta del servidor
+      if (response && response.codigo) {
+        setRequerimientoForm(prev => ({
+          ...prev,
+          codigo: response.codigo
+        }));
+      }
     } catch (error) {
       console.log(error);
       setModalMessage('Error al guardar el requerimiento');
@@ -95,10 +128,10 @@ const RequerimientoFormComponent: React.FC<RequerimientoFormProps> = ({ initialV
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const term = e.target.value.toLowerCase();
     setSearchTerm(term);
-    const filtered = recursos.filter(recurso => 
-      recurso.codigo.includes(term) ||
-      recurso.nombre.toLowerCase().includes(term)
-    );
+    const filtered = recursos.filter(recurso =>
+      recurso.codigo?.includes(term) ||
+      recurso.nombre?.toLowerCase().includes(term)
+    ).slice(0, 10); // Limitar a las primeras 10 coincidencias
     setFilteredRecursos(filtered);
   };
 
@@ -136,54 +169,101 @@ const RequerimientoFormComponent: React.FC<RequerimientoFormProps> = ({ initialV
     return <LoaderPage />;
   }
 
+  console.log(requerimientoRecursos)
+  console.log(recursos)
+
   return (
-    <motion.div className="flex flex-col h-full bg-gradient-to-b from-blue-900 to-blue-800">
+    <motion.div className="flex flex-col h-full w-full min-w-[1000px] bg-gradient-to-b from-blue-900 to-blue-800">
       {/* Sección del Requerimiento */}
-      <motion.div className="bg-white rounded-lg shadow-lg m-4 p-4">
-        <div className="flex justify-between items-center mb-4">
-          <div>
-            <h2 className="text-xl font-bold text-blue-900">Datos del Requerimiento</h2>
+      <motion.div className="bg-white rounded-lg shadow-lg my-4 mx-auto p-4 w-full max-w-4xl ">
+        {initialValues?.codigo && (
+          <div className="flex justify-between items-center mb-4">
+            <div>
+              <h2 className="text-xl font-bold text-blue-900">Datos del Requerimiento</h2>
+              {initialValues?.codigo && (
+                <div className="text-sm text-gray-300">
+                  ID Usuario: {initialValues.id?.slice(0, 5)} | Código: {initialValues.codigo}
+                </div>
+              )}
+            </div>
             {initialValues?.codigo && (
-              <div className="text-sm text-gray-600">
-                ID: {initialValues.id} | Código: {initialValues.codigo}
-              </div>
+              <button
+                onClick={() => setIsEditingRequerimiento(!isEditingRequerimiento)}
+                className="p-2 rounded-full hover:bg-gray-100"
+              >
+                {isEditingRequerimiento ? <FiSave size={20} /> : <FiEdit2 size={20} />}
+              </button>
             )}
           </div>
-          {initialValues?.codigo && (
-            <button
-              onClick={() => setIsEditingRequerimiento(!isEditingRequerimiento)}
-              className="p-2 rounded-full hover:bg-gray-100"
-            >
-              {isEditingRequerimiento ? <FiSave size={20} /> : <FiEdit2 size={20} />}
-            </button>
-          )}
-        </div>
+        )}
+
+{initialValues?.codigo && (
+          <div className="flex justify-between items-center mb-4">
+            <div>
+              <h2 className="text-xl font-bold text-blue-900">Datos del Requerimiento</h2>
+              {initialValues?.codigo && (
+          <div className="text-sm text-gray-300">
+            ID Usuario: {initialValues.id?.slice(0, 5)} | Código: {initialValues.codigo}
+          </div>
+              )}
+            </div>
+            {initialValues?.codigo && (
+              <button
+          onClick={() => setIsEditingRequerimiento(!isEditingRequerimiento)}
+          className="p-2 rounded-full hover:bg-gray-100"
+              >
+          {isEditingRequerimiento ? <FiSave size={20} /> : <FiEdit2 size={20} />}
+              </button>
+            )}
+          </div>
+        )}
+
+        
 
         <form onSubmit={handleRequerimientoSubmit}>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <select
-              name="obra_id"
-              value={requerimientoForm.obra_id}
-              onChange={handleRequerimientoInputChange}
-              disabled={!isEditingRequerimiento}
-              className="p-2 border rounded"
-              required
-            >
-              <option value="">Seleccione Obra</option>
-              {obras.map(obra => (
-                <option key={obra.id} value={obra.id}>{obra.nombre}</option>
-              ))}
-            </select>
+            <label className="block">
+              <span className="text-gray-700">Elija la Obra :</span>
+              <select
+                name="obra_id"
+                value={requerimientoForm.obra_id}
+                onChange={handleRequerimientoInputChange}
+                disabled={!isEditingRequerimiento}
+                className="mt-1 p-2 border rounded w-full"
+                required
+              >
+                <option value="">Seleccione Obra</option>
+                {obras.map(obra => (
+                  <option key={obra.id} value={obra.id}>{obra.nombre}</option>
+                ))}
+              </select>
+            </label>
 
-            <textarea
-              name="sustento"
-              value={requerimientoForm.sustento}
-              onChange={handleRequerimientoInputChange}
-              disabled={!isEditingRequerimiento}
-              placeholder="Sustento del requerimiento"
-              className="p-2 border rounded"
-              required
-            />
+            <label className="block">
+              <span className="text-gray-700">Fecha esperada Recepción :</span>
+              <input
+                type="date"
+                name="fecha_final"
+                value={requerimientoForm.fecha_final ? new Date(requerimientoForm.fecha_final).toISOString().split('T')[0] : ''}
+                onChange={handleRequerimientoInputChange}
+                disabled={!isEditingRequerimiento}
+                className="mt-1 p-2 border rounded w-full"
+                required
+              />
+            </label>
+
+            <label className="block col-span-2">
+              <span className="text-gray-700">Sustento del requerimiento :</span>
+              <textarea
+                name="sustento"
+                value={requerimientoForm.sustento}
+                onChange={handleRequerimientoInputChange}
+                disabled={!isEditingRequerimiento}
+                placeholder="Sustento del requerimiento"
+                className="mt-1 p-2 border rounded w-full"
+                required
+              />
+            </label>
           </div>
 
           {isEditingRequerimiento && (
@@ -199,9 +279,9 @@ const RequerimientoFormComponent: React.FC<RequerimientoFormProps> = ({ initialV
 
       {/* Sección de Recursos */}
       {initialValues?.codigo && (
-        <motion.div className="bg-white rounded-lg shadow-lg m-4 p-4">
+        <motion.div className="bg-white rounded-lg shadow-lg m-4 p-4 w-full max-w-4xl mx-auto">
           <h2 className="text-xl font-bold text-blue-900 mb-4">Gestión de Recursos</h2>
-          
+
           {/* Buscador de recursos */}
           <div className="mb-4">
             <input

@@ -131,6 +131,7 @@ export const mockBoard: Board = {
           assignees: ['EDUARDO PALOMINO'],
         }
       ],
+      color: ''
     },
     {
       id: 'column3',
@@ -182,6 +183,7 @@ export const mockBoard: Board = {
           assignees: ['PEDRO MAMANI'],
         },
       ],
+      color: ''
     },
     {
       id: 'column4',
@@ -233,6 +235,7 @@ export const mockBoard: Board = {
           assignees: ['RAÚL CHÁVEZ'],
         },
       ],
+      color: ''
     },
     {
       id: 'column5',
@@ -295,6 +298,7 @@ export const mockBoard: Board = {
           assignees: ['SANDRA FLORES', 'VÍCTOR RAMÍREZ'],
         },
       ],
+      color: ''
     },
   ],
 };

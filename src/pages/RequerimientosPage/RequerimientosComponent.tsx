@@ -5,7 +5,7 @@ import Modal from '../../components/Modal/Modal';
 import TableComponent from '../../components/Table/TableComponent';
 import RequerimientoFormComponent from './RequerimientoFormComponent';
 import { useDispatch, useSelector } from 'react-redux';
-import { fetchRequerimientos, addRequerimiento, updateRequerimiento } from '../../slices/requerimientoSlice';
+import { fetchRequerimientos } from '../../slices/requerimientoSlice';
 import { RootState, AppDispatch } from '../../store/store';
 import LoaderPage from '../../components/Loader/LoaderPage';
 import { FiEdit } from 'react-icons/fi';
@@ -45,15 +45,7 @@ const RequerimientosComponent: React.FC = () => {
     dispatch(fetchRequerimientos());
   }, [dispatch]);
 
-  const handleSubmit = (data: { usuario_id: string; obra_id: string; sustento: string }) => {
-    if (editingRequerimiento) {
-      dispatch(updateRequerimiento({ id: editingRequerimiento.id, ...data }));
-      setIsModalOpen(false);
-    } else {
-      dispatch(addRequerimiento(data));
-    }
-    setEditingRequerimiento(null);
-  };
+  console.log(requerimientos);
 
   const handleEdit = (requerimiento: Requerimiento) => {
     setEditingRequerimiento(requerimiento);
@@ -81,7 +73,7 @@ const RequerimientosComponent: React.FC = () => {
       obra: req.codigo.split('-')[1],
       descripcion: req.sustento,
       "fecha emision": new Date(req.fecha_solicitud).toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric' }),
-      "vence": new Date(new Date(req.fecha_solicitud).getTime() + 2 * 24 * 60 * 60 * 1000).toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric' }),
+      "vence": (new Date(new Date(req.fecha_final).getTime()).toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric' })) || (new Date(new Date(req.fecha_solicitud).getTime() + 2 * 24 * 60 * 60 * 1000).toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric' })),
       opciones: (
         <Button icon={<FiEdit />} text="" color='transp' className='text-blue-500' onClick={() => handleEdit(req)}></Button>
       )
@@ -128,22 +120,25 @@ const RequerimientosComponent: React.FC = () => {
       </motion.div>
 
       <AnimatePresence>
-        {isModalOpen && (
-          <Modal title={editingRequerimiento ? 'Actualizar Requerimiento' : 'Crear Requerimiento'} isOpen={isModalOpen} onClose={handleCloseModal}>
-            <motion.div
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.9 }}
-              transition={{ duration: 0.3 }}
-            >
-              <RequerimientoFormComponent
-                initialValues={editingRequerimiento || undefined}
-                onSubmit={handleSubmit}
-              />
-            </motion.div>
-          </Modal>
-        )}
-      </AnimatePresence>
+    {isModalOpen && (
+      <Modal
+        title={editingRequerimiento ? 'Actualizar Requerimiento' : 'Crear Requerimiento'}
+        isOpen={isModalOpen}
+        onClose={handleCloseModal}
+      >
+        <motion.div
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          exit={{ opacity: 0, scale: 0.9 }}
+          transition={{ duration: 0.3 }}
+        >
+          <RequerimientoFormComponent
+            initialValues={editingRequerimiento || undefined}
+          />
+        </motion.div>
+      </Modal>
+    )}
+  </AnimatePresence>
     </motion.div>
   );
 };

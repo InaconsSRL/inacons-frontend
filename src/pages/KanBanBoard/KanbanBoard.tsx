@@ -68,7 +68,7 @@ const KanbanBoard = () => {
           Nuevo Requerimiento
         </button>
       </div>
-      <div className="flex overflow-x-auto space-x-4 h-[calc(76vh)]">
+      <div className="flex overflow-x-auto space-x-4 h-full">
         <KanbanColumn key={requerimientosColumn.id} column={requerimientosColumn} />
         {filteredBoard.columns.map((column) => (
           <KanbanColumn key={column.id} column={column} />

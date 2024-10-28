@@ -8,7 +8,7 @@ interface KanbanColumnProps {
 
 const KanbanColumn: React.FC<KanbanColumnProps> = ({ column }) => {
     return (
-      <div className="flex-shrink-0 w-80 bg-white rounded-lg shadow-lg overflow-hidden scale-90 lg:scale-100">
+      <div className="flex-shrink-0 w-auto bg-white rounded-lg shadow-lg scale-90 lg:scale-100">
         <div className="p-4 bg-gray-50 border-b" style={{ backgroundColor: column.color }}>
           <h2 className="text-lg font-semibold flex justify-between items-center text-white">
             {column.title}

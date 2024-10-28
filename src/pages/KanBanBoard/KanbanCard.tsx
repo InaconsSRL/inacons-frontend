@@ -21,9 +21,9 @@ const KanbanCard: React.FC<KanbanCardProps> = ({ task }) => {
               <div
                 key={index}
                 className="w-8 h-8 rounded-full bg-gradient-to-r from-blue-400 to-blue-600 flex items-center justify-center text-xs font-semibold text-white border-2 border-white"
-                title={assignee}
+                title={assignee || ''}
               >
-                {assignee.charAt(0)}
+                {assignee ? assignee.charAt(0) : ''}
               </div>
             ))}
           </div>
