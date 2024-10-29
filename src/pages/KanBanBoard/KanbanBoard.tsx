@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import KanbanColumn from './KanbanColumn';
-import { mockBoard as board } from './mockData/kanbanData';
 import { RootState, AppDispatch } from '../../store/store';
 import { fetchRequerimientos } from '../../slices/requerimientoSlice';
 
@@ -10,53 +9,77 @@ const KanbanBoard = () => {
   const dispatch = useDispatch<AppDispatch>();
   const requerimientos = useSelector((state: RootState) => state.requerimiento.requerimientos);
 
-  // Función para generar un color aleatorio
-  const getRandomColor = () => {
-    return '#' + Math.floor(Math.random() * 16777215).toString(16);
-  };
-
-  // Función para filtrar tareas basadas en el término de búsqueda
-  const filteredBoard = {
-    columns: board.columns.map(column => ({
-      ...column,
-      color: getRandomColor(), // Asignar un color aleatorio a cada columna
-      tasks: column.tasks.filter(task =>
-        task.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        task.description.toLowerCase().includes(searchTerm.toLowerCase())
-      )
-    }))
-  };
-
   useEffect(() => {
     dispatch(fetchRequerimientos());
   }, [dispatch]);
 
-  // Función para filtrar requerimientos basados en el término de búsqueda
+  // Función para filtrar requerimientos basados en el término de búsqueda y estado
   const filteredRequerimientos = requerimientos.filter(requerimiento =>
-    requerimiento.codigo.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    requerimiento.sustento.toLowerCase().includes(searchTerm.toLowerCase())
+    (requerimiento.codigo.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    requerimiento.sustento.toLowerCase().includes(searchTerm.toLowerCase()))
   );
+  console.log(filteredRequerimientos);
+  // Columnas de requerimientos según estado
+  const requerimientosPendientes = {
+    id: 'requerimientos_pendientes',
+    title: 'Requerimientos Pendientes',
+    color: "#E06C75",
+    tasks: filteredRequerimientos
+      .filter(req => req.estado_atencion === "pendiente")
+      .map(req => ({
+        id: req.id,
+        title: req.codigo,
+        description: req.sustento,
+        projectCode: req.codigo.split('-')[0],
+        requestType: 'REQUERIMIENTO',
+        deliveryDate: new Date(req.fecha_solicitud).toLocaleDateString('es-ES'),
+        assignees: [req.usuario],
+        purchaseType: 'N/A',
+        approvedBy: 'Pendiente'
+      }))
+  };
 
-  const requerimientosColumn = {
-    id: 'requerimientos',
-    title: 'Requerimientos',
-    color: "#E06C75", // Asignar un color aleatorio a la columna de requerimientos
-    tasks: filteredRequerimientos.map(req => ({
-      id: req.id,
-      title: req.codigo,
-      description: req.sustento,
-      projectCode: req.codigo.split('-')[0],
-      requestType: 'REQUERIMIENTO',
-      deliveryDate: new Date(req.fecha_solicitud).toLocaleDateString('es-ES'),
-      assignees: [req.usuario],
-      purchaseType: 'N/A',
-      approvedBy: 'Pendiente'
-    }))
+  const aprobacionGerencia = {
+    id: 'aprobacion_gerencia',
+    title: 'Aprobación Gerencia',
+    color: "#98C379",
+    tasks: filteredRequerimientos
+      .filter(req => req.estado_atencion === "aprobado_supervisor")
+      .map(req => ({
+        id: req.id,
+        title: req.codigo,
+        description: req.sustento,
+        projectCode: req.codigo.split('-')[0],
+        requestType: 'REQUERIMIENTO',
+        deliveryDate: new Date(req.fecha_solicitud).toLocaleDateString('es-ES'),
+        assignees: [req.usuario],
+        purchaseType: 'N/A',
+        approvedBy: 'Supervisor'
+      }))
+  };
+
+  const gestionAlmacen = {
+    id: 'gestion_almacen',
+    title: 'Gestión Almacén',
+    color: "#61AFEF",
+    tasks: filteredRequerimientos
+      .filter(req => req.estado_atencion === "aprovado_gerencia")
+      .map(req => ({
+        id: req.id,
+        title: req.codigo,
+        description: req.sustento,
+        projectCode: req.codigo.split('-')[0],
+        requestType: 'REQUERIMIENTO',
+        deliveryDate: new Date(req.fecha_solicitud).toLocaleDateString('es-ES'),
+        assignees: [req.usuario],
+        purchaseType: 'N/A',
+        approvedBy: 'Gerencia'
+      }))
   };
 
   return (
-    <div className="p-4">
-      <div className="mb-4 flex justify-between items-center">
+    <div className="p-4 ">
+      <div className="mb-4 flex justify-between items-center ">
         <input
           type="text"
           placeholder="Buscar tareas..."
@@ -68,11 +91,11 @@ const KanbanBoard = () => {
           Nuevo Requerimiento
         </button>
       </div>
-      <div className="flex overflow-x-auto space-x-4 h-full">
-        <KanbanColumn key={requerimientosColumn.id} column={requerimientosColumn} />
-        {filteredBoard.columns.map((column) => (
-          <KanbanColumn key={column.id} column={column} />
-        ))}
+      <div className="flex overflow-x-auto space-x-4 max-h-[70vh]">
+        <KanbanColumn key={requerimientosPendientes.id} column={requerimientosPendientes} />
+        <KanbanColumn key={aprobacionGerencia.id} column={aprobacionGerencia} />
+        <KanbanColumn key={gestionAlmacen.id} column={gestionAlmacen} />
+        
       </div>
     </div>
   );

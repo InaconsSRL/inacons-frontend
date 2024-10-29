@@ -3,7 +3,8 @@ import {
   getRequerimientoRecursoByRequerimientoId, 
   addRequerimientoRecurso as addRequerimientoRecursoService, 
   deleteRequerimientoRecurso as deleteRequerimientoRecursoService,
-  updateRequerimientoRecurso as updateRequerimientoRecursoService
+  updateRequerimientoRecurso as updateRequerimientoRecursoService,
+  addRequerimientoAprobacion
 } from '../services/requerimientoRecursoService';
 
 // Interfaz actualizada con todos los campos del GraphQL
@@ -41,6 +42,7 @@ interface AddRequerimientoRecursoData {
   requerimiento_id: string;
   recurso_id: string;
   cantidad: number;
+  cantidad_aprobada: number;
   notas?: string;
   costo_ref?: number;
   fecha_limit?: Date;
@@ -50,16 +52,17 @@ interface AddRequerimientoRecursoData {
 //interfaz para los datos de actualización
 interface UpdateRequerimientoRecursoData {
   id: string;
-  requerimiento_id: string;
-  recurso_id: string;
-  cantidad: number;
   cantidad_aprobada: number;
-  estado: string;
   notas: string;
-  costo_ref: number;
-  metrado: number;
   fecha_limit: Date;
-  presupuestado: string;
+}
+
+// Interface para los datos de aprobación
+interface AprobacionData {
+  requerimientoId: string;
+  usuarioId: string;
+  estadoAprobacion: string;
+  comentario: string;
 }
 
 export const fetchRequerimientoRecursos = createAsyncThunk(
@@ -104,6 +107,21 @@ export const deleteRequerimientoRecurso = createAsyncThunk(
     try {
       await deleteRequerimientoRecursoService(id);
       return id;
+    } catch (error) {
+      return rejectWithValue((error as Error).message);
+    }
+  }
+);
+
+
+
+// Crear el thunk para la mutación
+export const addRequerimientoAprobacionThunk = createAsyncThunk(
+  'requerimientoRecurso/addRequerimientoAprobacion',
+  async (data: AprobacionData, { rejectWithValue }) => {
+    try {
+      const response = await addRequerimientoAprobacion(data);
+      return response;
     } catch (error) {
       return rejectWithValue((error as Error).message);
     }
@@ -184,6 +202,19 @@ const requerimientoRecursoSlice = createSlice({
         state.error = null;
       })
       .addCase(deleteRequerimientoRecurso.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
+      })
+      // AddRequerimientoAprobacion cases
+      .addCase(addRequerimientoAprobacionThunk.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(addRequerimientoAprobacionThunk.fulfilled, (state, action) => {
+        state.loading = false;
+        state.requerimientoRecursos.push(action.payload);
+      })
+      .addCase(addRequerimientoAprobacionThunk.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload as string;
       });

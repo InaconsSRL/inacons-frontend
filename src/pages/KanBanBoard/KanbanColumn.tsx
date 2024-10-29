@@ -8,7 +8,7 @@ interface KanbanColumnProps {
 
 const KanbanColumn: React.FC<KanbanColumnProps> = ({ column }) => {
     return (
-      <div className="flex-shrink-0 w-auto bg-white rounded-lg shadow-lg scale-90 lg:scale-100">
+      <div className="flex-shrink-0 w-auto bg-white/10 rounded-lg shadow-lg scale-90 lg:scale-100 max-h-[80vh] ">
         <div className="p-4 bg-gray-50 border-b" style={{ backgroundColor: column.color }}>
           <h2 className="text-lg font-semibold flex justify-between items-center text-white">
             {column.title}
@@ -17,7 +17,7 @@ const KanbanColumn: React.FC<KanbanColumnProps> = ({ column }) => {
             </span>
           </h2>
         </div>
-        <div className="p-4 space-y-4 max-h-[calc(100vh-200px)] overflow-y-auto">
+        <div className="p-4 space-y-4 max-h-[calc(80vh-200px)] overflow-y-auto">
           {column.tasks.map((task) => (
             <KanbanCard key={task.id} task={task} />
           ))}

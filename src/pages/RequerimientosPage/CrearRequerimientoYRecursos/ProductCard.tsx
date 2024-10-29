@@ -20,7 +20,8 @@ export const ProductCard: React.FC<Recurso> = ({
     dispatch(addRequerimientoRecurso({ 
       requerimiento_id: requerimiento_id,
       recurso_id: id, 
-      cantidad: selectedQuantity 
+      cantidad: selectedQuantity,
+      cantidad_aprobada: 0,
     }));
   };
 

@@ -20,6 +20,7 @@ interface Requerimiento {
   sustento: string;
   obra_id: string;
   codigo: string;
+  fecha_final: string;
 }
 
 const pageVariants = {
@@ -134,8 +135,19 @@ const RequerimientosComponent: React.FC = () => {
           transition={{ duration: 0.3 }}
         >
           <RequerimientoRecursos
-            initialValues={editingRequerimiento || undefined}
-          />
+              initialValues={editingRequerimiento || {
+                id: '',
+                usuario_id: '',
+                usuario: '',
+                presupuesto_id: '',
+                fecha_solicitud: '',
+                estado_atencion: '',
+                sustento: '',
+                obra_id: '',
+                fecha_final: '',
+                codigo: ''
+              }}
+            />
         </motion.div>
       </Modal>
     )}

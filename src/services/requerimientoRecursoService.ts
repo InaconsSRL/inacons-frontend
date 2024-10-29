@@ -22,21 +22,12 @@ const GET_REQUERIMIENTO_RECURSO_BY_REQUERIMIENTO_ID = gql`
 `;
 
 const UPDATE_REQUERIMIENTO_RECURSO = gql`
-  mutation Mutation($updateRequerimientoRecursoId: ID!, $requerimiento_id: ID, $recurso_id: ID, $cantidad: Int, $cantidad_aprobada: Int, $estado: String, $notas: String, $costo_ref: Decimal, $metrado: Decimal, $fecha_limit: DateTime, $presupuestado: String) {
-  updateRequerimientoRecurso(id: $updateRequerimientoRecursoId, requerimiento_id: $requerimiento_id, recurso_id: $recurso_id, cantidad: $cantidad, cantidad_aprobada: $cantidad_aprobada, estado: $estado, notas: $notas, costo_ref: $costo_ref, metrado: $metrado, fecha_limit: $fecha_limit, presupuestado: $presupuestado) {
+  mutation Mutation($updateRequerimientoRecursoId: ID!, $cantidad_aprobada: Int, $notas: String, $fecha_limit: DateTime) {
+  updateRequerimientoRecurso(id: $updateRequerimientoRecursoId, cantidad_aprobada: $cantidad_aprobada, notas: $notas, fecha_limit: $fecha_limit) {
     id
-    requerimiento_id
-    recurso_id
-    nombre
-    codigo
-    cantidad
     cantidad_aprobada
-    estado
     notas
-    costo_ref
-    metrado
     fecha_limit
-    presupuestado
   }
 }
 `;
@@ -63,6 +54,19 @@ const DELETE_REQUERIMIENTO_RECURSO = gql`
   mutation Mutation($deleteRequerimientoRecursoId: ID!) {
     deleteRequerimientoRecurso(id: $deleteRequerimientoRecursoId) {
       id
+    }
+  }
+`;
+
+const ADD_REQUERIMIENTO_APROBACION = gql`
+  mutation AddRequerimientoAprobacion($requerimientoId: ID!, $usuarioId: ID!, $estadoAprobacion: String, $fechaAprobacion: DateTime, $comentario: String) {
+    addRequerimientoAprobacion(requerimiento_id: $requerimientoId, usuario_id: $usuarioId, estado_aprobacion: $estadoAprobacion, fecha_aprobacion: $fechaAprobacion, comentario: $comentario) {
+      id
+      requerimiento_id
+      usuario_id
+      estado_aprobacion
+      fecha_aprobacion
+      comentario
     }
   }
 `;
@@ -98,32 +102,18 @@ export const addRequerimientoRecurso = async (data: { requerimiento_id: string; 
 
 export const updateRequerimientoRecurso = async (data: {
   id: string;
-  requerimiento_id: string;
-  recurso_id: string;
-  cantidad: number;
   cantidad_aprobada: number;
-  estado: string;
   notas: string;
-  costo_ref: number;
-  metrado: number;
   fecha_limit: Date;
-  presupuestado: string;
 }) => {
   try {
     const { data: responseData } = await client.mutate({
       mutation: UPDATE_REQUERIMIENTO_RECURSO,
       variables: {
         updateRequerimientoRecursoId: data.id,
-        requerimiento_id: data.requerimiento_id,
-        recurso_id: data.recurso_id,
-        cantidad: data.cantidad,
         cantidad_aprobada: data.cantidad_aprobada,
-        estado: data.estado,
         notas: data.notas,
-        costo_ref: data.costo_ref,
-        metrado: data.metrado,
         fecha_limit: data.fecha_limit,
-        presupuestado: data.presupuestado,
       },
     });
     return responseData.updateRequerimientoRecurso;
@@ -146,5 +136,27 @@ export const deleteRequerimientoRecurso = async (id: string) => {
   } catch (error) {
     console.error('Error al eliminar el requerimiento de recurso:', error);
     throw error;
+  }
+};
+
+export const addRequerimientoAprobacion = async (data: {
+  requerimientoId: string;
+  usuarioId: string;
+  estadoAprobacion: string;
+  comentario: string;
+}) => {
+  try {
+    const { data: responseData } = await client.mutate({
+      mutation: ADD_REQUERIMIENTO_APROBACION,
+      variables: {
+        requerimientoId: data.requerimientoId,
+        usuarioId: data.usuarioId,
+        estadoAprobacion: data.estadoAprobacion,
+        comentario: data.comentario,
+      },
+    });
+    return responseData.addRequerimientoAprobacion;
+  } catch (error) {
+    throw new Error(`Error adding requerimiento aprobacion ${error}`);
   }
 };

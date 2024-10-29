@@ -15,11 +15,6 @@ const KanbanCard: React.FC<KanbanCardProps> = ({ task }) => {
     setModalAprobacionReqSup(true);
   };
 
-  
-
-
-  
-
     return (
       <div className="bg-white border border-gray-200 rounded-lg shadow-sm p-4 hover:shadow-md transition-shadow">
         <h3 className="font-semibold text-base mb-2">{task.title}</h3>
@@ -55,7 +50,7 @@ const KanbanCard: React.FC<KanbanCardProps> = ({ task }) => {
           onClose={() => setModalAprobacionReqSup(false)}
           title="Aprobar Requerimiento"
         >
-          <AprobarRequerimiento id = {task.id} requerimiento={task} />
+          <AprobarRequerimiento requerimiento={task} />
         </Modal>
       </div>
     );

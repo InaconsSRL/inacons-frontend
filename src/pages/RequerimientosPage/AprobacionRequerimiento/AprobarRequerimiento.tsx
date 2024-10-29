@@ -1,43 +1,137 @@
 import { useState, useEffect } from 'react';
-import { FiCalendar, FiChevronsDown } from 'react-icons/fi';
+import { FiCalendar, FiCheck, FiCheckSquare, FiChevronsDown } from 'react-icons/fi';
 // import { addRequerimientoRecurso, deleteRequerimientoRecurso, fetchRequerimientoRecursos } from '../../slices/requerimientoRecursoSlice';
-import { fetchRequerimientoRecursos } from '../../../slices/requerimientoRecursoSlice';
+import { fetchRequerimientoRecursos, updateRequerimientoRecurso, addRequerimientoAprobacionThunk } from '../../../slices/requerimientoRecursoSlice';
 import { useDispatch, useSelector } from 'react-redux';
 import { RootState, AppDispatch } from '../../../store/store';
 import LoaderPage from '../../../components/Loader/LoaderPage';
+import Button from '../../../components/Buttons/Button';
 
-// Tipos
-type RequestItem = {
-  codigo: string;
-  nombre: string;
-  unidad: string;
-  uEmb: string;
-  cantidad: number;
+interface EditValues {
+  [key: string]: {
+    cantidad_aprobada?: number;
+    fecha_limit?: string;
+  }
+}
+
+interface UpdateRequerimientoRecursoData {
+  id: string;
+  cantidad_aprobada: number;
+  fecha_limit: Date;
   notas: string;
-  comprado: number;
-  cotizado: number;
-  urgencia: string;
-  estado: string;
-  factor: number;
-  precioHistorico: number;
-  fechaEntrega?: string;
-};
+}
+
+interface Requerimiento {
+  id: string;
+  deliveryDate: string;
+  title: string;
+  projectCode: string;
+  approvedBy: string;
+}
 
 
-const AprobarRequerimiento = ({ id, requerimiento }) => {
+interface AprobarRequerimientoProps {
+  requerimiento: Requerimiento;
+}
+
+const AprobarRequerimiento = ({ requerimiento }: AprobarRequerimientoProps) => {
   const dispatch = useDispatch<AppDispatch>();
+  const id = requerimiento.id
   const { requerimientoRecursos, loading } = useSelector((state: RootState) => state.requerimientoRecurso);
 
-  console.log(requerimiento)
+  const [editValues, setEditValues] = useState<EditValues>({} as EditValues);
+  const [comentario, setComentario] = useState('');
+  const user = useSelector((state: RootState) => state.user);
 
   useEffect(() => {
-    if (id) dispatch(fetchRequerimientoRecursos(id));
+    if (id) dispatch(fetchRequerimientoRecursos(id.toString()));
   }, []);
+
+  const handleEditChange = (recursoId: string, field: string, value: string) => {
+    setEditValues(prev => ({
+      ...prev,
+      [recursoId]: {
+        ...prev[recursoId],
+        [field]: value
+      }
+    }));
+  };
+
+  const handleUpdate = async (recurso: any) => {
+    
+    try {
+      const recursoValues = editValues[recurso.id] || {};
+
+      const updateData: UpdateRequerimientoRecursoData = {
+        id: recurso.id.toString(),
+        cantidad_aprobada: recursoValues.cantidad_aprobada
+          ? Number(recursoValues.cantidad_aprobada)
+          : recurso.cantidad_aprobada,
+        fecha_limit: recursoValues.fecha_limit ? new Date(recursoValues.fecha_limit) : new Date(recurso.fecha_limit ?? ''),
+        notas: recurso.notas
+      };
+
+      await dispatch(updateRequerimientoRecurso(updateData)).unwrap();
+
+      console.log('Recurso actualizado');
+
+      // Limpiar los valores editados para este recurso
+      setEditValues(prev => {
+        const newValues = { ...prev };
+        delete newValues[recurso.id];
+        return newValues;
+      });
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const aprobarRequerimiento = async () => {
+    try {
+      if (!user.id) {
+        throw new Error('Usuario no identificado');
+      }
+      
+      const data = {
+        requerimientoId: requerimiento.id,
+        usuarioId: user.id as string,
+        estadoAprobacion: "aprobado_supervisor",
+        comentario: comentario || "Requerimiento aprobado"
+      };
+
+      await dispatch(addRequerimientoAprobacionThunk(data)).unwrap();
+      setComentario(''); // Limpiar el comentario después de aprobar
+      // Opcional: Mostrar mensaje de éxito o redireccionar
+      console.log('Requerimiento aprobado exitosamente');
+    } catch (error) {
+      console.error('Error al aprobar requerimiento:', error);
+    }
+  };
+
+  const rechazarRequerimiento = async () => {
+    try {
+      const data = {
+        requerimientoId: requerimiento.id,
+        usuarioId: user.id as string,
+        estadoAprobacion: "rechazado_supervisor",
+        fechaAprobacion: new Date(),
+        comentario: comentario || "Requerimiento rechazado"
+      };
+
+      await dispatch(addRequerimientoAprobacionThunk(data)).unwrap();
+      setComentario('');
+      console.log('Requerimiento rechazado exitosamente');
+    } catch (error) {
+      console.error('Error al rechazar requerimiento:', error);
+    }
+  };
+
+  console.log(requerimientoRecursos)
 
   if (loading) {
     return <LoaderPage />;
   }
-  console.log(requerimientoRecursos);
+
   return (
     <div className="p-6 max-w-7xl mx-auto bg-white rounded-lg shadow-lg">
       {/* Header Section */}
@@ -98,8 +192,8 @@ const AprobarRequerimiento = ({ id, requerimiento }) => {
 
       {/* Table Section */}
       <div className="overflow-x-auto">
-        <table className="w-full text-xs">
-          <thead className="bg-gray-100">
+        <table className="w-full text-xs block h-[60vh] overflow-y-auto">
+          <thead className="bg-gray-200 sticky top-0 z-10 shadow-sm">
             <tr>
               <th className="px-2 py-2 text-left font-medium text-gray-600">Código</th>
               <th className="px-2 py-2 text-left font-medium text-gray-600">Nombre</th>
@@ -110,12 +204,16 @@ const AprobarRequerimiento = ({ id, requerimiento }) => {
               {/* <th className="px-2 py-2 text-left font-medium text-gray-600">Comprado</th>
                             <th className="px-2 py-2 text-left font-medium text-gray-600">Cotizado</th> */}
               <th className="px-2 py-2 text-left font-medium text-gray-600">P.Historico</th>
-              <th className="px-2 py-2 text-left font-medium text-gray-600">F.Entrega</th>
+              <th className="px-2 py-2 text-left font-medium text-gray-600">F.Limite</th>
               <th className="px-2 py-2 text-left font-medium text-gray-600">CostoParcial</th>
               <th className="px-2 py-2 text-left font-medium text-gray-600">Notas</th>
+              <th className="px-2 py-2 text-left font-medium text-gray-600">C.Aprobada</th>
+              <th className="px-2 py-2 text-left font-medium text-gray-600">Nueva.F.Limite</th>
+              <th className="px-2 py-2 text-left font-medium text-gray-600">Acciones</th>
+
             </tr>
           </thead>
-          <tbody>
+          <tbody >
             {requerimientoRecursos.map((recurso) => (
               <tr
                 key={recurso.id}
@@ -129,18 +227,46 @@ const AprobarRequerimiento = ({ id, requerimiento }) => {
                 <td className="px-2 py-2">{recurso.cantidad_aprobada ?? "-"}</td>
                 <td className="px-2 py-2"><span className="px-2 py-1 bg-yellow-100 text-yellow-800 rounded">{recurso.estado}</span></td>
                 <td className="px-2 py-2">{recurso.costo_ref ?? "-"}</td>
-                <td className="px-2 py-2">{new Date(recurso.fecha_limit).toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric' })}</td>
+                <td className="px-2 py-2"> {new Date(recurso.fecha_limit ?? '').toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric', timeZone: 'UTC' })} </td>
                 <td className="px-2 py-2">{(recurso.costo_ref ?? 1) * (recurso.cantidad_aprobada ?? 2)}</td>
                 <td className="px-2 py-2">{recurso.notas}</td>
+                <td className="px-2 py-2">
+                  <input
+                    type="number"
+                    value={editValues[recurso.id]?.cantidad_aprobada || ''}
+                    onChange={(e) => handleEditChange(recurso.id, 'cantidad_aprobada', e.target.value)}
+                    className="w-16 px-2 py-1 border rounded"
+                    placeholder={String(recurso.cantidad_aprobada || "")}
+                  />
+                </td>
+                <td className="px-2 py-2">
+                  <input
+                    type="date"
+                    value={editValues[recurso.id]?.fecha_limit || ''}
+                    onChange={(e) => handleEditChange(recurso.id, 'fecha_limit', e.target.value)}
+                    className="w-32 px-2 py-1 border rounded"
+                  />
+                </td>
+                <td className="px-2 py-2 flex flex-row">
+                  <button
+                    onClick={() => handleUpdate({ ...recurso, cantidad_aprobada: recurso.cantidad_aprobada ?? 0, costo_ref: recurso.costo_ref ?? 0, fecha_limit: recurso.fecha_limit ?? '', notas: recurso.notas })}
+                    className="px-3 py-1 bg-green-500 text-white rounded-md hover:bg-blue-600 transition-colors"
+                  >
+                    <FiCheckSquare className='h-2.5 w-2.5' />
+                  </button>                
+                </td>
               </tr>
             ))}
           </tbody>
-          <tfoot>
+          <tfoot className='bg-gray-200 sticky bottom-0 z-10 shadow-sm mt-20'>
             <tr>
               <td colSpan={8} className="px-2 py-2 text-right font-medium text-gray-600">Total:</td>
               <td className="px-2 py-2 text-center font-medium text-gray-600">
-          S/. {requerimientoRecursos.reduce((total, recurso) => total + (recurso.costo_ref ?? 1) * (recurso.cantidad_aprobada ?? 2), 0)}
+                S/. {requerimientoRecursos.reduce((total, recurso) => total + (recurso.costo_ref ?? 1) * (recurso.cantidad_aprobada ?? 2), 0)}
               </td>
+              <td></td>
+              <td></td>
+              <td></td>
               <td></td>
             </tr>
           </tfoot>
@@ -148,6 +274,33 @@ const AprobarRequerimiento = ({ id, requerimiento }) => {
       </div>
 
       {/* Action Buttons */}
+
+      <div className="flex justify-end items-center gap-2 mt-4">
+        <input
+          type="text"
+          value={comentario}
+          onChange={(e) => setComentario(e.target.value)}
+          placeholder="Ingrese un comentario..."
+          className="flex-1 px-3 py-1 border rounded-md text-xs focus:outline-none focus:ring-2 focus:ring-blue-500"
+        />
+        <Button 
+          onClick={rechazarRequerimiento}
+          icon={<FiCheck />}
+          text="Rechazar"
+          color='rojo'
+          key={`${requerimiento.id}-reject`}
+          className="px-3 py-1 bg-red-500 text-white rounded-md text-xs hover:bg-red-600 transition-colors"
+        />
+        <Button 
+          onClick={aprobarRequerimiento}
+          icon={<FiCheck />}
+          text="Aprobar"
+          color='verde'
+          key={`${requerimiento.id}-approve`}
+          className="px-3 py-1 bg-purple-500 text-white rounded-md text-xs hover:bg-purple-600 transition-colors"
+        />
+      </div>
+
       {/* <div className="flex justify-end gap-2 mt-4">
                 <button className="px-3 py-1 bg-blue-500 text-white rounded-md text-xs hover:bg-blue-600 transition-colors">
                     Ver Compras
