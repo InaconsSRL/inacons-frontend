@@ -10,7 +10,7 @@ const LIST_REQUERIMIENTOS_QUERY = gql`
       presupuesto_id
       fecha_solicitud
       fecha_final
-      estado
+      estado_atencion
       sustento
       obra_id
       codigo
@@ -28,7 +28,7 @@ const ADD_REQUERIMIENTO_MUTATION = gql`
     presupuesto_id
     fecha_solicitud
     fecha_final
-    estado
+    estado_atencion
     sustento
     obra_id
   }
@@ -45,7 +45,7 @@ const UPDATE_REQUERIMIENTO_MUTATION = gql`
     presupuesto_id
     fecha_solicitud
     fecha_final
-    estado
+    estado_atencion
     sustento
     obra_id
   }

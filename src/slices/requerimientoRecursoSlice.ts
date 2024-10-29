@@ -2,7 +2,8 @@ import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
 import { 
   getRequerimientoRecursoByRequerimientoId, 
   addRequerimientoRecurso as addRequerimientoRecursoService, 
-  deleteRequerimientoRecurso as deleteRequerimientoRecursoService 
+  deleteRequerimientoRecurso as deleteRequerimientoRecursoService,
+  updateRequerimientoRecurso as updateRequerimientoRecursoService
 } from '../services/requerimientoRecursoService';
 
 // Interfaz actualizada con todos los campos del GraphQL
@@ -46,6 +47,21 @@ interface AddRequerimientoRecursoData {
   metrado?: number;
 }
 
+//interfaz para los datos de actualización
+interface UpdateRequerimientoRecursoData {
+  id: string;
+  requerimiento_id: string;
+  recurso_id: string;
+  cantidad: number;
+  cantidad_aprobada: number;
+  estado: string;
+  notas: string;
+  costo_ref: number;
+  metrado: number;
+  fecha_limit: Date;
+  presupuestado: string;
+}
+
 export const fetchRequerimientoRecursos = createAsyncThunk(
   'requerimientoRecurso/fetchRequerimientoRecursos',
   async (requerimientoId: string, { rejectWithValue }) => {
@@ -63,6 +79,18 @@ export const addRequerimientoRecurso = createAsyncThunk(
   async (data: AddRequerimientoRecursoData, { rejectWithValue }) => {
     try {
       const response = await addRequerimientoRecursoService(data);
+      return response;
+    } catch (error) {
+      return rejectWithValue((error as Error).message);
+    }
+  }
+);
+
+export const updateRequerimientoRecurso = createAsyncThunk(
+  'requerimientoRecurso/updateRequerimientoRecurso',
+  async (data: UpdateRequerimientoRecursoData, { rejectWithValue }) => {
+    try {
+      const response = await updateRequerimientoRecursoService(data);
       return response;
     } catch (error) {
       return rejectWithValue((error as Error).message);
@@ -120,6 +148,26 @@ const requerimientoRecursoSlice = createSlice({
         state.error = null;
       })
       .addCase(addRequerimientoRecurso.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
+      })
+      // Casos para update
+      .addCase(updateRequerimientoRecurso.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(updateRequerimientoRecurso.fulfilled, (state, action: PayloadAction<RequerimientoRecurso>) => {
+        state.loading = false;
+        // Actualizamos el recurso en el array
+        const index = state.requerimientoRecursos.findIndex(
+          (recurso) => recurso.id === action.payload.id
+        );
+        if (index !== -1) {
+          state.requerimientoRecursos[index] = action.payload;
+        }
+        state.error = null;
+      })
+      .addCase(updateRequerimientoRecurso.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload as string;
       })

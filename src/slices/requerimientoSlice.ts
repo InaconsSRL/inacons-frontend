@@ -9,7 +9,7 @@ interface Requerimiento {
   presupuesto_id: string;
   fecha_solicitud: string;
   fecha_final: string;
-  estado: string;
+  estado_atencion: string;
   sustento: string;
   obra_id: string;
 }

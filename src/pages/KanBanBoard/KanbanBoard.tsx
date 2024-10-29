@@ -12,7 +12,7 @@ const KanbanBoard = () => {
 
   // Función para generar un color aleatorio
   const getRandomColor = () => {
-    return '#' + Math.floor(Math.random()*16777215).toString(16);
+    return '#' + Math.floor(Math.random() * 16777215).toString(16);
   };
 
   // Función para filtrar tareas basadas en el término de búsqueda
@@ -40,7 +40,7 @@ const KanbanBoard = () => {
   const requerimientosColumn = {
     id: 'requerimientos',
     title: 'Requerimientos',
-    color: getRandomColor(), // Asignar un color aleatorio a la columna de requerimientos
+    color: "#E06C75", // Asignar un color aleatorio a la columna de requerimientos
     tasks: filteredRequerimientos.map(req => ({
       id: req.id,
       title: req.codigo,

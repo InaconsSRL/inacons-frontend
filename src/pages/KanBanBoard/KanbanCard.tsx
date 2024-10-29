@@ -1,11 +1,25 @@
-import React from 'react';
+import React, {useState} from 'react';
 import { Task } from './types/kanban';
+import AprobarRequerimiento from '../RequerimientosPage/AprobacionRequerimiento/AprobarRequerimiento';
+import Modal from '../../components/Modal/Modal';
 
 interface KanbanCardProps {
   task: Task;
 }
 
 const KanbanCard: React.FC<KanbanCardProps> = ({ task }) => {
+  
+  const [modalAprobacionReqSup, setModalAprobacionReqSup] = useState(false);
+
+  const handleModalOpen = () => {
+    setModalAprobacionReqSup(true);
+  };
+
+  
+
+
+  
+
     return (
       <div className="bg-white border border-gray-200 rounded-lg shadow-sm p-4 hover:shadow-md transition-shadow">
         <h3 className="font-semibold text-base mb-2">{task.title}</h3>
@@ -27,10 +41,22 @@ const KanbanCard: React.FC<KanbanCardProps> = ({ task }) => {
               </div>
             ))}
           </div>
-          <button className="text-blue-600 hover:text-blue-800 font-semibold text-xs">
+          <button 
+          className="text-blue-600 hover:text-blue-800 font-semibold text-xs"
+          onClick={handleModalOpen}          
+          >
+
             Ver
           </button>
         </div>
+        
+        <Modal          
+          isOpen={modalAprobacionReqSup}
+          onClose={() => setModalAprobacionReqSup(false)}
+          title="Aprobar Requerimiento"
+        >
+          <AprobarRequerimiento id = {task.id} requerimiento={task} />
+        </Modal>
       </div>
     );
   };

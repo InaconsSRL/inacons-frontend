@@ -3,12 +3,12 @@ import { motion, AnimatePresence } from 'framer-motion';
 import Button from '../../components/Buttons/Button';
 import Modal from '../../components/Modal/Modal';
 import TableComponent from '../../components/Table/TableComponent';
-import RequerimientoFormComponent from './RequerimientoFormComponent';
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchRequerimientos } from '../../slices/requerimientoSlice';
 import { RootState, AppDispatch } from '../../store/store';
 import LoaderPage from '../../components/Loader/LoaderPage';
 import { FiEdit } from 'react-icons/fi';
+import RequerimientoRecursos from './CrearRequerimientoYRecursos/RequerimientoRecursos';
 
 interface Requerimiento {
   id: string;
@@ -16,7 +16,7 @@ interface Requerimiento {
   usuario: string;
   presupuesto_id: string;
   fecha_solicitud: string;
-  estado: string;
+  estado_atencion: string;
   sustento: string;
   obra_id: string;
   codigo: string;
@@ -72,6 +72,7 @@ const RequerimientosComponent: React.FC = () => {
       solicita: req.usuario,
       obra: req.codigo.split('-')[1],
       descripcion: req.sustento,
+      estado: req.estado_atencion,
       "fecha emision": new Date(req.fecha_solicitud).toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric' }),
       "vence": (new Date(new Date(req.fecha_final).getTime()).toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric' })) || (new Date(new Date(req.fecha_solicitud).getTime() + 2 * 24 * 60 * 60 * 1000).toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric' })),
       opciones: (
@@ -132,7 +133,7 @@ const RequerimientosComponent: React.FC = () => {
           exit={{ opacity: 0, scale: 0.9 }}
           transition={{ duration: 0.3 }}
         >
-          <RequerimientoFormComponent
+          <RequerimientoRecursos
             initialValues={editingRequerimiento || undefined}
           />
         </motion.div>
