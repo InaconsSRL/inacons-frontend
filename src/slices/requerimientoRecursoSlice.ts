@@ -81,7 +81,10 @@ export const addRequerimientoRecurso = createAsyncThunk(
   'requerimientoRecurso/addRequerimientoRecurso',
   async (data: AddRequerimientoRecursoData, { rejectWithValue }) => {
     try {
-      const response = await addRequerimientoRecursoService(data);
+      const response = await addRequerimientoRecursoService({
+        ...data,
+        fecha_limit: data.fecha_limit ?? new Date()
+      });
       return response;
     } catch (error) {
       return rejectWithValue((error as Error).message);

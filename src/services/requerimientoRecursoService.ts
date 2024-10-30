@@ -83,7 +83,7 @@ export const getRequerimientoRecursoByRequerimientoId = async (requerimientoId: 
   }
 };
 
-export const addRequerimientoRecurso = async (data: { requerimiento_id: string; recurso_id: string; cantidad: number; cantidad_aprobada: number }) => {
+export const addRequerimientoRecurso = async (data: { requerimiento_id: string; recurso_id: string; cantidad: number; cantidad_aprobada: number; fecha_limit: Date }) => {
   try {
     const { data: responseData } = await client.mutate({
       mutation: ADD_REQUERIMIENTO_RECURSO,
@@ -92,6 +92,7 @@ export const addRequerimientoRecurso = async (data: { requerimiento_id: string; 
         recursoId: data.recurso_id,
         cantidad: data.cantidad,
         cantidad_aprobada: data.cantidad,
+        fecha_limit: data.fecha_limit,
       },
     });
     return responseData.addRequerimientoRecurso;

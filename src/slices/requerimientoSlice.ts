@@ -1,5 +1,6 @@
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
-import { listRequerimientosService, addRequerimientoService, updateRequerimientoService } from '../services/requerimientoService';
+import { listRequerimientosService, addRequerimientoService, updateRequerimientoService, getRequerimientoService } from '../services/requerimientoService';
+
 
 interface Requerimiento {
   id: string;
@@ -16,12 +17,14 @@ interface Requerimiento {
 
 interface RequerimientoState {
   requerimientos: Requerimiento[];
+  selectedRequerimiento: Requerimiento | null;
   loading: boolean;
   error: string | null;
 }
 
 const initialState: RequerimientoState = {
   requerimientos: [],
+  selectedRequerimiento: null,
   loading: false,
   error: null,
 };
@@ -55,7 +58,7 @@ export const addRequerimiento = createAsyncThunk(
   
   export const updateRequerimiento = createAsyncThunk(
     'requerimiento/updateRequerimiento',
-    async (requerimiento: { id: string; usuario_id: string; obra_id:  string; fecha_final: Date; sustento: string }, { rejectWithValue }) => {
+    async (requerimiento: { id: string; usuario_id: string; obra_id:  string; fecha_final: Date; sustento: string; estado_atencion:string }, { rejectWithValue }) => {
       try {
         return await updateRequerimientoService(requerimiento);
       } catch (error) {
@@ -63,6 +66,17 @@ export const addRequerimiento = createAsyncThunk(
       }
     }
   );
+
+export const getRequerimiento = createAsyncThunk(
+  'requerimiento/getRequerimiento',
+  async (id: string, { rejectWithValue }) => {
+    try {
+      return await getRequerimientoService(id);
+    } catch (error) {
+      return rejectWithValue(handleError(error));
+    }
+  }
+);
   
   const requerimientoSlice = createSlice({
     name: 'requerimiento',
@@ -90,6 +104,18 @@ export const addRequerimiento = createAsyncThunk(
           if (index !== -1) {
             state.requerimientos[index] = action.payload;
           }
+        })
+        .addCase(getRequerimiento.pending, (state) => {
+          state.loading = true;
+          state.error = null;
+        })
+        .addCase(getRequerimiento.fulfilled, (state, action: PayloadAction<Requerimiento>) => {
+          state.loading = false;
+          state.selectedRequerimiento = action.payload;
+        })
+        .addCase(getRequerimiento.rejected, (state, action) => {
+          state.loading = false;
+          state.error = action.payload as string;
         });
     },
   });

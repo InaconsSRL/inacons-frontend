@@ -6,7 +6,7 @@ import { addRequerimiento } from '../../../slices/requerimientoSlice';
 import { RequerimientoFormData } from './types/interfaces';
 
 interface RequerimientoFormProps {
-  onRequerimientoCreated: (requerimientoId: string) => void;
+  onRequerimientoCreated: (requerimientoId: string, requerimientoData: any) => void;
 }
 
 export const RequerimientoForm: React.FC<RequerimientoFormProps> = ({ onRequerimientoCreated }) => {
@@ -28,7 +28,7 @@ export const RequerimientoForm: React.FC<RequerimientoFormProps> = ({ onRequerim
     e.preventDefault();
     try {
       const result = await dispatch(addRequerimiento(formData)).unwrap();
-      onRequerimientoCreated(result.id);
+      onRequerimientoCreated(result.id, result);
     } catch (error) {
       console.error('Error al crear el requerimiento:', error);
     }

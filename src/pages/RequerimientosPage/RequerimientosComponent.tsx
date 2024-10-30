@@ -44,7 +44,7 @@ const RequerimientosComponent: React.FC = () => {
 
   useEffect(() => {
     dispatch(fetchRequerimientos());
-  }, [dispatch]);
+  }, []);
 
   console.log(requerimientos);
 

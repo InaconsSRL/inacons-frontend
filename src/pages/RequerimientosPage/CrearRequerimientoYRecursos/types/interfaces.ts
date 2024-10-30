@@ -7,6 +7,7 @@ export interface Recurso {
   precio_actual: number;
   requerimiento_id: string;
   imagenes: { file: string }[];
+  fecha_limit: Date;
 }
 
 export interface RequerimientoRecurso {
@@ -34,6 +35,7 @@ export interface RequerimientoFormData {
 
 export interface ProductListProps {
   requerimiento_id: string;
+  fecha_final: Date;
 }
 
 export interface SelectedProductsProps {

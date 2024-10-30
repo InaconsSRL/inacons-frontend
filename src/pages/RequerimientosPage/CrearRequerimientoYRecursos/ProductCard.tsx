@@ -12,6 +12,7 @@ export const ProductCard: React.FC<Recurso> = ({
   nombre,
   imagenes,
   requerimiento_id,
+  fecha_limit,
 }) => {
   const dispatch = useDispatch<AppDispatch>();
   const [selectedQuantity, setSelectedQuantity] = useState(0);
@@ -22,6 +23,7 @@ export const ProductCard: React.FC<Recurso> = ({
       recurso_id: id, 
       cantidad: selectedQuantity,
       cantidad_aprobada: 0,
+      fecha_limit: fecha_limit,
     }));
   };
 

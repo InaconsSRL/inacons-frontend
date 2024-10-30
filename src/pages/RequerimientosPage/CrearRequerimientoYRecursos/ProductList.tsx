@@ -7,7 +7,7 @@ import { ProductCard } from './ProductCard';
 import LoaderPage from '../../../components/Loader/LoaderPage';
 import { ProductListProps } from './types/interfaces';
 
-export const ProductList: React.FC<ProductListProps> = ({ requerimiento_id }) => {
+export const ProductList: React.FC<ProductListProps> = ({ requerimiento_id, fecha_final }) => {
   const dispatch = useDispatch<AppDispatch>();
   const { recursos, loading: loadingRecursos } = useSelector((state: RootState) => state.recurso);
   const { obras, loading: loadingObras } = useSelector((state: RootState) => state.obra);
@@ -15,8 +15,6 @@ export const ProductList: React.FC<ProductListProps> = ({ requerimiento_id }) =>
   
   const [searchTerm, setSearchTerm] = useState('');
   const [filteredRecursos, setFilteredRecursos] = useState(recursos);
-
-  console.log(recursos)
 
   useEffect(() => {
     if (recursos.length === 0) dispatch(fetchRecursos());
@@ -87,15 +85,16 @@ export const ProductList: React.FC<ProductListProps> = ({ requerimiento_id }) =>
             No se encontraron productos
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 gap-4 max-h-[75vh] overflow-y-auto">
             {filteredRecursos.map((recurso) => (
               <ProductCard
-                key={recurso.id}
-                {...recurso}
-                requerimiento_id={requerimiento_id}
+              key={recurso.id}
+              {...recurso}
+              requerimiento_id={requerimiento_id}
+              fecha_limit={fecha_final}
               />
             ))}
-          </div>
+            </div>
         )}
       </div>
     </div>

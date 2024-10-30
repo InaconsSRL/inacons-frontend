@@ -1,11 +1,11 @@
 import { useState, useEffect } from 'react';
-import { FiCalendar, FiCheck, FiCheckSquare, FiChevronsDown } from 'react-icons/fi';
-// import { addRequerimientoRecurso, deleteRequerimientoRecurso, fetchRequerimientoRecursos } from '../../slices/requerimientoRecursoSlice';
-import { fetchRequerimientoRecursos, updateRequerimientoRecurso, addRequerimientoAprobacionThunk } from '../../../slices/requerimientoRecursoSlice';
+import { FiCalendar, FiCheck, FiCheckSquare, FiChevronsDown, FiX } from 'react-icons/fi';
+import { fetchRequerimientoRecursos, updateRequerimientoRecurso, addRequerimientoAprobacionThunk } from '../../slices/requerimientoRecursoSlice';
+import { getRequerimiento, updateRequerimiento } from '../../slices/requerimientoSlice';
 import { useDispatch, useSelector } from 'react-redux';
-import { RootState, AppDispatch } from '../../../store/store';
-import LoaderPage from '../../../components/Loader/LoaderPage';
-import Button from '../../../components/Buttons/Button';
+import { RootState, AppDispatch } from '../../store/store';
+import LoaderPage from '../../components/Loader/LoaderPage';
+import Button from '../../components/Buttons/Button';
 
 interface EditValues {
   [key: string]: {
@@ -29,24 +29,31 @@ interface Requerimiento {
   approvedBy: string;
 }
 
-
 interface AprobarRequerimientoProps {
   requerimiento: Requerimiento;
 }
 
 const AprobarRequerimiento = ({ requerimiento }: AprobarRequerimientoProps) => {
-  const dispatch = useDispatch<AppDispatch>();
+
+  const dispatch = useDispatch<AppDispatch>();  
   const id = requerimiento.id
   const { requerimientoRecursos, loading } = useSelector((state: RootState) => state.requerimientoRecurso);
-
+  const { selectedRequerimiento } = useSelector((state: RootState) => state.requerimiento);  
   const [editValues, setEditValues] = useState<EditValues>({} as EditValues);
   const [comentario, setComentario] = useState('');
   const user = useSelector((state: RootState) => state.user);
-
+  
   useEffect(() => {
-    if (id) dispatch(fetchRequerimientoRecursos(id.toString()));
+    if (id) {
+      // Dispatch para obtener los recursos del requerimiento
+      dispatch(fetchRequerimientoRecursos(id.toString()));
+      
+      // Dispatch para obtener la información del requerimiento
+      dispatch(getRequerimiento(id.toString()));
+    }
   }, []);
-
+  console.log("requerimiento aprobacion", selectedRequerimiento)
+  
   const handleEditChange = (recursoId: string, field: string, value: string) => {
     setEditValues(prev => ({
       ...prev,
@@ -100,8 +107,20 @@ const AprobarRequerimiento = ({ requerimiento }: AprobarRequerimientoProps) => {
       };
 
       await dispatch(addRequerimientoAprobacionThunk(data)).unwrap();
-      setComentario(''); // Limpiar el comentario después de aprobar
-      // Opcional: Mostrar mensaje de éxito o redireccionar
+      setComentario(''); 
+
+
+      await dispatch(updateRequerimiento({
+        id: selectedRequerimiento?.id || '',
+        usuario_id: selectedRequerimiento?.usuario_id || '',
+        obra_id: selectedRequerimiento?.obra_id || '',
+        fecha_final: new Date(selectedRequerimiento?.fecha_final || new Date()),
+        sustento: selectedRequerimiento?.sustento || '',
+        estado_atencion: "aprobado_supervisor"
+      })).unwrap();
+      
+
+
       console.log('Requerimiento aprobado exitosamente');
     } catch (error) {
       console.error('Error al aprobar requerimiento:', error);
@@ -126,8 +145,6 @@ const AprobarRequerimiento = ({ requerimiento }: AprobarRequerimientoProps) => {
     }
   };
 
-  console.log(requerimientoRecursos)
-
   if (loading) {
     return <LoaderPage />;
   }
@@ -146,6 +163,13 @@ const AprobarRequerimiento = ({ requerimiento }: AprobarRequerimientoProps) => {
           </div>
           <div className="flex items-center gap-2">
             <label className="text-xs font-medium text-gray-600">F Emisión:</label>
+            <div className="flex items-center gap-1 px-2 py-1 border rounded bg-white text-xs">
+              <span>{requerimiento.deliveryDate}</span>
+              <FiCalendar size={14} />
+            </div>
+          </div>
+          <div className="flex items-center gap-2">
+            <label className="text-xs font-medium text-gray-600">F Final:</label>
             <div className="flex items-center gap-1 px-2 py-1 border rounded bg-white text-xs">
               <span>{requerimiento.deliveryDate}</span>
               <FiCalendar size={14} />
@@ -285,7 +309,7 @@ const AprobarRequerimiento = ({ requerimiento }: AprobarRequerimientoProps) => {
         />
         <Button 
           onClick={rechazarRequerimiento}
-          icon={<FiCheck />}
+          icon={<FiX />}
           text="Rechazar"
           color='rojo'
           key={`${requerimiento.id}-reject`}
