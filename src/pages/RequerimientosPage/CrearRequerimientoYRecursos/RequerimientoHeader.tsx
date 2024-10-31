@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { AppDispatch, RootState } from '../../../store/store';
 import { updateRequerimiento } from '../../../slices/requerimientoSlice';
+import Button from '../../../components/Buttons/Button';
 
 // Definir la interfaz para el objeto requerimiento
 interface Requerimiento {
@@ -13,6 +14,7 @@ interface Requerimiento {
   sustento: string;
   codigo: string;
   usuario: string;
+  estado_atencion: string;
 }
 
 interface DetalleRequerimientoProps {
@@ -35,7 +37,7 @@ interface FormData {
 const formatDateForInput = (dateString: string): string => {
   if (!dateString) return '';
   const date = new Date(dateString);
-  return date.toISOString().slice(0, 16); // Obtiene YYYY-MM-DDTHH:mm
+  return date.toISOString().slice(0, 10); // Obtiene YYYY-MM-DD
 };
 
 const RequerimientoHeader: React.FC<DetalleRequerimientoProps> = ({ requerimiento }) => {
@@ -72,7 +74,8 @@ const RequerimientoHeader: React.FC<DetalleRequerimientoProps> = ({ requerimient
       const response = await dispatch(updateRequerimiento({
         id: requerimiento.id,
         ...formData,
-        fecha_final: new Date(formData.fecha_final)
+        fecha_final: new Date(formData.fecha_final),
+        estado_atencion: requerimiento.estado_atencion || 'pendiente'
       }));
       setFormData({...formData, codigo: response.payload.codigo});
       setIsEditing(false);
@@ -104,7 +107,7 @@ const RequerimientoHeader: React.FC<DetalleRequerimientoProps> = ({ requerimient
       <div>
         <span className="block text-xs text-gray-700">Fecha Final:</span>
         <p className="text-sm border-b p-1">
-          {new Date(formData.fecha_final).toLocaleString() || '-'}
+            {formatDateForInput(formData.fecha_final).split("-").reverse().join("-") || '-'}
         </p>
       </div>
 
@@ -159,7 +162,7 @@ const RequerimientoHeader: React.FC<DetalleRequerimientoProps> = ({ requerimient
         <label className="block text-xs text-gray-700">Fecha Final:</label>
         <input
           name="fecha_final"
-          type="datetime-local"
+          type="date"
           value={formData.fecha_final}
           onChange={handleInputChange}
           className="w-full border rounded text-xs p-1"
@@ -176,13 +179,19 @@ const RequerimientoHeader: React.FC<DetalleRequerimientoProps> = ({ requerimient
         />
       </div>
 
-      <div className="flex items-end">
+      <div className="flex items-end pb-2 gap-3">
         <button
-          type="submit"
-          className="w-full bg-green-500 text-white rounded text-xs p-2"
+          type='submit'
+          className="w-full bg-green-500 text-white rounded text-xs p-2.5"
         >
           Guardar
         </button>
+        <Button
+          onClick={() => setIsEditing(false)}
+          text="Cancelar"
+          color='rojo'
+          className="w-full bg-red-500 text-white rounded text-xs"
+        />
       </div>
     </form>
   );

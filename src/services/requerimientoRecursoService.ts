@@ -22,19 +22,26 @@ const GET_REQUERIMIENTO_RECURSO_BY_REQUERIMIENTO_ID = gql`
 `;
 
 const UPDATE_REQUERIMIENTO_RECURSO = gql`
-  mutation Mutation($updateRequerimientoRecursoId: ID!, $cantidad_aprobada: Int, $notas: String, $fecha_limit: DateTime) {
-  updateRequerimientoRecurso(id: $updateRequerimientoRecursoId, cantidad_aprobada: $cantidad_aprobada, notas: $notas, fecha_limit: $fecha_limit) {
+  mutation Mutation($updateRequerimientoRecursoId: ID!, $cantidad: Int,  $cantidad_aprobada: Int, $notas: String, $fecha_limit: DateTime) {
+  updateRequerimientoRecurso(id: $updateRequerimientoRecursoId, cantidad: $cantidad, cantidad_aprobada: $cantidad_aprobada, notas: $notas, fecha_limit: $fecha_limit) {
     id
-    cantidad_aprobada
-    notas
+    requerimiento_id
+    recurso_id
+    cantidad
+    codigo
+    costo_ref
     fecha_limit
+    metrado
+    nombre
+    notas
+    cantidad_aprobada
   }
 }
 `;
 
 const ADD_REQUERIMIENTO_RECURSO = gql`
-  mutation Mutation($requerimientoId: ID!, $recursoId: ID!, $cantidad: Int!, $cantidad_aprobada: Int, $notas: String, $costoRef: Decimal, $fechaLimit: DateTime, $metrado: Decimal) {
-    addRequerimientoRecurso(requerimiento_id: $requerimientoId, recurso_id: $recursoId, cantidad: $cantidad, cantidad_aprobada: $cantidad_aprobada, notas: $notas, costo_ref: $costoRef, fecha_limit: $fechaLimit, metrado: $metrado) {
+  mutation Mutation($requerimientoId: ID!, $recursoId: ID!, $cantidad: Int!, $cantidad_aprobada: Int, $notas: String, $costoRef: Decimal, $fecha_limit: DateTime, $metrado: Decimal) {
+    addRequerimientoRecurso(requerimiento_id: $requerimientoId, recurso_id: $recursoId, cantidad: $cantidad, cantidad_aprobada: $cantidad_aprobada, notas: $notas, costo_ref: $costoRef, fecha_limit: $fecha_limit, metrado: $metrado) {
     id
     requerimiento_id
     recurso_id
@@ -83,8 +90,9 @@ export const getRequerimientoRecursoByRequerimientoId = async (requerimientoId: 
   }
 };
 
-export const addRequerimientoRecurso = async (data: { requerimiento_id: string; recurso_id: string; cantidad: number; cantidad_aprobada: number; fecha_limit: Date }) => {
+export const addRequerimientoRecurso = async (data: { requerimiento_id: string; recurso_id: string; cantidad: number; cantidad_aprobada: number; fecha_limit: Date, notas: string }) => {
   try {
+    console.log("serviceAddReqRec", data)
     const { data: responseData } = await client.mutate({
       mutation: ADD_REQUERIMIENTO_RECURSO,
       variables: {
@@ -93,6 +101,7 @@ export const addRequerimientoRecurso = async (data: { requerimiento_id: string; 
         cantidad: data.cantidad,
         cantidad_aprobada: data.cantidad,
         fecha_limit: data.fecha_limit,
+        notas: data.notas,
       },
     });
     return responseData.addRequerimientoRecurso;
@@ -108,11 +117,13 @@ export const updateRequerimientoRecurso = async (data: {
   fecha_limit: Date;
 }) => {
   try {
+    console.log("serviceUpdReqRec", data)
     const { data: responseData } = await client.mutate({
       mutation: UPDATE_REQUERIMIENTO_RECURSO,
       variables: {
         updateRequerimientoRecursoId: data.id,
         cantidad_aprobada: data.cantidad_aprobada,
+        cantidad: data.cantidad_aprobada,
         notas: data.notas,
         fecha_limit: data.fecha_limit,
       },

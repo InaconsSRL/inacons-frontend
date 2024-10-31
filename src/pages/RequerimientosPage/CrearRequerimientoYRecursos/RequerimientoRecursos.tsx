@@ -61,8 +61,8 @@ const RequerimientoRecursos: React.FC<RequerimientoRecursosProps> = ({ initialVa
     }
 
     return (
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-2 relative min-h-[calc(100vh-4rem)] ">
-        <div className='col-span-3'>
+      <div className="grid grid-cols-1 lg:grid-cols-4 gap-2 relative min-h-[calc(90vh)] ">
+        <div className='col-span-4'>
         <RequerimientoHeader 
           key={requerimiento_id} // Agregar key para forzar remontaje cuando cambie el ID
           requerimiento={requerimientoData!} 
@@ -71,8 +71,8 @@ const RequerimientoRecursos: React.FC<RequerimientoRecursosProps> = ({ initialVa
         <div className="col-span-2 h-full ">
           <ProductList requerimiento_id={requerimiento_id} fecha_final={requerimientoData ? new Date(requerimientoData.fecha_final) : new Date()} />
         </div>
-        <div className="lg:sticky lg:top-8">
-          <SelectedProducts requerimiento_id={requerimiento_id} />
+        <div className="col-span-2 lg:sticky lg:top-8">
+          <SelectedProducts requerimiento_id={requerimiento_id} fecha_final={requerimientoData ? new Date(requerimientoData.fecha_final) : new Date()} />
         </div>
       </div>
     );

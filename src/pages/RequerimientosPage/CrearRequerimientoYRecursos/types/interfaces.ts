@@ -40,6 +40,7 @@ export interface ProductListProps {
 
 export interface SelectedProductsProps {
   requerimiento_id: string;
+  fecha_final: Date;
 }
 
 export interface ProductCardProps extends Recurso {

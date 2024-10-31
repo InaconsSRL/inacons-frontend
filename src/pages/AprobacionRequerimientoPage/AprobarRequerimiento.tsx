@@ -38,7 +38,7 @@ const AprobarRequerimiento = ({ requerimiento }: AprobarRequerimientoProps) => {
   const dispatch = useDispatch<AppDispatch>();  
   const id = requerimiento.id
   const { requerimientoRecursos, loading } = useSelector((state: RootState) => state.requerimientoRecurso);
-  const { selectedRequerimiento } = useSelector((state: RootState) => state.requerimiento);  
+  const { selectedRequerimiento } = useSelector((state: RootState) => state.requerimiento);
   const [editValues, setEditValues] = useState<EditValues>({} as EditValues);
   const [comentario, setComentario] = useState('');
   const user = useSelector((state: RootState) => state.user);
@@ -144,10 +144,13 @@ const AprobarRequerimiento = ({ requerimiento }: AprobarRequerimientoProps) => {
       console.error('Error al rechazar requerimiento:', error);
     }
   };
+  
+  const newFechaFinal = selectedRequerimiento ? new Date(selectedRequerimiento.fecha_final).toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric', timeZone: 'UTC' }) : '';
 
   if (loading) {
     return <LoaderPage />;
   }
+
 
   return (
     <div className="p-6 max-w-7xl mx-auto bg-white rounded-lg shadow-lg">
@@ -171,7 +174,7 @@ const AprobarRequerimiento = ({ requerimiento }: AprobarRequerimientoProps) => {
           <div className="flex items-center gap-2">
             <label className="text-xs font-medium text-gray-600">F Final:</label>
             <div className="flex items-center gap-1 px-2 py-1 border rounded bg-white text-xs">
-              <span>{requerimiento.deliveryDate}</span>
+              <span>{newFechaFinal}</span>
               <FiCalendar size={14} />
             </div>
           </div>

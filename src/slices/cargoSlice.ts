@@ -6,6 +6,7 @@ interface Cargo {
   id: string;
   nombre: string;
   descripcion: string;
+  gerarquia: number;  
 }
 
 interface CargoState {
@@ -41,7 +42,11 @@ export const fetchCargos = createAsyncThunk(
 
 export const addCargo = createAsyncThunk(
   'cargo/addCargo',
-  async (cargoData: { nombre: string; descripcion: string }, { rejectWithValue }) => {
+  async (cargoData: { 
+    nombre: string; 
+    descripcion: string;
+    gerarquia: number;
+  }, { rejectWithValue }) => {
     try {
       return await addCargoService(cargoData);
     } catch (error) {
@@ -53,7 +58,10 @@ export const addCargo = createAsyncThunk(
 export const updateCargo = createAsyncThunk(
   'cargo/updateCargo',
   async (cargo: Cargo, { rejectWithValue }) => {
+    
+  console.log('updateCargo', cargo);
     try {
+      
       return await updateCargoService(cargo);
     } catch (error) {
       return rejectWithValue(handleError(error));

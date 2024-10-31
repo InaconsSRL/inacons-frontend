@@ -38,6 +38,8 @@ const pageTransition = {
 const RequerimientosComponent: React.FC = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingRequerimiento, setEditingRequerimiento] = useState<Requerimiento | null>(null);
+  const [activeFilter, setActiveFilter] = useState('todos');
+  const userId = useSelector((state: RootState) => state.user.id);
 
   const dispatch = useDispatch<AppDispatch>();
   const { requerimientos, loading, error } = useSelector((state: RootState) => state.requerimiento);
@@ -51,6 +53,31 @@ const RequerimientosComponent: React.FC = () => {
   const handleEdit = (requerimiento: Requerimiento) => {
     setEditingRequerimiento(requerimiento);
     setIsModalOpen(true);
+  };
+
+  const getFilteredRequerimientos = () => {
+    switch (activeFilter) {
+      case 'mis_requerimientos':
+        return requerimientos.filter(req => req.usuario_id === userId);
+      case 'pendientes':
+        return requerimientos.filter(req => 
+          ['pendiente', 'aprobado_supervisor'].includes(req.estado_atencion)
+        );
+      case 'atencion_parcial':
+        return requerimientos.filter(req => 
+          req.estado_atencion === 'aprobado_gerencia'
+        );
+      case 'completados':
+        return requerimientos.filter(req => 
+          ['completado', 'completado_parcial'].includes(req.estado_atencion)
+        );
+      case 'rechazados':
+        return requerimientos.filter(req => 
+          req.estado_atencion.includes('rechazado')
+        );
+      default:
+        return requerimientos;
+    }
   };
 
   if (loading) return <LoaderPage />;
@@ -68,7 +95,7 @@ const RequerimientosComponent: React.FC = () => {
 
   const tableData = {
     headers: ["obra", "fecha emision", "vence", "estado",  "codigo", "descripcion", "solicita",  "opciones"],
-    rows: requerimientos.map(req => ({
+    rows: getFilteredRequerimientos().map(req => ({
       ...req,
       solicita: req.usuario,
       obra: req.codigo.split('-')[1],
@@ -115,6 +142,44 @@ const RequerimientosComponent: React.FC = () => {
             transition={{ delay: 0.8 }}
           >
             <div className="h-full overflow-auto">
+              <div className="mb-4 space-x-2">
+                <button 
+                  className={`px-3 py-1 ${activeFilter === 'mis_requerimientos' ? 'bg-blue-600' : 'bg-blue-500'} text-white rounded-md text-xs hover:bg-blue-600 transition-colors`}
+                  onClick={() => setActiveFilter('mis_requerimientos')}
+                >
+                  Mis requerimientos
+                </button>
+                <button 
+                  className={`px-3 py-1 ${activeFilter === 'pendientes' ? 'bg-gray-600' : 'bg-gray-500'} text-white rounded-md text-xs hover:bg-gray-600 transition-colors`}
+                  onClick={() => setActiveFilter('pendientes')}
+                >
+                  Pendientes de Aprobación
+                </button>
+                <button 
+                  className={`px-3 py-1 ${activeFilter === 'atencion_parcial' ? 'bg-green-600' : 'bg-green-500'} text-white rounded-md text-xs hover:bg-green-600 transition-colors`}
+                  onClick={() => setActiveFilter('atencion_parcial')}
+                >
+                  Atención Parcial
+                </button>
+                <button 
+                  className={`px-3 py-1 ${activeFilter === 'completados' ? 'bg-purple-600' : 'bg-purple-500'} text-white rounded-md text-xs hover:bg-purple-600 transition-colors`}
+                  onClick={() => setActiveFilter('completados')}
+                >
+                  Completados
+                </button>
+                <button 
+                  className={`px-3 py-1 ${activeFilter === 'rechazados' ? 'bg-red-600' : 'bg-red-500'} text-white rounded-md text-xs hover:bg-red-600 transition-colors`}
+                  onClick={() => setActiveFilter('rechazados')}
+                >
+                  Rechazados
+                </button>
+                <button 
+                  className={`px-3 py-1 ${activeFilter === 'todos' ? 'bg-indigo-600' : 'bg-indigo-500'} text-white rounded-md text-xs hover:bg-indigo-600 transition-colors`}
+                  onClick={() => setActiveFilter('todos')}
+                >
+                  Todos
+                </button>
+              </div>
               <TableComponent tableData={tableData} />
             </div>
           </motion.div>

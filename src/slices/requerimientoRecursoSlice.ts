@@ -55,6 +55,7 @@ interface UpdateRequerimientoRecursoData {
   cantidad_aprobada: number;
   notas: string;
   fecha_limit: Date;
+  cantidad: number;
 }
 
 // Interface para los datos de aprobación
@@ -81,9 +82,11 @@ export const addRequerimientoRecurso = createAsyncThunk(
   'requerimientoRecurso/addRequerimientoRecurso',
   async (data: AddRequerimientoRecursoData, { rejectWithValue }) => {
     try {
+      console.log("data enviada creare recurso", data)
       const response = await addRequerimientoRecursoService({
         ...data,
-        fecha_limit: data.fecha_limit ?? new Date()
+        fecha_limit: data.fecha_limit ?? new Date(),
+        notas: data.notas ?? '',
       });
       return response;
     } catch (error) {

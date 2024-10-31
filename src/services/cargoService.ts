@@ -7,26 +7,29 @@ const LIST_CARGOS_QUERY = gql`
       id
       nombre
       descripcion
+      gerarquia
     }
   }
 `;
 
 const ADD_CARGO_MUTATION = gql`
-  mutation AddCargo($nombre: String!, $descripcion: String!) {
-    addCargo(nombre: $nombre, descripcion: $descripcion) {
-      descripcion
-      nombre
+  mutation AddCargo($nombre: String!, $descripcion: String!, $gerarquia: Int) {
+    addCargo(nombre: $nombre, descripcion: $descripcion, gerarquia: $gerarquia) {
       id
+      nombre
+      descripcion
+      gerarquia
     }
   }
 `;
 
 const UPDATE_CARGO_MUTATION = gql`
-  mutation UpdateCargo($updateCargoId: ID!, $nombre: String, $descripcion: String) {
-    updateCargo(id: $updateCargoId, nombre: $nombre, descripcion: $descripcion) {
+  mutation UpdateCargo($id: ID!, $nombre: String, $descripcion: String, $gerarquia: Int) {
+    updateCargo(id: $id, nombre: $nombre, descripcion: $descripcion, gerarquia: $gerarquia) {
       id
       nombre
       descripcion
+      gerarquia
     }
   }
 `;
@@ -65,6 +68,7 @@ export const addCargoService = async (cargoData: { nombre: string; descripcion: 
 
 export const updateCargoService = async (cargo: { id: string; nombre: string; descripcion: string }) => {
   try {
+    console.log("Desde elService", cargo)
     const response = await client.mutate({
       mutation: UPDATE_CARGO_MUTATION,
       variables: cargo,

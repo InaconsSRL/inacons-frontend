@@ -16,6 +16,7 @@ interface Cargo {
   id: string;
   nombre: string;
   descripcion: string;
+  gerarquia: number;
 }
 
 const pageVariants = {
@@ -41,11 +42,11 @@ const CargosComponent: React.FC = () => {
     dispatch(fetchCargos());
   }, [dispatch]);
 
-  const handleSubmit = (data: { nombre: string; descripcion: string }) => {
+  const handleSubmit = (data: { nombre: string; descripcion: string; gerarquia?: number }) => {
     if (editingCargo) {
-      dispatch(updateCargo({ id: editingCargo.id, ...data }));
+      dispatch(updateCargo({ id: editingCargo.id, gerarquia: editingCargo.gerarquia, ...data }));
     } else {
-      dispatch(addCargo(data));
+      dispatch(addCargo({ ...data, gerarquia: data.gerarquia || 1 }));
     }
     setIsModalOpen(false);
     setEditingCargo(null);
@@ -71,9 +72,13 @@ const CargosComponent: React.FC = () => {
 
   const tableData = {
     filter: [true, true, false],
-    headers: ["nombre", "descripcion", "opciones"],
+    headers: ["nombre", "descripcion", "jerarquia", "opciones"],
     rows: cargos.map(cargo => ({
       ...cargo,
+      jerarquia: cargo.gerarquia === 4 ? "Gerencia" :
+                 cargo.gerarquia === 3 ? "Supervisor" :
+                 cargo.gerarquia === 2 ? "Administrativo" :
+                 cargo.gerarquia === 1 ? "Staff" : cargo.gerarquia,
       opciones: (
         <Button text={<FiEdit size={18} className='text-blue-500'/>} color='transp' className='text-black' onClick={() => handleEdit(cargo)}></Button>
       )
