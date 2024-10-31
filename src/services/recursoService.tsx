@@ -1,6 +1,6 @@
 import { gql } from '@apollo/client';
 import client from '../apolloClient';
-
+const GRAPHQL_URI = import.meta.env.VITE_GRAPHQL_URI;
 
 export const LIST_RECURSOS_QUERY = gql`
   query ListRecurso {
@@ -115,6 +115,17 @@ export const DELETE_IMAGEN_RECURSO_MUTATION = gql`
   }
 `;
 
+export const UPLOAD_IMAGEN_RECURSO_MUTATION = gql`
+  mutation UploadImagenRecurso($recursoId: ID!, $files: [Upload!]!) {
+    uploadImagenRecurso(recursoId: $recursoId, files: $files) {
+    id
+    file
+    recurso_id
+    fecha
+    }
+  }
+`;
+
 interface AddRecursoInput {
   codigo: string;
   nombre: string;
@@ -163,6 +174,14 @@ interface ListDataQueryResult {
     id: string;
     nombre: string;
   }>;
+}
+
+interface ImagenRecursoResponse {
+  id: string;
+  file: string;
+  recurso_id: string;
+  fecha: string;
+
 }
 
 export const listRecursosService = async () => {
@@ -242,6 +261,45 @@ export const deleteImagenRecursoService = async (id: string) => {
     return response.data.deleteImagenRecurso;
   } catch (error) {
     console.error('Error al eliminar la imagen del recurso:', error);
+    throw error;
+  }
+};
+
+export const uploadImagenRecursoService = async (recursoId: string, file: File): Promise<ImagenRecursoResponse> => {
+  try {
+    // Crear FormData
+    const formDataForUpload = new FormData();
+    
+    // Añadir la operación GraphQL
+    formDataForUpload.append('operations', JSON.stringify({
+      query: UPLOAD_IMAGEN_RECURSO_MUTATION.loc?.source.body,
+      variables: {
+        recursoId,
+        files: [null]
+      }
+    }));
+
+    // Añadir el map para el archivo
+    formDataForUpload.append('map', JSON.stringify({ "0": ["variables.files.0"] }));
+    
+    // Añadir el archivo
+    formDataForUpload.append('0', file);
+
+    // Hacer la petición directamente al endpoint
+    const response = await fetch(GRAPHQL_URI, {
+      method: 'POST',
+      body: formDataForUpload,
+    });
+
+    const result = await response.json();
+
+    if (result.errors) {
+      throw new Error(result.errors[0]?.message || 'Error desconocido');
+    }
+
+    return result.data.uploadImagenRecurso[0];
+  } catch (error) {
+    console.error('Error al subir la imagen:', error);
     throw error;
   }
 };

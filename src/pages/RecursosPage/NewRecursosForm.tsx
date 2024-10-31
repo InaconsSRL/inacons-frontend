@@ -7,7 +7,7 @@ import Modal from '../../components/Modal/Modal';
 import TableComponent from '../../components/Table/TableComponent';
 import { FiXCircle } from 'react-icons/fi';
 
-import { deleteImagenRecurso } from '../../slices/recursoSlice';
+import { deleteImagenRecurso, uploadImagenRecurso } from '../../slices/recursoSlice';
 
 interface FormData {
   id?: string;
@@ -99,53 +99,28 @@ const ResourceForm: React.FC<ResourceFormProps> = ({ initialValues, onSubmit, op
       console.error('No se puede subir la imagen sin un ID de recurso');
       return;
     }
-
+  
     setUploadingImage(true);
-
-    const compressedImage = await compressImage(file);
-    
-    const formDataForUpload = new FormData();
-    formDataForUpload.append('operations', JSON.stringify({
-      query: `
-        mutation ($recursoId: ID!, $files: [Upload!]!) {
-          uploadImagenRecurso(recursoId: $recursoId, files: $files) {
-            file
-            id
-          }
-        }
-      `,
-      variables: {
-        recursoId: formData.id,
-        files: [null]
-      }
-    }));
-
-    formDataForUpload.append('map', JSON.stringify({ "0": ["variables.files.0"] }));
-    formDataForUpload.append('0', compressedImage);
-
+  
     try {
-      const response = await fetch('https://inacons-30db36fa833f.herokuapp.com/graphql', {
-        method: 'POST',
-        body: formDataForUpload,
-      });
-
-      const result = await response.json();
-
-      if (result.errors) {
-        console.error('Error al subir la imagen:', result.errors);
-        alert('Error al subir la imagen.');
-      } else {
-        alert('Imagen subida exitosamente!');
-        // Actualizar el estado local con la nueva imagen
-        const newImage = result.data.uploadImagenRecurso[0];
-        setFormData(prevData => ({
-          ...prevData,
-          imagenes: Array.isArray(prevData.imagenes) 
-            ? [...prevData.imagenes, { ...newImage, __typename: "ImagenRecurso" }] 
-            : [{ ...newImage, __typename: "ImagenRecurso" }]
-        }));
-        setImagePreviews(prevPreviews => [...prevPreviews, newImage.file]);
-      }
+      const compressedImage = await compressImage(file);
+      
+      const result = await dispatch(uploadImagenRecurso({
+        recursoId: formData.id,
+        file: compressedImage
+      }) as any).unwrap();
+  
+      // Actualizar estado local con la nueva imagen
+      setFormData(prevData => ({
+        ...prevData,
+        imagenes: Array.isArray(prevData.imagenes) 
+          ? [...prevData.imagenes, { id: result.id, file: result.file }]
+          : [{ id: result.id, file: result.file }]
+      }));
+  
+      setImagePreviews(prevPreviews => [...prevPreviews, result.file]);
+      alert('Imagen subida exitosamente!');
+  
     } catch (error) {
       console.error('Error al subir la imagen:', error);
       alert('Error al subir la imagen.');
@@ -258,6 +233,7 @@ const ResourceForm: React.FC<ResourceFormProps> = ({ initialValues, onSubmit, op
   };
 
   const handleDeleteImage = async (imageId: string) => {
+    setUploadingImage(true);
     try {
       await dispatch(deleteImagenRecurso(imageId) as any);
       setFormData(prevData => ({
@@ -272,6 +248,7 @@ const ResourceForm: React.FC<ResourceFormProps> = ({ initialValues, onSubmit, op
       console.error('Error al eliminar la imagen:', error);
       alert('Error al eliminar la imagen');
     }
+    setUploadingImage(false);
   };
 
   const handleSubmit = async (e: React.FormEvent | null, dataToSubmit = formData) => {

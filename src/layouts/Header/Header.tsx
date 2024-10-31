@@ -1,16 +1,23 @@
-import React from 'react';
-import { useSelector } from 'react-redux';
+import React, {useEffect} from 'react';
+import {useDispatch, useSelector } from 'react-redux';
 import { FiBell, FiMenu, FiX } from 'react-icons/fi';
 import logo from '../../assets/logo.svg'
 import avatar from '../../assets/avatar.webp'
-import { RootState } from '../../store/store';
+import { fetchRecursos } from '../../slices/recursoSlice';
+import { RootState, AppDispatch } from '../../store/store';
+
 
 interface HeaderProps {
   toggleSidebar: () => void;
   isSidebarOpen: boolean;
 }
 
-const Header: React.FC<HeaderProps> = ({ toggleSidebar, isSidebarOpen }) => {
+const Header: React.FC<HeaderProps> = ({ toggleSidebar, isSidebarOpen }) => {  
+  const dispatch = useDispatch<AppDispatch>();
+  useEffect(() => {
+    dispatch(fetchRecursos());
+  }, []);
+
   const currentTime = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
   
   const username = useSelector((state: RootState) => state.user);

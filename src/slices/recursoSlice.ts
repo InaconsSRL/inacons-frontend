@@ -1,5 +1,6 @@
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
-import { listRecursosService, addRecursoService, updateRecursoService, listDataService, deleteImagenRecursoService } from '../services/recursoService';
+import { listRecursosService, addRecursoService, updateRecursoService, listDataService, deleteImagenRecursoService, uploadImagenRecursoService } from '../services/recursoService';
+
 
 // Interfaces
 interface Recurso {
@@ -85,6 +86,14 @@ const initialState: RecursoState = {
   error: null,
 };
 
+// Interfaces Upload Image
+interface ImagenRecursoResponse {
+  id: string;
+  file: string;
+  recurso_id: string; 
+  fecha: string;
+}
+
 // Función auxiliar para manejar errores
 const handleError = (error: unknown): string => {
   if (error instanceof Error) return error.message;
@@ -150,6 +159,18 @@ export const deleteImagenRecurso = createAsyncThunk(
   }
 );
 
+export const uploadImagenRecurso = createAsyncThunk(
+  'recurso/uploadImagenRecurso',
+  async ({ recursoId, file }: { recursoId: string, file: File }, { rejectWithValue }) => {
+    try {
+      return await uploadImagenRecursoService(recursoId, file);
+    } catch (error) {
+      return rejectWithValue(handleError(error));
+    }
+  }
+);
+
+
 // Slice
 const recursoSlice = createSlice({
   name: 'recurso',
@@ -191,11 +212,26 @@ const recursoSlice = createSlice({
         }
       })
       .addCase(deleteImagenRecurso.fulfilled, (state, action: PayloadAction<{ id: string, recurso_id: string }>) => {
+        console.log(action.payload);
         const recursoIndex = state.recursos.findIndex(recurso => recurso.id === action.payload.recurso_id);
         if (recursoIndex !== -1) {
           state.recursos[recursoIndex].imagenes = state.recursos[recursoIndex].imagenes.filter(
             imagen => imagen.id !== action.payload.id
           );
+        }
+      })
+      .addCase(uploadImagenRecurso.fulfilled, (state, action: PayloadAction<ImagenRecursoResponse>) => {
+        // Buscar el recurso usando el recurso_id de la respuesta
+        const recurso = state.recursos.find(r => r.id === action.payload.recurso_id);
+        if (recurso) {
+          // Añadir solo id y file a imagenes (para mantener consistencia con la estructura)
+          const newImage = {
+            id: action.payload.id,
+            file: action.payload.file
+          };
+          recurso.imagenes = Array.isArray(recurso.imagenes) 
+            ? [...recurso.imagenes, newImage]
+            : [newImage];
         }
       });
   },
