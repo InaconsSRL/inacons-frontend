@@ -1,12 +1,12 @@
 import React from 'react';
 import { Column } from './types/kanban';
-import KanbanCard from './KanbanCard';
+import KanbanCardLogistica from './KanbanCardLogistica';
 
 interface KanbanColumnProps {
   column: Column;
 }
 
-const KanbanColumn: React.FC<KanbanColumnProps> = ({ column }) => {
+const KanbanColumnLogisticaUno: React.FC<KanbanColumnProps> = ({ column }) => {
     return (
       <div className="flex-shrink-0 w-auto bg-white/10 rounded-lg shadow-lg scale-90 lg:scale-100 max-h-[80vh] ">
         <div className="p-4 bg-gray-50 border-b" style={{ backgroundColor: column.color }}>
@@ -19,11 +19,11 @@ const KanbanColumn: React.FC<KanbanColumnProps> = ({ column }) => {
         </div>
         <div className="p-4 space-y-4 max-h-[calc(80vh-200px)] overflow-y-auto">
           {column.tasks.map((task) => (
-            <KanbanCard key={task.id} task={task} />
+            <KanbanCardLogistica key={task.id} task={task} />
           ))}
         </div>
       </div>
     );
   };
 
-export default KanbanColumn;
+export default KanbanColumnLogisticaUno;

@@ -128,7 +128,7 @@ const RequerimientosComponent: React.FC = () => {
             className='text-blue-500'
             onClick={() => handleEdit(req)}
           >
-          <FiEdit />
+            <FiEdit />
           </button>
           {viewButton}
         </div>
@@ -254,6 +254,7 @@ const RequerimientosComponent: React.FC = () => {
                   fecha_final: '',
                   codigo: ''
                 }}
+                onClose={handleCloseModal}
               />
             </motion.div>
           </Modal>

@@ -22,26 +22,13 @@ interface InitialValues {
 
 interface RequerimientoRecursosProps {
   initialValues?: InitialValues;
+  onClose: () => void;
 }
 
-const RequerimientoRecursos: React.FC<RequerimientoRecursosProps> = ({ initialValues }) => {
+const RequerimientoRecursos: React.FC<RequerimientoRecursosProps> = ({ initialValues, onClose }) => {
   const [requerimiento_id, setRequerimiento_id] = useState<string | null>(null);
   const [requerimientoData, setRequerimientoData] = useState<InitialValues | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [guardado, setGuardado] = useState(false);
-
-  const emptyInitialValues: InitialValues = {
-    codigo: "",
-    estado_atencion: "",
-    fecha_final: "",
-    fecha_solicitud: "",
-    id: "",
-    obra_id: "",
-    presupuesto_id: null,
-    sustento: "",
-    usuario: "",
-    usuario_id: ""
-  };
 
   const memoizedInitialId = useMemo(() => initialValues?.id, [initialValues]);
   const obras = useSelector((state: RootState) => state.obra);
@@ -60,14 +47,6 @@ const RequerimientoRecursos: React.FC<RequerimientoRecursosProps> = ({ initialVa
 
     return () => clearTimeout(timer);
   }, [memoizedInitialId, requerimiento_id, initialValues]);
-
-  useEffect(() => {
-    if (guardado) {
-      setRequerimiento_id(null);
-      setRequerimientoData(emptyInitialValues);
-      setGuardado(false);
-    }
-  }, [guardado]);
 
   if (isLoading) {
     return <LoaderPage />;
@@ -90,7 +69,7 @@ const RequerimientoRecursos: React.FC<RequerimientoRecursosProps> = ({ initialVa
             key={requerimiento_id}
             requerimiento={requerimientoData!} 
             obras={obras}
-            setGuardado={setGuardado}
+            onClose={onClose}
           />
         </div>
         <div className="col-span-2 h-full ">

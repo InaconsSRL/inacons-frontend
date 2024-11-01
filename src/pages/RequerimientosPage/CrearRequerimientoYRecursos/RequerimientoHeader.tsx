@@ -1,6 +1,7 @@
 // DetalleRequerimiento.tsx
 import React, { useState, useCallback, memo } from 'react';
 import { useDispatch } from 'react-redux';
+import { useNavigate } from 'react-router-dom';
 import { AppDispatch } from '../../../store/store';
 import { updateRequerimiento } from '../../../slices/requerimientoSlice';
 import Button from '../../../components/Buttons/Button';
@@ -23,7 +24,7 @@ interface DetalleRequerimientoProps {
   obras: {
     obras: { id: string; nombre: string }[];
   };
-  setGuardado: (value: boolean) => void;
+  onClose: () => void;
 }
 
 // Interfaz para el estado del formulario
@@ -51,9 +52,10 @@ interface ReadOnlyViewProps {
   obras: { obras: { id: string; nombre: string }[] };
   onEdit: () => void;
   onSubmit: () => void;  // Nueva prop
+  onSave: () => void;  // Nueva prop
 }
 
-const ReadOnlyView = memo(({ formData, requerimiento, obras, onEdit, onSubmit }: ReadOnlyViewProps) => (
+const ReadOnlyView = memo(({ formData, requerimiento, obras, onEdit, onSave, onSubmit }: ReadOnlyViewProps) => (
   <div className="grid grid-cols-4 gap-1 bg-white/50 p-2 rounded-lg">
     <div>
       <span className="block text-xs text-gray-700">Código:</span>
@@ -94,8 +96,15 @@ const ReadOnlyView = memo(({ formData, requerimiento, obras, onEdit, onSubmit }:
       </button>
       <button
         type="button"
-        onClick={onSubmit}
+        onClick={onSave}
         className="w-full bg-green-500 text-white rounded text-xs p-2"
+      >
+        Guardar
+      </button>
+      <button
+        type="button"
+        onClick={onSubmit}
+        className="w-full bg-yellow-500 text-white rounded text-xs p-2"
       >
         Enviar
       </button>
@@ -113,7 +122,7 @@ interface EditViewProps {
 }
 
 const EditView = memo(({ formData, handleInputChange, handleSubmit, setIsEditing, requerimiento, obras }: EditViewProps) => (
-  <form onSubmit={handleSubmit} className="grid grid-cols-4 gap-1">
+  <form onSubmit={handleSubmit} className="grid grid-cols-4 gap-1 bg-white/50 p-2 rounded-lg">
     <div>
       <span className="block text-xs text-gray-700">Código:</span>
       <p className="text-xs border rounded p-1">{formData.codigo || '-'}</p>
@@ -178,9 +187,9 @@ const EditView = memo(({ formData, handleInputChange, handleSubmit, setIsEditing
     </div>
   </form>
 ));
-
-const RequerimientoHeader: React.FC<DetalleRequerimientoProps> = memo(({ requerimiento, obras, setGuardado }) => {
+const RequerimientoHeader: React.FC<DetalleRequerimientoProps> = memo(({ requerimiento, obras, onClose }) => {
   const dispatch = useDispatch<AppDispatch>();
+  const navigate = useNavigate();
   const [isEditing, setIsEditing] = useState(false);
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState<FormData>(() => ({
@@ -229,7 +238,8 @@ const RequerimientoHeader: React.FC<DetalleRequerimientoProps> = memo(({ requeri
       })).unwrap();
 
       setLoading(false);
-      setGuardado(true);
+      onClose();
+      navigate('/dashboard/requerimiento');
 
     } catch (error) {
       console.error('Error al enviar:', error);
@@ -237,12 +247,17 @@ const RequerimientoHeader: React.FC<DetalleRequerimientoProps> = memo(({ requeri
     }
   }, [dispatch, formData, requerimiento.id]);
 
+  const handleSubmitSave = useCallback((): void => {
+    navigate('/dashboard/requerimiento');
+    onClose();
+  }, [navigate]);
+
   if (loading) {
     return <LoaderPage />;
   }
 
   return (
-    <div className="w-full">
+    <div className="w-full ">
       {isEditing ? (
         <EditView 
           formData={formData}
@@ -259,6 +274,7 @@ const RequerimientoHeader: React.FC<DetalleRequerimientoProps> = memo(({ requeri
           obras={obras}
           onEdit={() => setIsEditing(true)}
           onSubmit={handleSubmitRequerimiento}
+          onSave={handleSubmitSave}
         />
       )}
     </div>

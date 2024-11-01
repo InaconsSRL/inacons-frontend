@@ -52,10 +52,10 @@ interface AddRequerimientoRecursoData {
 //interfaz para los datos de actualización
 interface UpdateRequerimientoRecursoData {
   id: string;
-  cantidad_aprobada: number;
-  notas: string;
-  fecha_limit: Date;
-  cantidad: number;
+  cantidad_aprobada?: number;
+  notas?: string;
+  fecha_limit?: Date;
+  cantidad?: number;
 }
 
 // Interface para los datos de aprobación

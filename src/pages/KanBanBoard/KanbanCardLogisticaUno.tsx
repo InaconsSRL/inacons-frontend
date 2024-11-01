@@ -1,13 +1,13 @@
 import React, {useState} from 'react';
 import { Task } from './types/kanban';
+import AprobarRequerimiento from '../AprobacionRequerimientoPage/AprobarRequerimiento';
 import Modal from '../../components/Modal/Modal';
-import AprobacionTransferenciaPage from '../AprobacionTransferenciaPage/AprobacionTransferenciaPage';
 
 interface KanbanCardProps {
   task: Task;
 }
 
-const KanbanCardLogistica: React.FC<KanbanCardProps> = ({ task }) => {
+const KanbanCardLogisticaUno: React.FC<KanbanCardProps> = ({ task }) => {
   
   const [modalAprobacionReqSup, setModalAprobacionReqSup] = useState(false);
 
@@ -50,10 +50,10 @@ const KanbanCardLogistica: React.FC<KanbanCardProps> = ({ task }) => {
           onClose={() => setModalAprobacionReqSup(false)}
           title="Aprobar Requerimiento"
         >
-          <AprobacionTransferenciaPage />
+          <AprobarRequerimiento requerimiento={task} />
         </Modal>
       </div>
     );
   };
 
-export default KanbanCardLogistica;
+export default KanbanCardLogisticaUno;
