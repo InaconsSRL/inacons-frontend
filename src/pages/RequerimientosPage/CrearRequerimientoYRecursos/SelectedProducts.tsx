@@ -6,8 +6,6 @@ import { fetchRequerimientoRecursos, deleteRequerimientoRecurso, updateRequerimi
 import LoaderPage from '../../../components/Loader/LoaderPage';
 import { FiCheckSquare, FiEdit2, FiX } from 'react-icons/fi';
 
-
-
 export const SelectedProducts: React.FC<SelectedProductsProps> = ({ requerimiento_id, fecha_final }) => {
   const dispatch = useDispatch<AppDispatch>();
   const { requerimientoRecursos, loading } = useSelector((state: RootState) => state.requerimientoRecurso);

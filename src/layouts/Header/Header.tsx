@@ -5,6 +5,7 @@ import logo from '../../assets/logo.svg'
 import avatar from '../../assets/avatar.webp'
 import { fetchRecursos } from '../../slices/recursoSlice';
 import { RootState, AppDispatch } from '../../store/store';
+import { fetchObras } from '../../slices/obrasSlice';
 
 
 interface HeaderProps {
@@ -16,6 +17,7 @@ const Header: React.FC<HeaderProps> = ({ toggleSidebar, isSidebarOpen }) => {
   const dispatch = useDispatch<AppDispatch>();
   useEffect(() => {
     dispatch(fetchRecursos());
+    dispatch(fetchObras());
   }, []);
 
   const currentTime = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });

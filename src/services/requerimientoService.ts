@@ -19,8 +19,8 @@ const LIST_REQUERIMIENTOS_QUERY = gql`
 `;
 
 const ADD_REQUERIMIENTO_MUTATION = gql`
-  mutation AddRequerimiento($usuario_id: String!, $fecha_final: DateTime, $presupuesto_id: String, $sustento: String, $obra_id: String) {
-  addRequerimiento(usuario_id: $usuario_id, fecha_final: $fecha_final, presupuesto_id: $presupuesto_id, sustento: $sustento, obra_id: $obra_id) {
+  mutation AddRequerimiento($usuario_id: String!, $fecha_final: DateTime, $presupuesto_id: String, $sustento: String, $obra_id: String, $estado_atencion: String) {
+  addRequerimiento(usuario_id: $usuario_id, fecha_final: $fecha_final, presupuesto_id: $presupuesto_id, sustento: $sustento, obra_id: $obra_id, estado_atencion: $estado_atencion) {
     id
     codigo
     usuario_id
@@ -36,8 +36,8 @@ const ADD_REQUERIMIENTO_MUTATION = gql`
 `;
 
 const UPDATE_REQUERIMIENTO_MUTATION = gql`
-  mutation UpdateRequerimiento($updateRequerimientoId: ID!, $presupuesto_id: String, $fecha_final: DateTime, $sustento: String, $obra_id: String) {
-  updateRequerimiento(id: $updateRequerimientoId, presupuesto_id: $presupuesto_id, fecha_final: $fecha_final, sustento: $sustento, obra_id: $obra_id) {
+  mutation UpdateRequerimiento($updateRequerimientoId: ID!, $presupuesto_id: String, $fecha_final: DateTime, $sustento: String, $obra_id: String, $estado_atencion: String) {
+  updateRequerimiento(id: $updateRequerimientoId, presupuesto_id: $presupuesto_id, fecha_final: $fecha_final, sustento: $sustento, obra_id: $obra_id, estado_atencion: $estado_atencion) {
     id
     codigo
     usuario_id

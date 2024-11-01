@@ -30,7 +30,7 @@ export interface RequerimientoFormData {
   obra_id: string;
   fecha_final: Date;
   sustento: string;
-  
+  estado_atencion: string;
 }
 
 export interface ProductListProps {

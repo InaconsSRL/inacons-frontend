@@ -18,6 +18,7 @@ export const RequerimientoForm: React.FC<RequerimientoFormProps> = ({ onRequerim
     obra_id: '',
     fecha_final: new Date(),
     sustento: '',
+    estado_atencion: 'Pendiente de envio',
   });
 
   useEffect(() => {

@@ -47,7 +47,7 @@ export const fetchRequerimientos = createAsyncThunk(
 
 export const addRequerimiento = createAsyncThunk(
     'requerimiento/addRequerimiento',
-    async (requerimientoData: { usuario_id: string; obra_id: string; fecha_final: Date; sustento: string }, { rejectWithValue }) => {
+    async (requerimientoData: { usuario_id: string; obra_id: string; fecha_final: Date; sustento: string, estado_atencion: string}, { rejectWithValue }) => {
       try {
         return await addRequerimientoService(requerimientoData);
       } catch (error) {
