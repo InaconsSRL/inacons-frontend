@@ -10,8 +10,8 @@ interface RecursoInput {
   cantidad: number;
   unidad_id: string;
   precio_actual: number;
-  presupuesto: boolean;
   tipo_recurso_id: string;
+  tipo_costo_recurso_id: string;
   clasificacion_recurso_id: string;
 }
 
@@ -64,6 +64,35 @@ const BulkUploadComponent: React.FC = () => {
     return date.toISOString().split('T')[0];
   };
 
+  // Función auxiliar para dividir array en lotes
+  const chunkArray = (array: RecursoInput[], size: number): RecursoInput[][] => {
+    return Array.from({ length: Math.ceil(array.length / size) }, (_, i) =>
+      array.slice(i * size, i * size + size)
+    );
+  };
+
+  // Función para procesar un lote individual
+  const processBatch = async (
+    batch: RecursoInput[],
+    mutation: string
+  ): Promise<BulkCreateResponse> => {
+    const response = await fetch('https://inacons-30db36fa833f.herokuapp.com/graphql', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        query: mutation,
+        variables: {
+          recursos: batch,
+        },
+      }),
+    });
+
+    const result = await response.json();
+    return result.data.bulkCreateRecursos;
+  };
+
   const handleUpload = async () => {
     if (!file) {
       setMessage('Por favor, selecciona un archivo.');
@@ -94,12 +123,13 @@ const BulkUploadComponent: React.FC = () => {
           cantidad: Number(item['cantidad']),
           unidad_id: String(item['unidad_id']),
           precio_actual: Number(item['precio_actual']),
-          presupuesto: item['presupuesto'] === 'true' || item['presupuesto'] === true,
           tipo_recurso_id: String(item['tipo_recurso_id']),
+          tipo_costo_recurso_id: String(item['tipo_costo_recurso_id']),
           clasificacion_recurso_id: String(item['clasificacion_recurso_id']),
         };
       });
 
+      const batches = chunkArray(recursos, 30);
       const mutation = `
         mutation BulkCreateRecursos($recursos: [RecursoInput!]!) {
           bulkCreateRecursos(recursos: $recursos) {
@@ -111,27 +141,29 @@ const BulkUploadComponent: React.FC = () => {
         }
       `;
 
-      const response = await fetch('https://inacons-30db36fa833f.herokuapp.com/graphql', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          query: mutation,
-          variables: {
-            recursos,
-          },
-        }),
-      });
+      let totalCreated = 0;
+      let totalErrors: string[] = [];
 
-      const result: { data: { bulkCreateRecursos: BulkCreateResponse } } = await response.json();
+      for (let i = 0; i < batches.length; i++) {
+        const result = await processBatch(batches[i], mutation);
+        
+        if (result.success) {
+          totalCreated += result.createdCount;
+        } else {
+          totalErrors = [...totalErrors, ...result.errors];
+        }
 
-      if (result.data.bulkCreateRecursos.success) {
-        setMessage(`Datos cargados exitosamente. ${result.data.bulkCreateRecursos.createdCount} recursos creados.`);
-      } else {
-        setMessage('Error al cargar datos: ' + result.data.bulkCreateRecursos.message);
+        // Actualizar el progreso
+        const progress = Math.round(((i + 1) / batches.length) * 100);
+        setProgress(progress);
       }
-      setProgress(100);
+
+      if (totalErrors.length === 0) {
+        setMessage(`Datos cargados exitosamente. ${totalCreated} recursos creados.`);
+      } else {
+        setMessage(`Carga parcial. ${totalCreated} recursos creados. ${totalErrors.length} errores encontrados.`);
+      }
+
     } catch (error) {
       console.error(error);
       setMessage('Ocurrió un error: ' + (error instanceof Error ? error.message : String(error)));

@@ -205,35 +205,35 @@ const RecursosPage: React.FC = () => {
     };
 
     return {
-      filter: [true, true, true, true, true, true, true, true, true,true, true, false, false],
-      headers: ["fecha", "vigente", "codigo", "nombre", "descripcion", "cantidad", "unidad_id", "precio_actual", "tipo_recurso_id", "tipo_costo_recurso_id","clasificacion_recurso_id",  "imagenes", "opcion"],
+      filter: [true, true, true, true, true, true, true, true, true, true, true, false, false],
+      headers: ["fecha", "vigente", "codigo", "nombre", "descripcion", "cantidad", "unidad_id", "precio_actual", "tipo_recurso_id", "tipo_costo_recurso_id", "clasificacion_recurso_id", "imagenes", "opcion"],
       rows: recursos.map((recurso: any) => ({
-        ...recurso,
-        fecha: new Date(recurso.fecha).toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric' }) === 'Invalid Date' ? new Date().toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric' }) : new Date(recurso.fecha).toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric' }),
-        unidad_id: getNameById(listData.listUnidad, recurso.unidad_id),
-        tipo_recurso_id: getNameById(listData.listTipoRecurso, recurso.tipo_recurso_id),
-        tipo_costo_recurso_id: getNameById(listData.listTipoCostoRecurso, recurso.tipo_costo_recurso_id),
-        clasificacion_recurso_id: getClasificacionNombre(recurso.clasificacion_recurso_id),
-        imagenes: recurso.imagenes && recurso.imagenes.length > 0 ? (
-          <div className="flex items-center cursor-pointer" onClick={() => handleOpenCarousel(recurso.imagenes)}>
-            <img
-              src={recurso.imagenes[0].file}
-              alt={recurso.nombre}
-              className="object-cover w-8 h-8"
-            />
-            {recurso.imagenes.length > 1 && (
-              <span className="ml-2 text-sm text-gray-400 underline"
-              >
-                +{recurso.imagenes.length - 1} más
-              </span>
-            )}
-          </div>
-        ) : 'Sin imagen',
-        opcion: (
-          <>
-            <Button icon={<FiEdit />} text="" color='transp' className='text-blue-500' onClick={() => handleEditNewRecursos(recurso)}></Button>
-          </>
-        )
+      ...recurso,
+      fecha: new Date(recurso.fecha).toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric' }) === 'Invalid Date' ? new Date().toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric' }) : recurso.fecha.slice(0,10).split('-').reverse().join('/'),
+      unidad_id: getNameById(listData.listUnidad, recurso.unidad_id),
+      tipo_recurso_id: getNameById(listData.listTipoRecurso, recurso.tipo_recurso_id),
+      tipo_costo_recurso_id: getNameById(listData.listTipoCostoRecurso, recurso.tipo_costo_recurso_id),
+      clasificacion_recurso_id: getClasificacionNombre(recurso.clasificacion_recurso_id),
+      vigente: recurso.vigente ? 'Si' : 'No',
+      imagenes: recurso.imagenes && recurso.imagenes.length > 0 ? (
+        <div className="flex items-center cursor-pointer" onClick={() => handleOpenCarousel(recurso.imagenes)}>
+        <img
+          src={recurso.imagenes[0].file}
+          alt={recurso.nombre}
+          className="object-cover w-8 h-8"
+        />
+        {recurso.imagenes.length > 1 && (
+          <span className="ml-2 text-sm text-gray-400 underline">
+          +{recurso.imagenes.length - 1} más
+          </span>
+        )}
+        </div>
+      ) : 'Sin imagen',
+      opcion: (
+        <>
+        <Button icon={<FiEdit />} text="" color='transp' className='text-blue-500' onClick={() => handleEditNewRecursos(recurso)}></Button>
+        </>
+      )
       }))
     };
   }, [recursos, listData]);

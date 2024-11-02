@@ -110,7 +110,7 @@ const ClasificacionRecursoComponent: React.FC = () => {
 
   const tableData = {
     filter: [true, false],
-    headers: ["nombre", "opciones"],
+    headers: ["nombre", "opciones", "id"],
     rows: homogenizedClasificaciones.map(clasificacion => ({
       ...clasificacion,
       opciones: (
