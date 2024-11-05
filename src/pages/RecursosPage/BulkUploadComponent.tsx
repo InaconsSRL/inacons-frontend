@@ -76,7 +76,7 @@ const BulkUploadComponent: React.FC = () => {
     batch: RecursoInput[],
     mutation: string
   ): Promise<BulkCreateResponse> => {
-    const response = await fetch('https://inacons-30db36fa833f.herokuapp.com/graphql', {
+    const response = await fetch('https://inacons-30db36fa833fs.herokuapp.com/graphql', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

@@ -17,6 +17,7 @@ const GET_REQUERIMIENTO_RECURSO_BY_REQUERIMIENTO_ID = gql`
     metrado
     fecha_limit
     presupuestado
+    unidad
   }
 }
 `;
@@ -53,6 +54,7 @@ const ADD_REQUERIMIENTO_RECURSO = gql`
     nombre
     notas
     cantidad_aprobada
+    unidad
     }
   }
 `;

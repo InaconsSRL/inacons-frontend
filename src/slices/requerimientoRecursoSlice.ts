@@ -23,6 +23,7 @@ interface RequerimientoRecurso {
   metrado?: number;
   fecha_limit?: Date;
   presupuestado: boolean;
+  unidad: string;
 }
 
 interface RequerimientoRecursoState {
@@ -99,7 +100,12 @@ export const updateRequerimientoRecurso = createAsyncThunk(
   'requerimientoRecurso/updateRequerimientoRecurso',
   async (data: UpdateRequerimientoRecursoData, { rejectWithValue }) => {
     try {
-      const response = await updateRequerimientoRecursoService(data);
+      const response = await updateRequerimientoRecursoService({
+        id: data.id,
+        cantidad_aprobada: data.cantidad_aprobada ?? 0,
+        notas: data.notas ?? '',
+        fecha_limit: data.fecha_limit ?? new Date(),
+      });
       return response;
     } catch (error) {
       return rejectWithValue((error as Error).message);

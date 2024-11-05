@@ -248,9 +248,8 @@ const AprobarRequerimientoGerencia = ({ requerimiento }: AprobarRequerimientoPro
               >
                 <td className="px-2 py-2">{recurso.codigo}</td>
                 <td className="px-2 py-2">{recurso.nombre}</td>
-                {/* <td className="px-2 py-2">{recurso.unidad}</td> */}
-                <td className="px-2 py-2">UNID</td>
-                <td className="px-2 py-2">UNID</td>
+                <td className="px-2 py-2">{recurso.unidad}</td>
+                <td className="px-2 py-2">{recurso.unidad}</td>
                 <td className="px-2 py-2">{recurso.cantidad_aprobada ?? "-"}</td>
                 <td className="px-2 py-2"><span className="px-2 py-1 bg-yellow-100 text-yellow-800 rounded">{recurso.estado}</span></td>
                 <td className="px-2 py-2">{recurso.costo_ref ?? "-"}</td>

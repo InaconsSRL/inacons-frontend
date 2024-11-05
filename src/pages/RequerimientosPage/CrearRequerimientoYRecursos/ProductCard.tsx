@@ -5,8 +5,6 @@ import { addRequerimientoRecurso } from '../../../slices/requerimientoRecursoSli
 import { Recurso } from './types/interfaces';
 import defaultImage from '../../../assets/NoImage.webp';
 
-//const defaultImage = "https://www.shutterstock.com/image-vector/default-image-icon-vector-missing-260nw-2086941550.jpg";
-
 export const ProductCard: React.FC<Recurso> = ({
   id,
   codigo,

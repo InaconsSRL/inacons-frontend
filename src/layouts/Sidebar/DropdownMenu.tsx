@@ -17,7 +17,7 @@ interface DropdownMenuProps {
 }
 
 const DropdownMenu: React.FC<DropdownMenuProps> = ({ title, items, isSidebarOpen, toggleSidebar }) => {
-  const [isOpen, setIsOpen] = useState(true);
+  const [isOpen, setIsOpen] = useState(false);
   const location = useLocation();
 
   const toggleMenu = () => setIsOpen(!isOpen);

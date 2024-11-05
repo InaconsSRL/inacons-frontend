@@ -19,7 +19,7 @@ export const SelectedProducts: React.FC<SelectedProductsProps> = ({ requerimient
       console.log(error);
     }
   };
-
+  
   const handleEdit = (recurso: any) => {
     setEditingId(recurso.id);
     setEditValues({
@@ -47,12 +47,12 @@ export const SelectedProducts: React.FC<SelectedProductsProps> = ({ requerimient
     if (requerimiento_id) dispatch(fetchRequerimientoRecursos(requerimiento_id));
   }, []);
 
+  console.log(requerimientoRecursos)
+
   if (loading) {
-    return <LoaderPage />;
-    
+    return <LoaderPage />;    
   }
-
-
+  
   return (
     <div className="bg-white shadow-md rounded-lg p-3 sticky top-8">
       <h2 className="text-sm font-semibold mb-3 text-[#1a73e8]">Productos Seleccionados</h2>
@@ -81,7 +81,7 @@ export const SelectedProducts: React.FC<SelectedProductsProps> = ({ requerimient
                     <tr key={recurso.id} className="border-t hover:bg-[#f8f9fa] transition-colors">
                       <td className="px-1 text-[8px]">{recurso.codigo}</td>
                       <td className="px-1 text-[8px]">{recurso.nombre}</td>
-                      <td className="px-1 text-[8px]">{recurso.unidad_id}</td>
+                      <td className="px-1 text-[8px]">{recurso.unidad}</td>
                       <td className="px-1 text-[8px] text-right">
                         {editingId === recurso.id ? (
                           <input

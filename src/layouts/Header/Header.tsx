@@ -6,6 +6,7 @@ import avatar from '../../assets/avatar.webp'
 import { fetchRecursos } from '../../slices/recursoSlice';
 import { RootState, AppDispatch } from '../../store/store';
 import { fetchObras } from '../../slices/obrasSlice';
+import { fetchUnidades } from '../../slices/unidadSlice';
 
 
 interface HeaderProps {
@@ -18,6 +19,7 @@ const Header: React.FC<HeaderProps> = ({ toggleSidebar, isSidebarOpen }) => {
   useEffect(() => {
     dispatch(fetchRecursos());
     dispatch(fetchObras());
+    dispatch(fetchUnidades());
   }, []);
 
   const currentTime = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });

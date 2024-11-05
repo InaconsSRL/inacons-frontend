@@ -16,7 +16,7 @@ export const RequerimientoForm: React.FC<RequerimientoFormProps> = ({ onRequerim
   const [formData, setFormData] = useState<RequerimientoFormData>({
     usuario_id: user?.id || '',
     obra_id: '',
-    fecha_final: new Date(),
+    fecha_final: new Date(new Date().setDate(new Date().getDate() + 4)),
     sustento: '',
     estado_atencion: 'Pendiente de envio',
   });
@@ -70,7 +70,7 @@ export const RequerimientoForm: React.FC<RequerimientoFormProps> = ({ onRequerim
         <div>
           <label className="block text-sm font-medium text-gray-700">Sustento</label>
           <textarea
-            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+            className="mt-1 pl-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
             value={formData.sustento}
             onChange={(e) => setFormData({ ...formData, sustento: e.target.value })}
             required

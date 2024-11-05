@@ -77,13 +77,29 @@ const ReadOnlyView = memo(({ formData, requerimiento, obras, onEdit, onSave, onS
     <div>
       <span className="block text-xs text-gray-700">Fecha Final:</span>
       <p className="text-sm border-b p-1">
-          {formatDateForInput(formData.fecha_final).split("-").reverse().join("-") || '-'}
+        {formatDateForInput(formData.fecha_final).split("-").reverse().join("-") || '-'}
       </p>
     </div>
 
-    <div className="col-span-3">
+    <div className="col-span-1">
       <span className="block text-xs text-gray-700">Sustento:</span>
       <p className="text-sm border-b p-1">{formData.sustento || '-'}</p>
+    </div>
+
+    <div className="col-span-1">
+      <span className="block text-xs text-gray-700">Elige al Supervisor:</span>
+      <select className="w-full border rounded text-xs p-1">
+        <option value="alejandro">Alejandro Guevara Martinez</option>
+        <option value="wilfredo">Wilfredo Requiz Condor</option>
+      </select>
+    </div>
+
+    <div className="col-span-1">
+      <span className="block text-xs text-gray-700">Elige al Gerente:</span>
+      <select className="w-full border rounded text-xs p-1">
+        <option value="alejandro">Henry Godiño Calisaya</option>
+        <option value="wilfredo">Yoali Godiño Calisaya</option>
+      </select>
     </div>
 
     <div className="flex items-end gap-2">
@@ -131,7 +147,7 @@ const EditView = memo(({ formData, handleInputChange, handleSubmit, setIsEditing
     <div>
       <label className="block text-xs text-gray-700">Usuario:</label>
       <p className="w-full border rounded text-xs p-1">
-      {requerimiento.usuario}
+        {requerimiento.usuario}
       </p>
     </div>
 
@@ -160,7 +176,7 @@ const EditView = memo(({ formData, handleInputChange, handleSubmit, setIsEditing
         className="w-full border rounded text-xs p-1"
       />
     </div>
-        
+
     <div className="col-span-3">
       <label className="block text-xs text-gray-700">Sustento:</label>
       <textarea
@@ -218,7 +234,7 @@ const RequerimientoHeader: React.FC<DetalleRequerimientoProps> = memo(({ requeri
         fecha_final: new Date(formData.fecha_final),
         estado_atencion: requerimiento.estado_atencion || 'pendiente'
       })).unwrap();
-      setFormData(prev => ({...prev, codigo: response.codigo}));
+      setFormData(prev => ({ ...prev, codigo: response.codigo }));
       setIsEditing(false);
     } catch (error) {
       console.error('Error al actualizar:', error);
@@ -259,7 +275,7 @@ const RequerimientoHeader: React.FC<DetalleRequerimientoProps> = memo(({ requeri
   return (
     <div className="w-full ">
       {isEditing ? (
-        <EditView 
+        <EditView
           formData={formData}
           handleInputChange={handleInputChange}
           handleSubmit={handleSubmit}
@@ -268,7 +284,7 @@ const RequerimientoHeader: React.FC<DetalleRequerimientoProps> = memo(({ requeri
           obras={obras}
         />
       ) : (
-        <ReadOnlyView 
+        <ReadOnlyView
           formData={formData}
           requerimiento={requerimiento}
           obras={obras}

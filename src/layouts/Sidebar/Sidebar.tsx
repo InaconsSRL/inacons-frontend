@@ -34,6 +34,10 @@ const Sidebar: React.FC<SidebarProps> = ({ isSidebarOpen, toggleSidebar }) => {
     { to: "/dashboard/tipoCostoRecurso", icon: FiType, text: "Tipo de Costo" },
   ];
 
+  const moduloAlmacen = [
+    { to: "/dashboard/almacen", icon: FiBriefcase, text: "Almacen" },
+  ];
+
   const otroModuloItems = [
     { to: "/dashboard/requerimiento", icon: FiBriefcase, text: "Requerimiento" },
     { to: "/dashboard/reqRecursos", icon: FiPackage, text: "GenerarRequerimiento" },
@@ -72,13 +76,13 @@ const Sidebar: React.FC<SidebarProps> = ({ isSidebarOpen, toggleSidebar }) => {
   };
 
   return (
-    <div 
+    <div
       className={`bg-black/50 backdrop-blur-lg transition-all duration-500 ease-in-out select-none ${isSidebarOpen || (!isMobile && isHovered) ? 'w-full md:w-64 lg:w-64' : 'w-0 md:w-0 lg:w-16 hidden lg:block'}`}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
     >
       <nav className="flex flex-col items-start p-4 h-full overflow-y-auto">
-        
+
         <NavLink
           to="/dashboard"
           className={`flex items-center select-none ${isSidebarOpen || (!isMobile && isHovered) ? 'space-x-4 w-full mb-4' : 'justify-center mb-4'}  ${location.pathname === '/dashboard' ? activeStyle : ''}`}
@@ -104,6 +108,13 @@ const Sidebar: React.FC<SidebarProps> = ({ isSidebarOpen, toggleSidebar }) => {
         <DropdownMenu
           title="Administración"
           items={moduloAdministracionItems}
+          isSidebarOpen={isSidebarOpen || (!isMobile && isHovered)}
+          toggleSidebar={toggleSidebar}
+        />
+
+        <DropdownMenu
+          title="Almacen"
+          items={moduloAlmacen}
           isSidebarOpen={isSidebarOpen || (!isMobile && isHovered)}
           toggleSidebar={toggleSidebar}
         />

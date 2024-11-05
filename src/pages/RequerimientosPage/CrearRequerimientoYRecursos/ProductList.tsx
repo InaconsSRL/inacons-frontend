@@ -14,35 +14,45 @@ export const ProductList: React.FC<ProductListProps> = ({ requerimiento_id, fech
   const { obras, loading: loadingObras } = useSelector((state: RootState) => state.obra);
   const { requerimientoRecursos } = useSelector((state: RootState) => state.requerimientoRecurso);
   
-  const [searchTerm, setSearchTerm] = useState('');
-  const [filteredRecursos, setFilteredRecursos] = useState(recursos);
+  const [searchInput, setSearchInput] = useState('');
+  const [displayedRecursos, setDisplayedRecursos] = useState<typeof recursos>([]);
+  const [showAll] = useState(false);
 
+  // Cargar recursos y obras iniciales
   useEffect(() => {
     if (recursos.length === 0) dispatch(fetchRecursos());
     if (obras.length === 0) dispatch(fetchObras());
   }, [dispatch]);
 
-  // Filtrar recursos que ya están seleccionados y aplicar búsqueda
   useEffect(() => {
-    const selectedRecursosIds = requerimientoRecursos.map(rr => rr.recurso_id);
+    handleSearch();
+  }, [requerimientoRecursos]);
 
-    const filtered = recursos.filter(recurso => {
-      // Verificar que recurso no sea null o undefined
-      if (!recurso) return false;
+  // Función de búsqueda
+  const handleSearch = () => {
+    const selectedIds = requerimientoRecursos.map(rr => rr.recurso_id);
+    
+    // Si no hay término de búsqueda y no se quiere mostrar todo, limpiar resultados
+    if (!searchInput.trim() && !showAll) {
+      setDisplayedRecursos([]);
+      return;
+    }
 
-      // Excluir recursos ya seleccionados
-      if (selectedRecursosIds.includes(recurso.id)) return false;
+    // Si showAll está activo o hay un término de búsqueda, filtrar recursos
+    const searchTerm = searchInput.toLowerCase().trim();
+    const filteredRecursos = recursos.filter(recurso => {
+      if (!recurso || selectedIds.includes(recurso.id)) return false;
+      
+      if (!searchTerm && showAll) return true;
 
-      // Aplicar filtro de búsqueda
-      const searchLower = searchTerm.toLowerCase();
       return (
         recurso.codigo?.toString().includes(searchTerm) ||
-        recurso.nombre?.toLowerCase().includes(searchLower)
+        recurso.nombre?.toLowerCase().includes(searchTerm)
       );
     });
 
-    setFilteredRecursos(filtered);
-  }, [recursos, searchTerm, requerimientoRecursos]);
+    setDisplayedRecursos(filteredRecursos);
+  };
 
   if (loadingRecursos || loadingObras) {
     return <LoaderPage />;
@@ -52,37 +62,49 @@ export const ProductList: React.FC<ProductListProps> = ({ requerimiento_id, fech
     <div className="flex flex-col h-[calc(100vh-8rem)]">
       {/* Barra de búsqueda */}
       <div className="mb-4 sticky top-0 bg-white p-4 shadow-md rounded-lg">
-        <div className="relative">
-          <input
-            type="text"
-            placeholder="Buscar por código o nombre..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-          />
-          <div className="absolute right-3 top-2.5 text-gray-400">
-            <FiSearch />
+        <div className="flex flex-col gap-3">
+          <div className="flex gap-2">
+            <div className="relative flex-1">
+              <input
+                type="text"
+                placeholder="Buscar por código o nombre..."
+                value={searchInput}
+                onChange={(e) => setSearchInput(e.target.value)}
+                className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              />
+              <div className="absolute right-3 top-2.5 text-gray-400">
+                <FiSearch />
+              </div>
+            </div>
+            <button
+              onClick={handleSearch}
+              className="px-6 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
+            >
+              Buscar
+            </button>            
           </div>
         </div>
       </div>
 
       {/* Lista de productos */}
       <div className="flex-1 overflow-y-auto pr-4">
-        {filteredRecursos.length === 0 ? (
+        {displayedRecursos.length === 0 ? (
           <div className="text-center py-8 text-gray-500">
-            No se encontraron productos
+            {searchInput.trim() || showAll ? 
+              "No se encontraron productos" : 
+              "Ingrese un término de búsqueda para mostrar recursos"}
           </div>
         ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-4 max-h-[75vh] overflow-y-auto">
-            {filteredRecursos.map((recurso) => (
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-4 max-h-[75vh] overflow-y-auto">
+            {displayedRecursos.map((recurso) => (
               <ProductCard
-              key={recurso.id}
-              {...recurso}
-              requerimiento_id={requerimiento_id}
-              fecha_limit={fecha_final}
+                key={recurso.id}
+                {...recurso}
+                requerimiento_id={requerimiento_id}
+                fecha_limit={fecha_final}
               />
             ))}
-            </div>
+          </div>
         )}
       </div>
     </div>
