@@ -116,6 +116,7 @@ const RecursosPage: React.FC = () => {
   const [isModalOpenNewRecursos, setIsModalOpenNewRecursos] = useState(false);
   const [editingRecurso, setEditingRecurso] = useState<Recurso>(recursoInicial);
 
+  console.log(recursos)
   useEffect(() => {
     if (!recursos || recursos.length === 0) {
       dispatch(fetchRecursos());

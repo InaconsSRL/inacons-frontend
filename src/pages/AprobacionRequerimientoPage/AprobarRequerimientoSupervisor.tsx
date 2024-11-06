@@ -79,8 +79,6 @@ const AprobarRequerimientoSupervisor = ({ requerimiento }: AprobarRequerimientoP
 
       await dispatch(updateRequerimientoRecurso(updateData)).unwrap();
 
-      console.log('Recurso actualizado');
-
       // Limpiar los valores editados para este recurso
       setEditValues(prev => {
         const newValues = { ...prev };
@@ -145,8 +143,6 @@ const AprobarRequerimientoSupervisor = ({ requerimiento }: AprobarRequerimientoP
   };
   
   const newFechaFinal = selectedRequerimiento ? new Date(selectedRequerimiento.fecha_final).toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric', timeZone: 'UTC' }) : '';
-
-  console.log('requerimiento', requerimiento);
 
   if (loading) {
     return <LoaderPage />;

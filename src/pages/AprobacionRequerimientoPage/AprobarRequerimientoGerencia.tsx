@@ -52,7 +52,6 @@ const AprobarRequerimientoGerencia = ({ requerimiento }: AprobarRequerimientoPro
       dispatch(getRequerimiento(id.toString()));
     }
   }, []);
-  console.log("requerimiento aprobacion", selectedRequerimiento)
   
   const handleEditChange = (recursoId: string, field: string, value: string) => {
     setEditValues(prev => ({
@@ -79,8 +78,6 @@ const AprobarRequerimientoGerencia = ({ requerimiento }: AprobarRequerimientoPro
       };
 
       await dispatch(updateRequerimientoRecurso(updateData)).unwrap();
-
-      console.log('Recurso actualizado');
 
       // Limpiar los valores editados para este recurso
       setEditValues(prev => {

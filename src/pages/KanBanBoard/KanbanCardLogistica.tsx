@@ -50,7 +50,7 @@ const KanbanCardLogistica: React.FC<KanbanCardProps> = ({ task }) => {
           onClose={() => setModalAprobacionReqSup(false)}
           title="Aprobar Requerimiento"
         >
-          <AprobacionTransferenciaPage />
+          <AprobacionTransferenciaPage requerimientoId={task.id} />
         </Modal>
       </div>
     );

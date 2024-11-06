@@ -14,6 +14,8 @@ import { proveedorReducer } from '../slices/proveedorSlice';
 import { requerimientoReducer } from '../slices/requerimientoSlice';
 import { requerimientoRecursoReducer } from '../slices/requerimientoRecursoSlice';
 import { tipoCostoRecursoReducer } from '../slices/tipoCostoRecursoSlice';
+import { almacenReducer } from '../slices/almacenSlice';
+import { almacenRecursoReducer } from '../slices/almacenRecursoSlice';
 export const store = configureStore({
   reducer: {
     user: userReducer,
@@ -30,6 +32,8 @@ export const store = configureStore({
     requerimiento: requerimientoReducer,
     requerimientoRecurso: requerimientoRecursoReducer,
     tipoCostoRecurso: tipoCostoRecursoReducer,
+    almacen: almacenReducer,
+    almacenRecurso: almacenRecursoReducer,
   },
 });
 

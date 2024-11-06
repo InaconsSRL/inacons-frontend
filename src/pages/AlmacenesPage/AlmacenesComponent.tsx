@@ -3,20 +3,20 @@ import { motion, AnimatePresence } from 'framer-motion';
 import Button from '../../components/Buttons/Button';
 import Modal from '../../components/Modal/Modal';
 import TableComponent from '../../components/Table/TableComponent';
-import FormComponent from './CargoFormComponent';
+import FormComponent from './AlmacenFormComponent';
 
 import { useDispatch, useSelector } from 'react-redux';
-import { fetchCargos, addCargo, updateCargo } from '../../slices/cargoSlice';
+import { fetchAlmacenes, addAlmacen, updateAlmacen, deleteAlmacen } from '../../slices/almacenSlice';
 import { RootState, AppDispatch } from '../../store/store';
 import LoaderPage from '../../components/Loader/LoaderPage';
-import { FiEdit } from 'react-icons/fi';
+import { FiEdit, FiTrash2 } from 'react-icons/fi';
 
-// Definimos la interfaz Cargo
-interface Cargo {
+interface Almacen {
   id: string;
   nombre: string;
-  descripcion: string;
-  gerarquia: number;
+  ubicacion: string;
+  direccion: string;
+  tipo: boolean;
 }
 
 const pageVariants = {
@@ -31,59 +31,77 @@ const pageTransition = {
   duration: 0.5
 };
 
-const CargosComponent: React.FC = () => {
+const AlmacenesComponent: React.FC = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [editingCargo, setEditingCargo] = useState<Cargo | null>(null);
+  const [editingAlmacen, setEditingAlmacen] = useState<Almacen | null>(null);
 
   const dispatch = useDispatch<AppDispatch>();
-  const { cargos, loading, error } = useSelector((state: RootState) => state.cargo);
+  const { almacenes, loading, error } = useSelector((state: RootState) => state.almacen);
 
   useEffect(() => {
-    dispatch(fetchCargos());
+    dispatch(fetchAlmacenes());
   }, [dispatch]);
 
-  const handleSubmit = (data: { nombre: string; descripcion: string; gerarquia?: number }) => {
-    if (editingCargo) {
-      dispatch(updateCargo({ id: editingCargo.id, gerarquia: editingCargo.gerarquia, ...data }));
+  const handleSubmit = (data: { nombre: string; ubicacion: string; direccion: string; tipo: boolean }) => {
+    if (editingAlmacen) {
+      dispatch(updateAlmacen({ id: editingAlmacen.id, ...data }));
     } else {
-      dispatch(addCargo({ ...data, gerarquia: data.gerarquia || 1 }));
+      dispatch(addAlmacen(data));
     }
     setIsModalOpen(false);
-    setEditingCargo(null);
+    setEditingAlmacen(null);
   };
 
-  const handleEdit = (cargo: Cargo) => {
-    setEditingCargo(cargo);
+  const handleEdit = (almacen: Almacen) => {
+    setEditingAlmacen(almacen);
     setIsModalOpen(true);
   };
 
-  if (loading) return <LoaderPage />;
-  if (error) return <motion.div initial="initial" animate="in" exit="out" variants={pageVariants} transition={pageTransition}>Error: {error}</motion.div>;
+  const handleDelete = (id: string) => {
+    if (window.confirm('¿Está seguro de eliminar este almacén?')) {
+      dispatch(deleteAlmacen(id));
+    }
+  };
+
 
   const handleButtonClick = () => {
-    setEditingCargo(null);
+    setEditingAlmacen(null);
     setIsModalOpen(true);
   };
 
   const handleCloseModal = () => {
     setIsModalOpen(false);
-    setEditingCargo(null);
+    setEditingAlmacen(null);
   };
 
   const tableData = {
-    filter: [true, true, false],
-    headers: ["nombre", "descripcion", "jerarquia", "opciones"],
-    rows: cargos.map(cargo => ({
-      ...cargo,
-      jerarquia: cargo.gerarquia === 4 ? "Gerencia" :
-                 cargo.gerarquia === 3 ? "Supervisor" :
-                 cargo.gerarquia === 2 ? "Administrativo" :
-                 cargo.gerarquia === 1 ? "Staff" : cargo.gerarquia,
+    filter: [true, true, true, true, false],
+    headers: ["nombre", "ubicacion", "direccion", "tipo", "opciones"],
+    rows: almacenes.map(almacen => ({
+      ...almacen,
+      tipo: almacen.tipo ? "Principal" : "Secundario",
       opciones: (
-        <Button text={<FiEdit size={18} className='text-blue-500'/>} color='transp' className='text-black' onClick={() => handleEdit(cargo)}></Button>
+        <div className="flex space-x-2">
+          <button
+            className='text-black'
+            onClick={() => handleEdit(almacen)}
+          >
+            <FiEdit size={18} className='text-blue-500' />
+
+          </button>
+          <button
+            className='text-black'
+            onClick={() => handleDelete(almacen.id)}
+          >
+            <FiTrash2 size={18} className='text-red-500' />
+          </button>
+        </div>
       )
     }))
   };
+
+  if (loading) return <LoaderPage />;
+  if (error) return <motion.div initial="initial" animate="in" exit="out" variants={pageVariants} transition={pageTransition}>Error: {error}</motion.div>;
 
   return (
     <motion.div
@@ -95,18 +113,16 @@ const CargosComponent: React.FC = () => {
       transition={pageTransition}
     >
       <motion.div
-        className="x text-white pb-4 px-4 flex items-center justify-between"
+        className="text-white pb-4 px-4 flex items-center justify-between"
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.2 }}
       >
-        <h1 className="text-2xl font-bold">Cargos ☺</h1>
-
+        <h1 className="text-2xl font-bold">Almacenes</h1>
 
         <div className="flex items-center space-x-2">
-          <Button text='Nuevo Cargo' color='verde' onClick={handleButtonClick} className="rounded w-full" />
+          <Button text='Nuevo Almacén' color='verde' onClick={handleButtonClick} className="rounded w-full" />
         </div>
-
       </motion.div>
 
       <motion.div
@@ -115,7 +131,6 @@ const CargosComponent: React.FC = () => {
         animate={{ opacity: 1, scale: 1 }}
         transition={{ delay: 0.4 }}
       >
-        {/* Seccion C */}
         <main className="w-full flex flex-col flex-grow p-4 bg-white/80 overflow-hidden">
           <motion.div
             className="flex-grow border rounded-lg overflow-hidden"
@@ -132,7 +147,7 @@ const CargosComponent: React.FC = () => {
 
       <AnimatePresence>
         {isModalOpen && (
-          <Modal title={editingCargo ? 'Actualizar Cargo' : 'Crear Cargo'} isOpen={isModalOpen} onClose={handleCloseModal}>
+          <Modal title={editingAlmacen ? 'Actualizar Almacén' : 'Crear Almacén'} isOpen={isModalOpen} onClose={handleCloseModal}>
             <motion.div
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
@@ -140,7 +155,7 @@ const CargosComponent: React.FC = () => {
               transition={{ duration: 0.3 }}
             >
               <FormComponent
-                initialValues={editingCargo || undefined}
+                initialValues={editingAlmacen || undefined}
                 onSubmit={handleSubmit}
               />
             </motion.div>
@@ -151,4 +166,4 @@ const CargosComponent: React.FC = () => {
   );
 };
 
-export default CargosComponent;
+export default AlmacenesComponent;

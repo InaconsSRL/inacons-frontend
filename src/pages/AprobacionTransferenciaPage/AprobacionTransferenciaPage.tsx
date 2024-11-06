@@ -1,4 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+
+import { fetchRequerimientoRecursos} from '../../slices/requerimientoRecursoSlice';
+// import { getRequerimiento, updateRequerimiento } from '../../slices/requerimientoSlice';
+import { getRequerimiento } from '../../slices/requerimientoSlice';
+import { useDispatch, useSelector } from 'react-redux';
+import { RootState, AppDispatch } from '../../store/store';
 
 // Interfaces
 interface Warehouse {
@@ -26,8 +32,33 @@ interface WarehouseQuantities {
 }
 
 // Componente principal
-const AprobacionTransferenciaPage: React.FC = () => {
-const [items, setItems] = useState<Item[]>([
+interface AprobacionTransferenciaPageProps {
+  requerimientoId: string;
+}
+
+const AprobacionTransferenciaPage: React.FC<AprobacionTransferenciaPageProps> = ({ requerimientoId }) => {
+  console.log(requerimientoId);
+
+
+  const dispatch = useDispatch<AppDispatch>();
+  const { requerimientoRecursos } = useSelector((state: RootState) => state.requerimientoRecurso);
+  const { selectedRequerimiento } = useSelector((state: RootState) => state.requerimiento);
+  const user = useSelector((state: RootState) => state.user);
+
+  console.log(requerimientoRecursos,selectedRequerimiento, user )
+  
+  useEffect(() => {
+    if (requerimientoId) {
+      // Dispatch para obtener los recursos del requerimiento
+      dispatch(fetchRequerimientoRecursos(requerimientoId.toString()));
+      
+      // Dispatch para obtener la información del requerimiento
+      dispatch(getRequerimiento(requerimientoId.toString()));
+    }
+  }, []);
+
+
+const [items] = useState<Item[]>([
     {
         id: '16489',
         name: 'ALFOMBRA AISLANTE CLASE 4 1 X 1MTS X 5.2MM',

@@ -52,7 +52,6 @@ const AprobarRequerimiento = ({ requerimiento }: AprobarRequerimientoProps) => {
       dispatch(getRequerimiento(id.toString()));
     }
   }, []);
-  console.log("requerimiento aprobacion", selectedRequerimiento)
   
   const handleEditChange = (recursoId: string, field: string, value: string) => {
     setEditValues(prev => ({

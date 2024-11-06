@@ -36,6 +36,8 @@ const Sidebar: React.FC<SidebarProps> = ({ isSidebarOpen, toggleSidebar }) => {
 
   const moduloAlmacen = [
     { to: "/dashboard/almacen", icon: FiBriefcase, text: "Almacen" },
+    { to: "/dashboard/almacenBoard", icon: FiBriefcase, text: "AlmacenBoard" },
+    { to: "/dashboard/presupuestoBoard", icon: FiBriefcase, text: "Presupuestos" },
   ];
 
   const otroModuloItems = [

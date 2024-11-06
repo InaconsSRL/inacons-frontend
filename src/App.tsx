@@ -20,7 +20,9 @@ import ProveedorComponent from './pages/ProveedorPage/ProveedorComponent';
 import RequerimientosComponent from './pages/RequerimientosPage/RequerimientosComponent';
 import TipoCostoRecursoComponent from './pages/TipoCostoRecursoPage/TipoCostoRecursoComponent';
 import RequermientoRecursos from './pages/RequerimientosPage/CrearRequerimientoYRecursos/RequerimientoRecursos';
-import AlmacenBoardPage from './pages/AlmacenesPage/AlmacenBoardPage';
+import AlmacenesComponent from './pages/AlmacenesPage/AlmacenesComponent';
+import AlmacenBoardPage from './pages/AlmacenesPage/AlmacenBoard/AlmacenBoardPage';
+import { Presupuestos } from './pages/PresupuestosDemo/Presupuestos';
 
 const App: React.FC = () => {
   const user = useSelector((state: RootState) => state.user);
@@ -47,7 +49,9 @@ const App: React.FC = () => {
         <Route path="requerimiento" element={<RequerimientosComponent />} />
         <Route path="tipoCostoRecurso" element={<TipoCostoRecursoComponent />} />
         <Route path="reqRecursos" element={<RequermientoRecursos onClose={() => {}} />} />
-        <Route path="almacen" element={<AlmacenBoardPage />}> </Route>
+        <Route path="almacen" element={<AlmacenesComponent />}> </Route>
+        <Route path="almacenBoard" element={<AlmacenBoardPage />}> </Route>
+        <Route path="presupuestoBoard" element={<Presupuestos />}> </Route>
       </Route>
       <Route path="/" element={<Navigate to="/dashboard" replace />} />
     </Routes> 
