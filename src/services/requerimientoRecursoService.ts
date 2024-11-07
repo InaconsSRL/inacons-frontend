@@ -80,6 +80,36 @@ const ADD_REQUERIMIENTO_APROBACION = gql`
   }
 `;
 
+const UPDATE_REQUERIMIENTO_APROBACION = gql`
+  mutation UpdateRequerimientoAprobacion(
+    $updateRequerimientoAprobacionId: ID!, 
+    $requerimiento_id: ID!, 
+    $usuario_id: ID!, 
+    $estado_aprobacion: String, 
+    $fecha_aprobacion: DateTime, 
+    $comentario: String, 
+    $gerarquia_aprobacion: String
+  ) {
+    updateRequerimientoAprobacion(
+      id: $updateRequerimientoAprobacionId, 
+      requerimiento_id: $requerimiento_id, 
+      usuario_id: $usuario_id, 
+      estado_aprobacion: $estado_aprobacion, 
+      fecha_aprobacion: $fecha_aprobacion, 
+      comentario: $comentario, 
+      gerarquia_aprobacion: $gerarquia_aprobacion
+    ) {
+      id
+      requerimiento_id
+      usuario_id
+      estado_aprobacion
+      fecha_aprobacion
+      comentario
+      gerarquia_aprobacion
+    }
+  }
+`;
+
 export const getRequerimientoRecursoByRequerimientoId = async (requerimientoId: string) => {
   try {
     const { data } = await client.query({
@@ -172,5 +202,33 @@ export const addRequerimientoAprobacion = async (data: {
     return responseData.addRequerimientoAprobacion;
   } catch (error) {
     throw new Error(`Error adding requerimiento aprobacion ${error}`);
+  }
+};
+
+export const updateRequerimientoAprobacion = async (data: {
+  id: string;
+  requerimiento_id: string;
+  usuario_id: string;
+  estado_aprobacion: string;
+  fecha_aprobacion?: Date;
+  comentario?: string;
+  gerarquia_aprobacion?: string;
+}) => {
+  try {
+    const { data: responseData } = await client.mutate({
+      mutation: UPDATE_REQUERIMIENTO_APROBACION,
+      variables: {
+        updateRequerimientoAprobacionId: data.id,
+        requerimiento_id: data.requerimiento_id,
+        usuario_id: data.usuario_id,
+        estado_aprobacion: data.estado_aprobacion,
+        fecha_aprobacion: data.fecha_aprobacion || new Date(),
+        comentario: data.comentario,
+        gerarquia_aprobacion: data.gerarquia_aprobacion
+      },
+    });
+    return responseData.updateRequerimientoAprobacion;
+  } catch (error) {
+    throw new Error(`Error updating requerimiento aprobacion ${error}`);
   }
 };

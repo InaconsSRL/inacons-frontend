@@ -67,7 +67,6 @@ const ClasificacionRecursoComponent: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
   const { clasificacionesRecurso, loading, error } = useSelector((state: RootState) => state.clasificacionRecurso);
 
-  console.log(clasificacionesRecurso)
   useEffect(() => {
     dispatch(fetchClasificacionesRecurso());
   }, [dispatch]);
@@ -76,7 +75,6 @@ const ClasificacionRecursoComponent: React.FC = () => {
     if (clasificacionesRecurso.length > 0) {
       const homogenized = homogenizeClasificaciones(clasificacionesRecurso);
       setHomogenizedClasificaciones(homogenized);
-      console.log(homogenized);
     }
   }, [clasificacionesRecurso]);
 
@@ -110,7 +108,7 @@ const ClasificacionRecursoComponent: React.FC = () => {
 
   const tableData = {
     filter: [true, false],
-    headers: ["nombre", "opciones", "id"],
+    headers: ["nombre", "opciones"],
     rows: homogenizedClasificaciones.map(clasificacion => ({
       ...clasificacion,
       opciones: (

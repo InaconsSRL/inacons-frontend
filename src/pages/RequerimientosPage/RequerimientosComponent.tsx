@@ -9,6 +9,7 @@ import { RootState, AppDispatch } from '../../store/store';
 import LoaderPage from '../../components/Loader/LoaderPage';
 import { FiEdit, FiEye } from 'react-icons/fi';
 import RequerimientoRecursos from './CrearRequerimientoYRecursos/RequerimientoRecursos';
+import RequerimientoResumen from './RequerimientoResumen/RequerimientoResumen';
 
 interface Requerimiento {
   id: string;
@@ -37,6 +38,7 @@ const pageTransition = {
 
 const RequerimientosComponent: React.FC = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isModalResumenOpen, setIsModalResumenOpen] = useState(false);
   const [editingRequerimiento, setEditingRequerimiento] = useState<Requerimiento | null>(null);
   const [activeFilter, setActiveFilter] = useState('todos');
   const userId = useSelector((state: RootState) => state.user.id);
@@ -54,6 +56,12 @@ const RequerimientosComponent: React.FC = () => {
     setEditingRequerimiento(requerimiento);
     setIsModalOpen(true);
   };
+
+  const handleResumen = (requerimiento: Requerimiento) => {
+    setEditingRequerimiento(requerimiento);
+    setIsModalResumenOpen(true);
+    console.log('resumen');
+  }
 
   const getFilteredRequerimientos = () => {
     switch (activeFilter) {
@@ -90,6 +98,7 @@ const RequerimientosComponent: React.FC = () => {
 
   const handleCloseModal = () => {
     setIsModalOpen(false);
+    setIsModalResumenOpen(false);
     setEditingRequerimiento(null);
   };
 
@@ -115,7 +124,7 @@ const RequerimientosComponent: React.FC = () => {
     const viewButton = (
       <button
         className='text-yellow-500'
-        onClick={() => handleEdit(req)}
+        onClick={() => handleResumen(req)}
       >
         <FiEye />
       </button>
@@ -254,6 +263,25 @@ const RequerimientosComponent: React.FC = () => {
                   fecha_final: '',
                   codigo: ''
                 }}
+                onClose={handleCloseModal}
+              />
+            </motion.div>
+          </Modal>
+        )}
+        {isModalResumenOpen && (
+          <Modal
+            title='Resumen Requerimiento'
+            isOpen={isModalResumenOpen}
+            onClose={handleCloseModal}
+          >
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.9 }}
+              transition={{ duration: 0.3 }}
+            >
+              <RequerimientoResumen
+                id={editingRequerimiento?.id || ''}                  
                 onClose={handleCloseModal}
               />
             </motion.div>

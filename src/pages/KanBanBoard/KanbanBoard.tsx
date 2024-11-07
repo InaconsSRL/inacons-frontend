@@ -6,8 +6,7 @@ import { motion } from 'framer-motion';
 import Modal from '../../components/Modal/Modal';
 import RequerimientoRecursos from '../RequerimientosPage/CrearRequerimientoYRecursos/RequerimientoRecursos';
 import KanbanColumn from './KanbanColumn';
-import KanbanCardAprobacionSupervisor from './0KanbanCardAprobacionSupervisor';
-import KanbanCardAprobacionGerencia from './1KanbanCardAprobacionGerencia';
+import KanbanCardAprobacion from './KanbanCardAprobacion';
 import KanbanCardLogisticaUno from './2KanbanCardLogisticaUno';
 import KanbanCard from './KanbanCard';
 
@@ -45,7 +44,7 @@ const KanbanBoard = () => {
 
   // Función para filtrar requerimientos basados en el término de búsqueda y estado
   const filteredRequerimientos = requerimientos.filter(requerimiento =>
-    (requerimiento.codigo.toLowerCase().includes(searchTerm.toLowerCase()) ||
+  (requerimiento.codigo.toLowerCase().includes(searchTerm.toLowerCase()) ||
     requerimiento.sustento.toLowerCase().includes(searchTerm.toLowerCase()))
   );
   console.log(filteredRequerimientos);
@@ -53,7 +52,7 @@ const KanbanBoard = () => {
   const aprobacionSupervisor = {
     id: 'requerimientos_pendientes',
     title: 'Aprobación del Supervisor',
-    color: "#E06C75",
+    color: "#d86827",
     tasks: filteredRequerimientos
       .filter(req => req.estado_atencion === "pendiente")
       .map(req => ({
@@ -64,15 +63,15 @@ const KanbanBoard = () => {
         requestType: 'Aprobacion Supervisor',
         deliveryDate: new Date(req.fecha_final).toLocaleDateString('es-ES'),
         assignees: [req.usuario],
-        purchaseType: 'N/A',
-        approvedBy: 'Pendiente'
+        purchaseType: 'Por Aprobar',
+        approvedBy: 'Pendiente Aprobacion Supervisor'
       }))
   };
 
   const aprobacionGerencia = {
     id: 'aprobacion_gerencia',
     title: 'Aprobación de Gerencia',
-    color: "#98C379",
+    color: "#e2524a",
     tasks: filteredRequerimientos
       .filter(req => req.estado_atencion === "aprobado_supervisor")
       .map(req => ({
@@ -83,15 +82,15 @@ const KanbanBoard = () => {
         requestType: 'Aprobacion Gerencia',
         deliveryDate: new Date(req.fecha_solicitud).toLocaleDateString('es-ES'),
         assignees: [req.usuario],
-        purchaseType: 'N/A',
-        approvedBy: 'Supervisor'
+        purchaseType: 'Aprobado por Supervisor',
+        approvedBy: 'Pendiente Aprobacion Gerencia'
       }))
   };
 
   const gestionLogisticaUno = {
     id: 'gestion_logistica',
     title: 'Gestión de Logística a Almacén',
-    color: "#20AFEF",
+    color: "#C84630",
     tasks: filteredRequerimientos
       .filter(req => req.estado_atencion === "aprobado_gerencia")
       .map(req => ({
@@ -110,7 +109,7 @@ const KanbanBoard = () => {
   const gestionAlmacen = {
     id: 'gestion_almacen',
     title: 'Gestión de Almacén y traslados',
-    color: "#6130EF",
+    color: "#a2122f",
     tasks: filteredRequerimientos
       .filter(req => req.estado_atencion === "aprobado_logistica")
       .map(req => ({
@@ -129,7 +128,7 @@ const KanbanBoard = () => {
   const gestionLogisticaDos = {
     id: 'gestion_traslado',
     title: 'Cotización y Compra de Materiales',
-    color: "#61AF40",
+    color: "#693726",
     tasks: filteredRequerimientos
       .filter(req => req.estado_atencion === "aprobado_almacen")
       .map(req => ({
@@ -148,7 +147,7 @@ const KanbanBoard = () => {
   const gestionatencionParcial = {
     id: 'gestion_atencion_parcial',
     title: 'Atencion Parcial de Requerimientos',
-    color: "#AAAFEF",
+    color: "#332e3c",
     tasks: filteredRequerimientos
       .filter(req => req.estado_atencion === "atencion_parcial")
       .map(req => ({
@@ -167,7 +166,7 @@ const KanbanBoard = () => {
   const gestionCompletados = {
     id: 'atencion_completados',
     title: 'Requerimientos Terminados',
-    color: "#61BBEF",
+    color: "#0B132B",
     tasks: filteredRequerimientos
       .filter(req => req.estado_atencion === "terminados")
       .map(req => ({
@@ -187,8 +186,8 @@ const KanbanBoard = () => {
     if (scrollContainerRef.current) {
       const scrollAmount = 300; // Ajustar según necesidad
       const currentScroll = scrollContainerRef.current.scrollLeft;
-      const targetScroll = direction === 'left' 
-        ? currentScroll - scrollAmount 
+      const targetScroll = direction === 'left'
+        ? currentScroll - scrollAmount
         : currentScroll + scrollAmount;
 
       scrollContainerRef.current.scrollTo({
@@ -212,15 +211,15 @@ const KanbanBoard = () => {
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
         />
-        <button onClick={()=> setModalNuevoRequerimiento(true)} className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition-colors">
+        <button onClick={() => setModalNuevoRequerimiento(true)} className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition-colors">
           Nuevo Requerimiento
         </button>
       </div>
-      
+
       <div className="relative"> {/* Contenedor para los botones y el scroll */}
         {/* Botón izquierdo */}
         {showButtons && (
-          <button 
+          <button
             onClick={() => scroll('left')}
             className="absolute left-0 top-1/2 -translate-y-1/2 z-10 bg-black/20 hover:bg-black/30 text-white p-3 rounded-r-lg backdrop-blur-sm transition-all"
           >
@@ -229,15 +228,15 @@ const KanbanBoard = () => {
         )}
 
         {/* Contenedor scrolleable */}
-        <div 
+        <div
           ref={scrollContainerRef}
           className="flex overflow-x-auto space-x-4 max-h-[70vh] scroll-smooth snap-x snap-mandatory"
         >
           <div className="snap-center min-w-[240px] min-h-[calc(100vh-285px)] ">
-            <KanbanColumn key={aprobacionSupervisor.id} column={aprobacionSupervisor} CardComponent={KanbanCardAprobacionSupervisor} />
+            <KanbanColumn key={aprobacionSupervisor.id} column={aprobacionSupervisor} CardComponent={KanbanCardAprobacion} />
           </div>
           <div className="snap-center min-w-[240px] min-h-[calc(100vh-285px)] " >
-            <KanbanColumn key={aprobacionGerencia.id} column={aprobacionGerencia} CardComponent={KanbanCardAprobacionGerencia} />
+            <KanbanColumn key={aprobacionGerencia.id} column={aprobacionGerencia} CardComponent={KanbanCardAprobacion} />
           </div>
           <div className="snap-center min-w-[240px] min-h-[calc(100vh-285px)] ">
             <KanbanColumn key={gestionLogisticaUno.id} column={gestionLogisticaUno} CardComponent={KanbanCardLogisticaUno} />
@@ -258,7 +257,7 @@ const KanbanBoard = () => {
 
         {/* Botón derecho */}
         {showButtons && (
-          <button 
+          <button
             onClick={() => scroll('right')}
             className="absolute right-0 top-1/2 -translate-y-1/2 z-10 bg-black/20 hover:bg-black/30 text-white p-3 rounded-l-lg backdrop-blur-sm transition-all"
           >

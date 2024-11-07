@@ -55,7 +55,7 @@ export const ProductCard: React.FC<Recurso> = ({
               min="0"
               value={selectedQuantity}
               onChange={(e) => setSelectedQuantity(parseInt(e.target.value) || 0)}
-              className="w-8 pl-2 border rounded-md text-[10px] bg-slate-700 text-white "
+              className="w-8 pl-2 border rounded-md text-[10px] bg-slate-700 text-white min-w-10"
             />
           </div>
           <button

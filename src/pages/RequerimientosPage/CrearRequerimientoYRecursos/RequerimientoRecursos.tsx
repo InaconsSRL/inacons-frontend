@@ -63,7 +63,7 @@ const RequerimientoRecursos: React.FC<RequerimientoRecursosProps> = ({ initialVa
     }
 
     return (
-      <div className="grid grid-cols-1 lg:grid-cols-4 gap-2 relative min-h-[calc(90vh)] min-w-[80vw] ">
+      <div className="grid grid-cols-1 lg:grid-cols-4 gap-2 relative min-h-[calc(90vh)] min-w-[70vw] ">
         <div className='col-span-4'>
           <RequerimientoHeader 
             key={requerimiento_id}

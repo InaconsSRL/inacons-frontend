@@ -216,6 +216,7 @@ const RequerimientoHeader: React.FC<DetalleRequerimientoProps> = memo(({ requeri
     codigo: requerimiento.codigo || ''
   }));
 
+
   const handleInputChange = useCallback((e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>): void => {
     const { name, value } = e.target;
     setFormData(prev => ({
@@ -242,6 +243,7 @@ const RequerimientoHeader: React.FC<DetalleRequerimientoProps> = memo(({ requeri
       setLoading(false);
     }
   }, [dispatch, formData, requerimiento.id, requerimiento.estado_atencion]);
+  console.log('Requerimiento para Aprob:', requerimiento);
 
   const handleSubmitRequerimiento = useCallback(async (): Promise<void> => {
     setLoading(true);

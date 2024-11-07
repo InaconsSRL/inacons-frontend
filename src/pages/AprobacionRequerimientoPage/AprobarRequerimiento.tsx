@@ -11,7 +11,20 @@ interface EditValues {
   [key: string]: {
     cantidad_aprobada?: number;
     fecha_limit?: string;
+    notas?: string;
+    estado: string;
   }
+}
+
+interface Recurso {
+  id: string;
+  codigo: string;
+  nombre: string;
+  unidad: string;
+  cantidad_aprobada: number;
+  costo_ref: number;
+  fecha_limit: string | Date;
+  notas?: string;
 }
 
 interface UpdateRequerimientoRecursoData {
@@ -27,6 +40,8 @@ interface Requerimiento {
   title: string;
   projectCode: string;
   approvedBy: string;
+  purchaseType: string;
+  estado?: string; // Make estado optional
 }
 
 interface AprobarRequerimientoProps {
@@ -47,11 +62,10 @@ const AprobarRequerimiento = ({ requerimiento }: AprobarRequerimientoProps) => {
     if (id) {
       // Dispatch para obtener los recursos del requerimiento
       dispatch(fetchRequerimientoRecursos(id.toString()));
-      
       // Dispatch para obtener la información del requerimiento
       dispatch(getRequerimiento(id.toString()));
     }
-  }, []);
+  }, [dispatch, id]);
   
   const handleEditChange = (recursoId: string, field: string, value: string) => {
     setEditValues(prev => ({
@@ -62,8 +76,9 @@ const AprobarRequerimiento = ({ requerimiento }: AprobarRequerimientoProps) => {
       }
     }));
   };
+  console.log(selectedRequerimiento)
 
-  const handleUpdate = async (recurso: any) => {
+  const handleUpdate = async (recurso: Recurso) => {
     
     try {
       const recursoValues = editValues[recurso.id] || {};
@@ -73,8 +88,8 @@ const AprobarRequerimiento = ({ requerimiento }: AprobarRequerimientoProps) => {
         cantidad_aprobada: recursoValues.cantidad_aprobada
           ? Number(recursoValues.cantidad_aprobada)
           : recurso.cantidad_aprobada,
-        fecha_limit: recursoValues.fecha_limit ? new Date(recursoValues.fecha_limit) : new Date(recurso.fecha_limit ?? ''),
-        notas: recurso.notas
+        fecha_limit: recursoValues.fecha_limit ? new Date(recursoValues.fecha_limit) : new Date(recurso.fecha_limit),
+        notas: recursoValues.notas || recurso.notas || ''
       };
 
       await dispatch(updateRequerimientoRecurso(updateData)).unwrap();
@@ -101,14 +116,11 @@ const AprobarRequerimiento = ({ requerimiento }: AprobarRequerimientoProps) => {
       const data = {
         requerimientoId: requerimiento.id,
         usuarioId: user.id as string,
-        estadoAprobacion: "aprobado_supervisor",
+        estadoAprobacion: requerimiento.estado === "pendiente" ? "aprobado_supervisor" : "aprobado_gerencia",
         comentario: comentario || "Requerimiento aprobado"
       };
-
       await dispatch(addRequerimientoAprobacionThunk(data)).unwrap();
       setComentario(''); 
-
-
       await dispatch(updateRequerimiento({
         id: selectedRequerimiento?.id || '',
         usuario_id: selectedRequerimiento?.usuario_id || '',
@@ -117,9 +129,6 @@ const AprobarRequerimiento = ({ requerimiento }: AprobarRequerimientoProps) => {
         sustento: selectedRequerimiento?.sustento || '',
         estado_atencion: "aprobado_supervisor"
       })).unwrap();
-      
-
-
       console.log('Requerimiento aprobado exitosamente');
     } catch (error) {
       console.error('Error al aprobar requerimiento:', error);
@@ -131,13 +140,21 @@ const AprobarRequerimiento = ({ requerimiento }: AprobarRequerimientoProps) => {
       const data = {
         requerimientoId: requerimiento.id,
         usuarioId: user.id as string,
-        estadoAprobacion: "rechazado_supervisor",
+        estadoAprobacion: requerimiento.estado === "pendiente" ? "rechazado_supervisor" : "aprobado_gerencia",
         fechaAprobacion: new Date(),
         comentario: comentario || "Requerimiento rechazado"
       };
 
       await dispatch(addRequerimientoAprobacionThunk(data)).unwrap();
       setComentario('');
+      await dispatch(updateRequerimiento({
+        id: selectedRequerimiento?.id || '',
+        usuario_id: selectedRequerimiento?.usuario_id || '',
+        obra_id: selectedRequerimiento?.obra_id || '',
+        fecha_final: new Date(selectedRequerimiento?.fecha_final || new Date()),
+        sustento: selectedRequerimiento?.sustento || '',
+        estado_atencion: "rechazado_supervisor"
+      })).unwrap();
       console.log('Requerimiento rechazado exitosamente');
     } catch (error) {
       console.error('Error al rechazar requerimiento:', error);
@@ -152,7 +169,7 @@ const AprobarRequerimiento = ({ requerimiento }: AprobarRequerimientoProps) => {
 
 
   return (
-    <div className="p-6 max-w-7xl mx-auto bg-white rounded-lg shadow-lg">
+    <div className="p-6 max-w-full mx-auto bg-white rounded-lg shadow-lg">
       {/* Header Section */}
       <div className="grid grid-cols-3 gap-4 mb-6">
         <div className="space-y-2">
@@ -210,7 +227,7 @@ const AprobarRequerimiento = ({ requerimiento }: AprobarRequerimientoProps) => {
           <div className="flex items-center gap-2">
             <label className="text-xs font-medium text-gray-600">Aprobado:</label>
             <span className="px-2 py-1 bg-blue-100 text-blue-800 rounded text-xs">
-              Por Aprobar
+              {requerimiento.purchaseType}
             </span>
           </div>
         </div>
@@ -218,7 +235,7 @@ const AprobarRequerimiento = ({ requerimiento }: AprobarRequerimientoProps) => {
 
       {/* Table Section */}
       <div className="overflow-x-auto">
-        <table className="w-full text-xs block h-[60vh] overflow-y-auto">
+        <table className="w-full text-xs block h-[50vh] overflow-y-auto">
           <thead className="bg-gray-200 sticky top-0 z-10 shadow-sm">
             <tr>
               <th className="px-2 py-2 text-left font-medium text-gray-600">Código</th>
@@ -226,70 +243,78 @@ const AprobarRequerimiento = ({ requerimiento }: AprobarRequerimientoProps) => {
               <th className="px-2 py-2 text-left font-medium text-gray-600">Unidad</th>
               <th className="px-2 py-2 text-left font-medium text-gray-600">U.Emb</th>
               <th className="px-2 py-2 text-left font-medium text-gray-600">Metrado</th>
-              <th className="px-2 py-2 text-left font-medium text-gray-600">Estado</th>
+              {/* <th className="px-2 py-2 text-left font-medium text-gray-600">Estado</th> */}
               {/* <th className="px-2 py-2 text-left font-medium text-gray-600">Comprado</th>
                             <th className="px-2 py-2 text-left font-medium text-gray-600">Cotizado</th> */}
               <th className="px-2 py-2 text-left font-medium text-gray-600">P.Historico</th>
-              <th className="px-2 py-2 text-left font-medium text-gray-600">F.Limite</th>
               <th className="px-2 py-2 text-left font-medium text-gray-600">CostoParcial</th>
+              <th className="px-2 py-2 text-left font-medium text-gray-600">Metrado Aprobado</th>
               <th className="px-2 py-2 text-left font-medium text-gray-600">Notas</th>
-              <th className="px-2 py-2 text-left font-medium text-gray-600">C.Aprobada</th>
-              <th className="px-2 py-2 text-left font-medium text-gray-600">Nueva.F.Limite</th>
+              <th className="px-2 py-2 text-left font-medium text-gray-600">F.Limite</th>
               <th className="px-2 py-2 text-left font-medium text-gray-600">Acciones</th>
 
             </tr>
           </thead>
-          <tbody >
+            <tbody >
             {requerimientoRecursos.map((recurso) => (
               <tr
-                key={recurso.id}
-                className="border-b hover:bg-blue-50 transition-colors text-[10px] text-center text-slate-500"
+              key={recurso.id}
+              className="border-b hover:bg-blue-50 transition-colors text-[10px] text-center text-slate-500"
               >
-                <td className="px-2 py-2">{recurso.codigo}</td>
-                <td className="px-2 py-2">{recurso.nombre}</td>
-                {/* <td className="px-2 py-2">{recurso.unidad}</td> */}
-                <td className="px-2 py-2">UNID</td>
-                <td className="px-2 py-2">UNID</td>
-                <td className="px-2 py-2">{recurso.cantidad_aprobada ?? "-"}</td>
-                <td className="px-2 py-2"><span className="px-2 py-1 bg-yellow-100 text-yellow-800 rounded">{recurso.estado}</span></td>
-                <td className="px-2 py-2">{recurso.costo_ref ?? "-"}</td>
-                <td className="px-2 py-2"> {new Date(recurso.fecha_limit ?? '').toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric', timeZone: 'UTC' })} </td>
-                <td className="px-2 py-2">{(recurso.costo_ref ?? 1) * (recurso.cantidad_aprobada ?? 2)}</td>
-                <td className="px-2 py-2">{recurso.notas}</td>
+              <td className="px-2 py-2">{recurso.codigo}</td>
+              <td className="px-2 py-2 max-w-60 text-left">{recurso.nombre}</td>
+              <td className="px-2 py-2">{recurso.unidad}.</td>
+              <td className="px-2 py-2">{recurso.unidad}</td>
+              <td className="px-2 py-2">{recurso.cantidad_aprobada ?? "-"}</td>
+              <td className="px-2 py-2">{recurso.costo_ref ?? "-"}</td>
                 <td className="px-2 py-2">
-                  <input
-                    type="number"
-                    value={editValues[recurso.id]?.cantidad_aprobada || ''}
-                    onChange={(e) => handleEditChange(recurso.id, 'cantidad_aprobada', e.target.value)}
-                    className="w-16 px-2 py-1 border rounded"
-                    placeholder={String(recurso.cantidad_aprobada || "")}
-                  />
+                {((recurso.costo_ref ?? 1) * (editValues[recurso.id]?.cantidad_aprobada || recurso.cantidad_aprobada || 2)).toFixed(2)}
                 </td>
                 <td className="px-2 py-2">
-                  <input
-                    type="date"
-                    value={editValues[recurso.id]?.fecha_limit || ''}
-                    onChange={(e) => handleEditChange(recurso.id, 'fecha_limit', e.target.value)}
-                    className="w-32 px-2 py-1 border rounded"
-                  />
+                <input
+                type="number"
+                value={editValues[recurso.id]?.cantidad_aprobada || recurso.cantidad_aprobada || 0}
+                onChange={(e) => handleEditChange(recurso.id, 'cantidad_aprobada', e.target.value)}
+                className="w-16 px-2 py-1 border rounded"
+                placeholder={String(recurso.cantidad_aprobada || "")}
+                />
                 </td>
-                <td className="px-2 py-2 flex flex-row">
-                  <button
-                    onClick={() => handleUpdate({ ...recurso, cantidad_aprobada: recurso.cantidad_aprobada ?? 0, costo_ref: recurso.costo_ref ?? 0, fecha_limit: recurso.fecha_limit ?? '', notas: recurso.notas })}
-                    className="px-3 py-1 bg-green-500 text-white rounded-md hover:bg-blue-600 transition-colors"
-                  >
-                    <FiCheckSquare className='h-2.5 w-2.5' />
-                  </button>                
-                </td>
+              <td className="px-2 py-2">
+                <input
+                type="text"
+                value={editValues[recurso.id]?.notas || recurso.notas || ''}
+                onChange={(e) => handleEditChange(recurso.id, 'notas', e.target.value)}
+                className="w-32 px-2 py-1 border rounded"
+                placeholder={recurso.notas || ""}
+                />
+              </td>
+              
+              <td className="px-2 py-2">
+                <input
+                type="date"
+                value={editValues[recurso.id]?.fecha_limit || (recurso.fecha_limit ? new Date(recurso.fecha_limit).toISOString().split('T')[0] : '') || ''}
+                onChange={(e) => handleEditChange(recurso.id, 'fecha_limit', e.target.value)}
+                className="w-32 px-2 py-1 border rounded max-w-24"
+                />
+              </td>                
+              <td className="px-2 py-2 align-middle">
+                <button
+                onClick={() => handleUpdate({ ...recurso, cantidad_aprobada: recurso.cantidad_aprobada ?? 0, costo_ref: recurso.costo_ref ?? 0, fecha_limit: (recurso.fecha_limit ? new Date(recurso.fecha_limit).toISOString().split('T')[0] : '') ?? '', notas: recurso.notas })}
+                className="w-full h-6 inline-flex items-center justify-center px-3 bg-green-500 text-white rounded-md hover:bg-blue-600 transition-colors"
+                >
+                <FiCheckSquare className='h-2.5 w-2.5' />
+                </button>                
+              </td>
               </tr>
             ))}
-          </tbody>
-          <tfoot className='bg-gray-200 sticky bottom-0 z-10 shadow-sm mt-20'>
+            </tbody>
+          <tfoot className='bg-gray-200 sticky -bottom-0.5 z-10 shadow-sm mt-20'>
             <tr>
-              <td colSpan={8} className="px-2 py-2 text-right font-medium text-gray-600">Total:</td>
-              <td className="px-2 py-2 text-center font-medium text-gray-600">
-                S/. {requerimientoRecursos.reduce((total, recurso) => total + (recurso.costo_ref ?? 1) * (recurso.cantidad_aprobada ?? 2), 0)}
-              </td>
+              <td colSpan={6} className="px-2 py-2 text-right font-medium text-gray-600">Total:</td>
+                <td className="px-2 py-2 text-center font-medium text-gray-600">
+                S/. {requerimientoRecursos.reduce((total, recurso) => 
+                  total + (recurso.costo_ref ?? 1) * (editValues[recurso.id]?.cantidad_aprobada || recurso.cantidad_aprobada || 2), 0).toFixed(2)}
+                </td>
               <td></td>
               <td></td>
               <td></td>
@@ -326,21 +351,6 @@ const AprobarRequerimiento = ({ requerimiento }: AprobarRequerimientoProps) => {
           className="px-3 py-1 bg-purple-500 text-white rounded-md text-xs hover:bg-purple-600 transition-colors"
         />
       </div>
-
-      {/* <div className="flex justify-end gap-2 mt-4">
-                <button className="px-3 py-1 bg-blue-500 text-white rounded-md text-xs hover:bg-blue-600 transition-colors">
-                    Ver Compras
-                </button>
-                <button className="px-3 py-1 bg-gray-500 text-white rounded-md text-xs hover:bg-gray-600 transition-colors">
-                    Ver Historial
-                </button>
-                <button className="px-3 py-1 bg-green-500 text-white rounded-md text-xs hover:bg-green-600 transition-colors">
-                    Act. Compras
-                </button>
-                <button className="px-3 py-1 bg-purple-500 text-white rounded-md text-xs hover:bg-purple-600 transition-colors">
-                    Dar por Terminada
-                </button>
-            </div> */}
     </div>
   );
 };

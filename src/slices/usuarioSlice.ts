@@ -18,9 +18,24 @@ interface Cargo {
   descripcion: string;
 }
 
+interface CargoDetallado {
+  nombre: string;
+  gerarquia: string;
+  descripcion: string;
+  id: string;
+}
+
+interface UsuarioCargo {
+  id: string;
+  nombres: string;
+  apellidos: string;
+  cargo_id: CargoDetallado;
+}
+
 interface UsuarioState {
   usuarios: Usuario[];
   cargos: Cargo[];
+  usuariosCargo: UsuarioCargo[];
   loading: boolean;
   error: string | null;
 }
@@ -28,6 +43,7 @@ interface UsuarioState {
 const initialState: UsuarioState = {
   usuarios: [],
   cargos: [],
+  usuariosCargo: [],
   loading: false,
   error: null,
 };
@@ -81,10 +97,11 @@ const usuarioSlice = createSlice({
         state.loading = true;
         state.error = null;
       })
-      .addCase(fetchUsuariosAndCargos.fulfilled, (state, action: PayloadAction<{getAllUsuarios: Usuario[], listCargo: Cargo[]}>) => {
+      .addCase(fetchUsuariosAndCargos.fulfilled, (state, action: PayloadAction<{getAllUsuarios: Usuario[], listCargo: Cargo[], usuariosCargo: UsuarioCargo[]}>) => {
         state.loading = false;
         state.usuarios = action.payload.getAllUsuarios;
         state.cargos = action.payload.listCargo;
+        state.usuariosCargo = action.payload.usuariosCargo;
       })
       .addCase(fetchUsuariosAndCargos.rejected, (state, action) => {
         state.loading = false;
