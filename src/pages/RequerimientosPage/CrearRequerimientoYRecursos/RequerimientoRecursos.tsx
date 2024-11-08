@@ -4,7 +4,7 @@ import { ProductList } from './ProductList';
 import { SelectedProducts } from './SelectedProducts';
 import { useSelector } from 'react-redux';
 import { RootState } from '../../../store/store';
-import RequerimientoHeader from './RequerimientoHeader';
+import RequerimientoHeader from './RequerimientoHeader/RequerimientoHeader';
 import LoaderPage from '../../../components/Loader/LoaderPage';
 
 interface InitialValues {

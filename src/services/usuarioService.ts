@@ -9,14 +9,22 @@ interface Usuario {
   dni: number;
   usuario: string;
   contrasenna: string;
-  cargo_id: string;
+  cargo_id: string | CargoDetallado;
   rol_id: string;
+}
+
+interface CargoDetallado {
+  id: string;
+  nombre: string;
+  descripcion: string;
+  gerarquia: number;
 }
 
 interface Cargo {
   id: string;
   nombre: string;
   descripcion: string;
+  gerarquia: number;
 }
 
 interface UsuarioInput {
@@ -43,13 +51,33 @@ const GET_ALL_USUARIOS_AND_CARGOS_QUERY = gql`
       dni
       usuario
       contrasenna
-      cargo_id
+      cargo_id {
+        id
+        nombre
+        descripcion
+        gerarquia
+      }
       rol_id
     }
     listCargo {
+    id
+    nombre
+    descripcion
+    gerarquia
+    }
+    usuariosCargo {
       id
-      nombre
-      descripcion
+      nombres
+      apellidos
+      dni
+      usuario
+      rol_id
+      cargo_id {
+        id
+        nombre
+        descripcion
+        gerarquia
+      }
     }
   }
 `;
@@ -78,7 +106,12 @@ const UPDATE_USUARIO_MUTATION = gql`
       dni
       usuario
       contrasenna
-      cargo_id
+      cargo_id {
+        id
+        nombre
+        descripcion
+        gerarquia
+      }
       rol_id
     }
   }

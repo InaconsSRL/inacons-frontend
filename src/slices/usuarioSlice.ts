@@ -8,7 +8,7 @@ interface Usuario {
   dni: number;
   usuario: string;
   contrasenna: string;
-  cargo_id: string;
+  cargo_id: string | CargoDetallado;
   rol_id: string;
 }
 
@@ -16,19 +16,23 @@ interface Cargo {
   id: string;
   nombre: string;
   descripcion: string;
+  gerarquia: number;
 }
 
 interface CargoDetallado {
-  nombre: string;
-  gerarquia: string;
-  descripcion: string;
   id: string;
+  nombre: string;
+  descripcion: string;
+  gerarquia: number;
 }
 
 interface UsuarioCargo {
   id: string;
   nombres: string;
   apellidos: string;
+  dni: number;
+  usuario: string;
+  rol_id: string;
   cargo_id: CargoDetallado;
 }
 
@@ -54,7 +58,13 @@ const handleError = (error: unknown): string => {
   return String(error);
 };
 
-export const fetchUsuariosAndCargos = createAsyncThunk(
+interface FetchUsuariosAndCargosResponse {
+  getAllUsuarios: Usuario[];
+  listCargo: Cargo[];
+  usuariosCargo?: UsuarioCargo[];
+}
+
+export const fetchUsuariosAndCargos = createAsyncThunk<FetchUsuariosAndCargosResponse>(
   'usuario/fetchUsuariosAndCargos',
   async (_, { rejectWithValue }) => {
     try {
@@ -69,7 +79,11 @@ export const addUsuario = createAsyncThunk(
   'usuario/addUsuario',
   async (usuarioData: Omit<Usuario, 'id'>, { rejectWithValue }) => {
     try {
-      return await createUsuarioService(usuarioData);
+      const formattedData = {
+        ...usuarioData,
+        cargo_id: typeof usuarioData.cargo_id === 'string' ? usuarioData.cargo_id : usuarioData.cargo_id.id,
+      };
+      return await createUsuarioService(formattedData);
     } catch (error) {
       return rejectWithValue(handleError(error));
     }
@@ -97,12 +111,15 @@ const usuarioSlice = createSlice({
         state.loading = true;
         state.error = null;
       })
-      .addCase(fetchUsuariosAndCargos.fulfilled, (state, action: PayloadAction<{getAllUsuarios: Usuario[], listCargo: Cargo[], usuariosCargo: UsuarioCargo[]}>) => {
-        state.loading = false;
-        state.usuarios = action.payload.getAllUsuarios;
-        state.cargos = action.payload.listCargo;
-        state.usuariosCargo = action.payload.usuariosCargo;
-      })
+      .addCase(
+        fetchUsuariosAndCargos.fulfilled,
+        (state, action: PayloadAction<FetchUsuariosAndCargosResponse>) => {
+          state.loading = false;
+          state.usuarios = action.payload.getAllUsuarios;
+          state.cargos = action.payload.listCargo;
+          state.usuariosCargo = action.payload.usuariosCargo ?? [];
+        }
+      )
       .addCase(fetchUsuariosAndCargos.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload as string;
@@ -111,7 +128,7 @@ const usuarioSlice = createSlice({
         state.usuarios.push(action.payload);
       })
       .addCase(updateUsuario.fulfilled, (state, action: PayloadAction<Usuario>) => {
-        const index = state.usuarios.findIndex(usuario => usuario.id === action.payload.id);
+        const index = state.usuarios.findIndex((usuario) => usuario.id === action.payload.id);
         if (index !== -1) {
           state.usuarios[index] = action.payload;
         }

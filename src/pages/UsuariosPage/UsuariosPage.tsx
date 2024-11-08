@@ -11,6 +11,13 @@ import { RootState, AppDispatch } from '../../store/store';
 import LoaderPage from '../../components/Loader/LoaderPage';
 
 // Definición de interfaces
+interface Cargo {
+  id: string;
+  nombre: string;
+  descripcion: string;
+  gerarquia: string;
+}
+
 interface Usuario {
   id: string;
   nombres: string;
@@ -18,7 +25,7 @@ interface Usuario {
   dni: number;
   usuario: string;
   contrasenna: string;
-  cargo_id: string;
+  cargo_id: string | Cargo;
   rol_id: string;
 }
 
@@ -66,7 +73,11 @@ const UsuariosPage: React.FC = () => {
   };
 
   const handleEdit = (usuario: Usuario) => {
-    setEditingUsuario(usuario);
+    const usuarioConCargoIdString = {
+      ...usuario,
+      cargo_id: typeof usuario.cargo_id === 'object' ? usuario.cargo_id.id : usuario.cargo_id,
+    };
+    setEditingUsuario(usuarioConCargoIdString);
     setIsModalOpen(true);
   };
 
@@ -83,16 +94,15 @@ const UsuariosPage: React.FC = () => {
     setEditingUsuario(null);
   };
 
-  const getCargoNombre = (cargo_id: string) => {
-    const cargo = cargos.find(c => c.id === cargo_id);
-    return cargo ? cargo.nombre : 'Desconocido';
-  };
-
   const tableData = {
     headers: ["nombres", "apellidos", "dni", "usuario", "cargo", "rol_id", "opciones"],
     rows: usuarios.map(usuario => ({
-      ...usuario,
-      cargo: getCargoNombre(usuario.cargo_id),
+      cargo: typeof usuario.cargo_id === 'object' ? usuario.cargo_id.nombre : '', // Obtener nombre si cargo_id es objeto
+      nombres: usuario.nombres,
+      apellidos: usuario.apellidos,
+      dni: usuario.dni,
+      usuario: usuario.usuario,
+      rol_id: usuario.rol_id,
       opciones: (
         <Button text='Editar' color='transp' className='text-black' onClick={() => handleEdit(usuario)}></Button>
       )
@@ -151,7 +161,10 @@ const UsuariosPage: React.FC = () => {
               transition={{ duration: 0.3 }}
             >
               <UsuarioFormComponent
-                initialValues={editingUsuario || undefined}
+                initialValues={editingUsuario ? {
+                  ...editingUsuario,
+                  cargo_id: typeof editingUsuario.cargo_id === 'object' ? editingUsuario.cargo_id.id : editingUsuario.cargo_id
+                } : undefined}
                 onSubmit={handleSubmit}
                 cargos={cargos}
               />

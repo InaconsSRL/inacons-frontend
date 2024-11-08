@@ -1,11 +1,28 @@
 // DetalleRequerimiento.tsx
 import React, { useState, useCallback, memo } from 'react';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
-import { AppDispatch } from '../../../store/store';
-import { updateRequerimiento } from '../../../slices/requerimientoSlice';
-import Button from '../../../components/Buttons/Button';
-import LoaderPage from '../../../components/Loader/LoaderPage';
+import { AppDispatch, RootState } from '../../../../store/store';
+import { updateRequerimiento } from '../../../../slices/requerimientoSlice';
+import Button from '../../../../components/Buttons/Button';
+import LoaderPage from '../../../../components/Loader/LoaderPage';
+import Toast from '../../../../components/Toast/Toast';
+
+interface UsuarioCargo {
+  id: string;
+  nombres: string;
+  apellidos: string;
+  dni: number;
+  usuario: string;
+  contrasenna: string;
+  rol_id: string | null;
+  cargo_id: {
+    id: string;
+    nombre: string;
+    descripcion: string;
+    gerarquia: number;
+  };
+}
 
 // Definir la interfaz para el objeto requerimiento
 interface Requerimiento {
@@ -48,6 +65,7 @@ const formatDateForInput = (dateString: string): string => {
 
 interface ReadOnlyViewProps {
   formData: FormData;
+  usuariosCargo: UsuarioCargo[];
   requerimiento: Requerimiento;
   obras: { obras: { id: string; nombre: string }[] };
   onEdit: () => void;
@@ -55,7 +73,7 @@ interface ReadOnlyViewProps {
   onSave: () => void;  // Nueva prop
 }
 
-const ReadOnlyView = memo(({ formData, requerimiento, obras, onEdit, onSave, onSubmit }: ReadOnlyViewProps) => (
+const ReadOnlyView = memo(({ usuariosCargo, formData, requerimiento, obras, onEdit, onSave, onSubmit }: ReadOnlyViewProps) => (
   <div className="grid grid-cols-4 gap-1 bg-white/50 p-2 rounded-lg">
     <div>
       <span className="block text-xs text-gray-700">Código:</span>
@@ -89,16 +107,28 @@ const ReadOnlyView = memo(({ formData, requerimiento, obras, onEdit, onSave, onS
     <div className="col-span-1">
       <span className="block text-xs text-gray-700">Elige al Supervisor:</span>
       <select className="w-full border rounded text-xs p-1">
-        <option value="alejandro">Alejandro Guevara Martinez</option>
-        <option value="wilfredo">Wilfredo Requiz Condor</option>
+        <option value="">--Selecciona Supervisor--</option>
+        {usuariosCargo
+          .filter(usuario => usuario.cargo_id?.gerarquia === 3)
+          .map(usuario => (
+            <option key={usuario.id} value={usuario.id}>
+              {usuario.nombres} {usuario.apellidos}
+            </option>
+          ))}
       </select>
     </div>
 
     <div className="col-span-1">
       <span className="block text-xs text-gray-700">Elige al Gerente:</span>
       <select className="w-full border rounded text-xs p-1">
-        <option value="alejandro">Henry Godiño Calisaya</option>
-        <option value="wilfredo">Yoali Godiño Calisaya</option>
+        <option value="">--Selecciona Gerente--</option>
+        {usuariosCargo
+          .filter(usuario => usuario.cargo_id?.gerarquia === 4)
+          .map(usuario => (
+            <option key={usuario.id} value={usuario.id}>
+              {usuario.nombres} {usuario.apellidos}
+            </option>
+          ))}
       </select>
     </div>
 
@@ -206,6 +236,8 @@ const EditView = memo(({ formData, handleInputChange, handleSubmit, setIsEditing
 const RequerimientoHeader: React.FC<DetalleRequerimientoProps> = memo(({ requerimiento, obras, onClose }) => {
   const dispatch = useDispatch<AppDispatch>();
   const navigate = useNavigate();
+  const { usuariosCargo } = useSelector((state: RootState) => state.usuario);
+
   const [isEditing, setIsEditing] = useState(false);
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState<FormData>(() => ({
@@ -216,6 +248,10 @@ const RequerimientoHeader: React.FC<DetalleRequerimientoProps> = memo(({ requeri
     codigo: requerimiento.codigo || ''
   }));
 
+  // Agregar estados para el Toast
+  const [showToast, setShowToast] = useState(false);
+  const [toastMessage, setToastMessage] = useState('');
+  const [toastTitle, setToastTitle] = useState('');
 
   const handleInputChange = useCallback((e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>): void => {
     const { name, value } = e.target;
@@ -223,7 +259,18 @@ const RequerimientoHeader: React.FC<DetalleRequerimientoProps> = memo(({ requeri
       ...prev,
       [name]: value
     }));
-  }, []);
+
+    // Mostrar Toast según el campo modificado
+    if (name === 'fecha_final') {
+      setToastTitle('Fecha Final');
+      setToastMessage(`Se ha seleccionado la fecha: ${value}`);
+      setShowToast(true);
+    } else if (name === 'sustento') {
+      setToastTitle('Sustento');
+      setToastMessage(`Modificando sustento - ID: ${requerimiento.id}`);
+      setShowToast(true);
+    }
+  }, [requerimiento.id]);
 
   const handleSubmit = useCallback(async (e: React.FormEvent<HTMLFormElement>): Promise<void> => {
     e.preventDefault();
@@ -276,6 +323,19 @@ const RequerimientoHeader: React.FC<DetalleRequerimientoProps> = memo(({ requeri
 
   return (
     <div className="w-full ">
+      {/* Agregar el componente Toast */}
+      <Toast
+        index={0}
+        title={toastTitle}
+        message={toastMessage}
+        variant="danger"
+        position="bottom-right"
+        duration={3000}
+        isVisible={showToast}
+        onClose={() => setShowToast(false)}
+        icon={<i className="bi bi-info-circle"></i>}
+      />      
+
       {isEditing ? (
         <EditView
           formData={formData}
@@ -287,6 +347,7 @@ const RequerimientoHeader: React.FC<DetalleRequerimientoProps> = memo(({ requeri
         />
       ) : (
         <ReadOnlyView
+          usuariosCargo={usuariosCargo}
           formData={formData}
           requerimiento={requerimiento}
           obras={obras}

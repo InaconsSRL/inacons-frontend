@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { FiCalendar, FiCheck, FiCheckSquare, FiChevronsDown, FiX } from 'react-icons/fi';
-import { fetchRequerimientoRecursos, updateRequerimientoRecurso, addRequerimientoAprobacionThunk } from '../../slices/requerimientoRecursoSlice';
+import { fetchRequerimientoRecursos, updateRequerimientoRecurso,  } from '../../slices/requerimientoRecursoSlice';
 import { getRequerimiento, updateRequerimiento } from '../../slices/requerimientoSlice';
 import { useDispatch, useSelector } from 'react-redux';
 import { RootState, AppDispatch } from '../../store/store';
@@ -48,7 +48,7 @@ interface AprobarRequerimientoProps {
   requerimiento: Requerimiento;
 }
 
-const AprobarRequerimiento = ({ requerimiento }: AprobarRequerimientoProps) => {
+const AprobacionRequerimiento = ({ requerimiento }: AprobarRequerimientoProps) => {
 
   const dispatch = useDispatch<AppDispatch>();  
   const id = requerimiento.id
@@ -355,4 +355,4 @@ const AprobarRequerimiento = ({ requerimiento }: AprobarRequerimientoProps) => {
   );
 };
 
-export default AprobarRequerimiento;
+export default AprobacionRequerimiento;

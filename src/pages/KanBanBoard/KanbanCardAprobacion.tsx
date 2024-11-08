@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Task } from './types/kanban';
-import AprobarRequerimiento from '../AprobacionRequerimientoPage/AprobarRequerimiento';
+import AprobarRequerimiento from '../AprobacionRequerimientoPage/AprobacionRequerimiento';
 import Modal from '../../components/Modal/Modal';
 
 interface KanbanCardProps {

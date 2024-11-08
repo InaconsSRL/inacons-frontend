@@ -22,6 +22,7 @@ interface Cargo {
   id: string;
   nombre: string;
   descripcion: string;
+  gerarquia: string;
 }
 
 interface FormComponentProps {

@@ -34,6 +34,10 @@ const Sidebar: React.FC<SidebarProps> = ({ isSidebarOpen, toggleSidebar }) => {
     { to: "/dashboard/tipoCostoRecurso", icon: FiType, text: "Tipo de Costo" },
   ];
 
+  const moduloCompras = [
+    { to: "/dashboard/compras", icon: FiType, text: "ComprasPage" },
+  ];
+
   const moduloAlmacen = [
     { to: "/dashboard/almacen", icon: FiBriefcase, text: "Almacen" },
     { to: "/dashboard/almacenBoard", icon: FiBriefcase, text: "AlmacenBoard" },
@@ -96,6 +100,13 @@ const Sidebar: React.FC<SidebarProps> = ({ isSidebarOpen, toggleSidebar }) => {
         <DropdownMenu
           title="Recursos"
           items={moduloRecursosItems}
+          isSidebarOpen={isSidebarOpen || (!isMobile && isHovered)}
+          toggleSidebar={toggleSidebar}
+        />
+
+<DropdownMenu
+          title="Compras"
+          items={moduloCompras}
           isSidebarOpen={isSidebarOpen || (!isMobile && isHovered)}
           toggleSidebar={toggleSidebar}
         />
