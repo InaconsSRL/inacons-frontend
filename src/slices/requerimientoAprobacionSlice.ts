@@ -1,4 +1,4 @@
-import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
+import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
 import {
   listRequerimientoAprobaciones,
   addRequerimientoAprobacion,
@@ -8,6 +8,15 @@ import {
 } from '../services/requerimientoAprobacionService';
 
 interface RequerimientoAprobacion {
+  requerimiento_id: string;
+  usuario_id: string;
+  estado_aprobacion: string;
+  fecha_aprobacion?: Date;
+  comentario?: string;
+  gerarquia_aprobacion?: number;
+}
+
+interface RequerimientoUpdate {
   id: string;
   requerimiento_id: string;
   usuario_id: string;
@@ -18,7 +27,7 @@ interface RequerimientoAprobacion {
 }
 
 interface RequerimientoAprobacionState {
-  aprobaciones: RequerimientoAprobacion[];
+  aprobaciones: RequerimientoUpdate[];
   loading: boolean;
   error: string | null;
 }
@@ -42,14 +51,7 @@ export const fetchAprobaciones = createAsyncThunk(
 
 export const addAprobacion = createAsyncThunk(
   'requerimientoAprobacion/add',
-  async (data: {
-    requerimiento_id: string;
-    usuario_id: string;
-    estado_aprobacion: string;
-    fecha_aprobacion?: Date;
-    comentario?: string;
-    gerarquia_aprobacion?: number;
-  }, { rejectWithValue }) => {
+  async (data: RequerimientoAprobacion, { rejectWithValue }) => {
     try {
       return await addRequerimientoAprobacion(data);
     } catch (error) {
@@ -60,7 +62,7 @@ export const addAprobacion = createAsyncThunk(
 
 export const updateAprobacion = createAsyncThunk(
   'requerimientoAprobacion/update',
-  async (data: RequerimientoAprobacion, { rejectWithValue }) => {
+  async (data: RequerimientoUpdate, { rejectWithValue }) => {
     try {
       return await updateRequerimientoAprobacion(data);
     } catch (error) {
@@ -106,7 +108,7 @@ const requerimientoAprobacionSlice = createSlice({
       .addCase(fetchAprobaciones.pending, (state) => {
         state.loading = true;
       })
-      .addCase(fetchAprobaciones.fulfilled, (state, action) => {
+      .addCase(fetchAprobaciones.fulfilled, (state, action: PayloadAction<RequerimientoUpdate[]>) => {
         state.loading = false;
         state.aprobaciones = action.payload;
         state.error = null;
@@ -116,7 +118,7 @@ const requerimientoAprobacionSlice = createSlice({
         state.error = action.payload as string;
       })
       // Add cases
-      .addCase(addAprobacion.fulfilled, (state, action) => {
+      .addCase(addAprobacion.fulfilled, (state, action: PayloadAction<RequerimientoUpdate>) => {
         state.aprobaciones.push(action.payload);
         state.error = null;
       })

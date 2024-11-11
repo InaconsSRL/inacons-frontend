@@ -9,17 +9,24 @@ import KanbanColumn from './KanbanColumn';
 import KanbanCardAprobacion from './KanbanCardAprobacion';
 import KanbanCardLogisticaUno from './2KanbanCardLogisticaUno';
 import KanbanCard from './KanbanCard';
+import { Column, Requerimiento } from './types/kanban'; // Añadir esta línea
+import Button from '../../components/Buttons/Button';
+import { FiRefreshCcw } from 'react-icons/fi';
 
 const KanbanBoard = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const dispatch = useDispatch<AppDispatch>();
-  const requerimientos = useSelector((state: RootState) => state.requerimiento.requerimientos);
+  const requerimientos: Requerimiento[] = useSelector((state: RootState) => state.requerimiento.requerimientos);
   const [modalNuevoRequerimiento, setModalNuevoRequerimiento] = useState(false);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const [showButtons, setShowButtons] = useState(false);
 
+  const user = useSelector((state: RootState) => state.user);
+
   useEffect(() => {
+
     dispatch(fetchRequerimientos());
+
   }, [dispatch]);
 
   useEffect(() => {
@@ -29,16 +36,13 @@ const KanbanBoard = () => {
         setShowButtons(hasOverflow);
       }
     };
-
     // Comprobar overflow inicial
     checkOverflow();
-
     // Observar cambios en el tamaño
     const resizeObserver = new ResizeObserver(checkOverflow);
     if (scrollContainerRef.current) {
       resizeObserver.observe(scrollContainerRef.current);
     }
-
     return () => resizeObserver.disconnect();
   }, []);
 
@@ -47,139 +51,67 @@ const KanbanBoard = () => {
   (requerimiento.codigo.toLowerCase().includes(searchTerm.toLowerCase()) ||
     requerimiento.sustento.toLowerCase().includes(searchTerm.toLowerCase()))
   );
-  console.log(filteredRequerimientos);
+  
   // Columnas de requerimientos según estado
-  const aprobacionSupervisor = {
-    id: 'requerimientos_pendientes',
+  const aprobacionSupervisor: Column = {
+    id: 'aprobacion_supervisor',
     title: 'Aprobación del Supervisor',
     color: "#d86827",
-    tasks: filteredRequerimientos
+    requerimiento: filteredRequerimientos
       .filter(req => req.estado_atencion === "pendiente")
-      .map(req => ({
-        id: req.id,
-        title: req.codigo,
-        description: req.sustento,
-        projectCode: req.codigo.split('-')[0],
-        requestType: 'Aprobacion Supervisor',
-        deliveryDate: new Date(req.fecha_final).toLocaleDateString('es-ES'),
-        assignees: [req.usuario],
-        purchaseType: 'Por Aprobar',
-        approvedBy: 'Pendiente Aprobacion Supervisor'
-      }))
+      .sort((a, b) => {
+        const aHasUser = a.aprobacion?.some(aprob => aprob.id_usuario === user.id) || false;
+        const bHasUser = b.aprobacion?.some(aprob => aprob.id_usuario === user.id) || false;
+        return aHasUser === bHasUser ? 0 : aHasUser ? -1 : 1;
+      })
   };
 
-  const aprobacionGerencia = {
+  const aprobacionGerencia: Column = {
     id: 'aprobacion_gerencia',
     title: 'Aprobación de Gerencia',
     color: "#e2524a",
-    tasks: filteredRequerimientos
-      .filter(req => req.estado_atencion === "aprobado_supervisor")
-      .map(req => ({
-        id: req.id,
-        title: req.codigo,
-        description: req.sustento,
-        projectCode: req.codigo.split('-')[0],
-        requestType: 'Aprobacion Gerencia',
-        deliveryDate: new Date(req.fecha_solicitud).toLocaleDateString('es-ES'),
-        assignees: [req.usuario],
-        purchaseType: 'Aprobado por Supervisor',
-        approvedBy: 'Pendiente Aprobacion Gerencia'
-      }))
+    requerimiento: filteredRequerimientos
+    .filter(req => req.estado_atencion === "aprobado_supervisor")
+    .sort((a, b) => {
+      const aHasUser = a.aprobacion?.some(aprob => aprob.id_usuario === user.id) || false;
+      const bHasUser = b.aprobacion?.some(aprob => aprob.id_usuario === user.id) || false;
+      return aHasUser === bHasUser ? 0 : aHasUser ? -1 : 1;
+    })
   };
 
-  const gestionLogisticaUno = {
+  const gestionLogisticaUno: Column = {
     id: 'gestion_logistica',
-    title: 'Gestión de Logística a Almacén',
+    title: 'Logística a Almacén',
     color: "#C84630",
-    tasks: filteredRequerimientos
-      .filter(req => req.estado_atencion === "aprobado_gerencia")
-      .map(req => ({
-        id: req.id,
-        title: req.codigo,
-        description: req.sustento,
-        projectCode: req.codigo.split('-')[0],
-        requestType: 'Sugerir Compra y Transferencia',
-        deliveryDate: new Date(req.fecha_solicitud).toLocaleDateString('es-ES'),
-        assignees: [req.usuario],
-        purchaseType: 'N/A',
-        approvedBy: 'Gerencia'
-      }))
+    requerimiento: filteredRequerimientos.filter(req => req.estado_atencion === "aprobado_gerencia")
   };
 
-  const gestionAlmacen = {
+  const gestionAlmacen: Column = {
     id: 'gestion_almacen',
-    title: 'Gestión de Almacén y traslados',
+    title: 'Almacén y traslados',
     color: "#a2122f",
-    tasks: filteredRequerimientos
-      .filter(req => req.estado_atencion === "aprobado_logistica")
-      .map(req => ({
-        id: req.id,
-        title: req.codigo,
-        description: req.sustento,
-        projectCode: req.codigo.split('-')[0],
-        requestType: 'REQUERIMIENTO',
-        deliveryDate: new Date(req.fecha_solicitud).toLocaleDateString('es-ES'),
-        assignees: [req.usuario],
-        purchaseType: 'N/A',
-        approvedBy: 'Gerencia'
-      }))
+    requerimiento: filteredRequerimientos.filter(req => req.estado_atencion === "aprobado_logistica")
   };
 
-  const gestionLogisticaDos = {
+  const gestionLogisticaDos: Column = {
     id: 'gestion_traslado',
-    title: 'Cotización y Compra de Materiales',
+    title: 'Cotización y Compra',
     color: "#693726",
-    tasks: filteredRequerimientos
-      .filter(req => req.estado_atencion === "aprobado_almacen")
-      .map(req => ({
-        id: req.id,
-        title: req.codigo,
-        description: req.sustento,
-        projectCode: req.codigo.split('-')[0],
-        requestType: 'REQUERIMIENTO',
-        deliveryDate: new Date(req.fecha_solicitud).toLocaleDateString('es-ES'),
-        assignees: [req.usuario],
-        purchaseType: 'N/A',
-        approvedBy: 'Gerencia'
-      }))
+    requerimiento: filteredRequerimientos.filter(req => req.estado_atencion === "aprobado_almacen")
   };
 
-  const gestionatencionParcial = {
+  const gestionatencionParcial: Column = {
     id: 'gestion_atencion_parcial',
-    title: 'Atencion Parcial de Requerimientos',
+    title: 'Atencion Parcial',
     color: "#332e3c",
-    tasks: filteredRequerimientos
-      .filter(req => req.estado_atencion === "atencion_parcial")
-      .map(req => ({
-        id: req.id,
-        title: req.codigo,
-        description: req.sustento,
-        projectCode: req.codigo.split('-')[0],
-        requestType: 'REQUERIMIENTO',
-        deliveryDate: new Date(req.fecha_solicitud).toLocaleDateString('es-ES'),
-        assignees: [req.usuario],
-        purchaseType: 'N/A',
-        approvedBy: 'Gerencia'
-      }))
+    requerimiento: filteredRequerimientos.filter(req => req.estado_atencion === "atencion_parcial")
   };
 
-  const gestionCompletados = {
+  const gestionCompletados: Column = {
     id: 'atencion_completados',
     title: 'Requerimientos Terminados',
     color: "#0B132B",
-    tasks: filteredRequerimientos
-      .filter(req => req.estado_atencion === "terminados")
-      .map(req => ({
-        id: req.id,
-        title: req.codigo,
-        description: req.sustento,
-        projectCode: req.codigo.split('-')[0],
-        requestType: 'REQUERIMIENTO',
-        deliveryDate: new Date(req.fecha_solicitud).toLocaleDateString('es-ES'),
-        assignees: [req.usuario],
-        purchaseType: 'N/A',
-        approvedBy: 'Gerencia'
-      }))
+    requerimiento: filteredRequerimientos.filter(req => req.estado_atencion === "terminados")
   };
 
   const scroll = (direction: 'left' | 'right') => {
@@ -201,6 +133,10 @@ const KanbanBoard = () => {
     setModalNuevoRequerimiento(false);
   }
 
+  const handleRefresh = () => {
+    dispatch(fetchRequerimientos());
+  };
+
   return (
     <div className="p-4 relative"> {/* Añadir relative */}
       <div className="mb-4 flex justify-between items-center">
@@ -211,6 +147,8 @@ const KanbanBoard = () => {
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
         />
+        <Button  text='Actualizar' color='blanco' onClick={handleRefresh} className="rounded w-auto" 
+          icon={<FiRefreshCcw className="text-green-500 text-center h-3 w-3" />} />
         <button onClick={() => setModalNuevoRequerimiento(true)} className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition-colors">
           Nuevo Requerimiento
         </button>
@@ -230,28 +168,28 @@ const KanbanBoard = () => {
         {/* Contenedor scrolleable */}
         <div
           ref={scrollContainerRef}
-          className="flex overflow-x-auto space-x-4 max-h-[70vh] scroll-smooth snap-x snap-mandatory"
+          className="flex overflow-x-auto space-x-4 max-h-[calc(100vh-14rem)] h-full scroll-smooth snap-x snap-mandatory"
         >
-          <div className="snap-center min-w-[240px] min-h-[calc(100vh-285px)] ">
+          <div className="snap-center min-w-[240px] min-h-[calc(100vh-15rem)] ">
             <KanbanColumn key={aprobacionSupervisor.id} column={aprobacionSupervisor} CardComponent={KanbanCardAprobacion} />
           </div>
-          <div className="snap-center min-w-[240px] min-h-[calc(100vh-285px)] " >
+          <div className="snap-center min-w-[240px] min-h-[calc(100vh-15rem)] " >
             <KanbanColumn key={aprobacionGerencia.id} column={aprobacionGerencia} CardComponent={KanbanCardAprobacion} />
           </div>
-          <div className="snap-center min-w-[240px] min-h-[calc(100vh-285px)] ">
+          <div className="snap-center min-w-[240px] min-h-[calc(100vh-15rem)] ">
             <KanbanColumn key={gestionLogisticaUno.id} column={gestionLogisticaUno} CardComponent={KanbanCardLogisticaUno} />
           </div>
-          <div className="snap-center min-w-[240px] min-h-[calc(100vh-285px)] ">
-            <KanbanColumn key={gestionAlmacen.id} column={gestionAlmacen} CardComponent={KanbanCard} />
+          <div className="snap-center min-w-[240px] min-h-[calc(100vh-15rem)] ">
+            <KanbanColumn key={gestionAlmacen.id} column={gestionAlmacen} CardComponent={KanbanCardAprobacion} />
           </div>
-          <div className="snap-center min-w-[240px] min-h-[calc(100vh-285px)] ">
-            <KanbanColumn key={gestionLogisticaDos.id} column={gestionLogisticaDos} CardComponent={KanbanCard} />
+          <div className="snap-center min-w-[240px] min-h-[calc(100vh-15rem)] ">
+            <KanbanColumn key={gestionLogisticaDos.id} column={gestionLogisticaDos} CardComponent={KanbanCardAprobacion} />
           </div>
-          <div className="snap-center min-w-[240px] min-h-[calc(100vh-285px)] ">
-            <KanbanColumn key={gestionatencionParcial.id} column={gestionatencionParcial} CardComponent={KanbanCard} />
+          <div className="snap-center min-w-[240px] min-h-[calc(100vh-15rem)] ">
+            <KanbanColumn key={gestionatencionParcial.id} column={gestionatencionParcial} CardComponent={KanbanCardAprobacion} />
           </div>
-          <div className="snap-center min-w-[240px] min-h-[calc(100vh-285px)] ">
-            <KanbanColumn key={gestionCompletados.id} column={gestionCompletados} CardComponent={KanbanCard} />
+          <div className="snap-center min-w-[240px] min-h-[calc(100vh-15rem)] ">
+            <KanbanColumn key={gestionCompletados.id} column={gestionCompletados} CardComponent={KanbanCardAprobacion} />
           </div>
         </div>
 

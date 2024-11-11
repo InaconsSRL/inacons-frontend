@@ -50,8 +50,6 @@ const RequerimientosComponent: React.FC = () => {
     dispatch(fetchRequerimientos());
   }, []);
 
-  console.log(requerimientos);
-
   const handleEdit = (requerimiento: Requerimiento) => {
     setEditingRequerimiento(requerimiento);
     setIsModalOpen(true);
@@ -137,13 +135,13 @@ const RequerimientosComponent: React.FC = () => {
     if (req.estado_atencion === "Pendiente de envio") {
       return (
         <div className='flex flex-row gap-2'>
+          {viewButton}
           <button
             className='text-blue-500'
             onClick={() => handleEdit(req)}
           >
             <FiEdit />
           </button>
-          {viewButton}
         </div>
       );
     }
@@ -153,7 +151,7 @@ const RequerimientosComponent: React.FC = () => {
   const tableData = {
     headers: ["obra", "fecha emision", "vence", "estado", "codigo", "descripcion", "solicita", "opciones"],
     rows: getFilteredRequerimientos().map(req => ({
-      ...req,
+      codigo: req.codigo,
       solicita: req.usuario,
       obra: req.codigo.split('-')[1],
       descripcion: req.sustento,

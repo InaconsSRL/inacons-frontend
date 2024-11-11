@@ -1,18 +1,26 @@
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
-import { listRequerimientosService, addRequerimientoService, updateRequerimientoService, getRequerimientoService } from '../services/requerimientoService';
+import { listRequerimientosService, addRequerimientoService, updateRequerimientoService, getRequerimientoService, deleteRequerimientoService } from '../services/requerimientoService';
 
+interface Aprobacion {
+  id_usuario: string;
+  id_aprobacion: string;
+  cargo: string;
+  gerarquia: number;
+}
 
-interface Requerimiento {
-  id: string;
+export interface Requerimiento {
+  estado: string;
+  aprobacion: Aprobacion[];
   codigo: string;
-  usuario_id: string;
-  usuario: string;
-  presupuesto_id: string;
-  fecha_solicitud: string;
-  fecha_final: string;
   estado_atencion: string;
-  sustento: string;
+  fecha_final: string;
+  fecha_solicitud: string;
+  id: string;
   obra_id: string;
+  presupuesto_id: string;
+  sustento: string;
+  usuario: string;
+  usuario_id: string;
 }
 
 interface RequerimientoState {
@@ -77,6 +85,17 @@ export const getRequerimiento = createAsyncThunk(
     }
   }
 );
+
+export const deleteRequerimiento = createAsyncThunk(
+  'requerimiento/deleteRequerimiento',
+  async (id: string, { rejectWithValue }) => {
+    try {
+      return await deleteRequerimientoService(id);
+    } catch (error) {
+      return rejectWithValue(handleError(error));
+    }
+  }
+);
   
   const requerimientoSlice = createSlice({
     name: 'requerimiento',
@@ -116,6 +135,9 @@ export const getRequerimiento = createAsyncThunk(
         .addCase(getRequerimiento.rejected, (state, action) => {
           state.loading = false;
           state.error = action.payload as string;
+        })
+        .addCase(deleteRequerimiento.fulfilled, (state, action: PayloadAction<{ id: string }>) => {
+          state.requerimientos = state.requerimientos.filter(req => req.id !== action.payload.id);
         });
     },
   });

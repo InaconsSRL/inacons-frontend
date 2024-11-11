@@ -14,45 +14,62 @@ const LIST_REQUERIMIENTOS_QUERY = gql`
       sustento
       obra_id
       codigo
+      aprobacion {
+        id_usuario
+        id_aprobacion
+        cargo
+        gerarquia
+      }
     }
   }
 `;
 
 const ADD_REQUERIMIENTO_MUTATION = gql`
-  mutation AddRequerimiento($usuario_id: String!, $fecha_final: DateTime, $presupuesto_id: String, $sustento: String, $obra_id: String, $estado_atencion: String) {
-  addRequerimiento(usuario_id: $usuario_id, fecha_final: $fecha_final, presupuesto_id: $presupuesto_id, sustento: $sustento, obra_id: $obra_id, estado_atencion: $estado_atencion) {
-    id
-    codigo
-    usuario_id
-    usuario
-    presupuesto_id
-    fecha_solicitud
-    fecha_final
-    estado_atencion
-    sustento
-    obra_id
+  mutation AddRequerimiento($usuario_id: String!, $presupuesto_id: String, $fecha_solicitud: DateTime, $fecha_final: DateTime, $estado_atencion: String, $sustento: String, $obra_id: String) {
+    addRequerimiento(usuario_id: $usuario_id, presupuesto_id: $presupuesto_id, fecha_solicitud: $fecha_solicitud, fecha_final: $fecha_final, estado_atencion: $estado_atencion, sustento: $sustento, obra_id: $obra_id) {
+      id
+      usuario_id
+      usuario
+      presupuesto_id
+      fecha_solicitud
+      fecha_final
+      estado_atencion
+      sustento
+      obra_id
+      codigo
+      aprobacion {
+        id_usuario
+        id_aprobacion
+        cargo
+        gerarquia
+      }
+    }
   }
-}
 `;
 
 const UPDATE_REQUERIMIENTO_MUTATION = gql`
-  mutation UpdateRequerimiento($updateRequerimientoId: ID!, $presupuesto_id: String, $fecha_final: DateTime, $sustento: String, $obra_id: String, $estado_atencion: String) {
-  updateRequerimiento(id: $updateRequerimientoId, presupuesto_id: $presupuesto_id, fecha_final: $fecha_final, sustento: $sustento, obra_id: $obra_id, estado_atencion: $estado_atencion) {
-    id
-    codigo
-    usuario_id
-    usuario
-    presupuesto_id
-    fecha_solicitud
-    fecha_final
-    estado_atencion
-    sustento
-    obra_id
+  mutation UpdateRequerimiento($updateRequerimientoId: ID!, $usuario_id: String, $presupuesto_id: String, $fecha_solicitud: DateTime, $fecha_final: DateTime, $estado_atencion: String, $sustento: String, $obra_id: String) {
+    updateRequerimiento(id: $updateRequerimientoId, usuario_id: $usuario_id, presupuesto_id: $presupuesto_id, fecha_solicitud: $fecha_solicitud, fecha_final: $fecha_final, estado_atencion: $estado_atencion, sustento: $sustento, obra_id: $obra_id) {
+      id
+      usuario_id
+      usuario
+      presupuesto_id
+      fecha_solicitud
+      fecha_final
+      estado_atencion
+      sustento
+      obra_id
+      codigo
+      aprobacion {
+        id_usuario
+        id_aprobacion
+        cargo
+        gerarquia
+      }
+    }
   }
-}
 `;
 
-// Agregar esta constante junto con las otras queries/mutations
 const GET_REQUERIMIENTO_QUERY = gql`
   query GetRequerimiento($getRequerimientoId: ID!) {
     getRequerimiento(id: $getRequerimientoId) {
@@ -66,6 +83,20 @@ const GET_REQUERIMIENTO_QUERY = gql`
       sustento
       obra_id
       codigo
+      aprobacion {
+        id_usuario
+        id_aprobacion
+        cargo
+        gerarquia
+      }
+    }
+  }
+`;
+
+const DELETE_REQUERIMIENTO_MUTATION = gql`
+  mutation DeleteRequerimiento($deleteRequerimientoId: ID!) {
+    deleteRequerimiento(id: $deleteRequerimientoId) {
+      id
     }
   }
 `;
@@ -117,7 +148,6 @@ export const updateRequerimientoService = async (requerimiento: { id: string; us
   }
 };
 
-// Agregar esta función de servicio
 export const getRequerimientoService = async (id: string) => {
   try {
     const response = await client.query({
@@ -132,6 +162,22 @@ export const getRequerimientoService = async (id: string) => {
     return response.data.getRequerimiento;
   } catch (error) {
     console.error('Error al actualizar el requerimiento:', error);
+    throw error;
+  }
+};
+
+export const deleteRequerimientoService = async (id: string) => {
+  try {
+    const response = await client.mutate({
+      mutation: DELETE_REQUERIMIENTO_MUTATION,
+      variables: { deleteRequerimientoId: id },
+    });
+    if (response.errors) {
+      throw new Error(response.errors[0]?.message || 'Error desconocido');
+    }
+    return response.data.deleteRequerimiento;
+  } catch (error) {
+    console.error('Error al eliminar el requerimiento:', error);
     throw error;
   }
 };

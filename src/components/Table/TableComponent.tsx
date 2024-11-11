@@ -34,7 +34,7 @@ const preventDefault = (e: Event) => {
 
 const shouldUseAnimations = (pageSize: number) => pageSize < 50;
 
-const TableComponent: React.FC<TableComponentProps> = ({ tableData, maxCharacters = 48 }) => {
+const TableComponent: React.FC<TableComponentProps> = ({ tableData, maxCharacters = 30 }) => {
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
   const [columnResizeMode] = useState<ColumnResizeMode>('onChange');

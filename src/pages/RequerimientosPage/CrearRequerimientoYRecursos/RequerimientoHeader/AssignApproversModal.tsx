@@ -47,6 +47,20 @@ const AssignApproversModal: React.FC<AssignApproversModalProps> = ({ onSubmit, o
   const supervisores = usuariosCargo.filter(usuario => usuario.cargo_id.gerarquia === 3);
   const gerentes = usuariosCargo.filter(usuario => usuario.cargo_id.gerarquia === 4);
 
+  // Filtrar supervisores disponibles (los que no están asignados)
+  const supervisoresDisponibles = supervisores.filter(
+    supervisor => !supervisoresAsignados.some(
+      asignado => asignado.usuario.id === supervisor.id
+    )
+  );
+
+  // Filtrar gerentes disponibles (los que no están asignados)
+  const gerentesDisponibles = gerentes.filter(
+    gerente => !gerentesAsignados.some(
+      asignado => asignado.usuario.id === gerente.id
+    )
+  );
+
   useEffect(() => {
     const loadAprobadores = async () => {
       setLoading(true);
@@ -172,6 +186,17 @@ const AssignApproversModal: React.FC<AssignApproversModalProps> = ({ onSubmit, o
     setLoading(false);
   };
 
+  const handleSubmit = () => {
+    if (supervisoresAsignados.length === 0 || gerentesAsignados.length === 0) {
+      setToastMessage({ 
+        message: 'Debe asignar al menos un supervisor y un gerente para continuar', 
+        variant: 'danger' 
+      });
+      return;
+    }
+    onSubmit();
+  };
+
   return (
     <>
 
@@ -201,7 +226,7 @@ const AssignApproversModal: React.FC<AssignApproversModalProps> = ({ onSubmit, o
                   className="w-full border border-gray-300 rounded-l px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 text-xs"
                 >
                   <option value="">Seleccione un supervisor</option>
-                  {supervisores.map((usuario) => (
+                  {supervisoresDisponibles.map((usuario) => (
                     <option key={usuario.id} value={usuario.id}>
                       {usuario.nombres} {usuario.apellidos}
                     </option>
@@ -240,7 +265,7 @@ const AssignApproversModal: React.FC<AssignApproversModalProps> = ({ onSubmit, o
                   className="w-full border border-gray-300 rounded-l px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 text-xs"
                 >
                   <option value="">Seleccione un gerente</option>
-                  {gerentes.map((usuario) => (
+                  {gerentesDisponibles.map((usuario) => (
                     <option key={usuario.id} value={usuario.id}>
                       {usuario.nombres} {usuario.apellidos}
                     </option>
@@ -272,16 +297,16 @@ const AssignApproversModal: React.FC<AssignApproversModalProps> = ({ onSubmit, o
           </div>
           <div className="flex justify-end mt-6 gap-4">
             <button
-              onClick={onSubmit}
+              onClick={handleSubmit}
               className="bg-green-500 text-white px-4 py-2 rounded hover:bg-gray-600"
             >
-              Guardar
+              ENVIAR
             </button>
             <button
               onClick={onClose}
               className="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600"
             >
-              Cerrar
+              CANCELAR
             </button>
           </div>
         </div>

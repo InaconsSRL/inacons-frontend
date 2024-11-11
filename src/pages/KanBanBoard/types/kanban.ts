@@ -1,25 +1,36 @@
 // src/types/kanban.ts
 
-export interface Task {
-    id: string;
-    title: string;
-    description: string;
-    projectCode: string;
-    requestType: string;
-    purchaseType: string;
-    deliveryDate: string;
-    approvedBy: string;
-    assignees: string[];
-  }
-  
-  export interface Column {
-    id: string;
-    title: string;
-    tasks: Task[];
-    limit?: number;
-    color: string;
-  }
-  
-  export interface Board {
-    columns: Column[];
-  }
+export interface Requerimiento {
+  estado: string;
+  aprobacion: Aprobacion[];
+  codigo: string;
+  estado_atencion: string;
+  fecha_final: string;
+  fecha_solicitud: string;
+  id: string;
+  obra_id: string;
+  presupuesto_id: string;
+  sustento: string;
+  usuario: string;
+  usuario_id: string;
+}
+
+export interface Aprobacion {
+  cargo: string;
+  id_usuario: string;
+  gerarquia: number;
+  id_aprobacion: string;
+}
+
+export interface Column {
+  id: string;
+  title: string;
+  limit?: number;
+  color: string;
+  requerimiento: Requerimiento[];
+}
+
+export interface Board {
+  columns: Column[];
+  showButtons: boolean;
+}
