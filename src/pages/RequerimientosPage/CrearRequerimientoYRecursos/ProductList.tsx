@@ -61,7 +61,7 @@ export const ProductList: React.FC<ProductListProps> = ({ requerimiento_id, fech
   return (
     <div className="flex flex-col h-[calc(100vh-8rem)]">
       {/* Barra de búsqueda */}
-      <div className="mb-4 sticky top-0 bg-white p-4 shadow-md rounded-lg">
+      <div className="mb-4 sticky top-0 bg-white/80 p-4 shadow-md rounded-lg">
         <div className="flex flex-col gap-3">
           <div className="flex gap-2">
             <div className="relative flex-1">

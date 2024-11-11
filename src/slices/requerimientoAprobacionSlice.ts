@@ -3,7 +3,8 @@ import {
   listRequerimientoAprobaciones,
   addRequerimientoAprobacion,
   updateRequerimientoAprobacion,
-  deleteRequerimientoAprobacion
+  deleteRequerimientoAprobacion,
+  getRequerimientoAprobacionByRequerimientoId
 } from '../services/requerimientoAprobacionService';
 
 interface RequerimientoAprobacion {
@@ -80,6 +81,17 @@ export const deleteAprobacion = createAsyncThunk(
   }
 );
 
+export const getAprobacionByRequerimientoId = createAsyncThunk(
+  'requerimientoAprobacion/getByRequerimientoId',
+  async (id: string, { rejectWithValue }) => {
+    try {
+      return await getRequerimientoAprobacionByRequerimientoId(id);
+    } catch (error) {
+      return rejectWithValue((error as Error).message);
+    }
+  }
+);
+
 const requerimientoAprobacionSlice = createSlice({
   name: 'requerimientoAprobacion',
   initialState,
@@ -120,6 +132,19 @@ const requerimientoAprobacionSlice = createSlice({
       .addCase(deleteAprobacion.fulfilled, (state, action) => {
         state.aprobaciones = state.aprobaciones.filter(a => a.id !== action.payload);
         state.error = null;
+      })
+      // Fetch by Requerimiento ID cases
+      .addCase(getAprobacionByRequerimientoId.pending, (state) => {
+        state.loading = true;
+      })
+      .addCase(getAprobacionByRequerimientoId.fulfilled, (state, action) => {
+        state.loading = false;
+        state.aprobaciones = [action.payload];
+        state.error = null;
+      })
+      .addCase(getAprobacionByRequerimientoId.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
       });
   }
 });

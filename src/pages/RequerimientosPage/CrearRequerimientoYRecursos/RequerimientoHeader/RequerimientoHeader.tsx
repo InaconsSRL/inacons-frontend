@@ -22,6 +22,7 @@ const RequerimientoHeader: React.FC<DetalleRequerimientoProps> = memo(({ requeri
   const dispatch = useDispatch<AppDispatch>();
   const navigate = useNavigate();
   const { usuariosCargo } = useSelector((state: RootState) => state.usuario);
+  console.log('Usuarios Cargo:', usuariosCargo);
 
   const [isEditing, setIsEditing] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -147,13 +148,13 @@ const RequerimientoHeader: React.FC<DetalleRequerimientoProps> = memo(({ requeri
         />
       ) : (
         <ReadOnlyView
-          usuariosCargo={usuariosCargo}
           formData={formData}
           requerimiento={requerimiento}
           obras={obras}
           onEdit={() => setIsEditing(true)}
           onSubmit={handleSubmitRequerimiento}
           onSave={handleSubmitSave}
+          usuariosCargo={usuariosCargo}
         />
       )}
     </div>

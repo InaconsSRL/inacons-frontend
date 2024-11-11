@@ -1,68 +1,29 @@
 import React, { memo, useState } from 'react';
-import { useDispatch } from 'react-redux';
-import { AppDispatch } from '../../../../store/store';
-import { 
-  addAprobacion,
-  //updateRequerimientoAprobacionThunk
-} from '../../../../slices/requerimientoAprobacionSlice';
-import { UsuarioCargo, FormData, Requerimiento } from './types';
+
+import { FormData, Requerimiento,UsuarioCargo } from './types';
 import { formatDateForInput } from '../../../../components/Utils/dateUtils';
+import AssignApproversModal from './AssignApproversModal';
+import Modal from '../../../../components/Modal/Modal';
 
 interface ReadOnlyViewProps {
   formData: FormData;
-  usuariosCargo: UsuarioCargo[];
   requerimiento: Requerimiento;
   obras: { obras: { id: string; nombre: string }[] };
   onEdit: () => void;
   onSubmit: () => void;
   onSave: () => void;
+  usuariosCargo: UsuarioCargo[];
 }
 
-export const ReadOnlyView: React.FC<ReadOnlyViewProps> = memo(({ usuariosCargo, formData, requerimiento, obras, onEdit, onSave, onSubmit }) => {
-  const dispatch = useDispatch<AppDispatch>();
-  const [supervisorId, setSupervisorId] = useState('');
-  const [gerenteId, setGerenteId] = useState('');
+export const ReadOnlyView: React.FC<ReadOnlyViewProps> = memo(({ formData, requerimiento, obras, onEdit, onSave, onSubmit, usuariosCargo }) => {
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
-  const handleSupervisorChange = async (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const selectedId = e.target.value;
-    setSupervisorId(selectedId);
-
-    if (selectedId) {
-      const aprobacionData = {
-        requerimiento_id: requerimiento.id,
-        usuario_id: selectedId,
-        estado_aprobacion: 'pendiente_aprobacion',
-        comentario: 'Asignación inicial de supervisor',
-        gerarquia_aprobacion: 3
-      };
-
-      try {
-        await dispatch(addAprobacion(aprobacionData)).unwrap();
-      } catch (error) {
-        console.error('Error al asignar supervisor:', error);
-      }
-    }
+  const handleOpenModal = () => {
+    setIsModalOpen(true);
   };
 
-  const handleGerenteChange = async (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const selectedId = e.target.value;
-    setGerenteId(selectedId);
-
-    if (selectedId) {
-      const aprobacionData = {
-        requerimiento_id: requerimiento.id,
-        usuario_id: selectedId,
-        estado_aprobacion: 'Pendiente',
-        comentario: 'Asignación inicial de gerente',
-        gerarquia_aprobacion: 4
-      };
-
-      try {
-        await dispatch(addAprobacion(aprobacionData)).unwrap();
-      } catch (error) {
-        console.error('Error al asignar gerente:', error);
-      }
-    }
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
   };
 
   return (
@@ -91,45 +52,9 @@ export const ReadOnlyView: React.FC<ReadOnlyViewProps> = memo(({ usuariosCargo, 
         </p>
       </div>
 
-      <div className="col-span-1">
+      <div className="col-span-3">
         <span className="block text-xs text-gray-700">Sustento:</span>
         <p className="text-sm border-b p-1">{formData.sustento || '-'}</p>
-      </div>
-
-      <div className="col-span-1">
-        <span className="block text-xs text-gray-700">Elige al Supervisor:</span>
-        <select 
-          className="w-full border rounded text-xs p-1"
-          value={supervisorId}
-          onChange={handleSupervisorChange}
-        >
-          <option value="">--Selecciona Supervisor--</option>
-          {usuariosCargo
-            .filter(usuario => usuario.cargo_id?.gerarquia === 3)
-            .map(usuario => (
-              <option key={usuario.id} value={usuario.id}>
-                {usuario.nombres} {usuario.apellidos}
-              </option>
-            ))}
-        </select>
-      </div>
-
-      <div className="col-span-1">
-        <span className="block text-xs text-gray-700">Elige al Gerente:</span>
-        <select 
-          className="w-full border rounded text-xs p-1"
-          value={gerenteId}
-          onChange={handleGerenteChange}
-        >
-          <option value="">--Selecciona Gerente--</option>
-          {usuariosCargo
-            .filter(usuario => usuario.cargo_id?.gerarquia === 4)
-            .map(usuario => (
-              <option key={usuario.id} value={usuario.id}>
-                {usuario.nombres} {usuario.apellidos}
-              </option>
-            ))}
-        </select>
       </div>
 
       <div className="flex items-end gap-2">
@@ -149,12 +74,22 @@ export const ReadOnlyView: React.FC<ReadOnlyViewProps> = memo(({ usuariosCargo, 
         </button>
         <button
           type="button"
-          onClick={onSubmit}
+          onClick={handleOpenModal}
           className="w-full bg-yellow-500 text-white rounded text-xs p-2"
         >
           Enviar
         </button>
       </div>
+    {isModalOpen && (
+      <Modal isOpen={isModalOpen} onClose={handleCloseModal}>
+        <AssignApproversModal
+          requerimientoId={requerimiento.id}
+          usuariosCargo={usuariosCargo}
+          onClose={handleCloseModal}
+          onSubmit={onSubmit}
+        />
+      </Modal>
+    )}
     </div>
   );
 });

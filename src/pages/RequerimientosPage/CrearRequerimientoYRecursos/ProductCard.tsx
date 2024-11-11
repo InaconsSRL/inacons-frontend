@@ -31,7 +31,7 @@ export const ProductCard: React.FC<Recurso> = ({
   const imageUrl = imagenes?.length > 0 ? imagenes[0].file : defaultImage;
 
   return (
-    <div className="bg-white/35 shadow-md rounded-lg overflow-hidden">
+    <div className="bg-white/85 shadow-md rounded-lg overflow-hidden">
       <div className="h-40 overflow-hidden">
         <img
           src={imageUrl}

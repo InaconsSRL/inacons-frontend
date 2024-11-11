@@ -55,20 +55,20 @@ const Toast: React.FC<ToastPositionProps> = ({
   if (!show) return null;
 
   const getPositionStyle = () => {
-    const spacing = 16; // espacio entre toasts en píxeles
-    const offset = index * (spacing + 80); // 80px es aproximadamente la altura del toast
+    const spacing = 16; // espacio entre toasts
+    const offset = index * (spacing + 80); // altura del toast + espacio
 
     switch (position) {
       case 'top-right':
-        return `top-[${offset + 16}px] right-4`;
+        return `fixed top-[${offset}px] right-[16px]`;
       case 'top-left':
-        return `top-[${offset + 16}px] left-4`;
+        return `fixed top-[${offset}px] left-[16px]`;
       case 'bottom-right':
-        return `bottom-[${offset + 16}px] right-4`;
+        return `fixed bottom-[${offset}px] right-[16px]`;
       case 'bottom-left':
-        return `bottom-[${offset + 16}px] left-4`;
+        return `fixed bottom-[${offset}px] left-[16px]`;
       default:
-        return `top-[${offset + 16}px] right-4`;
+        return `fixed top-[${offset}px] right-[16px]`;
     }
   };
 

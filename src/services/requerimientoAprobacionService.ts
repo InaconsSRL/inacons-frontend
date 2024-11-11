@@ -2,8 +2,8 @@ import { gql } from '@apollo/client';
 import client from '../apolloClient';
 
 const ADD_REQUERIMIENTO_APROBACION = gql`
-  mutation AddRequerimientoAprobacion($requerimiento_id: ID!, $usuario_id: ID!, $estado_aprobacion: String, $fecha_aprobacion: DateTime, $comentario: String, $gerarquia_aprobacion: Number) {
-    addRequerimientoAprobacion(requerimiento_id: $requerimiento_id, usuario_id: $usuario_id, estado_aprobacion: $estado_aprobacion, fecha_aprobacion: $fecha_aprobacion, comentario: $comentario, gerarquia_aprobacion: $gerarquia_aprobacion) {
+  mutation AddRequerimientoAprobacion($requerimiento_id: ID!, $usuario_id: ID!, $estado_aprobacion: String, $comentario: String, $gerarquia_aprobacion: Int) {
+    addRequerimientoAprobacion(requerimiento_id: $requerimiento_id, usuario_id: $usuario_id, estado_aprobacion: $estado_aprobacion, comentario: $comentario, gerarquia_aprobacion: $gerarquia_aprobacion) {
       id
       requerimiento_id
       usuario_id
@@ -23,7 +23,7 @@ const UPDATE_REQUERIMIENTO_APROBACION = gql`
     $estado_aprobacion: String, 
     $fecha_aprobacion: DateTime, 
     $comentario: String, 
-    $gerarquia_aprobacion: Number
+    $gerarquia_aprobacion: Int
   ) {
     updateRequerimientoAprobacion(
       id: $updateRequerimientoAprobacionId, 
@@ -73,6 +73,20 @@ const DELETE_REQUERIMIENTO_APROBACION = gql`
   }
 `;
 
+const GET_REQUERIMIENTO_APROBACION_BY_REQUERIMIENTO_ID = gql`
+  query GetRequerimientoAbrobacionbyRequerimientoId($id: ID!) {
+    getRequerimientoAbrobacionbyRequerimientoId(id: $id) {
+      id
+      requerimiento_id
+      usuario_id
+      estado_aprobacion
+      fecha_aprobacion
+      comentario
+      gerarquia_aprobacion
+    }
+  }
+`;
+
 export const listRequerimientoAprobaciones = async () => {
   try {
     const { data } = await client.query({
@@ -88,7 +102,6 @@ export const addRequerimientoAprobacion = async (data: {
   requerimiento_id: string;
   usuario_id: string;
   estado_aprobacion: string;
-  fecha_aprobacion?: Date;
   comentario?: string;
   gerarquia_aprobacion?: number;
 }) => {
@@ -96,10 +109,7 @@ export const addRequerimientoAprobacion = async (data: {
   try {
     const { data: responseData } = await client.mutate({
       mutation: ADD_REQUERIMIENTO_APROBACION,
-      variables: {
-        ...data,
-        fechaAprobacion: data.fecha_aprobacion || new Date()
-      }
+      variables: data
     });
     return responseData.addRequerimientoAprobacion;
   } catch (error) {
@@ -139,5 +149,17 @@ export const deleteRequerimientoAprobacion = async (id: string) => {
     return data.deleteRequerimientoAprobacion;
   } catch (error) {
     throw new Error(`Error deleting aprobacion: ${error}`);
+  }
+};
+
+export const getRequerimientoAprobacionByRequerimientoId = async (id: string) => {
+  try {
+    const { data } = await client.query({
+      query: GET_REQUERIMIENTO_APROBACION_BY_REQUERIMIENTO_ID,
+      variables: { id },
+    });
+    return data.getRequerimientoAbrobacionbyRequerimientoId || [];
+  } catch (error) {
+    throw new Error(`Error fetching aprobacion by requerimiento ID: ${error}`);
   }
 };

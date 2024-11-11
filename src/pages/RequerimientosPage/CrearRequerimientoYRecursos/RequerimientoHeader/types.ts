@@ -4,7 +4,6 @@ export interface UsuarioCargo {
   apellidos: string;
   dni: number;
   usuario: string;
-  contrasenna: string;
   rol_id: string | null;
   cargo_id: {
     id: string;

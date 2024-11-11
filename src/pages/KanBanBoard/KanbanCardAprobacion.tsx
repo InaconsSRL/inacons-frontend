@@ -1,5 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Task } from './types/kanban';
+import { useDispatch, useSelector } from 'react-redux';
+import { RootState, AppDispatch } from '../../store/store';
+import { getAprobacionByRequerimientoId } from '../../slices/requerimientoAprobacionSlice';
 import AprobarRequerimiento from '../AprobacionRequerimientoPage/AprobacionRequerimiento';
 import Modal from '../../components/Modal/Modal';
 
@@ -8,15 +11,48 @@ interface KanbanCardProps {
 }
 
 const KanbanCardAprobacion: React.FC<KanbanCardProps> = ({ task }) => {
-
+  const dispatch = useDispatch<AppDispatch>();
   const [modalAprobacionReqSup, setModalAprobacionReqSup] = useState(false);
+  const [requiresMyApproval, setRequiresMyApproval] = useState(false);
+  const user = useSelector((state: RootState) => state.user);
+  const { aprobaciones } = useSelector((state: RootState) => state.requerimientoAprobacion);
+
+  console.log(user, aprobaciones)
+
+  useEffect(() => {
+    if (task.id) {
+      dispatch(getAprobacionByRequerimientoId(task.id));
+    }
+  }, [dispatch, task.id]);
+
+  useEffect(() => {
+    // Aplanar el array si es necesario
+    const aprobacionesList = Array.isArray(aprobaciones[0]) ? aprobaciones[0] : aprobaciones;
+    
+    console.log('ID del usuario actual:', user.id);
+    console.log('Lista de aprobaciones:', aprobacionesList);
+
+    const userHasPendingApproval = aprobacionesList.some(aprobacion => {
+      console.log('Comparando:', {
+        'usuario_id de aprobacion': aprobacion.usuario_id,
+        'id del usuario actual': user.id,
+        'son iguales?': aprobacion.usuario_id === user.id
+      });
+      return aprobacion.usuario_id === user.id;
+    });
+
+    console.log('¿Requiere mi aprobación?:', userHasPendingApproval);
+    setRequiresMyApproval(userHasPendingApproval);
+
+  }, [aprobaciones, user.id]);
 
   const handleModalOpen = () => {
     setModalAprobacionReqSup(true);
   };
 
+
   return (
-    <div className="bg-white/75 border border-gray-200 rounded-lg shadow-sm p-4 hover:shadow-md transition-shadow">
+    <div className={`${requiresMyApproval ? 'bg-green-500/75' : 'bg-white/75'} border border-gray-200 rounded-lg shadow-sm p-4 hover:shadow-md transition-shadow`}>
       <h3 className="font-semibold text-base mb-2 text-neutral-800">{task.title}</h3>
       <div className='grid grid-cols-3'>
         <div className='col-span-2'>

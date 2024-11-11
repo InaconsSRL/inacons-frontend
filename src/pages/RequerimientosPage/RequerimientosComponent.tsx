@@ -7,7 +7,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { fetchRequerimientos } from '../../slices/requerimientoSlice';
 import { RootState, AppDispatch } from '../../store/store';
 import LoaderPage from '../../components/Loader/LoaderPage';
-import { FiEdit, FiEye } from 'react-icons/fi';
+import { FiEdit, FiEye, FiRefreshCw } from 'react-icons/fi';
 import RequerimientoRecursos from './CrearRequerimientoYRecursos/RequerimientoRecursos';
 import RequerimientoResumen from './RequerimientoResumen/RequerimientoResumen';
 
@@ -102,6 +102,10 @@ const RequerimientosComponent: React.FC = () => {
     setEditingRequerimiento(null);
   };
 
+  const handleRefresh = () => {
+    dispatch(fetchRequerimientos());
+  };
+
   const formatDate = (date: string) => {
     return new Date(date).toLocaleDateString('es-ES', {
       day: '2-digit',
@@ -175,8 +179,13 @@ const RequerimientosComponent: React.FC = () => {
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.2 }}
       >
-        <h1 className="text-2xl font-bold text-blue-50">Requerimientos</h1>
-        <Button text='Nuevo Requerimiento' color='verde' onClick={handleButtonClick} className="rounded w-auto" />
+        <div className="flex items-center gap-4">
+          <h1 className="text-2xl font-bold text-blue-50">Requerimientos</h1>
+          
+        </div>
+        <Button  text='Actualizar' color='blanco' onClick={handleRefresh} className="rounded w-auto" 
+          icon={<FiRefreshCw className="text-green-500 text-center h-3 w-3" />} />
+        <Button text='+ Nuevo Requerimiento' color='verde' onClick={handleButtonClick} className="rounded w-auto" />
       </motion.div>
 
       <motion.div
