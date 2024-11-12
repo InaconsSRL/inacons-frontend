@@ -41,6 +41,14 @@ const KanbanCardAprobacion: React.FC<KanbanCardBaseProps> = ({ column }) => {
     return false;
   };
 
+  const newRequerimiento = {
+    ...requerimiento, user: {
+      id: user.id || '',
+      usuario: user.usuario || '',
+      token: user.token || ''
+    }
+  }
+
   return (
     <div className={`${shouldShowGreenBackground() ? "bg-teal-300" : "bg-white/75"} border border-gray-200 rounded-lg shadow-sm p-4 hover:shadow-md transition-shadow`}>
       <h3 className="font-semibold text-base mb-2 text-neutral-800">{requerimiento.codigo}</h3>
@@ -80,7 +88,11 @@ const KanbanCardAprobacion: React.FC<KanbanCardBaseProps> = ({ column }) => {
         onClose={() => setModalAprobacionReqSup(false)}
         title="Aprobar Requerimiento"
       >
-        <AprobarRequerimiento requerimiento={requerimiento} />
+        <AprobarRequerimiento 
+          newRequerimiento={newRequerimiento} 
+          userAprobacion={userAprobacion}
+          columnId={column.id}
+        />
       </Modal>
     </div>
   );

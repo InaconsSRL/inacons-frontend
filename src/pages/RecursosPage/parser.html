@@ -1,0 +1,38 @@
+<input type="file" id="inputExcel">
+<button id="btnConvertir">Generar JSON</button>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script>
+document.getElementById('btnConvertir').addEventListener('click', function() {
+    var fileInput = document.getElementById('inputExcel');
+    var file = fileInput.files[0];
+    if (!file) {
+        alert('Por favor, selecciona un archivo Excel.');
+        return;
+    }
+    var reader = new FileReader();
+    reader.onload = function(e) {
+        var data = new Uint8Array(e.target.result);
+        var workbook = XLSX.read(data, {type: 'array'});
+        var firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+        var jsonRows = XLSX.utils.sheet_to_json(firstSheet, {header:1});
+        var result = [];
+        var headers = jsonRows[0];
+        for (var i = 1; i < jsonRows.length; i++) {
+            var row = jsonRows[i];
+            var obj = {};
+            for (var j = 0; j < headers.length; j++) {
+                obj[headers[j]] = row[j];
+            }
+            result.push(obj);
+        }
+        var jsonString = JSON.stringify(result, null, 2);
+        var blob = new Blob([jsonString], {type: 'application/json'});
+        var link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = 'datos.json';
+        link.click();
+    };
+    reader.readAsArrayBuffer(file);
+});
+</script>

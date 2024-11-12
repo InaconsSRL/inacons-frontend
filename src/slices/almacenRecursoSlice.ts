@@ -1,10 +1,12 @@
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
-import { 
-  listAlmacenRecursosService, 
-  addAlmacenRecursoService, 
+import {
+  listAlmacenRecursosService,
+  listAlmacenRecursosByRecursoIdService,
+  getAlmacenRecursoService,
+  addAlmacenRecursoService,
   updateAlmacenRecursoService,
   deleteAlmacenRecursoService,
-  AlmacenRecurso 
+  AlmacenRecurso
 } from '../services/almacenRecursoService';
 
 interface AlmacenRecursoState {
@@ -30,9 +32,31 @@ export const fetchAlmacenRecursos = createAsyncThunk(
   }
 );
 
+export const fetchAlmacenRecursosByRecursoId = createAsyncThunk(
+  'almacenRecurso/fetchAlmacenRecursosByRecursoId',
+  async (recursoId: string, { rejectWithValue }) => {
+    try {
+      return await listAlmacenRecursosByRecursoIdService(recursoId);
+    } catch (error) {
+      return rejectWithValue(error instanceof Error ? error.message : 'Error desconocido');
+    }
+  }
+);
+
+export const getAlmacenRecurso = createAsyncThunk(
+  'almacenRecurso/getAlmacenRecurso',
+  async (id: string, { rejectWithValue }) => {
+    try {
+      return await getAlmacenRecursoService(id);
+    } catch (error) {
+      return rejectWithValue(error instanceof Error ? error.message : 'Error desconocido');
+    }
+  }
+);
+
 export const addAlmacenRecurso = createAsyncThunk(
   'almacenRecurso/addAlmacenRecurso',
-  async (data: { recursoId: string; cantidad: number; almacenId: string }, { rejectWithValue }) => {
+  async (data: { recursoId: string; cantidad: number; almacenId: string; costo: number }, { rejectWithValue }) => {
     try {
       return await addAlmacenRecursoService(data);
     } catch (error) {
@@ -43,7 +67,7 @@ export const addAlmacenRecurso = createAsyncThunk(
 
 export const updateAlmacenRecurso = createAsyncThunk(
   'almacenRecurso/updateAlmacenRecurso',
-  async (data: { id: string; recursoId?: string; cantidad?: number; almacenId?: string }, { rejectWithValue }) => {
+  async (data: { id: string; recursoId?: string; cantidad?: number; almacenId?: string; costo?: number }, { rejectWithValue }) => {
     try {
       return await updateAlmacenRecursoService(data);
     } catch (error) {
@@ -81,6 +105,18 @@ const almacenRecursoSlice = createSlice({
       .addCase(fetchAlmacenRecursos.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload as string;
+      })
+      .addCase(fetchAlmacenRecursosByRecursoId.fulfilled, (state, action: PayloadAction<AlmacenRecurso[]>) => {
+        state.loading = false;
+        state.almacenRecursos = action.payload;
+      })
+      .addCase(getAlmacenRecurso.fulfilled, (state, action: PayloadAction<AlmacenRecurso>) => {
+        const index = state.almacenRecursos.findIndex(item => item.id === action.payload.id);
+        if (index !== -1) {
+          state.almacenRecursos[index] = action.payload;
+        } else {
+          state.almacenRecursos.push(action.payload);
+        }
       })
       .addCase(addAlmacenRecurso.fulfilled, (state, action: PayloadAction<AlmacenRecurso>) => {
         state.almacenRecursos.push(action.payload);

@@ -206,8 +206,12 @@ const RecursosPage: React.FC = () => {
     return {
       filter: [true, true, true, true, true, true, true, true, true, true, true, false, false],
       headers: ["fecha", "vigente", "codigo", "nombre", "descripcion", "cantidad", "unidad_id", "precio_actual", "tipo_recurso_id", "tipo_costo_recurso_id", "clasificacion_recurso_id", "imagenes", "opcion"],
-      rows: recursos.map((recurso: any) => ({
-      ...recurso,
+      rows: recursos.map((recurso) => ({
+      codigo: recurso.codigo,
+      nombre: recurso.nombre,
+      descripcion: recurso.descripcion,
+      cantidad: recurso.cantidad,
+      precio_actual: recurso.precio_actual,
       fecha: new Date(recurso.fecha).toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric' }) === 'Invalid Date' ? new Date().toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric' }) : recurso.fecha.slice(0,10).split('-').reverse().join('/'),
       unidad_id: getNameById(listData.listUnidad, recurso.unidad_id),
       tipo_recurso_id: getNameById(listData.listTipoRecurso, recurso.tipo_recurso_id),

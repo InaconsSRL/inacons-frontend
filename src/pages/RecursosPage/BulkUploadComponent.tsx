@@ -129,7 +129,7 @@ const BulkUploadComponent: React.FC = () => {
         };
       });
 
-      const batches = chunkArray(recursos, 30);
+      const batches = chunkArray(recursos, 30);  //Aqui eliges la cantidad de recursos a enviar por lote
       const mutation = `
         mutation BulkCreateRecursos($recursos: [RecursoInput!]!) {
           bulkCreateRecursos(recursos: $recursos) {

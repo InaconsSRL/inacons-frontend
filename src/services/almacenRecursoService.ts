@@ -1,18 +1,13 @@
 import { gql } from '@apollo/client';
 import client from '../apolloClient';
 
-interface AlmacenDetalle {
-  nombre: string;
-  ubicacion: string;
-  direccion: string;
-}
-
 export interface AlmacenRecurso {
   id: string;
   recurso_id: string;
   cantidad: number;
   almacen_id: string;
-  almacen_detalle: AlmacenDetalle;
+  costo: number;
+  nombre_almacen: string;
 }
 
 const LIST_ALMACEN_RECURSOS_QUERY = gql`
@@ -22,43 +17,60 @@ const LIST_ALMACEN_RECURSOS_QUERY = gql`
       recurso_id
       cantidad
       almacen_id
-      almacen_detalle {
-        nombre
-        ubicacion
-        direccion
-      }
+      costo
+      nombre_almacen
+    }
+  }
+`;
+
+const LIST_ALMACEN_RECURSOS_BY_RECURSO_ID_QUERY = gql`
+  query ListAlmacenRecursosByRecursoId($recursoId: ID!) {
+    listAlmacenRecursosByRecursoId(recursoId: $recursoId) {
+      id
+      recurso_id
+      cantidad
+      almacen_id
+      costo
+      nombre_almacen
+    }
+  }
+`;
+
+const GET_ALMACEN_RECURSO_QUERY = gql`
+  query GetAlmacenRecurso($getAlmacenRecursoId: ID!) {
+    getAlmacenRecurso(id: $getAlmacenRecursoId) {
+      id
+      recurso_id
+      cantidad
+      almacen_id
+      costo
+      nombre_almacen
     }
   }
 `;
 
 const ADD_ALMACEN_RECURSO_MUTATION = gql`
-  mutation AddAlmacenRecurso($recursoId: ID!, $cantidad: Int!, $almacenId: ID!) {
-    addAlmacenRecurso(recurso_id: $recursoId, cantidad: $cantidad, almacen_id: $almacenId) {
+  mutation AddAlmacenRecurso($recursoId: ID!, $cantidad: Int!, $almacenId: ID!, $costo: Float!) {
+    addAlmacenRecurso(recurso_id: $recursoId, cantidad: $cantidad, almacen_id: $almacenId, costo: $costo) {
       id
       recurso_id
       cantidad
       almacen_id
-      almacen_detalle {
-        nombre
-        ubicacion
-        direccion
-      }
+      costo
+      nombre_almacen
     }
   }
 `;
 
 const UPDATE_ALMACEN_RECURSO_MUTATION = gql`
-  mutation UpdateAlmacenRecurso($updateAlmacenRecursoId: ID!, $recursoId: ID, $cantidad: Int, $almacenId: ID) {
-    updateAlmacenRecurso(id: $updateAlmacenRecursoId, recurso_id: $recursoId, cantidad: $cantidad, almacen_id: $almacenId) {
+  mutation UpdateAlmacenRecurso($updateAlmacenRecursoId: ID!, $recursoId: ID, $cantidad: Int, $almacenId: ID, $costo: Float) {
+    updateAlmacenRecurso(id: $updateAlmacenRecursoId, recurso_id: $recursoId, cantidad: $cantidad, almacen_id: $almacenId, costo: $costo) {
       id
       recurso_id
       cantidad
       almacen_id
-      almacen_detalle {
-        nombre
-        ubicacion
-        direccion
-      }
+      costo
+      nombre_almacen
     }
   }
 `;
@@ -83,10 +95,37 @@ export const listAlmacenRecursosService = async () => {
   }
 };
 
+export const listAlmacenRecursosByRecursoIdService = async (recursoId: string) => {
+  try {
+    const response = await client.query({
+      query: LIST_ALMACEN_RECURSOS_BY_RECURSO_ID_QUERY,
+      variables: { recursoId },
+    });
+    return response.data.listAlmacenRecursosByRecursoId;
+  } catch (error) {
+    console.error('Error al obtener recursos de almacén por recurso ID:', error);
+    throw error;
+  }
+};
+
+export const getAlmacenRecursoService = async (id: string) => {
+  try {
+    const response = await client.query({
+      query: GET_ALMACEN_RECURSO_QUERY,
+      variables: { getAlmacenRecursoId: id },
+    });
+    return response.data.getAlmacenRecurso;
+  } catch (error) {
+    console.error('Error al obtener recurso de almacén:', error);
+    throw error;
+  }
+};
+
 export const addAlmacenRecursoService = async (data: {
   recursoId: string;
   cantidad: number;
   almacenId: string;
+  costo: number;
 }) => {
   try {
     const response = await client.mutate({
@@ -105,6 +144,7 @@ export const updateAlmacenRecursoService = async (data: {
   recursoId?: string;
   cantidad?: number;
   almacenId?: string;
+  costo?: number;
 }) => {
   try {
     const response = await client.mutate({
@@ -114,6 +154,7 @@ export const updateAlmacenRecursoService = async (data: {
         recursoId: data.recursoId,
         cantidad: data.cantidad,
         almacenId: data.almacenId,
+        costo: data.costo,
       },
     });
     return response.data.updateAlmacenRecurso;

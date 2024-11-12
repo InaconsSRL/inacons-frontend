@@ -4,7 +4,7 @@ import { loginUserService } from '../services/userService';
 
 interface UserState {
     id: string | null;
-    user: string | null;
+    usuario: string | null;
     token: string | null;
 }
 
@@ -17,7 +17,7 @@ interface LoginPayload {
 
 const initialState: UserState = {
     id: null,
-    user: null,
+    usuario: null,
     token: null,
 };
 
@@ -42,7 +42,7 @@ const userSlice = createSlice({
     reducers: {
         clearUser: (state) => {
             state.id = null;
-            state.user = null;
+            state.usuario = null;
             state.token = null;
         },
     },
@@ -50,7 +50,7 @@ const userSlice = createSlice({
         builder.addCase(loginUser.fulfilled, (state, action: PayloadAction<LoginPayload>) => {
             const { usuario, id, token } = action.payload;
             state.id = id;
-            state.user = usuario;
+            state.usuario = usuario;
             state.token = token;
         });
     },

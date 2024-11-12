@@ -7,7 +7,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { RootState, AppDispatch } from '../../store/store';
 import LoaderPage from '../../components/Loader/LoaderPage';
 import Button from '../../components/Buttons/Button';
-import { Requerimiento } from '../KanBanBoard/types/kanban';
+import { NewRequerimiento } from '../KanBanBoard/types/kanban';
 
 interface EditValues {
   [key: string]: {
@@ -36,14 +36,23 @@ interface UpdateRequerimientoRecursoData {
   notas: string;
 }
 
-interface AprobarRequerimientoProps {
-  requerimiento: Requerimiento;
+interface Aprobacion {
+  id_usuario: string;
+  gerarquia: number;
+  cargo: string;
+  id_aprobacion: string;
 }
 
-const AprobacionRequerimiento = ({ requerimiento }: AprobarRequerimientoProps) => {
+interface AprobarRequerimientoProps {
+  newRequerimiento: NewRequerimiento;
+  userAprobacion: Aprobacion | undefined;
+  columnId: string;
+}
+
+const AprobacionRequerimiento = ({ newRequerimiento, userAprobacion, columnId }: AprobarRequerimientoProps) => {
 
   const dispatch = useDispatch<AppDispatch>();  
-  const id = requerimiento.id
+  const id = newRequerimiento.id
   const { requerimientoRecursos, loading } = useSelector((state: RootState) => state.requerimientoRecurso);
   const [editValues, setEditValues] = useState<EditValues>({} as EditValues);
   const [comentario, setComentario] = useState('');
@@ -95,8 +104,15 @@ const AprobacionRequerimiento = ({ requerimiento }: AprobarRequerimientoProps) =
     }
   };
 
-  const getAprobacionUsuario = () => {
-    return requerimiento.aprobacion.find(aproba => aproba.id_usuario === user.id);
+  const shouldShowButtons = () => {
+    if (!userAprobacion) return false;
+
+    if (userAprobacion.gerarquia === 3) {
+      return columnId === 'aprobacion_supervisor';
+    } else if (userAprobacion.gerarquia === 4) {
+      return true;
+    }
+    return false;
   };
 
   const aprobarRequerimiento = async () => {
@@ -106,26 +122,26 @@ const AprobacionRequerimiento = ({ requerimiento }: AprobarRequerimientoProps) =
         throw new Error('Usuario no identificado');
       }
 
-      const aprobacionUsuario = getAprobacionUsuario();
+      const aprobacionUsuario = userAprobacion;
       if (!aprobacionUsuario) {
         throw new Error('Usuario no autorizado para aprobar');
       }
       
       const data = {
         id: aprobacionUsuario.id_aprobacion,
-        requerimiento_id: requerimiento.id,
+        requerimiento_id: newRequerimiento.id,
         usuario_id: user.id as string,
-        estado_aprobacion: requerimiento.estado === "pendiente" ? "aprobado_supervisor" : "aprobado_gerencia",
+        estado_aprobacion: newRequerimiento.estado === "pendiente" ? "aprobado_supervisor" : "aprobado_gerencia",
         comentario: comentario || "Requerimiento aprobado"
       };
       await dispatch(updateAprobacion(data)).unwrap();
       setComentario(''); 
       await dispatch(updateRequerimiento({
-        id: requerimiento?.id || '',
-        usuario_id: requerimiento?.usuario_id || '',
-        obra_id: requerimiento?.obra_id || '',
-        fecha_final: new Date(requerimiento?.fecha_final || new Date()),
-        sustento: requerimiento?.sustento || '',
+        id: newRequerimiento?.id || '',
+        usuario_id: newRequerimiento?.usuario_id || '',
+        obra_id: newRequerimiento?.obra_id || '',
+        fecha_final: new Date(newRequerimiento?.fecha_final || new Date()),
+        sustento: newRequerimiento?.sustento || '',
         estado_atencion: "aprobado_supervisor"
       })).unwrap();
       console.log('Requerimiento aprobado exitosamente');
@@ -138,27 +154,27 @@ const AprobacionRequerimiento = ({ requerimiento }: AprobarRequerimientoProps) =
   const rechazarRequerimiento = async () => {
     setIsLoading(true);
     try {
-      const aprobacionUsuario = getAprobacionUsuario();
+      const aprobacionUsuario = userAprobacion;
       if (!aprobacionUsuario) {
         throw new Error('Usuario no autorizado para rechazar');
       }
 
       const data = {
         id: aprobacionUsuario.id_aprobacion,
-        requerimiento_id: requerimiento.id,
+        requerimiento_id: newRequerimiento.id,
         usuario_id: user.id as string,
-        estado_aprobacion: requerimiento.estado_atencion === "pendiente" ? "rechazado_supervisor" : "aprobado_gerencia",
+        estado_aprobacion: newRequerimiento.estado_atencion === "pendiente" ? "rechazado_supervisor" : "aprobado_gerencia",
         comentario: comentario || "Requerimiento rechazado"
       };
 
       await dispatch(updateAprobacion(data)).unwrap();
       setComentario('');
       await dispatch(updateRequerimiento({
-        id: requerimiento?.id || '',
-        usuario_id: requerimiento?.usuario_id || '',
-        obra_id: requerimiento?.obra_id || '',
-        fecha_final: new Date(requerimiento?.fecha_final || new Date()),
-        sustento: requerimiento?.sustento || '',
+        id: newRequerimiento?.id || '',
+        usuario_id: newRequerimiento?.usuario_id || '',
+        obra_id: newRequerimiento?.obra_id || '',
+        fecha_final: new Date(newRequerimiento?.fecha_final || new Date()),
+        sustento: newRequerimiento?.sustento || '',
         estado_atencion: "rechazado_supervisor"
       })).unwrap();
       console.log('Requerimiento rechazado exitosamente');
@@ -168,8 +184,8 @@ const AprobacionRequerimiento = ({ requerimiento }: AprobarRequerimientoProps) =
     setIsLoading(false);
   };
   
-  const newFechaFinal = requerimiento ? new Date(requerimiento.fecha_final).toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric', timeZone: 'UTC' }) : '';
-  const newFechaInicial = requerimiento ? new Date(requerimiento.fecha_solicitud).toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric', timeZone: 'UTC' }) : '';
+  const newFechaFinal = newRequerimiento ? new Date(newRequerimiento.fecha_final).toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric', timeZone: 'UTC' }) : '';
+  const newFechaInicial = newRequerimiento ? new Date(newRequerimiento.fecha_solicitud).toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric', timeZone: 'UTC' }) : '';
 
   if (loading) {
     return <LoaderPage />;
@@ -209,7 +225,7 @@ const AprobacionRequerimiento = ({ requerimiento }: AprobarRequerimientoProps) =
             <label className="text-xs font-medium text-gray-600">Obra:</label>
             <input
               type="text"
-              value={requerimiento.codigo.split('-')[1]}
+              value={newRequerimiento.codigo.split('-')[1]}
               className="px-2 py-1 border rounded text-xs"
               readOnly
             />
@@ -218,7 +234,7 @@ const AprobacionRequerimiento = ({ requerimiento }: AprobarRequerimientoProps) =
             <label className="text-xs font-medium text-gray-600">Número:</label>
             <input
               type="text"
-              value={requerimiento.codigo.split('-')[0]}
+              value={newRequerimiento.codigo.split('-')[0]}
               className="px-2 py-1 border rounded text-xs w-16"
               readOnly
             />
@@ -229,13 +245,13 @@ const AprobacionRequerimiento = ({ requerimiento }: AprobarRequerimientoProps) =
           <div className="flex items-center gap-2">
             <label className="text-xs font-medium text-gray-600">Estado:</label>
             <span className="px-2 py-1 bg-yellow-100 text-yellow-800 rounded text-xs">
-              {requerimiento.aprobacion[0].cargo}
+              {newRequerimiento.aprobacion[0].cargo}
             </span>
           </div>
           <div className="flex items-center gap-2">
             <label className="text-xs font-medium text-gray-600">Aprobado:</label>
             <span className="px-2 py-1 bg-blue-100 text-blue-800 rounded text-xs">
-              {requerimiento.aprobacion[0].id_usuario}
+              {newRequerimiento.aprobacion[0].id_usuario}
             </span>
           </div>
         </div>
@@ -334,35 +350,33 @@ const AprobacionRequerimiento = ({ requerimiento }: AprobarRequerimientoProps) =
 
       {/* Action Buttons */}
 
-      <div className="flex justify-end items-center gap-2 mt-4">
-        <input
-          type="text"
-          value={comentario}
-          onChange={(e) => setComentario(e.target.value)}
-          placeholder="Ingrese un comentario..."
-          className="flex-1 px-3 py-1 border rounded-md text-xs focus:outline-none focus:ring-2 focus:ring-blue-500"
-        />
-        {getAprobacionUsuario() && (
-          <>
-            <Button 
-              onClick={rechazarRequerimiento}
-              icon={<FiX />}
-              text="Rechazar"
-              color='rojo'
-              key={`${requerimiento.id}-reject`}
-              className="px-3 py-1 bg-red-500 text-white rounded-md text-xs hover:bg-red-600 transition-colors"
-            />
-            <Button 
-              onClick={aprobarRequerimiento}
-              icon={<FiCheck />}
-              text="Aprobar"
-              color='verde'
-              key={`${requerimiento.id}-approve`}
-              className="px-3 py-1 bg-purple-500 text-white rounded-md text-xs hover:bg-purple-600 transition-colors"
-            />
-          </>
-        )}
-      </div>
+      {shouldShowButtons() && (
+        <div className="flex justify-end items-center gap-2 mt-4">
+          <input
+            type="text"
+            value={comentario}
+            onChange={(e) => setComentario(e.target.value)}
+            placeholder="Ingrese un comentario..."
+            className="flex-1 px-3 py-1 border rounded-md text-xs focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
+          <Button 
+            onClick={rechazarRequerimiento}
+            icon={<FiX />}
+            text="Rechazar"
+            color='rojo'
+            key={`${newRequerimiento.id}-reject`}
+            className="px-3 py-1 bg-red-500 text-white rounded-md text-xs hover:bg-red-600 transition-colors"
+          />
+          <Button 
+            onClick={aprobarRequerimiento}
+            icon={<FiCheck />}
+            text="Aprobar"
+            color='verde'
+            key={`${newRequerimiento.id}-approve`}
+            className="px-3 py-1 bg-purple-500 text-white rounded-md text-xs hover:bg-purple-600 transition-colors"
+          />
+        </div>
+      )}
 
       {isLoading && <LoaderPage />}
     </div>

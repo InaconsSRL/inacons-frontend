@@ -54,7 +54,7 @@ const Header: React.FC<HeaderProps> = ({ toggleSidebar, isSidebarOpen }) => {
           <div className="flex items-center space-x-2">
             <div className="flex items-center text-white">
               <img src={avatar} alt="Avatar" className="h-10 mr-4" />
-              <span>{user.user || 'Usuario'}</span>
+              <span>{user.usuario || 'Usuario'}</span>
             </div>
           </div>
 

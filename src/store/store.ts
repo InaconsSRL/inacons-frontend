@@ -19,6 +19,11 @@ import { almacenRecursoReducer } from '../slices/almacenRecursoSlice';
 import { requerimientoAprobacionReducer } from '../slices/requerimientoAprobacionSlice';
 import { comprasRecursoReducer } from '../slices/comprasRecursoSlice';
 import { compraReducer } from '../slices/comprasSlice';
+import { solicitudAlmacenReducer } from '../slices/solicitudAlmacenSlice';
+import { solicitudRecursoAlmacenReducer } from '../slices/solicitudRecursoAlmacenSlice';
+import { ordenCompraReducer } from '../slices/ordenCompraSlice';
+import { ordenCompraRecursosReducer } from '../slices/ordenCompraRecursosSlice';
+
 export const store = configureStore({
   reducer: {
     user: userReducer,
@@ -40,6 +45,10 @@ export const store = configureStore({
     requerimientoAprobacion: requerimientoAprobacionReducer,
     compraRecurso: comprasRecursoReducer,
     compra: compraReducer,
+    solicitudAlmacen: solicitudAlmacenReducer,
+    solicitudRecursoAlmacen: solicitudRecursoAlmacenReducer,
+    ordenCompra: ordenCompraReducer,
+    ordenCompraRecursos: ordenCompraRecursosReducer,
   },
 });
 
