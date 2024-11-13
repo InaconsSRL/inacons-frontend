@@ -8,6 +8,14 @@ export default {
     extend: {
       fontFamily: {
         'sans': ['Roboto', 'sans-serif'],
+        'satisfy': ['Satisfy', 'cursive'],
+        'poppins': ['Poppins', 'sans-serif'],
+        'montserrat': ['Montserrat', 'sans-serif'],
+        'selection': ['Selection', 'sans-serif'],
+        'open-sans': ['Open Sans', 'sans-serif'],
+        'lato': ['Lato', 'sans-serif'],
+        'oswald': ['Oswald', 'sans-serif'],
+        'rounded': ['M PLUS Rounded 1c', 'sans-serif'],
       },
       boxShadow: {
         'neumorph': '1px 1px 0px #838787, -1px -1px 0px #939999',

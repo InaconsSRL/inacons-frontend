@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
 
-import { fetchRequerimientoRecursos} from '../../slices/requerimientoRecursoSlice';
-// import { getRequerimiento, updateRequerimiento } from '../../slices/requerimientoSlice';
-import { getRequerimiento } from '../../slices/requerimientoSlice';
+import { fetchRequerimientoRecursosWithAlmacen } from '../../slices/requerimientoRecursoSlice';
 import { useDispatch, useSelector } from 'react-redux';
 import { RootState, AppDispatch } from '../../store/store';
+import { Column, Requerimiento } from '../KanBanBoard/types/kanban';
+import LoaderPage from '../../components/Loader/LoaderPage';
 
 // Interfaces
 interface Warehouse {
@@ -20,7 +20,6 @@ interface Item {
   unitEmb: string;
   quantity: number;
   status: string;
-  historicDate: string;
   limitDate: string;
   partialCost: number;
   approvedQuantity: number;
@@ -33,84 +32,53 @@ interface WarehouseQuantities {
 
 // Componente principal
 interface AprobacionTransferenciaPageProps {
-  requerimientoId: string;
+  column: Omit<Column, 'requerimiento'> & {
+    requerimiento: Requerimiento;
+  }
 }
 
-const AprobacionTransferenciaPage: React.FC<AprobacionTransferenciaPageProps> = ({ requerimientoId }) => {
-  console.log(requerimientoId);
-
+const AprobacionTransferenciaPage: React.FC<AprobacionTransferenciaPageProps> = ({ column }) => {
+  const requerimientoId = column.requerimiento.id;
+  const selectedRequerimiento = column.requerimiento;
+  const [activeRowId, setActiveRowId] = useState<string | null>(null);
 
   const dispatch = useDispatch<AppDispatch>();
-  const { requerimientoRecursos } = useSelector((state: RootState) => state.requerimientoRecurso);
-  const { selectedRequerimiento } = useSelector((state: RootState) => state.requerimiento);
-  const user = useSelector((state: RootState) => state.user);
-
-  console.log(requerimientoRecursos,selectedRequerimiento, user )
+  const requerimientoRecursos = useSelector((state: RootState) => state.requerimientoRecurso.requerimientoRecursos);
+  const loadingRequerimientoRecursos = useSelector((state: RootState) => state.requerimientoRecurso.loading);
   
   useEffect(() => {
     if (requerimientoId) {
-      // Dispatch para obtener los recursos del requerimiento
-      dispatch(fetchRequerimientoRecursos(requerimientoId.toString()));
-      
-      // Dispatch para obtener la información del requerimiento
-      dispatch(getRequerimiento(requerimientoId.toString()));
+     const response = dispatch(fetchRequerimientoRecursosWithAlmacen(requerimientoId.toString()));
+     console.log(response)
     }
-  }, []);
+  }, [dispatch, requerimientoId]);
 
+  const [items, setItems] = useState<Item[]>([]);
 
-const [items] = useState<Item[]>([
-    {
-        id: '16489',
-        name: 'ALFOMBRA AISLANTE CLASE 4 1 X 1MTS X 5.2MM',
-        unit: 'UNID',
-        unitEmb: 'UNID',
-        quantity: 4,
-        status: 'pendiente',
-        historicDate: '25',
-        limitDate: '09/11/2024',
-        partialCost: 100,
-        approvedQuantity: 4,
-        warehouses: [
-            { id: 'w1', name: 'Almacén Central', stock: 150 },
-            { id: 'w2', name: 'Almacén Norte', stock: 75 },
-            { id: 'w3', name: 'Almacén Sur', stock: 25 }
-        ]
-    },
-    {
-        id: '12384',
-        name: 'CABESTRILLO INMOVILIZADOR UNIVERSAL',
-        unit: 'UNID',
-        unitEmb: 'UNID',
-        quantity: 3,
-        status: '',
-        historicDate: '-',
-        limitDate: '02/11/2024',
-        partialCost: 3,
-        approvedQuantity: 3,
-        warehouses: [
-            { id: 'w1', name: 'Almacén Central', stock: 80 },
-            { id: 'w2', name: 'Almacén Norte', stock: 45 },
-            { id: 'w3', name: 'Almacén Sur', stock: 30 }
-        ]
-    },
-    {
-        id: '19739',
-        name: 'ALCOHOL EN GEL X 380 ML',
-        unit: 'UNID',
-        unitEmb: 'UNID',
-        quantity: 4,
-        status: 'pendiente',
-        historicDate: '-',
-        limitDate: '31/10/2024',
-        partialCost: 4,
-        approvedQuantity: 4,
-        warehouses: [
-            { id: 'w1', name: 'Almacén Central', stock: 200 },
-            { id: 'w2', name: 'Almacén Norte', stock: 150 },
-            { id: 'w3', name: 'Almacén Sur', stock: 100 }
-        ]
-    }
-]);
+  useEffect(() => {
+    const itemsData: Item[] = requerimientoRecursos.map((recurso) => {
+      const warehouses = recurso.listAlmacenRecursos.map((almacenRecurso) => ({
+        id: almacenRecurso.almacen_id || '',
+        name: almacenRecurso.nombre_almacen || '',
+        stock: almacenRecurso.cantidad,
+      }));
+
+      return {
+        id: recurso.codigo,
+        name: recurso.nombre,
+        unit: recurso.unidad,
+        unitEmb: recurso.unidad,
+        quantity: recurso.cantidad,
+        status: recurso.estado,
+        limitDate: recurso.fecha_limit ? new Date(recurso.fecha_limit).toISOString().split("T")[0].split("-").reverse().join("/") : '-',
+        partialCost: recurso.costo_ref || 0,
+        approvedQuantity: recurso.cantidad_aprobada || 0,
+        warehouses: warehouses,
+      };
+    });
+
+    setItems(itemsData);
+  }, [requerimientoRecursos]);
 
   const [warehouseQuantities, setWarehouseQuantities] = useState<WarehouseQuantities>({});
 
@@ -152,6 +120,14 @@ const [items] = useState<Item[]>([
     console.log('Rechazando transferencia...');
   };
 
+  console.log(items, warehouseQuantities);
+
+  if (loadingRequerimientoRecursos) {
+    return <LoaderPage />;
+  }
+
+  
+
   return (
     <div className="p-4 bg-white rounded-lg shadow">
       <div className="mb-4 flex justify-between items-center">
@@ -165,9 +141,9 @@ const [items] = useState<Item[]>([
             </div>
             <div>
               <label className="text-xs text-gray-600">Obra:</label>
-              <input 
-                type="text" 
-                value="INA_CAS" 
+              <input
+                type="text"
+                value={selectedRequerimiento.codigo.split('-')[1]}
                 className="ml-2 text-xs border rounded p-1"
                 readOnly
               />
@@ -176,18 +152,18 @@ const [items] = useState<Item[]>([
           <div className="flex gap-4">
             <div>
               <label className="text-xs text-gray-600">F Emisión:</label>
-              <input 
-                type="text" 
-                value="25/10/2024" 
+              <input
+                type="text"
+                value={new Date(selectedRequerimiento.fecha_solicitud).toISOString().split("T")[0].split("-").reverse().join("/")}
                 className="ml-2 text-xs border rounded p-1"
                 readOnly
               />
             </div>
             <div>
               <label className="text-xs text-gray-600">Número:</label>
-              <input 
-                type="text" 
-                value="0002" 
+              <input
+                type="text"
+                value={selectedRequerimiento.codigo.split('-')[0]}
                 className="ml-2 text-xs border rounded p-1"
                 readOnly
               />
@@ -197,15 +173,15 @@ const [items] = useState<Item[]>([
         <div className="space-y-2 text-right">
           <div>
             <span className="text-xs text-gray-600">Estado:</span>
-            <span className="ml-2 text-xs bg-yellow-100 px-2 py-1 rounded">Pendiente</span>
+            <span className="ml-2 text-xs bg-yellow-100 px-2 py-1 rounded">Aprobación Logística</span>
           </div>
           <div>
             <span className="text-xs text-gray-600">Aprobado:</span>
-            <span className="ml-2 text-xs bg-blue-100 px-2 py-1 rounded">Por Aprobar</span>
+            <span className="ml-2 text-xs bg-blue-100 px-2 py-1 rounded">{selectedRequerimiento.estado_atencion}</span>
           </div>
         </div>
       </div>
-  
+
       <div className="overflow-x-auto">
         <table className="min-w-full text-xs">
           <thead>
@@ -216,12 +192,9 @@ const [items] = useState<Item[]>([
               <th className="px-2 py-1">U.Emb</th>
               <th className="px-2 py-1">Metrado</th>
               <th className="px-2 py-1">Estado</th>
-              <th className="px-2 py-1">P.Histórico</th>
               <th className="px-2 py-1">F.Límite</th>
               <th className="px-2 py-1">Costo Parcial</th>
-              {items[0].warehouses.map(warehouse => (
-                <th key={warehouse.id} className="px-2 py-1">{warehouse.name}</th>
-              ))}
+              <th className="px-2 py-1">Almacenes</th>
               <th className="px-2 py-1">Transferencia</th>
               <th className="px-2 py-1">Cotización</th>
               <th className="px-2 py-1">Acciones</th>
@@ -229,9 +202,17 @@ const [items] = useState<Item[]>([
           </thead>
           <tbody>
             {items.map((item) => (
-              <tr key={item.id} className="border-b">
+              <tr 
+                key={item.id} 
+                className={`
+                  border-b font-extralight text-[0.62rem] 
+                  hover:bg-gray-50 cursor-pointer
+                  ${activeRowId === item.id ? 'bg-blue-50' : ''}
+                `}
+                onClick={() => setActiveRowId(item.id)}
+              >
                 <td className="px-2 py-1">{item.id}</td>
-                <td className="px-2 py-1">{item.name}</td>
+                <td className="px-2 py-1 text-left ">{item.name}</td>
                 <td className="px-2 py-1 text-center">{item.unit}</td>
                 <td className="px-2 py-1 text-center">{item.unitEmb}</td>
                 <td className="px-2 py-1 text-center">{item.quantity}</td>
@@ -242,24 +223,25 @@ const [items] = useState<Item[]>([
                     </span>
                   )}
                 </td>
-                <td className="px-2 py-1 text-center">{item.historicDate}</td>
                 <td className="px-2 py-1 text-center">{item.limitDate}</td>
                 <td className="px-2 py-1 text-center">{item.partialCost}</td>
-                {item.warehouses.map(warehouse => (
-                  <td key={warehouse.id} className="px-2 py-1 text-center">
-                    <div className="flex flex-col items-center gap-1">
-                      <span className="text-[8px] text-gray-600">Stock: {warehouse.stock}</span>
-                      <input
-                        type="number"
-                        min="0"
-                        max={warehouse.stock}
-                        className="w-16 text-[8px] border rounded px-1 py-0.5"
-                        value={warehouseQuantities[`${item.id}-${warehouse.id}`] || ''}
-                        onChange={(e) => handleQuantityChange(item.id, warehouse.id, e.target.value)}
-                      />
+                <td className="px-2 py-1">
+                  {item.warehouses.map(warehouse => (
+                    <div key={warehouse.id} className="mb-0.5">
+                      <div className="flex flex-row justify-end items-center gap-x-3">
+                        <span className="text-[8px] text-gray-600">{warehouse.name} - Stock: {warehouse.stock}</span>
+                        <input
+                          type="number"
+                          min="0"
+                          max={warehouse.stock}
+                          className="w-12 text-[8px] border rounded px-1"
+                          value={warehouseQuantities[`${item.id}-${warehouse.id}`] || ''}
+                          onChange={(e) => handleQuantityChange(item.id, warehouse.id, e.target.value)}
+                        />
+                      </div>
                     </div>
-                  </td>
-                ))}
+                  ))}
+                </td>
                 <td className="px-2 py-1 text-center font-semibold">
                   {calculateTransferTotal(item.id)}
                 </td>
@@ -276,7 +258,7 @@ const [items] = useState<Item[]>([
           </tbody>
         </table>
       </div>
-  
+
       <div className="mt-4 flex justify-between items-center">
         <div className="flex-1">
           <input

@@ -37,8 +37,8 @@ export const Presupuestos: React.FC = () => {
   const [versions, setVersions] = useState<Version[]>([]);
   const [activeVersion, setActiveVersion] = useState<Version | null>(null);
   const [comparingVersions, setComparingVersions] = useState(false);
-  const [projectStatus, setProjectStatus] = useState<string>('En progreso');
-  const [projectManager, setProjectManager] = useState<string>('Juan Pérez');
+  const [projectStatus] = useState<string>('En progreso');
+  const [projectManager] = useState<string>('Juan Pérez');
   const [versionToCompare, setVersionToCompare] = useState<Version | null>(null);
   const [comparisonResults, setComparisonResults] = useState<any>(null);
   const [costVariation, setCostVariation] = useState<{ variance: number; percentageChange: number } | null>(null);
@@ -133,10 +133,16 @@ export const Presupuestos: React.FC = () => {
     setActiveVersion(version1);
   }, []);
 
-  // Función para crear una nueva versión
-  const createNewVersion = (changes: Partial<Presupuesto>) => {
+  // Función mejorada para crear nueva versión
+  const createNewVersion = () => {
     const newVersionId = versions.length + 1;
-    const newVersionData = { ...activeVersion?.data, ...changes } as Presupuesto;
+    if (!activeVersion) return;
+
+    const newVersionData = { 
+      ...activeVersion.data,
+      fecha: new Date().toLocaleDateString()
+    };
+    
     const newVersion: Version = {
       id: newVersionId,
       nombre: `Versión ${newVersionId}`,
@@ -180,6 +186,15 @@ export const Presupuestos: React.FC = () => {
     setComparisonResults(differences);
   };
 
+  // Función mejorada para comparar versiones
+  const handleCompareVersions = () => {
+    if (!activeVersion || !versionToCompare) return;
+    
+    setComparingVersions(true);
+    compareVersions(activeVersion, versionToCompare);
+    analyzeCostVariation(activeVersion, versionToCompare);
+  };
+
   // Función para analizar variación de costos
   const analyzeCostVariation = (originalVersion: Version, newVersion: Version) => {
     const totalOriginal = calculateTotal(originalVersion.data);
@@ -194,6 +209,38 @@ export const Presupuestos: React.FC = () => {
       const totalItems = partida.items.reduce((total, item) => total + item.parcial, 0);
       return totalPartidas + totalItems;
     }, 0);
+  };
+
+  const handleExport = () => {
+    if (!activeVersion) return;
+    const dataStr = JSON.stringify(activeVersion.data, null, 2);
+    const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
+    
+    const exportFileDefaultName = `presupuesto_${activeVersion.data.codigo}_${activeVersion.nombre}.json`;
+    const linkElement = document.createElement('a');
+    linkElement.setAttribute('href', dataUri);
+    linkElement.setAttribute('download', exportFileDefaultName);
+    linkElement.click();
+  };
+
+  const handleImport = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    try {
+      const text = await file.text();
+      const importedData = JSON.parse(text) as Presupuesto;
+      const newVersionId = versions.length + 1;
+      const newVersion: Version = {
+        id: newVersionId,
+        nombre: `Versión ${newVersionId}`,
+        data: importedData
+      };
+      setVersions([...versions, newVersion]);
+      setActiveVersion(newVersion);
+    } catch (error) {
+      console.error('Error al importar:', error);
+    }
   };
 
   const toggleExpand = (itemId: string) => {
@@ -247,28 +294,45 @@ export const Presupuestos: React.FC = () => {
 
       {/* Main Content */}
       <div className="flex-1 flex flex-col">
-        {/* Toolbar */}
+        {/* Toolbar actualizado */}
         <div className="bg-white shadow-sm p-2 flex items-center space-x-2">
-          <button className="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600">
+          <button 
+            onClick={createNewVersion}
+            className="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600">
             <i className="fas fa-plus mr-1"></i> Nuevo
           </button>
-          <button className="px-3 py-1 bg-green-500 text-white rounded hover:bg-green-600">
+          <button 
+            onClick={() => {/* Implementar lógica de guardado */}}
+            className="px-3 py-1 bg-green-500 text-white rounded hover:bg-green-600">
             <i className="fas fa-save mr-1"></i> Guardar
           </button>
-          <button className="px-3 py-1 bg-gray-500 text-white rounded hover:bg-gray-600">
-            <i className="fas fa-file-import mr-1"></i> Importar
-          </button>
-          <button className="px-3 py-1 bg-gray-500 text-white rounded hover:bg-gray-600">
+          <div className="relative">
+            <input
+              type="file"
+              id="fileInput"
+              className="hidden"
+              accept=".json"
+              onChange={handleImport}
+            />
+            <button 
+              onClick={() => document.getElementById('fileInput')?.click()}
+              className="px-3 py-1 bg-gray-500 text-white rounded hover:bg-gray-600">
+              <i className="fas fa-file-import mr-1"></i> Importar
+            </button>
+          </div>
+          <button 
+            onClick={handleExport}
+            className="px-3 py-1 bg-gray-500 text-white rounded hover:bg-gray-600">
             <i className="fas fa-file-export mr-1"></i> Exportar
           </button>
           <button
-            className="px-3 py-1 bg-indigo-500 text-white rounded hover:bg-indigo-600"
-            onClick={() => {
-              if (activeVersion && versionToCompare) {
-                compareVersions(activeVersion, versionToCompare);
-                analyzeCostVariation(activeVersion, versionToCompare);
-              }
-            }}
+            onClick={handleCompareVersions}
+            disabled={!versionToCompare || !activeVersion}
+            className={`px-3 py-1 text-white rounded ${
+              !versionToCompare || !activeVersion 
+                ? 'bg-gray-400 cursor-not-allowed' 
+                : 'bg-indigo-500 hover:bg-indigo-600'
+            }`}
           >
             <i className="fas fa-exchange-alt mr-1"></i> Comparar Versiones
           </button>
@@ -359,10 +423,22 @@ export const Presupuestos: React.FC = () => {
           </table>
         </div>
 
-        {/* Comparison Results */}
-        {comparisonResults && (
+        {/* Resultados de comparación mejorados */}
+        {comparingVersions && comparisonResults && (
           <div className="m-4 bg-white rounded-lg shadow p-4">
-            <h3 className="text-lg font-semibold mb-2">Resultados de la Comparación</h3>
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-lg font-semibold">Resultados de la Comparación</h3>
+              <button
+                onClick={() => {
+                  setComparingVersions(false);
+                  setComparisonResults(null);
+                  setCostVariation(null);
+                }}
+                className="text-gray-500 hover:text-gray-700"
+              >
+                <i className="fas fa-times"></i>
+              </button>
+            </div>
             <table className="min-w-full">
               <thead>
                 <tr className="bg-gray-50">

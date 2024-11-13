@@ -22,7 +22,7 @@ interface Cargo {
   id: string;
   nombre: string;
   descripcion: string;
-  gerarquia: string;
+  gerarquia: number;  // Cambiado de string a number
 }
 
 interface FormComponentProps {

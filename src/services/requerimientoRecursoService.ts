@@ -2,24 +2,51 @@ import { gql } from '@apollo/client';
 import client from '../apolloClient';
 
 const GET_REQUERIMIENTO_RECURSO_BY_REQUERIMIENTO_ID = gql`
-    query ($requerimientoId: ID!) {
-    getRequerimientoRecursoByRequerimientoId(requerimiento_id: $requerimientoId) {
+  query GetRequerimientoRecursoByRequerimientoId($requerimientoId: ID!) {
+  getRequerimientoRecursoByRequerimientoId(requerimiento_id: $requerimientoId) {
     id
     requerimiento_id
     recurso_id
     nombre
     codigo
+    unidad
     cantidad
     cantidad_aprobada
     estado
     notas
     costo_ref
-    metrado
     fecha_limit
     presupuestado
-    unidad
   }
 }
+`;
+
+const GET_REQUERIMIENTO_RECURSO_WITH_ALMACEN = gql`
+  query GetRequerimientoRecursoByRequerimientoIdWithAlmacenQuantities($requerimientoId: ID!) {
+    getRequerimientoRecursoByRequerimientoIdWithAlmacenQuantities(requerimiento_id: $requerimientoId) {
+      id
+      requerimiento_id
+      recurso_id
+      nombre
+      codigo
+      unidad
+      cantidad
+      cantidad_aprobada
+      estado
+      notas
+      costo_ref
+      fecha_limit
+      presupuestado
+      listAlmacenRecursos {
+        recurso_id
+        cantidad
+        almacen_id
+        costo
+        nombre_almacen
+        _id
+      }
+    }
+  }
 `;
 
 const UPDATE_REQUERIMIENTO_RECURSO = gql`
@@ -28,14 +55,16 @@ const UPDATE_REQUERIMIENTO_RECURSO = gql`
     id
     requerimiento_id
     recurso_id
-    cantidad
+    nombre
     codigo
+    unidad
+    cantidad
+    cantidad_aprobada
+    estado
+    notas
     costo_ref
     fecha_limit
-    metrado
-    nombre
-    notas
-    cantidad_aprobada
+    presupuestado
   }
 }
 `;
@@ -47,10 +76,10 @@ const ADD_REQUERIMIENTO_RECURSO = gql`
     requerimiento_id
     recurso_id
     cantidad
+    cantidad_aprobada
     codigo
     costo_ref
     fecha_limit
-    metrado
     nombre
     notas
     cantidad_aprobada
@@ -76,6 +105,18 @@ export const getRequerimientoRecursoByRequerimientoId = async (requerimientoId: 
     return data.getRequerimientoRecursoByRequerimientoId;
   } catch (error) {
     throw new Error(`Error fetching requerimiento recursos ${error}`);
+  }
+};
+
+export const getRequerimientoRecursoWithAlmacen = async (requerimientoId: string) => {
+  try {
+    const { data } = await client.query({
+      query: GET_REQUERIMIENTO_RECURSO_WITH_ALMACEN,
+      variables: { requerimientoId },
+    });
+    return data.getRequerimientoRecursoByRequerimientoIdWithAlmacenQuantities;
+  } catch (error) {
+    throw new Error(`Error fetching requerimiento recursos with almacen ${error}`);
   }
 };
 

@@ -3,7 +3,8 @@ import {
   getRequerimientoRecursoByRequerimientoId, 
   addRequerimientoRecurso as addRequerimientoRecursoService, 
   deleteRequerimientoRecurso as deleteRequerimientoRecursoService,
-  updateRequerimientoRecurso as updateRequerimientoRecursoService
+  updateRequerimientoRecurso as updateRequerimientoRecursoService,
+  getRequerimientoRecursoWithAlmacen
 } from '../services/requerimientoRecursoService';
 
 // Interfaz actualizada con todos los campos del GraphQL
@@ -16,13 +17,24 @@ interface RequerimientoRecurso {
   codigo: string;
   cantidad: number;
   cantidad_aprobada: number | null;
-  estado: string;
+  estado_atencion: string;
   notas?: string;
   costo_ref?: number;
   metrado?: number;
   fecha_limit?: Date;
   presupuestado: boolean;
   unidad: string;
+  estado: string;
+  listAlmacenRecursos: AlmacenRecurso[];
+}
+
+interface AlmacenRecurso {
+  recurso_id: string;
+  cantidad: number;
+  almacen_id: string;
+  costo: number;
+  nombre_almacen: string;
+  _id: string;
 }
 
 interface RequerimientoRecursoState {
@@ -64,6 +76,18 @@ export const fetchRequerimientoRecursos = createAsyncThunk(
     try {
       const response = await getRequerimientoRecursoByRequerimientoId(requerimientoId);
       return response;
+    } catch (error) {
+      return rejectWithValue((error as Error).message);
+    }
+  }
+);
+
+export const fetchRequerimientoRecursosWithAlmacen = createAsyncThunk(
+  'requerimientoRecurso/fetchRequerimientoRecursosWithAlmacen',
+  async (requerimientoId: string, { rejectWithValue }) => {
+    try {
+      const response = await getRequerimientoRecursoWithAlmacen(requerimientoId);
+      return response.data.getRequerimientoRecursoByRequerimientoIdWithAlmacenQuantities;
     } catch (error) {
       return rejectWithValue((error as Error).message);
     }
@@ -140,6 +164,19 @@ const requerimientoRecursoSlice = createSlice({
         state.error = null;
       })
       .addCase(fetchRequerimientoRecursos.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
+      })
+      .addCase(fetchRequerimientoRecursosWithAlmacen.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(fetchRequerimientoRecursosWithAlmacen.fulfilled, (state, action: PayloadAction<RequerimientoRecurso[]>) => {
+        state.loading = false;
+        state.requerimientoRecursos = action.payload;
+        state.error = null;
+      })
+      .addCase(fetchRequerimientoRecursosWithAlmacen.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload as string;
       })

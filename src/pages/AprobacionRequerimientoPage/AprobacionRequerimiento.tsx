@@ -115,6 +115,8 @@ const AprobacionRequerimiento = ({ newRequerimiento, userAprobacion, columnId }:
     return false;
   };
 
+  console.log(newRequerimiento);
+
   const aprobarRequerimiento = async () => {
     setIsLoading(true);
     try {
@@ -126,12 +128,11 @@ const AprobacionRequerimiento = ({ newRequerimiento, userAprobacion, columnId }:
       if (!aprobacionUsuario) {
         throw new Error('Usuario no autorizado para aprobar');
       }
-      
       const data = {
         id: aprobacionUsuario.id_aprobacion,
         requerimiento_id: newRequerimiento.id,
         usuario_id: user.id as string,
-        estado_aprobacion: newRequerimiento.estado === "pendiente" ? "aprobado_supervisor" : "aprobado_gerencia",
+        estado_aprobacion: newRequerimiento.estado_atencion === "pendiente" ? "aprobado_supervisor" : "aprobado_gerencia",
         comentario: comentario || "Requerimiento aprobado"
       };
       await dispatch(updateAprobacion(data)).unwrap();
@@ -142,7 +143,7 @@ const AprobacionRequerimiento = ({ newRequerimiento, userAprobacion, columnId }:
         obra_id: newRequerimiento?.obra_id || '',
         fecha_final: new Date(newRequerimiento?.fecha_final || new Date()),
         sustento: newRequerimiento?.sustento || '',
-        estado_atencion: "aprobado_supervisor"
+        estado_atencion: newRequerimiento.estado_atencion === "pendiente" ? "aprobado_supervisor" : "aprobado_gerencia",
       })).unwrap();
       console.log('Requerimiento aprobado exitosamente');
     } catch (error) {
@@ -163,7 +164,7 @@ const AprobacionRequerimiento = ({ newRequerimiento, userAprobacion, columnId }:
         id: aprobacionUsuario.id_aprobacion,
         requerimiento_id: newRequerimiento.id,
         usuario_id: user.id as string,
-        estado_aprobacion: newRequerimiento.estado_atencion === "pendiente" ? "rechazado_supervisor" : "aprobado_gerencia",
+        estado_aprobacion: newRequerimiento.estado_atencion === "pendiente" ? "rechazado_supervisor" : "rechazado_gerencia",
         comentario: comentario || "Requerimiento rechazado"
       };
 
@@ -175,7 +176,7 @@ const AprobacionRequerimiento = ({ newRequerimiento, userAprobacion, columnId }:
         obra_id: newRequerimiento?.obra_id || '',
         fecha_final: new Date(newRequerimiento?.fecha_final || new Date()),
         sustento: newRequerimiento?.sustento || '',
-        estado_atencion: "rechazado_supervisor"
+        estado_atencion: newRequerimiento.estado_atencion === "pendiente" ? "rechazado_supervisor" : "rechazado_gerencia",
       })).unwrap();
       console.log('Requerimiento rechazado exitosamente');
     } catch (error) {
@@ -245,13 +246,13 @@ const AprobacionRequerimiento = ({ newRequerimiento, userAprobacion, columnId }:
           <div className="flex items-center gap-2">
             <label className="text-xs font-medium text-gray-600">Estado:</label>
             <span className="px-2 py-1 bg-yellow-100 text-yellow-800 rounded text-xs">
-              {newRequerimiento.aprobacion[0].cargo}
+              {newRequerimiento?.aprobacion?.[0]?.cargo || 'Sin estado'}
             </span>
           </div>
           <div className="flex items-center gap-2">
             <label className="text-xs font-medium text-gray-600">Aprobado:</label>
             <span className="px-2 py-1 bg-blue-100 text-blue-800 rounded text-xs">
-              {newRequerimiento.aprobacion[0].id_usuario}
+              {newRequerimiento?.aprobacion?.[0]?.id_usuario || 'No aprobado'}
             </span>
           </div>
         </div>

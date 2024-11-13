@@ -9,14 +9,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { fetchUsuariosAndCargos, addUsuario, updateUsuario } from '../../slices/usuarioSlice';
 import { RootState, AppDispatch } from '../../store/store';
 import LoaderPage from '../../components/Loader/LoaderPage';
-
-// Definición de interfaces
-interface Cargo {
-  id: string;
-  nombre: string;
-  descripcion: string;
-  gerarquia: string;
-}
+import { FiEdit2 } from 'react-icons/fi';
 
 interface Usuario {
   id: string;
@@ -25,7 +18,12 @@ interface Usuario {
   dni: number;
   usuario: string;
   contrasenna: string;
-  cargo_id: string | Cargo;
+  cargo_id: string | { 
+    id: string;
+    nombre: string;
+    descripcion: string;
+    gerarquia: number;
+  };
   rol_id: string;
 }
 
@@ -104,7 +102,7 @@ const UsuariosPage: React.FC = () => {
       usuario: usuario.usuario,
       rol_id: usuario.rol_id,
       opciones: (
-        <Button text='Editar' color='transp' className='text-black' onClick={() => handleEdit(usuario)}></Button>
+        <Button icon={<FiEdit2 className=''/>} color='transp' className='text-black' onClick={() => handleEdit(usuario)}></Button>
       )
     }))
   };

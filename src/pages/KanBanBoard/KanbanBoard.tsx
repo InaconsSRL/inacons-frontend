@@ -7,8 +7,7 @@ import Modal from '../../components/Modal/Modal';
 import RequerimientoRecursos from '../RequerimientosPage/CrearRequerimientoYRecursos/RequerimientoRecursos';
 import KanbanColumn from './KanbanColumn';
 import KanbanCardAprobacion from './KanbanCardAprobacion';
-import KanbanCardLogisticaUno from './2KanbanCardLogisticaUno';
-import KanbanCard from './KanbanCard';
+import KanbanCardLogisticaUno from './KanbanCardLogistica';
 import { Column, Requerimiento } from './types/kanban'; // Añadir esta línea
 import Button from '../../components/Buttons/Button';
 import { FiRefreshCcw } from 'react-icons/fi';

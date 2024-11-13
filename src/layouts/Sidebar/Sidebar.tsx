@@ -1,9 +1,11 @@
 // Sidebar.tsx
 import React, { useState, useEffect } from 'react';
 import { NavLink } from 'react-router-dom';
-import { FiHome, FiBold, FiShare, FiArchive, FiBriefcase, FiCommand, FiType, FiPackage, FiUsers, FiPower } from 'react-icons/fi';
+import { FiHome } from 'react-icons/fi';
 import DropdownMenu from './DropdownMenu';
-import { GiAbstract009, GiThreeFriends } from 'react-icons/gi';
+import { FaRegCalendarAlt, FaProjectDiagram, FaUsers, FaUserShield, FaBriefcase, FaBoxOpen, FaTags, FaBalanceScale, FaLayerGroup, FaMoneyBillWave, FaShoppingCart, FaWarehouse, FaClipboardList, FaTasks, FaHandshake } from 'react-icons/fa';
+import { MdViewKanban } from "react-icons/md";
+import { motion } from 'framer-motion';
 
 interface SidebarProps {
   isSidebarOpen: boolean;
@@ -13,42 +15,42 @@ interface SidebarProps {
 const Sidebar: React.FC<SidebarProps> = ({ isSidebarOpen, toggleSidebar }) => {
   const [isHovered, setIsHovered] = useState(false);
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
-  const activeStyle = "bg-sky-300 bg-opacity-50 rounded-xl py-2 pl-2 -m-2 pr-2";
+  const [openDropdown, setOpenDropdown] = useState<string | null>(null);
 
   const moduloOtrosItems = [
-    { to: "/dashboard/calendar", icon: FiBold, text: "Forma Básica" },
-    { to: "/dashboard/organigrama", icon: GiAbstract009, text: "OrganigramaObras" },
+    { to: "/dashboard/calendar", icon: FaRegCalendarAlt, text: "Forma Básica" },
+    { to: "/dashboard/organigrama", icon: FaProjectDiagram, text: "OrganigramaObras" },
   ];
 
   const moduloAdministracionItems = [
-    { to: "/dashboard/usuario", icon: FiUsers, text: "Usuarios" },
-    { to: "/dashboard/roles", icon: GiThreeFriends, text: "AsignarRoles" },
-    { to: "/dashboard/cargo", icon: FiBriefcase, text: "Cargos" },
+    { to: "/dashboard/usuario", icon: FaUsers, text: "Usuarios" },
+    { to: "/dashboard/roles", icon: FaUserShield, text: "AsignarRoles" },
+    { to: "/dashboard/cargo", icon: FaBriefcase, text: "Cargos" },
   ];
 
   const moduloRecursosItems = [
-    { to: "/dashboard/recurso", icon: FiArchive, text: "Recursos" },
-    { to: "/dashboard/tipoRecurso", icon: FiShare, text: "Tipo Recurso" },
-    { to: "/dashboard/unidad", icon: FiCommand, text: "Unidades" },
-    { to: "/dashboard/clasificacionRecurso", icon: FiType, text: "Clase de Recurso" },
-    { to: "/dashboard/tipoCostoRecurso", icon: FiType, text: "Tipo de Costo" },
+    { to: "/dashboard/recurso", icon: FaBoxOpen, text: "Recursos" },
+    { to: "/dashboard/tipoRecurso", icon: FaTags, text: "Tipo Recurso" },
+    { to: "/dashboard/unidad", icon: FaBalanceScale, text: "Unidades" },
+    { to: "/dashboard/clasificacionRecurso", icon: FaLayerGroup, text: "Clase de Recurso" },
+    { to: "/dashboard/tipoCostoRecurso", icon: FaMoneyBillWave, text: "Tipo de Costo" },
   ];
 
   const moduloCompras = [
-    { to: "/dashboard/compras", icon: FiType, text: "ComprasPage" },
+    { to: "/dashboard/compras", icon: FaShoppingCart, text: "ComprasPage" },
   ];
 
   const moduloAlmacen = [
-    { to: "/dashboard/almacen", icon: FiBriefcase, text: "Almacen" },
-    { to: "/dashboard/almacenBoard", icon: FiBriefcase, text: "AlmacenBoard" },
-    { to: "/dashboard/presupuestoBoard", icon: FiBriefcase, text: "Presupuestos" },
+    { to: "/dashboard/almacen", icon: FaWarehouse, text: "Almacen" },
+    { to: "/dashboard/almacenBoard", icon: FaClipboardList, text: "AlmacenBoard" },
+    { to: "/dashboard/presupuestoBoard", icon: FaMoneyBillWave, text: "Presupuestos" },
   ];
 
   const otroModuloItems = [
-    { to: "/dashboard/requerimiento", icon: FiBriefcase, text: "Requerimiento" },
-    { to: "/dashboard/reqRecursos", icon: FiPackage, text: "GenerarRequerimiento" },
-    { to: "/dashboard/kanban", icon: GiThreeFriends, text: "Kanban" },
-    { to: "/dashboard/proveedor", icon: FiPower, text: "Proveedores" },
+    { to: "/dashboard/requerimiento", icon: FaClipboardList, text: "Requerimiento" },
+    { to: "/dashboard/reqRecursos", icon: FaTasks, text: "GenerarRequerimiento" },
+    { to: "/dashboard/kanban", icon: MdViewKanban, text: "Kanban" },
+    { to: "/dashboard/proveedor", icon: FaHandshake, text: "Proveedores" },
   ];
 
   useEffect(() => {
@@ -81,34 +83,56 @@ const Sidebar: React.FC<SidebarProps> = ({ isSidebarOpen, toggleSidebar }) => {
     }
   };
 
+  const activeStyle = "bg-sky-300 bg-opacity-50 rounded-xl py-2 pl-2 -m-2 pr-2";
   return (
-    <div
-      className={`bg-black/50 backdrop-blur-lg transition-all duration-500 ease-in-out select-none ${isSidebarOpen || (!isMobile && isHovered) ? 'w-full md:w-64 lg:w-64' : 'w-0 md:w-0 lg:w-16 hidden lg:block'}`}
+    <motion.div
+      initial={false}
+      animate={{
+        width: isSidebarOpen || (!isMobile && isHovered) ?
+          window.innerWidth < 768 ? '100%' : '16rem' :
+          window.innerWidth < 768 ? '0' : '4rem'
+      }}
+      transition={{ duration: 0.3, ease: "easeInOut" }}
+      className={`bg-black/50 backdrop-blur-lg select-none ${isSidebarOpen || (!isMobile && isHovered) ?
+          'w-full md:w-64 lg:w-64' :
+          'w-0 md:w-0 lg:w-16 hidden lg:block'
+        }`}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
     >
-      <nav className="flex flex-col items-start p-4 h-full overflow-y-auto">
-
-        <NavLink
-          to="/dashboard"
-          className={`flex items-center select-none ${isSidebarOpen || (!isMobile && isHovered) ? 'space-x-4 w-full mb-4' : 'justify-center mb-4'}  ${location.pathname === '/dashboard' ? activeStyle : ''}`}
+      <motion.nav
+        className="flex flex-col items-start py-4 pl-2 h-full overflow-y-auto"
+        animate={{ opacity: 1 }}
+        initial={{ opacity: 0 }}
+        transition={{ delay: 0.2 }}
+      >
+        <motion.div
+          whileHover={{ scale: 1.02 }}
+          whileTap={{ scale: 0.98 }}
+          className="flex flex-col w-[230px] mb-2"
         >
-          <FiHome className="w-6 h-6 text-white" />
-          {(isSidebarOpen || (!isMobile && isHovered)) && <span className="text-white whitespace-nowrap overflow-hidden text-ellipsis select-none">Inicio</span>}
-        </NavLink>
+          <NavLink
+            to="/dashboard"
+            className={`${isSidebarOpen ? "w-[248px] justify-between" : "w-[58px] justify-center"} rounded-t-xl rounded-l-xl flex items-center mb-0 mt-1 pr-4 py-1.5 ${location.pathname === '/dashboard' ? activeStyle : ''}`}
+          >
+            <div className="flex items-center">
+              <FiHome className={`w-6 h-6 ${location.pathname === '/dashboard' ? 'text-black' : 'text-white'}`} />
+              {(isSidebarOpen || (!isMobile && isHovered)) && 
+                <span className={`pl-3 ${location.pathname === '/dashboard' ? 'text-black' : 'text-white'}`}>
+                  Inicio
+                </span>
+              }
+            </div>
+          </NavLink>
+        </motion.div>
 
         <DropdownMenu
           title="Recursos"
           items={moduloRecursosItems}
           isSidebarOpen={isSidebarOpen || (!isMobile && isHovered)}
           toggleSidebar={toggleSidebar}
-        />
-
-<DropdownMenu
-          title="Compras"
-          items={moduloCompras}
-          isSidebarOpen={isSidebarOpen || (!isMobile && isHovered)}
-          toggleSidebar={toggleSidebar}
+          openDropdown={openDropdown}
+          setOpenDropdown={setOpenDropdown}
         />
 
         <DropdownMenu
@@ -116,6 +140,8 @@ const Sidebar: React.FC<SidebarProps> = ({ isSidebarOpen, toggleSidebar }) => {
           items={otroModuloItems}
           isSidebarOpen={isSidebarOpen || (!isMobile && isHovered)}
           toggleSidebar={toggleSidebar}
+          openDropdown={openDropdown}
+          setOpenDropdown={setOpenDropdown}
         />
 
         <DropdownMenu
@@ -123,6 +149,8 @@ const Sidebar: React.FC<SidebarProps> = ({ isSidebarOpen, toggleSidebar }) => {
           items={moduloAdministracionItems}
           isSidebarOpen={isSidebarOpen || (!isMobile && isHovered)}
           toggleSidebar={toggleSidebar}
+          openDropdown={openDropdown}
+          setOpenDropdown={setOpenDropdown}
         />
 
         <DropdownMenu
@@ -130,6 +158,17 @@ const Sidebar: React.FC<SidebarProps> = ({ isSidebarOpen, toggleSidebar }) => {
           items={moduloAlmacen}
           isSidebarOpen={isSidebarOpen || (!isMobile && isHovered)}
           toggleSidebar={toggleSidebar}
+          openDropdown={openDropdown}
+          setOpenDropdown={setOpenDropdown}
+        />
+
+        <DropdownMenu
+          title="Compras"
+          items={moduloCompras}
+          isSidebarOpen={isSidebarOpen || (!isMobile && isHovered)}
+          toggleSidebar={toggleSidebar}
+          openDropdown={openDropdown}
+          setOpenDropdown={setOpenDropdown}
         />
 
         <DropdownMenu
@@ -137,9 +176,11 @@ const Sidebar: React.FC<SidebarProps> = ({ isSidebarOpen, toggleSidebar }) => {
           items={moduloOtrosItems}
           isSidebarOpen={isSidebarOpen || (!isMobile && isHovered)}
           toggleSidebar={toggleSidebar}
+          openDropdown={openDropdown}
+          setOpenDropdown={setOpenDropdown}
         />
-      </nav>
-    </div>
+      </motion.nav>
+    </motion.div>
   );
 };
 

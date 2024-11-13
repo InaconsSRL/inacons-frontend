@@ -95,7 +95,7 @@ const ProveedorComponent: React.FC = () => {
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.2 }}
       >
-        <h1 className="text-2xl font-bold text-blue-800">Proveedores</h1>
+        <h1 className="text-2xl font-bold text-white">Proveedores</h1>
 
         <div className="flex items-center space-x-2">
           <Button text='Nuevo Proveedor' color='verde' onClick={handleButtonClick} className="rounded w-full" />

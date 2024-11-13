@@ -126,10 +126,10 @@ const TableComponent: React.FC<TableComponentProps> = ({ tableData, maxCharacter
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
-        className="p-2 bg-gray-50/50 rounded-lg shadow-md"
+        className="p-2 bg-gray-50/50 rounded-xl shadow-md"
       >
-        <div className="overflow-x-auto" ref={tableContainerRef}>
-          <table className="w-full border-collapse bg-white table-fixed">
+        <div className="overflow-x-auto font-lato " ref={tableContainerRef}>
+          <table className="w-full border-collapse bg-white table-fixed rounded-xl">
             <thead>
               {table.getHeaderGroups().map(headerGroup => (
                 shouldUseAnimations(table.getState().pagination.pageSize) ? (
@@ -152,7 +152,7 @@ const TableComponent: React.FC<TableComponentProps> = ({ tableData, maxCharacter
                     {headerGroup.headers.map(header => (
                       <th
                         key={header.id}
-                        className="border-b border-gray-200 bg-white/85 p-4 text-left text-sm font-semibold text-gray-600 relative"
+                        className="border-b border-gray-200 bg-white/85 px-4 py-2 text-left text-xs font-semibold text-gray-600 relative"
                         style={{ width: header.getSize(), minWidth: header.getSize() }}
                       >
                         {header.isPlaceholder ? null : (
@@ -305,7 +305,7 @@ const TableComponent: React.FC<TableComponentProps> = ({ tableData, maxCharacter
                     {row.getVisibleCells().map(cell => (
                       <td 
                         key={cell.id} 
-                        className="border-b border-gray-200 px-1 md:px-2 py-1 md:py-2 text-xs md:text-sm text-gray-700 text-left overflow-hidden"
+                        className="border-b border-gray-200 px-1 md:px-2 py-1 md:py-2 text-xs md:text-[0.68rem] text-gray-700 text-left overflow-hidden"
                         style={{ 
                           width: cell.column.getSize(),
                           maxWidth: cell.column.getSize(),
@@ -325,7 +325,7 @@ const TableComponent: React.FC<TableComponentProps> = ({ tableData, maxCharacter
                     {row.getVisibleCells().map(cell => (
                       <td 
                         key={cell.id} 
-                        className="border-b border-gray-200 px-1 md:px-2 py-1 md:py-2 text-xs md:text-sm text-gray-700 text-left overflow-hidden"
+                        className="border-b border-gray-200 px-1 md:px-2 py-1 md:py-2 text-xs md:text-[0.68rem] text-gray-700 text-left overflow-hidden"
                         style={{ 
                           width: cell.column.getSize(),
                           maxWidth: cell.column.getSize(),

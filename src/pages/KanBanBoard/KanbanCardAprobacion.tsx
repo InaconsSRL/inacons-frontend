@@ -5,13 +5,6 @@ import { RootState } from '../../store/store';
 import AprobarRequerimiento from '../AprobacionRequerimientoPage/AprobacionRequerimiento';
 import Modal from '../../components/Modal/Modal';
 
-// Definir la interfaz para aprobacion
-// interface Aprobacion {
-//   id_usuario: string;
-//   gerarquia: number;
-//   cargo: string;
-// }
-
 // Usar el tipo base en lugar de definir uno nuevo
 const KanbanCardAprobacion: React.FC<KanbanCardBaseProps> = ({ column }) => {
   const [modalAprobacionReqSup, setModalAprobacionReqSup] = useState(false);

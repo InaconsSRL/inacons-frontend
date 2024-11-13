@@ -1,15 +1,11 @@
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
 import { getAllUsuariosAndCargosService, createUsuarioService, updateUsuarioService } from '../services/usuarioService';
 
-interface Usuario {
+interface CargoDetallado {
   id: string;
-  nombres: string;
-  apellidos: string;
-  dni: number;
-  usuario: string;
-  contrasenna: string;
-  cargo_id: string | CargoDetallado;
-  rol_id: string;
+  nombre: string;
+  descripcion: string;
+  gerarquia: number;
 }
 
 interface Cargo {
@@ -19,11 +15,15 @@ interface Cargo {
   gerarquia: number;
 }
 
-interface CargoDetallado {
+interface Usuario {
   id: string;
-  nombre: string;
-  descripcion: string;
-  gerarquia: number;
+  nombres: string;
+  apellidos: string;
+  dni: number;
+  usuario: string;
+  contrasenna: string;
+  cargo_id: string | CargoDetallado;
+  rol_id: string;
 }
 
 interface UsuarioCargo {
