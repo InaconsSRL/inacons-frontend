@@ -23,6 +23,13 @@ import { solicitudAlmacenReducer } from '../slices/solicitudAlmacenSlice';
 import { solicitudRecursoAlmacenReducer } from '../slices/solicitudRecursoAlmacenSlice';
 import { ordenCompraReducer } from '../slices/ordenCompraSlice';
 import { ordenCompraRecursosReducer } from '../slices/ordenCompraRecursosSlice';
+import { requerimientoRecursoWithAlmacenReducer } from '../slices/requerimientoRecursoWithAlmacenSlice';
+import { preSolicitudAlmacenReducer } from '../slices/preSolicitudAlmacenSlice';
+import { preSolicitudAlmacenRecursoReducer } from '../slices/preSolicitudAlmacenRecursoSlice';
+import { cotizacionReducer } from '../slices/cotizacionSlice';
+import { guiaTransferenciaReducer } from '../slices/guiaTransferenciaSlice';
+import { transferenciaReducer } from '../slices/transferenciaSlice';
+import { transferenciaDetalleReducer } from '../slices/transferenciaDetalleSlice';
 
 export const store = configureStore({
   reducer: {
@@ -34,7 +41,7 @@ export const store = configureStore({
     unidad: unidadReducer,
     clasificacionRecurso: clasificacionRecursoReducer,
     obra: obraReducer,
-    role : roleReducer,
+    role: roleReducer,
     menu: menuReducer,
     proveedor: proveedorReducer,
     requerimiento: requerimientoReducer,
@@ -49,6 +56,13 @@ export const store = configureStore({
     solicitudRecursoAlmacen: solicitudRecursoAlmacenReducer,
     ordenCompra: ordenCompraReducer,
     ordenCompraRecursos: ordenCompraRecursosReducer,
+    requerimientoRecursoWithAlmacen: requerimientoRecursoWithAlmacenReducer,
+    preSolicitudAlmacen: preSolicitudAlmacenReducer,
+    preSolicitudAlmacenRecurso: preSolicitudAlmacenRecursoReducer,
+    cotizacion: cotizacionReducer,
+    guiaTransferencia: guiaTransferenciaReducer,
+    transferencia: transferenciaReducer,
+    transferenciaDetalle: transferenciaDetalleReducer,
   },
 });
 

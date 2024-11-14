@@ -21,34 +21,6 @@ const GET_REQUERIMIENTO_RECURSO_BY_REQUERIMIENTO_ID = gql`
 }
 `;
 
-const GET_REQUERIMIENTO_RECURSO_WITH_ALMACEN = gql`
-  query GetRequerimientoRecursoByRequerimientoIdWithAlmacenQuantities($requerimientoId: ID!) {
-    getRequerimientoRecursoByRequerimientoIdWithAlmacenQuantities(requerimiento_id: $requerimientoId) {
-      id
-      requerimiento_id
-      recurso_id
-      nombre
-      codigo
-      unidad
-      cantidad
-      cantidad_aprobada
-      estado
-      notas
-      costo_ref
-      fecha_limit
-      presupuestado
-      listAlmacenRecursos {
-        recurso_id
-        cantidad
-        almacen_id
-        costo
-        nombre_almacen
-        _id
-      }
-    }
-  }
-`;
-
 const UPDATE_REQUERIMIENTO_RECURSO = gql`
   mutation Mutation($updateRequerimientoRecursoId: ID!, $cantidad: Int,  $cantidad_aprobada: Int, $notas: String, $fecha_limit: DateTime) {
   updateRequerimientoRecurso(id: $updateRequerimientoRecursoId, cantidad: $cantidad, cantidad_aprobada: $cantidad_aprobada, notas: $notas, fecha_limit: $fecha_limit) {
@@ -105,18 +77,6 @@ export const getRequerimientoRecursoByRequerimientoId = async (requerimientoId: 
     return data.getRequerimientoRecursoByRequerimientoId;
   } catch (error) {
     throw new Error(`Error fetching requerimiento recursos ${error}`);
-  }
-};
-
-export const getRequerimientoRecursoWithAlmacen = async (requerimientoId: string) => {
-  try {
-    const { data } = await client.query({
-      query: GET_REQUERIMIENTO_RECURSO_WITH_ALMACEN,
-      variables: { requerimientoId },
-    });
-    return data.getRequerimientoRecursoByRequerimientoIdWithAlmacenQuantities;
-  } catch (error) {
-    throw new Error(`Error fetching requerimiento recursos with almacen ${error}`);
   }
 };
 

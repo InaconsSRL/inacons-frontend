@@ -4,7 +4,6 @@ import {
   addRequerimientoRecurso as addRequerimientoRecursoService, 
   deleteRequerimientoRecurso as deleteRequerimientoRecursoService,
   updateRequerimientoRecurso as updateRequerimientoRecursoService,
-  getRequerimientoRecursoWithAlmacen
 } from '../services/requerimientoRecursoService';
 
 // Interfaz actualizada con todos los campos del GraphQL
@@ -82,18 +81,6 @@ export const fetchRequerimientoRecursos = createAsyncThunk(
   }
 );
 
-export const fetchRequerimientoRecursosWithAlmacen = createAsyncThunk(
-  'requerimientoRecurso/fetchRequerimientoRecursosWithAlmacen',
-  async (requerimientoId: string, { rejectWithValue }) => {
-    try {
-      const response = await getRequerimientoRecursoWithAlmacen(requerimientoId);
-      return response.data.getRequerimientoRecursoByRequerimientoIdWithAlmacenQuantities;
-    } catch (error) {
-      return rejectWithValue((error as Error).message);
-    }
-  }
-);
-
 export const addRequerimientoRecurso = createAsyncThunk(
   'requerimientoRecurso/addRequerimientoRecurso',
   async (data: AddRequerimientoRecursoData, { rejectWithValue }) => {
@@ -164,19 +151,6 @@ const requerimientoRecursoSlice = createSlice({
         state.error = null;
       })
       .addCase(fetchRequerimientoRecursos.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.payload as string;
-      })
-      .addCase(fetchRequerimientoRecursosWithAlmacen.pending, (state) => {
-        state.loading = true;
-        state.error = null;
-      })
-      .addCase(fetchRequerimientoRecursosWithAlmacen.fulfilled, (state, action: PayloadAction<RequerimientoRecurso[]>) => {
-        state.loading = false;
-        state.requerimientoRecursos = action.payload;
-        state.error = null;
-      })
-      .addCase(fetchRequerimientoRecursosWithAlmacen.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload as string;
       })

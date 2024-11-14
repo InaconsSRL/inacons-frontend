@@ -1,30 +1,12 @@
 import React, { useState, useEffect } from 'react';
 
-import { fetchRequerimientoRecursosWithAlmacen } from '../../slices/requerimientoRecursoSlice';
+import { fetchRequerimientoRecursosWithAlmacen } from '../../slices/requerimientoRecursoWithAlmacenSlice';
 import { useDispatch, useSelector } from 'react-redux';
 import { RootState, AppDispatch } from '../../store/store';
 import { Column, Requerimiento } from '../KanBanBoard/types/kanban';
 import LoaderPage from '../../components/Loader/LoaderPage';
 
 // Interfaces
-interface Warehouse {
-  id: string;
-  name: string;
-  stock: number;
-}
-
-interface Item {
-  id: string;
-  name: string;
-  unit: string;
-  unitEmb: string;
-  quantity: number;
-  status: string;
-  limitDate: string;
-  partialCost: number;
-  approvedQuantity: number;
-  warehouses: Warehouse[];
-}
 
 interface WarehouseQuantities {
   [key: string]: number;
@@ -43,51 +25,23 @@ const AprobacionTransferenciaPage: React.FC<AprobacionTransferenciaPageProps> = 
   const [activeRowId, setActiveRowId] = useState<string | null>(null);
 
   const dispatch = useDispatch<AppDispatch>();
-  const requerimientoRecursos = useSelector((state: RootState) => state.requerimientoRecurso.requerimientoRecursos);
-  const loadingRequerimientoRecursos = useSelector((state: RootState) => state.requerimientoRecurso.loading);
+  const requerimientoRecursos = useSelector((state: RootState) => state.requerimientoRecursoWithAlmacen.recursos);
+  const loadingRequerimientoRecursos = useSelector((state: RootState) => state.requerimientoRecursoWithAlmacen.loading);
   
   useEffect(() => {
     if (requerimientoId) {
-     const response = dispatch(fetchRequerimientoRecursosWithAlmacen(requerimientoId.toString()));
-     console.log(response)
+     dispatch(fetchRequerimientoRecursosWithAlmacen(requerimientoId.toString()));
     }
   }, [dispatch, requerimientoId]);
-
-  const [items, setItems] = useState<Item[]>([]);
-
-  useEffect(() => {
-    const itemsData: Item[] = requerimientoRecursos.map((recurso) => {
-      const warehouses = recurso.listAlmacenRecursos.map((almacenRecurso) => ({
-        id: almacenRecurso.almacen_id || '',
-        name: almacenRecurso.nombre_almacen || '',
-        stock: almacenRecurso.cantidad,
-      }));
-
-      return {
-        id: recurso.codigo,
-        name: recurso.nombre,
-        unit: recurso.unidad,
-        unitEmb: recurso.unidad,
-        quantity: recurso.cantidad,
-        status: recurso.estado,
-        limitDate: recurso.fecha_limit ? new Date(recurso.fecha_limit).toISOString().split("T")[0].split("-").reverse().join("/") : '-',
-        partialCost: recurso.costo_ref || 0,
-        approvedQuantity: recurso.cantidad_aprobada || 0,
-        warehouses: warehouses,
-      };
-    });
-
-    setItems(itemsData);
-  }, [requerimientoRecursos]);
 
   const [warehouseQuantities, setWarehouseQuantities] = useState<WarehouseQuantities>({});
 
   const handleQuantityChange = (itemId: string, warehouseId: string, value: string): void => {
     const numValue = parseInt(value) || 0;
-    const item = items.find(i => i.id === itemId);
-    const warehouse = item?.warehouses.find(w => w.id === warehouseId);
+    const item = requerimientoRecursos.find(i => i.recurso_id === itemId);
+    const warehouse = item?.listAlmacenRecursos.find(w => w.almacen_id === warehouseId);
 
-    if (warehouse && numValue >= 0 && numValue <= warehouse.stock) {
+    if (warehouse && numValue >= 0 && numValue <= warehouse.cantidad) {
       setWarehouseQuantities(prev => ({
         ...prev,
         [`${itemId}-${warehouseId}`]: numValue
@@ -96,17 +50,17 @@ const AprobacionTransferenciaPage: React.FC<AprobacionTransferenciaPageProps> = 
   };
 
   const calculateTransferTotal = (itemId: string): number => {
-    const item = items.find(i => i.id === itemId);
-    return item?.warehouses.reduce((total, warehouse) => {
-      return total + (warehouseQuantities[`${itemId}-${warehouse.id}`] || 0);
+    const item = requerimientoRecursos.find(i => i.recurso_id === itemId);
+    return item?.listAlmacenRecursos.reduce((total, warehouse) => {
+      return total + (warehouseQuantities[`${itemId}-${warehouse.almacen_id}`] || 0);
     }, 0) || 0;
   };
 
   const calculateQuotation = (itemId: string): number => {
-    const item = items.find(i => i.id === itemId);
+    const item = requerimientoRecursos.find(i => i.recurso_id === itemId);
     if (!item) return 0;
     const transferTotal = calculateTransferTotal(itemId);
-    return Math.max(0, item.quantity - transferTotal);
+    return Math.max(0, item.cantidad - transferTotal);
   };
 
   // Handlers para los botones
@@ -120,13 +74,29 @@ const AprobacionTransferenciaPage: React.FC<AprobacionTransferenciaPageProps> = 
     console.log('Rechazando transferencia...');
   };
 
-  console.log(items, warehouseQuantities);
+  console.log(requerimientoRecursos, warehouseQuantities);
 
   if (loadingRequerimientoRecursos) {
     return <LoaderPage />;
   }
 
-  
+  const renderItems = requerimientoRecursos.map((recurso) => ({
+    id: recurso.id,
+    codigo: recurso.codigo,
+    name: recurso.nombre,
+    unit: recurso.unidad,
+    unitEmb: recurso.unidad,
+    quantity: recurso.cantidad,
+    status: recurso.estado,
+    limitDate: recurso.fecha_limit ? new Date(recurso.fecha_limit).toISOString().split("T")[0].split("-").reverse().join("/") : '-',
+    partialCost: recurso.costo_ref || 0,
+    approvedQuantity: recurso.cantidad_aprobada || 0,
+    warehouses: recurso.listAlmacenRecursos.map((almacenRecurso) => ({
+      id: almacenRecurso.almacen_id,
+      name: almacenRecurso.nombre_almacen,
+      stock: almacenRecurso.cantidad,
+    }))
+  }));
 
   return (
     <div className="p-4 bg-white rounded-lg shadow">
@@ -201,7 +171,7 @@ const AprobacionTransferenciaPage: React.FC<AprobacionTransferenciaPageProps> = 
             </tr>
           </thead>
           <tbody>
-            {items.map((item) => (
+            {renderItems.map((item) => (
               <tr 
                 key={item.id} 
                 className={`
@@ -211,7 +181,7 @@ const AprobacionTransferenciaPage: React.FC<AprobacionTransferenciaPageProps> = 
                 `}
                 onClick={() => setActiveRowId(item.id)}
               >
-                <td className="px-2 py-1">{item.id}</td>
+                <td className="px-2 py-1">{item.codigo}</td>
                 <td className="px-2 py-1 text-left ">{item.name}</td>
                 <td className="px-2 py-1 text-center">{item.unit}</td>
                 <td className="px-2 py-1 text-center">{item.unitEmb}</td>
