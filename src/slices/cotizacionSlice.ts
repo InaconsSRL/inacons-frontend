@@ -1,6 +1,20 @@
-
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
-import { listCotizacionesService, addCotizacionService, updateCotizacionService, getCotizacionService, deleteCotizacionService } from '../services/cotizacionService';
+import {
+  listCotizacionesService,
+  addCotizacionService,
+  updateCotizacionService,
+  getCotizacionService,
+  deleteCotizacionService,
+} from '../services/cotizacionService';
+
+// Definir interfaces
+interface Proveedor {
+  id: string;
+  razon_social: string;
+  ruc: string;
+  direccion: string;
+  nombre_comercial: string;
+}
 
 interface Usuario {
   id: string;
@@ -8,18 +22,8 @@ interface Usuario {
   apellidos: string;
 }
 
-interface Proveedor {
-  id: string;
-  razon_social: string;
-  direccion: string;
-  nombre_comercial: string;
-  ruc: string;
-}
-
 interface Requerimiento {
   id: string;
-  usuario_id: string;
-  usuario: string;
   presupuesto_id: string;
   fecha_solicitud: string;
   fecha_final: string;
@@ -27,22 +31,24 @@ interface Requerimiento {
   sustento: string;
   obra_id: string;
   codigo: string;
+  usuario_id: string;
+  usuario: string;
 }
 
 interface SolicitudCompra {
   id: string;
-  requerimiento_id: Requerimiento;
   fecha: string;
+  requerimiento_id: Requerimiento;
   usuario_id: Usuario;
 }
 
-interface Cotizacion {
+export interface Cotizacion {
   id: string;
+  aprobacion: boolean;
   codigo_cotizacion: string;
   proveedor_id: Proveedor;
-  usuario_id: Usuario;
   solicitud_compra_id: SolicitudCompra;
-  aprobacion: boolean;
+  usuario_id: Usuario;
 }
 
 interface CotizacionState {
@@ -59,35 +65,60 @@ const initialState: CotizacionState = {
   error: null,
 };
 
+const handleError = (error: unknown): string => {
+  if (error instanceof Error) return error.message;
+  return String(error);
+};
+
+// Thunks
 export const fetchCotizaciones = createAsyncThunk(
   'cotizacion/fetchCotizaciones',
   async (_, { rejectWithValue }) => {
     try {
       return await listCotizacionesService();
     } catch (error) {
-      return rejectWithValue(error instanceof Error ? error.message : 'Error desconocido');
+      return rejectWithValue(handleError(error));
     }
   }
 );
 
 export const addCotizacion = createAsyncThunk(
   'cotizacion/addCotizacion',
-  async (data: { codigo_cotizacion: string; proveedor_id: string; usuario_id: string; solicitud_compra_id: string; aprobacion: boolean }, { rejectWithValue }) => {
+  async (
+    cotizacionData: {
+      codigo_cotizacion: string;
+      proveedor_id: string;
+      usuario_id: string;
+      solicitud_compra_id: string;
+      aprobacion: boolean;
+    },
+    { rejectWithValue }
+  ) => {
     try {
-      return await addCotizacionService(data);
+      return await addCotizacionService(cotizacionData);
     } catch (error) {
-      return rejectWithValue(error instanceof Error ? error.message : 'Error desconocido');
+      return rejectWithValue(handleError(error));
     }
   }
 );
 
 export const updateCotizacion = createAsyncThunk(
   'cotizacion/updateCotizacion',
-  async (data: { id: string; codigo_cotizacion: string; proveedor_id: string; usuario_id: string; solicitud_compra_id: string; aprobacion: boolean }, { rejectWithValue }) => {
+  async (
+    cotizacion: {
+      id: string;
+      codigo_cotizacion: string;
+      proveedor_id: string;
+      usuario_id: string;
+      solicitud_compra_id: string;
+      aprobacion: boolean;
+    },
+    { rejectWithValue }
+  ) => {
     try {
-      return await updateCotizacionService(data);
+      return await updateCotizacionService(cotizacion);
     } catch (error) {
-      return rejectWithValue(error instanceof Error ? error.message : 'Error desconocido');
+      return rejectWithValue(handleError(error));
     }
   }
 );
@@ -98,7 +129,7 @@ export const getCotizacion = createAsyncThunk(
     try {
       return await getCotizacionService(id);
     } catch (error) {
-      return rejectWithValue(error instanceof Error ? error.message : 'Error desconocido');
+      return rejectWithValue(handleError(error));
     }
   }
 );
@@ -109,18 +140,19 @@ export const deleteCotizacion = createAsyncThunk(
     try {
       return await deleteCotizacionService(id);
     } catch (error) {
-      return rejectWithValue(error instanceof Error ? error.message : 'Error desconocido');
+      return rejectWithValue(handleError(error));
     }
   }
 );
 
+// Slice
 const cotizacionSlice = createSlice({
   name: 'cotizacion',
   initialState,
   reducers: {},
   extraReducers: (builder) => {
     builder
-      // Fetch cases
+      // Fetch Cotizaciones
       .addCase(fetchCotizaciones.pending, (state) => {
         state.loading = true;
         state.error = null;
@@ -133,8 +165,61 @@ const cotizacionSlice = createSlice({
         state.loading = false;
         state.error = action.payload as string;
       })
-      // Add, Update, Get, Delete cases...
-      // ...existing code pattern for other cases...
+      // Add Cotizacion
+      .addCase(addCotizacion.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(addCotizacion.fulfilled, (state, action: PayloadAction<Cotizacion>) => {
+        state.loading = false;
+        state.cotizaciones.push(action.payload);
+      })
+      .addCase(addCotizacion.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
+      })
+      // Update Cotizacion
+      .addCase(updateCotizacion.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(updateCotizacion.fulfilled, (state, action: PayloadAction<Cotizacion>) => {
+        state.loading = false;
+        const index = state.cotizaciones.findIndex((c) => c.id === action.payload.id);
+        if (index !== -1) {
+          state.cotizaciones[index] = action.payload;
+        }
+      })
+      .addCase(updateCotizacion.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
+      })
+      // Get Cotizacion
+      .addCase(getCotizacion.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(getCotizacion.fulfilled, (state, action: PayloadAction<Cotizacion>) => {
+        state.loading = false;
+        state.selectedCotizacion = action.payload;
+      })
+      .addCase(getCotizacion.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
+      })
+      // Delete Cotizacion
+      .addCase(deleteCotizacion.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(deleteCotizacion.fulfilled, (state, action: PayloadAction<{ id: string }>) => {
+        state.loading = false;
+        state.cotizaciones = state.cotizaciones.filter((c) => c.id !== action.payload.id);
+      })
+      .addCase(deleteCotizacion.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
+      });
   },
 });
 

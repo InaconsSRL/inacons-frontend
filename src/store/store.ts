@@ -38,7 +38,8 @@ import { solicitudCompraReducer } from '../slices/solicitudCompraSlice';
 import { movimientoReducer } from '../slices/movimientoSlice';
 import { recursosObraReducer } from '../slices/recursosObraSlice';
 import { transferenciaRecursoReducer } from '../slices/transferenciaRecursoSlice';
-
+import { tipoAlmacenReducer } from '../slices/tipoAlmacenSlice';
+import { cotizacionRecursoReducer } from '../slices/cotizacionRecursoSlice';
 
 export const store = configureStore({
   reducer: {
@@ -80,6 +81,8 @@ export const store = configureStore({
     movimiento: movimientoReducer,
     recursosObra: recursosObraReducer,
     transferenciaRecurso: transferenciaRecursoReducer,
+    tipoAlmacen: tipoAlmacenReducer,
+    cotizacionRecurso: cotizacionRecursoReducer,
   },
 });
 

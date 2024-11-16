@@ -1,4 +1,3 @@
-
 import { gql } from '@apollo/client';
 import client from '../apolloClient';
 
@@ -39,6 +38,32 @@ const DELETE_PRE_SOLICITUD_ALMACEN_RECURSO = gql`
   mutation DeletePreSolicitudAlmacenRecurso($deletePreSolicitudAlmacenRecursoId: ID!) {
     deletePreSolicitudAlmacenRecurso(id: $deletePreSolicitudAlmacenRecursoId) {
       id
+    }
+  }
+`;
+
+const LIST_PRE_SOLICITUD_ALMACEN_RECURSOS_BY_PRE_SOLICITUD_ID = gql`
+  query ListPreSolicitudAlmacenRecursosByPreSolicitudId($id: ID!) {
+    listPreSolicitudAlmacenRecursosByPreSolicitudId(id: $id) {
+      id
+      pre_solicitud_almacen_id
+      recurso_id
+      cantidad
+    }
+  }
+`;
+
+const FIND_PRE_SOLICITUD_BY_REQUERIMIENTO = gql`
+  query FindPreSolicitudByRequerimiento($requerimientoId: ID!) {
+    findPreSolicitudByRequerimiento(requerimiento_id: $requerimientoId) {
+      id
+      requerimiento_id
+      usuario_id
+      almacen_id
+      recursos {
+        cantidad
+        recurso_id
+      }
     }
   }
 `;
@@ -87,5 +112,29 @@ export const deletePreSolicitudAlmacenRecurso = async (id: string) => {
     return data.deletePreSolicitudAlmacenRecurso;
   } catch (error) {
     throw new Error(`Error deleting pre solicitud almacen recurso: ${error}`);
+  }
+};
+
+export const listPreSolicitudAlmacenRecursosByPreSolicitudId = async (id: string) => {
+  try {
+    const { data } = await client.query({
+      query: LIST_PRE_SOLICITUD_ALMACEN_RECURSOS_BY_PRE_SOLICITUD_ID,
+      variables: { id },
+    });
+    return data.listPreSolicitudAlmacenRecursosByPreSolicitudId;
+  } catch (error) {
+    throw new Error(`Error fetching recursos by pre solicitud almacen id: ${error}`);
+  }
+};
+
+export const findPreSolicitudByRequerimiento = async (requerimientoId: string) => {
+  try {
+    const { data } = await client.query({
+      query: FIND_PRE_SOLICITUD_BY_REQUERIMIENTO,
+      variables: { requerimientoId },
+    });
+    return data.findPreSolicitudByRequerimiento;
+  } catch (error) {
+    throw new Error(`Error fetching pre solicitud by requerimiento: ${error}`);
   }
 };
