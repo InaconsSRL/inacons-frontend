@@ -4,10 +4,9 @@ import Button from '../../components/Buttons/Button';
 import Modal from '../../components/Modal/Modal';
 import TableComponent from '../../components/Table/TableComponent';
 import UsuarioFormComponent from './UsuarioFormComponent';
-
 import { useDispatch, useSelector } from 'react-redux';
-import { fetchUsuariosAndCargos, addUsuario, updateUsuario } from '../../slices/usuarioSlice';
 import { RootState, AppDispatch } from '../../store/store';
+import { fetchUsuariosAndCargos, addUsuario, updateUsuario } from '../../slices/usuarioSlice';
 import LoaderPage from '../../components/Loader/LoaderPage';
 import { FiEdit2 } from 'react-icons/fi';
 
@@ -93,6 +92,7 @@ const UsuariosPage: React.FC = () => {
   };
 
   const tableData = {
+    filter: [ true, true, true, true, true, true, false ],
     headers: ["nombres", "apellidos", "dni", "usuario", "cargo", "rol_id", "opciones"],
     rows: usuarios.map(usuario => ({
       cargo: typeof usuario.cargo_id === 'object' ? usuario.cargo_id.nombre : '', // Obtener nombre si cargo_id es objeto

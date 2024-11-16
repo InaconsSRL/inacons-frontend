@@ -30,6 +30,15 @@ import { cotizacionReducer } from '../slices/cotizacionSlice';
 import { guiaTransferenciaReducer } from '../slices/guiaTransferenciaSlice';
 import { transferenciaReducer } from '../slices/transferenciaSlice';
 import { transferenciaDetalleReducer } from '../slices/transferenciaDetalleSlice';
+import { requerimientoEstadoHistorialReducer } from '../slices/requerimientoEstadoHistorialSlice';
+import { almacenCentroCostoReducer } from '../slices/almacenCentroCostoSlice';
+import { bodegaReducer } from '../slices/bodegaSlice';
+import { centroCostoReducer } from '../slices/centroCostoSlice';
+import { solicitudCompraReducer } from '../slices/solicitudCompraSlice';
+import { movimientoReducer } from '../slices/movimientoSlice';
+import { recursosObraReducer } from '../slices/recursosObraSlice';
+import { transferenciaRecursoReducer } from '../slices/transferenciaRecursoSlice';
+
 
 export const store = configureStore({
   reducer: {
@@ -63,6 +72,14 @@ export const store = configureStore({
     guiaTransferencia: guiaTransferenciaReducer,
     transferencia: transferenciaReducer,
     transferenciaDetalle: transferenciaDetalleReducer,
+    requerimientoEstadoHistorial: requerimientoEstadoHistorialReducer,
+    almacenCentroCosto: almacenCentroCostoReducer,
+    bodega: bodegaReducer,
+    centroCosto: centroCostoReducer,
+    solicitudCompra: solicitudCompraReducer,
+    movimiento: movimientoReducer,
+    recursosObra: recursosObraReducer,
+    transferenciaRecurso: transferenciaRecursoReducer,
   },
 });
 
