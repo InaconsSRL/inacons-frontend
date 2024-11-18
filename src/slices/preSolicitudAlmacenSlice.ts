@@ -1,10 +1,10 @@
-
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
 import {
   listPreSolicitudesService,
   addPreSolicitudService,
   updatePreSolicitudService,
   deletePreSolicitudService,
+  findPreSolicitudByRequerimiento,
 } from '../services/preSolicitudAlmacenService';
 
 interface PreSolicitudAlmacen {
@@ -17,12 +17,14 @@ interface PreSolicitudAlmacen {
 
 interface PreSolicitudAlmacenState {
   preSolicitudes: PreSolicitudAlmacen[];
+  preSolicitudAlmacen: PreSolicitudAlmacen | null;
   loading: boolean;
   error: string | null;
 }
 
 const initialState: PreSolicitudAlmacenState = {
   preSolicitudes: [],
+  preSolicitudAlmacen: null,
   loading: false,
   error: null,
 };
@@ -72,6 +74,17 @@ export const deletePreSolicitud = createAsyncThunk(
   }
 );
 
+export const fetchPreSolicitudByRequerimiento = createAsyncThunk(
+  'preSolicitudAlmacen/fetchByRequerimiento',
+  async (requerimientoId: string, { rejectWithValue }) => {
+    try {
+      return await findPreSolicitudByRequerimiento(requerimientoId);
+    } catch (error) {
+      return rejectWithValue((error as Error).message);
+    }
+  }
+);
+
 const preSolicitudAlmacenSlice = createSlice({
   name: 'preSolicitudAlmacen',
   initialState,
@@ -96,6 +109,8 @@ const preSolicitudAlmacenSlice = createSlice({
       })
       .addCase(addPreSolicitud.fulfilled, (state, action: PayloadAction<PreSolicitudAlmacen>) => {
         state.preSolicitudes.push(action.payload);
+        state.preSolicitudAlmacen = action.payload;
+        state.error = null;
       })
       .addCase(updatePreSolicitud.fulfilled, (state, action: PayloadAction<PreSolicitudAlmacen>) => {
         const index = state.preSolicitudes.findIndex(item => item.id === action.payload.id);
@@ -105,6 +120,19 @@ const preSolicitudAlmacenSlice = createSlice({
       })
       .addCase(deletePreSolicitud.fulfilled, (state, action: PayloadAction<string>) => {
         state.preSolicitudes = state.preSolicitudes.filter(item => item.id !== action.payload);
+      })
+      .addCase(fetchPreSolicitudByRequerimiento.pending, (state) => {
+        state.loading = true;
+      })
+      .addCase(fetchPreSolicitudByRequerimiento.fulfilled, (state, action: PayloadAction<PreSolicitudAlmacen>) => {
+        state.loading = false;
+        state.preSolicitudAlmacen = action.payload;
+        state.error = null;
+      })
+      .addCase(fetchPreSolicitudByRequerimiento.rejected, (state, action) => {
+        state.loading = false;
+        state.preSolicitudAlmacen = null;
+        state.error = action.payload as string;
       });
   },
 });

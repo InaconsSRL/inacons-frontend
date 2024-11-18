@@ -3,9 +3,10 @@ import { KanbanCardBaseProps } from './KanbanColumn';
 // import { useSelector } from 'react-redux';
 // import { RootState } from '../../store/store';
 import Modal from '../../components/Modal/Modal';
-import AprobacionTransferenciaPage from '../AprobacionTransferenciaPage/AprobacionTransferenciaPageLogistica';
+import AprobacionTransferenciaPageAlmacen from '../AprobacionTransferenciaPage/AprobacionTransferenciaPageAlmacen';
 
-const KanbanCardLogistica: React.FC<KanbanCardBaseProps> = ({ column }) => {
+const KanbanCardAlmacen
+: React.FC<KanbanCardBaseProps> = ({ column }) => {
   const [modalAprobacionReqSup, setModalAprobacionReqSup] = useState(false);
   // const user = useSelector((state: RootState) => state.user);
   
@@ -79,9 +80,9 @@ const KanbanCardLogistica: React.FC<KanbanCardBaseProps> = ({ column }) => {
       <Modal
         isOpen={modalAprobacionReqSup}
         onClose={() => setModalAprobacionReqSup(false)}
-        title="Sugerir Cantidades"
+        title="Aprobar Cantidades"
       >
-        <AprobacionTransferenciaPage
+        <AprobacionTransferenciaPageAlmacen
           column={column}
         />
       </Modal>
@@ -89,4 +90,5 @@ const KanbanCardLogistica: React.FC<KanbanCardBaseProps> = ({ column }) => {
   );
 };
 
-export default KanbanCardLogistica;
+export default KanbanCardAlmacen
+;

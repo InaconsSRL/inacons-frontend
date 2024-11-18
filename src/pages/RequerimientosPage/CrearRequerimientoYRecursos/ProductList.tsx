@@ -54,6 +54,12 @@ export const ProductList: React.FC<ProductListProps> = ({ requerimiento_id, fech
     setDisplayedRecursos(filteredRecursos);
   };
 
+  const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      handleSearch();
+    }
+  };
+
   if (loadingRecursos || loadingObras) {
     return <LoaderPage />;
   }
@@ -70,6 +76,7 @@ export const ProductList: React.FC<ProductListProps> = ({ requerimiento_id, fech
                 placeholder="Buscar por código o nombre..."
                 value={searchInput}
                 onChange={(e) => setSearchInput(e.target.value)}
+                onKeyPress={handleKeyPress}
                 className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               />
               <div className="absolute right-3 top-2.5 text-gray-400">

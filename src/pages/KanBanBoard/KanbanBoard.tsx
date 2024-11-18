@@ -7,10 +7,11 @@ import Modal from '../../components/Modal/Modal';
 import RequerimientoRecursos from '../RequerimientosPage/CrearRequerimientoYRecursos/RequerimientoRecursos';
 import KanbanColumn from './KanbanColumn';
 import KanbanCardAprobacion from './KanbanCardAprobacion';
-import KanbanCardLogisticaUno from './KanbanCardLogistica';
+import KanbanCardLogistica from './KanbanCardLogistica';
 import { Column, Requerimiento } from './types/kanban'; // Añadir esta línea
 import Button from '../../components/Buttons/Button';
 import { FiRefreshCcw } from 'react-icons/fi';
+import KanbanCardAlmacen from './KanbanCardAlmacen';
 
 const KanbanBoard = () => {
   const [searchTerm, setSearchTerm] = useState('');
@@ -176,10 +177,10 @@ const KanbanBoard = () => {
             <KanbanColumn key={aprobacionGerencia.id} column={aprobacionGerencia} CardComponent={KanbanCardAprobacion} />
           </div>
           <div className="snap-center min-w-[240px] min-h-[calc(100vh-15rem)] ">
-            <KanbanColumn key={gestionLogisticaUno.id} column={gestionLogisticaUno} CardComponent={KanbanCardLogisticaUno} />
+            <KanbanColumn key={gestionLogisticaUno.id} column={gestionLogisticaUno} CardComponent={KanbanCardLogistica} />
           </div>
           <div className="snap-center min-w-[240px] min-h-[calc(100vh-15rem)] ">
-            <KanbanColumn key={gestionAlmacen.id} column={gestionAlmacen} CardComponent={KanbanCardAprobacion} />
+            <KanbanColumn key={gestionAlmacen.id} column={gestionAlmacen} CardComponent={KanbanCardAlmacen} />
           </div>
           <div className="snap-center min-w-[240px] min-h-[calc(100vh-15rem)] ">
             <KanbanColumn key={gestionLogisticaDos.id} column={gestionLogisticaDos} CardComponent={KanbanCardAprobacion} />

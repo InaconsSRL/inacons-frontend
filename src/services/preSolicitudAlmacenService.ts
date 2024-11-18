@@ -1,4 +1,3 @@
-
 import { gql } from '@apollo/client';
 import client from '../apolloClient';
 
@@ -42,6 +41,21 @@ const DELETE_PRE_SOLICITUD_MUTATION = gql`
   mutation DeletePreSolicitudAlmacen($deletePreSolicitudAlmacenId: ID!) {
     deletePreSolicitudAlmacen(id: $deletePreSolicitudAlmacenId) {
       id
+    }
+  }
+`;
+
+const FIND_PRE_SOLICITUD_BY_REQUERIMIENTO = gql`
+  query FindPreSolicitudByRequerimiento($requerimientoId: ID!) {
+    findPreSolicitudByRequerimiento(requerimiento_id: $requerimientoId) {
+      id
+      requerimiento_id
+      usuario_id
+      almacen_id
+      recursos {
+        cantidad
+        recurso_id
+      }
     }
   }
 `;
@@ -110,5 +124,17 @@ export const deletePreSolicitudService = async (id: string) => {
     return data.deletePreSolicitudAlmacen;
   } catch (error) {
     throw new Error(`Error deleting pre-solicitud: ${error}`);
+  }
+};
+
+export const findPreSolicitudByRequerimiento = async (requerimientoId: string) => {
+  try {
+    const { data } = await client.query({
+      query: FIND_PRE_SOLICITUD_BY_REQUERIMIENTO,
+      variables: { requerimientoId },
+    });
+    return data.findPreSolicitudByRequerimiento;
+  } catch (error) {
+    throw new Error(`Error al obtener la pre-solicitud por requerimiento: ${error}`);
   }
 };

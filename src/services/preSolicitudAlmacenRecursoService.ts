@@ -53,20 +53,7 @@ const LIST_PRE_SOLICITUD_ALMACEN_RECURSOS_BY_PRE_SOLICITUD_ID = gql`
   }
 `;
 
-const FIND_PRE_SOLICITUD_BY_REQUERIMIENTO = gql`
-  query FindPreSolicitudByRequerimiento($requerimientoId: ID!) {
-    findPreSolicitudByRequerimiento(requerimiento_id: $requerimientoId) {
-      id
-      requerimiento_id
-      usuario_id
-      almacen_id
-      recursos {
-        cantidad
-        recurso_id
-      }
-    }
-  }
-`;
+// Eliminamos la consulta FIND_PRE_SOLICITUD_BY_REQUERIMIENTO
 
 export const listPreSolicitudAlmacenRecursos = async () => {
   try {
@@ -79,7 +66,11 @@ export const listPreSolicitudAlmacenRecursos = async () => {
   }
 };
 
-export const addPreSolicitudAlmacenRecurso = async (preSolicitudAlmacenId: string, recursoId: string, cantidad: number) => {
+export const addPreSolicitudAlmacenRecurso = async (
+  preSolicitudAlmacenId: string,
+  recursoId: string,
+  cantidad: number
+) => {
   try {
     const { data } = await client.mutate({
       mutation: ADD_PRE_SOLICITUD_ALMACEN_RECURSO,
@@ -124,17 +115,5 @@ export const listPreSolicitudAlmacenRecursosByPreSolicitudId = async (id: string
     return data.listPreSolicitudAlmacenRecursosByPreSolicitudId;
   } catch (error) {
     throw new Error(`Error fetching recursos by pre solicitud almacen id: ${error}`);
-  }
-};
-
-export const findPreSolicitudByRequerimiento = async (requerimientoId: string) => {
-  try {
-    const { data } = await client.query({
-      query: FIND_PRE_SOLICITUD_BY_REQUERIMIENTO,
-      variables: { requerimientoId },
-    });
-    return data.findPreSolicitudByRequerimiento;
-  } catch (error) {
-    throw new Error(`Error fetching pre solicitud by requerimiento: ${error}`);
   }
 };

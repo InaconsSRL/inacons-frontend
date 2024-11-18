@@ -42,17 +42,6 @@ export const fetchPreSolicitudAlmacenRecursosByPreSolicitudId = createAsyncThunk
   }
 );
 
-export const fetchPreSolicitudByRequerimiento = createAsyncThunk(
-  'preSolicitudAlmacenRecurso/fetchByRequerimiento',
-  async (requerimientoId: string, { rejectWithValue }) => {
-    try {
-      return await preSolicitudAlmacenRecursoService.findPreSolicitudByRequerimiento(requerimientoId);
-    } catch (error) {
-      return rejectWithValue((error as Error).message);
-    }
-  }
-);
-
 export const addPreSolicitudAlmacenRecurso = createAsyncThunk(
   'preSolicitudAlmacenRecurso/add',
   async ({ preSolicitudAlmacenId, recursoId, cantidad }: { preSolicitudAlmacenId: string, recursoId: string, cantidad: number }, { rejectWithValue }) => {
@@ -142,26 +131,13 @@ const preSolicitudAlmacenRecursoSlice = createSlice({
         state.loading = false;
         state.error = action.payload as string;
       })
-      // Casos para fetchPreSolicitudByRequerimiento
-      .addCase(fetchPreSolicitudByRequerimiento.pending, (state) => {
-        state.loading = true;
-      })
-      .addCase(fetchPreSolicitudByRequerimiento.fulfilled, (state, action) => {
-        state.loading = false;
-        state.recursos = action.payload.recursos;
-        state.error = null;
-      })
-      .addCase(fetchPreSolicitudByRequerimiento.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.payload as string;
-      })
       // Add cases
-      .addCase(addPreSolicitudAlmacenRecurso.fulfilled, (state, action) => {
+      .addCase(addPreSolicitudAlmacenRecurso.fulfilled, (state, action: PayloadAction<PreSolicitudAlmacenRecurso>) => {
         state.recursos.push(action.payload);
         state.error = null;
       })
       // Update cases
-      .addCase(updatePreSolicitudAlmacenRecurso.fulfilled, (state, action) => {
+      .addCase(updatePreSolicitudAlmacenRecurso.fulfilled, (state, action: PayloadAction<PreSolicitudAlmacenRecurso>) => {
         const index = state.recursos.findIndex(r => r.id === action.payload.id);
         if (index !== -1) {
           state.recursos[index] = action.payload;
@@ -169,7 +145,7 @@ const preSolicitudAlmacenRecursoSlice = createSlice({
         state.error = null;
       })
       // Delete cases
-      .addCase(deletePreSolicitudAlmacenRecurso.fulfilled, (state, action) => {
+      .addCase(deletePreSolicitudAlmacenRecurso.fulfilled, (state, action: PayloadAction<string>) => {
         state.recursos = state.recursos.filter(r => r.id !== action.payload);
         state.error = null;
       });
