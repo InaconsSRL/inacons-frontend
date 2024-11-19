@@ -15,8 +15,20 @@ const LIST_SOLICITUD_ALMACENES_QUERY = gql`
 `;
 
 const ADD_SOLICITUD_ALMACEN_MUTATION = gql`
-  mutation AddSolicitudAlmacen($usuarioId: ID!, $requerimientoId: ID!, $almacenOrigenId: ID!, $almacenDestinoId: ID!, $fecha: DateTime!) {
-    addSolicitudAlmacen(usuario_id: $usuarioId, requerimiento_id: $requerimientoId, almacen_origen_id: $almacenOrigenId, almacen_destino_id: $almacenDestinoId, fecha: $fecha) {
+  mutation AddSolicitudAlmacen(
+    $usuarioId: ID!
+    $requerimientoId: ID!
+    $almacenOrigenId: ID!
+    $almacenDestinoId: ID!
+    $fecha: DateTime!
+  ) {
+    addSolicitudAlmacen(
+      usuario_id: $usuarioId
+      requerimiento_id: $requerimientoId
+      almacen_origen_id: $almacenOrigenId
+      almacen_destino_id: $almacenDestinoId
+      fecha: $fecha
+    ) {
       id
       usuario_id
       requerimiento_id
@@ -73,14 +85,20 @@ export const addSolicitudAlmacenService = async (solicitudData: {
   try {
     const response = await client.mutate({
       mutation: ADD_SOLICITUD_ALMACEN_MUTATION,
-      variables: solicitudData,
+      variables: {
+        usuarioId: solicitudData.usuarioId,
+        requerimientoId: solicitudData.requerimientoId,
+        almacenOrigenId: solicitudData.almacenOrigenId,
+        almacenDestinoId: solicitudData.almacenDestinoId,
+        fecha: solicitudData.fecha,
+      },
     });
     if (response.errors) {
       throw new Error(response.errors[0]?.message || 'Error desconocido');
     }
     return response.data.addSolicitudAlmacen;
   } catch (error) {
-    console.error('Error al crear la solicitud:', error);
+    console.error('Error al crear la solicitud de almacén:', error);
     throw error;
   }
 };

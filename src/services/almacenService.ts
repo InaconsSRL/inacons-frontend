@@ -8,43 +8,51 @@ const LIST_ALMACENES_QUERY = gql`
       nombre
       ubicacion
       direccion
-      tipo
+      estado
+      obra_id
+      tipo_almacen_id
     }
   }
 `;
 
 const GET_ALMACEN_QUERY = gql`
-query GetAlmacen($getAlmacenId: ID!) {
+  query GetAlmacen($getAlmacenId: ID!) {
     getAlmacen(id: $getAlmacenId) {
       id
       nombre
       ubicacion
       direccion
-      tipo
+      estado
+      obra_id
+      tipo_almacen_id
     }
   }
 `;
 
 const ADD_ALMACEN_MUTATION = gql`
-  mutation AddAlmacen($nombre: String!, $ubicacion: String!, $direccion: String!, $tipo: Boolean!) {
-    addAlmacen(nombre: $nombre, ubicacion: $ubicacion, direccion: $direccion, tipo: $tipo) {
+  mutation AddAlmacen($nombre: String!, $ubicacion: String!, $direccion: String!, $estado: Boolean!, $obraId: ID!, $tipoAlmacenId: ID!) {
+    addAlmacen(nombre: $nombre, ubicacion: $ubicacion, direccion: $direccion, estado: $estado, obra_id: $obraId, tipo_almacen_id: $tipoAlmacenId) {
       id
       nombre
       ubicacion
       direccion
-      tipo
+      estado
+      obra_id
+      tipo_almacen_id
     }
   }
 `;
 
 const UPDATE_ALMACEN_MUTATION = gql`
-  mutation UpdateAlmacen($updateAlmacenId: ID!, $nombre: String, $ubicacion: String, $direccion: String, $tipo: Boolean) {
-    updateAlmacen(id: $updateAlmacenId, nombre: $nombre, ubicacion: $ubicacion, direccion: $direccion, tipo: $tipo) {
+  mutation UpdateAlmacen($updateAlmacenId: ID!, $tipoAlmacenId: ID, $obraId: ID, $estado: Boolean, $direccion: String, $ubicacion: String, $nombre: String) {
+    updateAlmacen(id: $updateAlmacenId, tipo_almacen_id: $tipoAlmacenId, obra_id: $obraId, estado: $estado, direccion: $direccion, ubicacion: $ubicacion, nombre: $nombre) {
       id
       nombre
       ubicacion
       direccion
-      tipo
+      estado
+      obra_id
+      tipo_almacen_id
     }
   }
 `;
@@ -92,7 +100,9 @@ export const addAlmacenService = async (almacenData: {
   nombre: string; 
   ubicacion: string;
   direccion: string;
-  tipo: boolean;
+  estado: boolean;
+  obra_id: string;
+  tipo_almacen_id: string;
 }) => {
   try {
     const response = await client.mutate({
@@ -111,10 +121,12 @@ export const addAlmacenService = async (almacenData: {
 
 export const updateAlmacenService = async (almacen: {
   id: string;
-  nombre: string;
-  ubicacion: string;
-  direccion: string;
-  tipo: boolean;
+  nombre?: string;
+  ubicacion?: string;
+  direccion?: string;
+  estado?: boolean;
+  obra_id?: string;
+  tipo_almacen_id?: string;
 }) => {
   try {
     const response = await client.mutate({

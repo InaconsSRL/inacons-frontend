@@ -2,18 +2,24 @@
 
 import React, { useState } from 'react';
 import { InventoryItem, Movement } from './interfaces';
+import { useDispatch } from 'react-redux';
+import { updateAlmacenRecurso } from '../../../slices/almacenRecursoSlice';
+import { AppDispatch } from '../../../store/store';
 
 interface NewMovementModalProps {
   inventory: InventoryItem[];
+  selectedAlmacenId: string;
   onClose: () => void;
   onSave: (movement: Partial<Movement>) => void;
 }
 
 export const NewMovementModal: React.FC<NewMovementModalProps> = ({
   inventory,
+  selectedAlmacenId,
   onClose,
   onSave
 }) => {
+  const dispatch = useDispatch<AppDispatch>();
   const [formData, setFormData] = useState({
     productId: '',
     type: 'entrada',
@@ -22,17 +28,30 @@ export const NewMovementModal: React.FC<NewMovementModalProps> = ({
     notes: ''
   });
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    onSave({
+    const newMovement = {
       id: `MOV-${Date.now()}`,
       date: new Date(),
       type: formData.type as 'entrada' | 'salida',
       quantity: Number(formData.quantity),
       document: formData.document,
       user: 'Usuario Actual', // En un caso real, esto vendría del contexto de autenticación
-      notes: formData.notes
-    });
+      notes: formData.notes,
+      almacen_id: selectedAlmacenId,
+      recurso_id: formData.productId,
+    };
+
+    // Actualizar el stock en el almacén
+    await dispatch(updateAlmacenRecurso({
+      id: formData.productId,
+      cantidad: formData.type === 'entrada' ? 
+        formData.quantity : 
+        -formData.quantity,
+      almacenId: selectedAlmacenId
+    }));
+
+    onSave(newMovement);
     onClose();
   };
 

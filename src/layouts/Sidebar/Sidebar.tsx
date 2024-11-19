@@ -1,10 +1,12 @@
 // Sidebar.tsx
 import React, { useState, useEffect } from 'react';
 import { NavLink } from 'react-router-dom';
-import { FiHome } from 'react-icons/fi';
-import DropdownMenu from './DropdownMenu';
 import { FaRegCalendarAlt, FaProjectDiagram, FaUsers, FaUserShield, FaBriefcase, FaBoxOpen, FaTags, FaBalanceScale, FaLayerGroup, FaMoneyBillWave, FaShoppingCart, FaWarehouse, FaClipboardList, FaTasks, FaHandshake } from 'react-icons/fa';
+import { IoIosArchive } from "react-icons/io";
+import { FiHome } from 'react-icons/fi';
+import { GiConcreteBag } from 'react-icons/gi';
 import { MdViewKanban } from "react-icons/md";
+import DropdownMenu from './DropdownMenu';
 import { motion } from 'framer-motion';
 
 interface SidebarProps {
@@ -40,10 +42,15 @@ const Sidebar: React.FC<SidebarProps> = ({ isSidebarOpen, toggleSidebar }) => {
     { to: "/dashboard/compras", icon: FaShoppingCart, text: "ComprasPage" },
   ];
 
+  const moduloProyectos = [
+    { to: "/dashboard/obras", icon: GiConcreteBag , text: "Obras" },
+  ];
+
   const moduloAlmacen = [
     { to: "/dashboard/almacen", icon: FaWarehouse, text: "Almacen" },
     { to: "/dashboard/almacenBoard", icon: FaClipboardList, text: "AlmacenBoard" },
     { to: "/dashboard/presupuestoBoard", icon: FaMoneyBillWave, text: "Presupuestos" },
+    { to: "/dashboard/tipoAlmacen", icon: IoIosArchive, text: "TipoDeAlmacen" },
   ];
 
   const otroModuloItems = [
@@ -165,6 +172,15 @@ const Sidebar: React.FC<SidebarProps> = ({ isSidebarOpen, toggleSidebar }) => {
         <DropdownMenu
           title="Compras"
           items={moduloCompras}
+          isSidebarOpen={isSidebarOpen || (!isMobile && isHovered)}
+          toggleSidebar={toggleSidebar}
+          openDropdown={openDropdown}
+          setOpenDropdown={setOpenDropdown}
+        />
+
+        <DropdownMenu
+          title="Proyectos"
+          items={moduloProyectos}
           isSidebarOpen={isSidebarOpen || (!isMobile && isHovered)}
           toggleSidebar={toggleSidebar}
           openDropdown={openDropdown}

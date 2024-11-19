@@ -57,7 +57,11 @@ export const listSolicitudRecursoAlmacenesService = async () => {
   }
 };
 
-export const addSolicitudRecursoAlmacenService = async (data: { recursoId: string; cantidad: number; solicitudAlmacenId: string }) => {
+export const addSolicitudRecursoAlmacenService = async (data: {
+  recurso_id: string;
+  cantidad: number;
+  solicitud_almacen_id: string;
+}) => {
   try {
     const response = await client.mutate({
       mutation: ADD_SOLICITUD_RECURSO_ALMACEN_MUTATION,
@@ -68,7 +72,7 @@ export const addSolicitudRecursoAlmacenService = async (data: { recursoId: strin
     }
     return response.data.addSolicitudRecursoAlmacen;
   } catch (error) {
-    console.error('Error al crear la solicitud de recurso:', error);
+    console.error('Error al crear la solicitud de recurso de almacén:', error);
     throw error;
   }
 };

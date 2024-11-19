@@ -15,6 +15,8 @@ export interface Movement {
   document: string;
   user: string;
   notes: string;
+  almacen_id: string;
+  recurso_id: string;
 }
 
 export interface InventoryItem {

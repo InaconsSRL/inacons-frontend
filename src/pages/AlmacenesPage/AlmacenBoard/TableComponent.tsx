@@ -1,9 +1,10 @@
-// components/InventoryTable.tsx
+
+// TableComponent.tsx
 
 import React from 'react';
 import { InventoryItem, SortConfig } from './interfaces';
 
-interface InventoryTableProps {
+interface TableComponentProps {
   items: InventoryItem[];
   sortConfig: SortConfig;
   onSort: (key: keyof InventoryItem) => void;
@@ -11,7 +12,7 @@ interface InventoryTableProps {
   onMovement: (itemId: number, type: 'entrada' | 'salida', quantity: number) => void;
 }
 
-export const InventoryTable: React.FC<InventoryTableProps> = ({
+export const TableComponent: React.FC<TableComponentProps> = ({
   items,
   sortConfig,
   onSort,

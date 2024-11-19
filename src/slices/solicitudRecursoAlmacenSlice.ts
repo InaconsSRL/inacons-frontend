@@ -39,8 +39,11 @@ export const fetchSolicitudesRecursoAlmacen = createAsyncThunk(
 );
 
 export const addSolicitudRecursoAlmacen = createAsyncThunk(
-  'solicitudRecursoAlmacen/addSolicitud',
-  async (data: { recursoId: string; cantidad: number; solicitudAlmacenId: string }, { rejectWithValue }) => {
+  'solicitudRecursoAlmacen/addSolicitudRecursoAlmacen',
+  async (
+    data: { recurso_id: string; cantidad: number; solicitud_almacen_id: string },
+    { rejectWithValue }
+  ) => {
     try {
       return await addSolicitudRecursoAlmacenService(data);
     } catch (error) {

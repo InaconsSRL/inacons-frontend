@@ -1,10 +1,14 @@
 import React, { useState, useEffect } from 'react';
+import { useSelector } from 'react-redux';
+import { RootState } from '../../store/store';
 
 interface FormValues {
   nombre: string;
   ubicacion: string;
   direccion: string;
-  tipo: boolean;
+  estado: boolean;
+  obra_id: string;
+  tipo_almacen_id: string;
 }
 
 interface Props {
@@ -17,10 +21,15 @@ const AlmacenFormComponent: React.FC<Props> = ({ initialValues, onSubmit }) => {
     nombre: '',
     ubicacion: '',
     direccion: '',
-    tipo: true,
+    estado: true,
+    obra_id: '',
+    tipo_almacen_id: '',
   });
 
   const [errors, setErrors] = useState<Partial<FormValues>>({});
+
+  const obras = useSelector((state: RootState) => state.obra.obras);
+  const tipoAlmacenes = useSelector((state: RootState) => state.tipoAlmacen.tipoAlmacenes);
 
   useEffect(() => {
     if (initialValues) {
@@ -39,6 +48,12 @@ const AlmacenFormComponent: React.FC<Props> = ({ initialValues, onSubmit }) => {
     }
     if (!formData.direccion.trim()) {
       newErrors.direccion = 'La dirección es requerida';
+    }
+    if (!formData.obra_id.trim()) {
+      newErrors.obra_id = 'La obra es requerida';
+    }
+    if (!formData.tipo_almacen_id.trim()) {
+      newErrors.tipo_almacen_id = 'El tipo de almacén es requerido';
     }
 
     setErrors(newErrors);
@@ -151,31 +166,69 @@ const AlmacenFormComponent: React.FC<Props> = ({ initialValues, onSubmit }) => {
         )}
       </div>
 
-      {/* Campo Tipo */}
+      {/* Campo Estado */}
       <div className="space-y-2">
-        <label 
-          htmlFor="tipo" 
-          className="block text-sm font-medium text-gray-700"
+        <label htmlFor="estado" className="block text-sm font-medium text-gray-700">
+          Estado
+        </label>
+        <select
+          id="estado"
+          name="estado"
+          value={formData.estado ? 'activo' : 'inactivo'}
+          onChange={handleChange}
+          className="w-full px-4 py-2 rounded-lg border focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition duration-150 ease-in-out"
         >
+          <option value="activo">Activo</option>
+          <option value="inactivo">Inactivo</option>
+        </select>
+      </div>
+
+      {/* Reemplazar el input de obra_id por un select */}
+      <div className="space-y-2">
+        <label htmlFor="obra_id" className="block text-sm font-medium text-gray-700">
+          Obra
+        </label>
+        <select
+          id="obra_id"
+          name="obra_id"
+          value={formData.obra_id}
+          onChange={handleChange}
+          className={`w-full px-4 py-2 rounded-lg border ${errors.obra_id ? 'border-red-500' : 'border-gray-300'}`}
+        >
+          <option value="">Seleccione una obra</option>
+          {obras.map(obra => (
+            <option key={obra.id} value={obra.id}>
+              {obra.nombre}
+            </option>
+          ))}
+        </select>
+        {errors.obra_id && (
+          <p className="text-red-500 text-xs mt-1">{errors.obra_id}</p>
+        )}
+      </div>
+
+      {/* Reemplazar el input de tipo_almacen_id por un select */}
+      <div className="space-y-2">
+        <label htmlFor="tipo_almacen_id" className="block text-sm font-medium text-gray-700">
           Tipo de Almacén
         </label>
-        <input
-          type="checkbox"
-          id="tipo"
-          name="tipo"
-          checked={formData.tipo}
+        <select
+          id="tipo_almacen_id"
+          name="tipo_almacen_id"
+          value={formData.tipo_almacen_id}
           onChange={handleChange}
-          className="
-            h-4 w-4 rounded border-gray-300
-            text-blue-600
-            focus:ring-2 focus:ring-blue-500
-            transition duration-150 ease-in-out
-            cursor-pointer
-          "
-        />
-        <span className="ml-2 text-sm text-gray-600">
-          {formData.tipo ? 'Principal' : 'Secundario'}
-        </span>
+          className={`w-full px-4 py-2 rounded-lg border ${errors.tipo_almacen_id ? 'border-red-500' : 'border-gray-300'}`}
+        >
+          <option value="">Seleccione un tipo de almacén</option>
+          {tipoAlmacenes.map(tipo => (
+            <option key={tipo.id} value={tipo.id}>
+              {tipo.nombre}
+            </option>
+          ))}
+        </select>
+        {errors.tipo_almacen_id && (
+          <p className="text-red-500 text-xs mt-1">{errors.tipo_almacen_id}</p>
+        )}
       </div>
 
       {/* Botones */}

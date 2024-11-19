@@ -7,16 +7,20 @@ interface Almacen {
   nombre: string;
   ubicacion: string;
   direccion: string;
-  tipo: boolean;
+  estado: boolean;
+  obra_id: string;
+  tipo_almacen_id: string;
 }
 
 interface AlmacenUpdate {
-    id: string;
-    nombre?: string;
-    ubicacion?: string;
-    direccion?: string;
-    tipo?: boolean;
-  }
+  id: string;
+  nombre?: string;
+  ubicacion?: string;
+  direccion?: string;
+  estado?: boolean;
+  obra_id?: string;
+  tipo_almacen_id?: string;
+}
 
 interface AlmacenState {
   almacenes: Almacen[];
@@ -66,7 +70,9 @@ export const addAlmacen = createAsyncThunk(
     nombre: string; 
     ubicacion: string;
     direccion: string;
-    tipo: boolean;
+    estado: boolean;
+    obra_id: string;
+    tipo_almacen_id: string;
   }, { rejectWithValue }) => {
     try {
       return await addAlmacenService(almacenData);

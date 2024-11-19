@@ -45,7 +45,7 @@ export const fetchSolicitudAlmacenes = createAsyncThunk(
 
 export const addSolicitudAlmacen = createAsyncThunk(
   'solicitudAlmacen/addSolicitudAlmacen',
-  async (solicitudData: { usuarioId: string; requerimientoId: string; almacenOrigenId: string; almacenDestinoId: string; fecha: Date }, { rejectWithValue }) => {
+  async (solicitudData: { requerimientoId: string; usuarioId: string; almacenOrigenId: string; almacenDestinoId: string; fecha: Date }, { rejectWithValue }) => {
     try {
       return await addSolicitudAlmacenService(solicitudData);
     } catch (error) {

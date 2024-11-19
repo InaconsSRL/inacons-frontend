@@ -7,6 +7,8 @@ import { Column, Requerimiento } from '../KanBanBoard/types/kanban';
 import LoaderPage from '../../components/Loader/LoaderPage';
 import { fetchPreSolicitudByRequerimiento } from '../../slices/preSolicitudAlmacenSlice';
 import { updateRequerimiento } from '../../slices/requerimientoSlice';
+import { addSolicitudAlmacen } from '../../slices/solicitudAlmacenSlice';
+import { addSolicitudRecursoAlmacen } from '../../slices/solicitudRecursoAlmacenSlice';
 
 // Interfaces
 
@@ -31,6 +33,19 @@ const AprobacionTransferenciaPageAlmacen: React.FC<AprobacionTransferenciaPagePr
   const requerimientoRecursos = useSelector((state: RootState) => state.requerimientoRecursoWithAlmacen.recursos);
   const loadingRequerimientoRecursos = useSelector((state: RootState) => state.requerimientoRecursoWithAlmacen.loading);
   const currentUserId = useSelector((state: RootState) => state.user?.id);
+
+  // Estados para la animación de carga
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [progress, setProgress] = useState({
+    currentWarehouse: '',
+    currentWarehouseName: '',
+    currentResource: '',
+    currentResourceName: '',
+    warehouseProgress: 0,
+    resourceProgress: 0,
+    totalWarehouses: 0,
+    totalResources: 0,
+  });
 
   // Cargar requerimientos y pre-solicitudes
   useEffect(() => {
@@ -90,21 +105,104 @@ const AprobacionTransferenciaPageAlmacen: React.FC<AprobacionTransferenciaPagePr
     return Math.max(0, item.cantidad - transferTotal);
   };
 
-  const actualizarRequerimiento = async () => {
-    await dispatch(updateRequerimiento({
-      id: requerimientoId,
-      usuario_id: currentUserId || '',
-      obra_id: column?.requerimiento.obra_id || '',
-      fecha_final: new Date(column?.requerimiento?.fecha_final || new Date()),
-      sustento: column?.requerimiento?.sustento || '',
-      estado_atencion: "aprobado_logistica",
-    })).unwrap();
-  }
+  // const actualizarRequerimiento = async () => {
+  //   await dispatch(updateRequerimiento({
+  //     id: requerimientoId,
+  //     usuario_id: currentUserId || '',
+  //     obra_id: column?.requerimiento.obra_id || '',
+  //     fecha_final: new Date(column?.requerimiento?.fecha_final || new Date()),
+  //     sustento: column?.requerimiento?.sustento || '',
+  //     estado_atencion: "aprobado_logistica",
+  //   })).unwrap();
+  // }
   // Handlers para los botones
   const handleApprove = async (): Promise<void> => {
-    console.log('Aprobando transferencia...');
-    actualizarRequerimiento();
+    try {
+      setIsProcessing(true);
+      const recursosPorAlmacen: { [almacenId: string]: { recurso_id: string; cantidad: number }[] } = {};
+  
+      requerimientoRecursos.forEach(recurso => {
+        recurso.listAlmacenRecursos.forEach(warehouse => {
+          const cantidadTransferencia = warehouseQuantities[`${recurso.id}-${warehouse.almacen_id}`] || 0;
+          if (cantidadTransferencia > 0) {
+            if (!recursosPorAlmacen[warehouse.almacen_id]) {
+              recursosPorAlmacen[warehouse.almacen_id] = [];
+            }
+            recursosPorAlmacen[warehouse.almacen_id].push({
+              recurso_id: recurso.id,
+              cantidad: cantidadTransferencia,
+            });
+          }
+        });
+      });
+  
+      const warehouses = Object.keys(recursosPorAlmacen);
+      setProgress(prev => ({ ...prev, totalWarehouses: warehouses.length }));
+  
+      for (const almacenId of warehouses) {
+        const recursos = recursosPorAlmacen[almacenId];
+        const almacen = requerimientoRecursos[0]?.listAlmacenRecursos.find(w => w.almacen_id === almacenId);
+  
+        setProgress(prev => ({
+          ...prev,
+          currentWarehouse: almacenId,
+          currentWarehouseName: almacen?.nombre_almacen || '',
+          totalResources: recursos.length,
+          warehouseProgress: Math.round(((warehouses.indexOf(almacenId) + 1) / warehouses.length) * 100),
+        }));
+  
+        if (!currentUserId) {
+          throw new Error('Usuario no encontrado');
+        }
+  
+        const solicitudData = {
+          requerimientoId: selectedRequerimiento.id,
+          usuarioId: currentUserId,
+          almacenOrigenId: almacenId,
+          almacenDestinoId: 'id_del_almacen_destino', // Reemplazar con el ID correcto
+          fecha: new Date(),
+        };
+  
+        const solicitud = await dispatch(addSolicitudAlmacen(solicitudData)).unwrap();
+  
+        for (const recurso of recursos) {
+          setProgress(prev => ({
+            ...prev,
+            currentResource: recurso.recurso_id,
+            currentResourceName: recurso.recurso_id, // Reemplazar si se necesita el nombre
+            resourceProgress: Math.round(((recursos.indexOf(recurso) + 1) / recursos.length) * 100),
+          }));
+  
+          await dispatch(
+            addSolicitudRecursoAlmacen({
+              recurso_id: recurso.recurso_id,
+              cantidad: recurso.cantidad,
+              solicitud_almacen_id: solicitud.id,
+            })
+          ).unwrap();
+  
+          // Pequeña pausa para visualizar progreso
+          await new Promise(r => setTimeout(r, 300));
+        }
+      }
+  
+      await dispatch(
+        updateRequerimiento({
+          id: requerimientoId,
+          usuario_id: currentUserId || '',
+          obra_id: column?.requerimiento.obra_id || '',
+          fecha_final: new Date(column?.requerimiento?.fecha_final || new Date()),
+          sustento: column?.requerimiento?.sustento || '',
+          estado_atencion: 'aprobado_almacen',
+        })
+      ).unwrap();
+    } catch (error) {
+      console.error('Error al aprobar transferencia:', error);
+    } finally {
+      setIsProcessing(false);
+    }
   };
+  
 
   const handleReject = (): void => {
     // Implementar lógica de rechazo
@@ -284,6 +382,49 @@ const AprobacionTransferenciaPageAlmacen: React.FC<AprobacionTransferenciaPagePr
           </button>
         </div>
       </div>
+
+      {isProcessing && (
+        <div className="absolute z-50 inset-0 bg-slate-900/95 flex items-center justify-center">
+          <div className="w-full max-w-md mx-4 p-6 bg-slate-200 rounded-lg shadow-xl">
+            <div className="text-center">
+              <h3 className="text-xl font-medium text-slate-950 mb-2">Procesando Solicitudes</h3>
+              <p className="text-sm text-slate-950">Almacén: {progress.currentWarehouseName}</p>
+            </div>
+
+            {/* Barra de progreso almacenes */}
+            <div className="mt-6 space-y-2">
+              <div className="flex justify-between text-xs text-slate-950">
+                <span>Progreso Almacenes</span>
+                <span>{progress.warehouseProgress}%</span>
+              </div>
+              <div className="h-2 bg-slate-700 rounded-lg overflow-hidden">
+                <div
+                  className="h-full bg-blue-500 transition-all duration-300 ease-out"
+                  style={{ width: `${progress.warehouseProgress}%` }}
+                />
+              </div>
+            </div>
+
+            {/* Barra de progreso recursos */}
+            <div className="mt-4 space-y-2">
+              <div className="flex justify-between text-xs text-slate-950">
+                <span>Progreso Recursos</span>
+                <span>{progress.resourceProgress}%</span>
+              </div>
+              <div className="h-2 bg-slate-700 rounded-lg overflow-hidden">
+                <div
+                  className="h-full bg-blue-400 transition-all duration-300 ease-out"
+                  style={{ width: `${progress.resourceProgress}%` }}
+                />
+              </div>
+            </div>
+
+            <div className="mt-4 text-center text-sm text-slate-950">
+              Procesando recurso: {progress.currentResourceName}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
