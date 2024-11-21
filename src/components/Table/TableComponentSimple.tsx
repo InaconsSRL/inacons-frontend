@@ -2,7 +2,7 @@ import React, { ReactNode } from 'react';
 import { FiArrowLeftCircle, FiTrash } from 'react-icons/fi';
 
 // Tipos expandidos
-type CellType = 
+export type CellType = 
   | 'text' 
   | 'number' 
   | 'input' 
@@ -16,7 +16,7 @@ interface RowData {
   [key: string]: string | number | ReactNode;
 }
 
-interface Column {
+export interface Column {
   key: string;
   title: string;
   type: CellType;

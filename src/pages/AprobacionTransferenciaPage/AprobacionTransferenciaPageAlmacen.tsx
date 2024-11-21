@@ -9,6 +9,9 @@ import { fetchPreSolicitudByRequerimiento } from '../../slices/preSolicitudAlmac
 import { updateRequerimiento } from '../../slices/requerimientoSlice';
 import { addSolicitudAlmacen } from '../../slices/solicitudAlmacenSlice';
 import { addSolicitudRecursoAlmacen } from '../../slices/solicitudRecursoAlmacenSlice';
+import { addSolicitudCompra } from '../../slices/solicitudCompraSlice';
+import { addSolicitudCompraRecurso } from '../../slices/solicitudCompraRecursoSlice';
+import Toast from '../../components/Toast/Toast';
 
 // Interfaces
 
@@ -47,6 +50,11 @@ const AprobacionTransferenciaPageAlmacen: React.FC<AprobacionTransferenciaPagePr
     totalResources: 0,
   });
 
+  // Agregar estados para el Toast
+  const [showToast, setShowToast] = useState(false);
+  const [toastMessage, setToastMessage] = useState('');
+  const [toastVariant, setToastVariant] = useState<'success' | 'danger'>('success');
+
   // Cargar requerimientos y pre-solicitudes
   useEffect(() => {
     if (requerimientoId) {
@@ -55,7 +63,7 @@ const AprobacionTransferenciaPageAlmacen: React.FC<AprobacionTransferenciaPagePr
         .unwrap()
         .then((preSolicitudes) => {
           const newWarehouseQuantities: WarehouseQuantities = {};
-          
+
           interface PreSolicitudRecurso {
             recurso_id: string;
             cantidad: number;
@@ -66,13 +74,13 @@ const AprobacionTransferenciaPageAlmacen: React.FC<AprobacionTransferenciaPagePr
             recursos: PreSolicitudRecurso[];
           }
 
-                    preSolicitudes.forEach((preSolicitud: PreSolicitud) => {
-                      preSolicitud.recursos.forEach((recurso: PreSolicitudRecurso) => {
-                        const key = `${recurso.recurso_id}-${preSolicitud.almacen_id}`;
-                        newWarehouseQuantities[key] = recurso.cantidad;
-                      });
-                    });
-          
+          preSolicitudes.forEach((preSolicitud: PreSolicitud) => {
+            preSolicitud.recursos.forEach((recurso: PreSolicitudRecurso) => {
+              const key = `${recurso.recurso_id}-${preSolicitud.almacen_id}`;
+              newWarehouseQuantities[key] = recurso.cantidad;
+            });
+          });
+
           setWarehouseQuantities(newWarehouseQuantities);
         });
     }
@@ -116,12 +124,29 @@ const AprobacionTransferenciaPageAlmacen: React.FC<AprobacionTransferenciaPagePr
   //   })).unwrap();
   // }
   // Handlers para los botones
+
+  console.log(requerimientoRecursos)
+
   const handleApprove = async (): Promise<void> => {
     try {
       setIsProcessing(true);
       const recursosPorAlmacen: { [almacenId: string]: { recurso_id: string; cantidad: number }[] } = {};
-  
+      const recursosParaCompra: { recurso_id: string; cantidad: number; costo: number }[] = [];
+
+      // Analizar recursos para transferencia y compra
       requerimientoRecursos.forEach(recurso => {
+        const cotizacionNecesaria = calculateQuotation(recurso.id);
+
+        // Si necesita cotización, agregar a la lista de compra
+        if (cotizacionNecesaria > 0) {
+          recursosParaCompra.push({
+            recurso_id: recurso.recurso_id,
+            cantidad: cotizacionNecesaria,
+            costo: recurso.costo_ref || 0,
+          });
+        }
+
+        // Procesar transferencias de almacén
         recurso.listAlmacenRecursos.forEach(warehouse => {
           const cantidadTransferencia = warehouseQuantities[`${recurso.id}-${warehouse.almacen_id}`] || 0;
           if (cantidadTransferencia > 0) {
@@ -135,14 +160,42 @@ const AprobacionTransferenciaPageAlmacen: React.FC<AprobacionTransferenciaPagePr
           }
         });
       });
-  
+
+      // Procesar solicitud de compra si es necesario
+      if (recursosParaCompra.length > 0) {
+        const solicitudCompraData = {
+          requerimientoId: selectedRequerimiento.id,
+          usuarioId: currentUserId || '',
+          fecha: new Date(),
+        };
+
+        const solicitudCompra = await dispatch(addSolicitudCompra(solicitudCompraData)).unwrap();
+
+        // Crear recursos de solicitud de compra
+        for (const recurso of recursosParaCompra) {
+          await dispatch(addSolicitudCompraRecurso({
+            solicitud_compra_id: solicitudCompra.id,
+            recurso_id: recurso.recurso_id,
+            cantidad: recurso.cantidad,
+            costo: recurso.costo,
+          })).unwrap();
+        }
+      }
+
+      // Continuar con el proceso de solicitudes de almacén
+      // ...existing code for warehouse transfers...
+
       const warehouses = Object.keys(recursosPorAlmacen);
       setProgress(prev => ({ ...prev, totalWarehouses: warehouses.length }));
-  
+
+      
+
       for (const almacenId of warehouses) {
         const recursos = recursosPorAlmacen[almacenId];
         const almacen = requerimientoRecursos[0]?.listAlmacenRecursos.find(w => w.almacen_id === almacenId);
-  
+
+
+
         setProgress(prev => ({
           ...prev,
           currentWarehouse: almacenId,
@@ -150,11 +203,11 @@ const AprobacionTransferenciaPageAlmacen: React.FC<AprobacionTransferenciaPagePr
           totalResources: recursos.length,
           warehouseProgress: Math.round(((warehouses.indexOf(almacenId) + 1) / warehouses.length) * 100),
         }));
-  
+
         if (!currentUserId) {
           throw new Error('Usuario no encontrado');
         }
-  
+
         const solicitudData = {
           requerimientoId: selectedRequerimiento.id,
           usuarioId: currentUserId,
@@ -162,9 +215,9 @@ const AprobacionTransferenciaPageAlmacen: React.FC<AprobacionTransferenciaPagePr
           almacenDestinoId: 'id_del_almacen_destino', // Reemplazar con el ID correcto
           fecha: new Date(),
         };
-  
+
         const solicitud = await dispatch(addSolicitudAlmacen(solicitudData)).unwrap();
-  
+
         for (const recurso of recursos) {
           setProgress(prev => ({
             ...prev,
@@ -172,7 +225,7 @@ const AprobacionTransferenciaPageAlmacen: React.FC<AprobacionTransferenciaPagePr
             currentResourceName: recurso.recurso_id, // Reemplazar si se necesita el nombre
             resourceProgress: Math.round(((recursos.indexOf(recurso) + 1) / recursos.length) * 100),
           }));
-  
+
           await dispatch(
             addSolicitudRecursoAlmacen({
               recurso_id: recurso.recurso_id,
@@ -180,12 +233,12 @@ const AprobacionTransferenciaPageAlmacen: React.FC<AprobacionTransferenciaPagePr
               solicitud_almacen_id: solicitud.id,
             })
           ).unwrap();
-  
+
           // Pequeña pausa para visualizar progreso
           await new Promise(r => setTimeout(r, 300));
         }
       }
-  
+
       await dispatch(
         updateRequerimiento({
           id: requerimientoId,
@@ -196,13 +249,22 @@ const AprobacionTransferenciaPageAlmacen: React.FC<AprobacionTransferenciaPagePr
           estado_atencion: 'aprobado_almacen',
         })
       ).unwrap();
-    } catch (error) {
+
+      // Al finalizar exitosamente
+      setToastMessage('Transferencia aprobada exitosamente');
+      setToastVariant('success');
+      setShowToast(true);
+
+    } catch (error: unknown) {
       console.error('Error al aprobar transferencia:', error);
+      setToastMessage((error as Error).message || 'Error al procesar la transferencia');
+      setToastVariant('danger');
+      setShowToast(true);
     } finally {
       setIsProcessing(false);
     }
   };
-  
+
 
   const handleReject = (): void => {
     // Implementar lógica de rechazo
@@ -290,75 +352,75 @@ const AprobacionTransferenciaPageAlmacen: React.FC<AprobacionTransferenciaPagePr
           <table className="min-w-full text-xs relative">
             <thead className="bg-gray-100 sticky top-0 z-10">
               <tr>
-          <th className="px-2 py-1 text-left">Código</th>
-          <th className="px-2 py-1 text-left">Nombre</th>
-          <th className="px-2 py-1">Unidad</th>
-          <th className="px-2 py-1">U.Emb</th>
-          <th className="px-2 py-1">Metrado</th>
-          <th className="px-2 py-1">Estado</th>
-          <th className="px-2 py-1">F.Límite</th>
-          <th className="px-2 py-1">Costo Parcial</th>
-          <th className="px-2 py-1">Almacenes</th>
-          <th className="px-2 py-1">Transferencia</th>
-          <th className="px-2 py-1">Cotización</th>
-          <th className="px-2 py-1">Acciones</th>
+                <th className="px-2 py-1 text-left">Código</th>
+                <th className="px-2 py-1 text-left">Nombre</th>
+                <th className="px-2 py-1">Unidad</th>
+                <th className="px-2 py-1">U.Emb</th>
+                <th className="px-2 py-1">Metrado</th>
+                <th className="px-2 py-1">Estado</th>
+                <th className="px-2 py-1">F.Límite</th>
+                <th className="px-2 py-1">Costo Parcial</th>
+                <th className="px-2 py-1">Almacenes</th>
+                <th className="px-2 py-1">Transferencia</th>
+                <th className="px-2 py-1">Cotización</th>
+                <th className="px-2 py-1">Acciones</th>
               </tr>
             </thead>
             <tbody className="overflow-y-auto">
               {renderItems.map((item, index) => (
-            <tr 
-            key={item.id} 
-            className={`
+                <tr
+                  key={item.id}
+                  className={`
               border-b font-extralight text-[0.62rem] 
               hover:bg-gray-50 cursor-pointer
               ${activeRowId === item.id ? 'bg-blue-50' : ''}
               ${index % 2 === 0 ? '' : 'bg-sky-50'}
             `}
-            onClick={() => setActiveRowId(item.id)}
-            >
-            <td className="px-2 py-1">{item.codigo}</td>
-            <td className="px-2 py-1 text-left ">{item.name}</td>
-            <td className="px-2 py-1 text-center">{item.unit}</td>
-            <td className="px-2 py-1 text-center">{item.unitEmb}</td>
-            <td className="px-2 py-1 text-center">{item.quantity}</td>
-            <td className="px-2 py-1 text-center">
-              {item.status && (
-              <span className="bg-yellow-100 px-2 py-0.5 rounded-full text-[8px]">
-            {item.status}
-              </span>
-              )}
-            </td>
-            <td className="px-2 py-1 text-center">{item.limitDate}</td>
-            <td className="px-2 py-1 text-center">{item.partialCost}</td>
-            <td className="px-2 py-1">
-              {item.warehouses.map(warehouse => (
-              <div key={warehouse.id} className="mb-0.5">
-            <div className="flex flex-row justify-end items-center gap-x-3">
-              <span className="text-[8px] text-gray-600">{warehouse.name} - Stock: {warehouse.stock}</span>
-              <input
-              type="number"
-              min="0"
-              max={warehouse.stock}
-              className="w-12 text-[8px] border rounded px-1"
-              value={warehouseQuantities[`${item.id}-${warehouse.id}`] || ''}
-              onChange={(e) => handleQuantityChange(item.id, warehouse.id, e.target.value)}
-              />
-            </div>
-              </div>
-              ))}
-            </td>
-            <td className="px-2 py-1 text-center font-semibold">
-              {calculateTransferTotal(item.id)}
-            </td>
-            <td className="px-2 py-1 text-center font-semibold">
-              {calculateQuotation(item.id)}
-            </td>
-            <td className="px-2 py-1 text-center">
-              <button className="text-green-500 hover:text-green-600">
-              <i className="fas fa-check"></i>
-              </button>
-            </td>
-            </tr>
+                  onClick={() => setActiveRowId(item.id)}
+                >
+                  <td className="px-2 py-1">{item.codigo}</td>
+                  <td className="px-2 py-1 text-left ">{item.name}</td>
+                  <td className="px-2 py-1 text-center">{item.unit}</td>
+                  <td className="px-2 py-1 text-center">{item.unitEmb}</td>
+                  <td className="px-2 py-1 text-center">{item.quantity}</td>
+                  <td className="px-2 py-1 text-center">
+                    {item.status && (
+                      <span className="bg-yellow-100 px-2 py-0.5 rounded-full text-[8px]">
+                        {item.status}
+                      </span>
+                    )}
+                  </td>
+                  <td className="px-2 py-1 text-center">{item.limitDate}</td>
+                  <td className="px-2 py-1 text-center">{item.partialCost}</td>
+                  <td className="px-2 py-1">
+                    {item.warehouses.map(warehouse => (
+                      <div key={warehouse.id} className="mb-0.5">
+                        <div className="flex flex-row justify-end items-center gap-x-3">
+                          <span className="text-[8px] text-gray-600">{warehouse.name} - Stock: {warehouse.stock}</span>
+                          <input
+                            type="number"
+                            min="0"
+                            max={warehouse.stock}
+                            className="w-12 text-[8px] border rounded px-1"
+                            value={warehouseQuantities[`${item.id}-${warehouse.id}`] || ''}
+                            onChange={(e) => handleQuantityChange(item.id, warehouse.id, e.target.value)}
+                          />
+                        </div>
+                      </div>
+                    ))}
+                  </td>
+                  <td className="px-2 py-1 text-center font-semibold">
+                    {calculateTransferTotal(item.id)}
+                  </td>
+                  <td className="px-2 py-1 text-center font-semibold">
+                    {calculateQuotation(item.id)}
+                  </td>
+                  <td className="px-2 py-1 text-center">
+                    <button className="text-green-500 hover:text-green-600">
+                      <i className="fas fa-check"></i>
+                    </button>
+                  </td>
+                </tr>
               ))}
             </tbody>
           </table>
@@ -424,6 +486,18 @@ const AprobacionTransferenciaPageAlmacen: React.FC<AprobacionTransferenciaPagePr
             </div>
           </div>
         </div>
+      )}
+
+      {/* Agregar el componente Toast al final del componente */}
+      {showToast && (
+        <Toast
+          message={toastMessage}
+          variant={toastVariant}
+          isVisible={showToast}
+          onClose={() => setShowToast(false)}
+          position="top-right"
+          index={0}
+        />
       )}
     </div>
   );

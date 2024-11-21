@@ -23,9 +23,9 @@ import RequermientoRecursos from './pages/RequerimientosPage/CrearRequerimientoY
 import AlmacenesComponent from './pages/AlmacenesPage/AlmacenesComponent';
 import AlmacenBoardPage from './pages/AlmacenesPage/AlmacenBoard/AlmacenBoardPage';
 import { Presupuestos } from './pages/PresupuestosDemo/Presupuestos';
-import ComprasPage from './pages/ComprasPage/ComprasPage';
 import TipoAlmacenPage from './pages/TipoAlmacenPage/TipoAlmacenPage';
 import ObrasComponent from './pages/ObrasPage/ObrasPage';
+import ComprasBoard from './pages/ComprasPage/newComprasPage/ComprasBoard';
 
 const App: React.FC = () => {
   const user = useSelector((state: RootState) => state.user);
@@ -55,7 +55,7 @@ const App: React.FC = () => {
         <Route path="almacen" element={<AlmacenesComponent />}> </Route>
         <Route path="almacenBoard" element={<AlmacenBoardPage />}> </Route>
         <Route path="presupuestoBoard" element={<Presupuestos />}> </Route>
-        <Route path="compras" element={<ComprasPage />}> </Route>
+        <Route path="compras" element={<ComprasBoard />}> </Route>
         <Route path="tipoAlmacen" element={<TipoAlmacenPage />}> </Route>
         <Route path="obras" element={<ObrasComponent />}> </Route>
 

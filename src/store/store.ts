@@ -40,6 +40,7 @@ import { recursosObraReducer } from '../slices/recursosObraSlice';
 import { transferenciaRecursoReducer } from '../slices/transferenciaRecursoSlice';
 import { tipoAlmacenReducer } from '../slices/tipoAlmacenSlice';
 import { cotizacionRecursoReducer } from '../slices/cotizacionRecursoSlice';
+import { solicitudCompraRecursoReducer } from '../slices/solicitudCompraRecursoSlice';
 
 export const store = configureStore({
   reducer: {
@@ -83,6 +84,7 @@ export const store = configureStore({
     transferenciaRecurso: transferenciaRecursoReducer,
     tipoAlmacen: tipoAlmacenReducer,
     cotizacionRecurso: cotizacionRecursoReducer,
+    solicitudCompraRecurso: solicitudCompraRecursoReducer,
   },
 });
 

@@ -1,25 +1,21 @@
 import React, { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import Button from '../../../components/Buttons/Button';
 import Modal from '../../../components/Modal/Modal';
 import TableComponent from '../../../components/Table/TableComponent';
 import { useDispatch, useSelector } from 'react-redux';
+import { fetchCompras } from '../../../slices/comprasSlice';
 import { RootState, AppDispatch } from '../../../store/store';
 import LoaderPage from '../../../components/Loader/LoaderPage';
 import { FiEdit, FiEye, FiRefreshCw } from 'react-icons/fi';
-import { fetchSolicitudesCompras } from '../../../slices/solicitudCompraSlice';
+import ComprasSelectSources from './ComprasSelectSources';
 
-interface Requerimiento {
+interface Compra {
   id: string;
+  proveedor_id: string;
   usuario_id: string;
-  usuario: string;
-  presupuesto_id: string;
-  fecha_solicitud: string;
-  estado_atencion: string;
-  sustento: string;
-  obra_id: string;
-  codigo: string;
-  fecha_final: string;
+  orden_compra_id: string;
+  fecha: string;
 }
 
 const pageVariants = {
@@ -34,53 +30,36 @@ const pageTransition = {
   duration: 0.5
 };
 
-const RequerimientosComponent: React.FC = () => {
+const ComprasBoard: React.FC = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isModalResumenOpen, setIsModalResumenOpen] = useState(false);
-  const [editingRequerimiento, setEditingRequerimiento] = useState<Requerimiento | null>(null);
+  const [editingCompra, setEditingCompra] = useState<Compra | null>(null);
   const [activeFilter, setActiveFilter] = useState('todos');
   const userId = useSelector((state: RootState) => state.user.id);
 
   const dispatch = useDispatch<AppDispatch>();
-  const { solicitudes, loading, error } = useSelector((state: RootState) => state.solicitudCompra);
+  const { compras, loading, error } = useSelector((state: RootState) => state.compra);
 
   useEffect(() => {
-    dispatch(fetchSolicitudesCompras());
+    dispatch(fetchCompras());
   }, []);
 
-  const handleEdit = (requerimiento: Requerimiento) => {
-    setEditingRequerimiento(requerimiento);
+  const handleEdit = (compra: Compra) => {
+    setEditingCompra(compra);
     setIsModalOpen(true);
   };
 
-  const handleResumen = (requerimiento: Requerimiento) => {
-    setEditingRequerimiento(requerimiento);
+  const handleResumen = (compra: Compra) => {
+    setEditingCompra(compra);
     setIsModalResumenOpen(true);
-    console.log('resumen');
-  }
+  };
 
-  const getFilteredRequerimientos = () => {
+  const getFilteredCompras = () => {
     switch (activeFilter) {
-      case 'mis_requerimientos':
-        return solicitudes.filter(sol => sol. === userId);
-      case 'pendientes':
-        return solicitudes.filter(sol =>
-          ['pendiente', 'aprobado_supervisor'].includes(sol.estado_atencion)
-        );
-      case 'atencion_parcial':
-        return solicitudes.filter(sol =>
-          sol.estado_atencion === 'aprobado_gerencia'
-        );
-      case 'completados':
-        return solicitudes.filter(sol =>
-          ['completado', 'completado_parcial'].includes(sol.estado_atencion)
-        );
-      case 'rechazados':
-        return solicitudes.filter(sol =>
-          sol.estado_atencion.includes('rechazado')
-        );
+      case 'mis_compras':
+        return compras.filter(comp => comp.usuario_id === userId);
       default:
-        return solicitudes;
+        return compras;
     }
   };
 
@@ -88,18 +67,18 @@ const RequerimientosComponent: React.FC = () => {
   if (error) return <motion.div initial="initial" animate="in" exit="out" variants={pageVariants} transition={pageTransition}>Error: {error}</motion.div>;
 
   const handleButtonClick = () => {
-    setEditingRequerimiento(null);
+    setEditingCompra(null);
     setIsModalOpen(true);
   };
 
   const handleCloseModal = () => {
     setIsModalOpen(false);
     setIsModalResumenOpen(false);
-    setEditingRequerimiento(null);
+    setEditingCompra(null);
   };
 
   const handleRefresh = () => {
-    dispatch(fetchRequerimientos());
+    dispatch(fetchCompras());
   };
 
   const formatDate = (date: string) => {
@@ -111,52 +90,31 @@ const RequerimientosComponent: React.FC = () => {
     });
   };
 
-  const calculateExpiryDate = (req: Requerimiento) => {
-    if (req.fecha_final) {
-      return formatDate(req.fecha_final);
-    }
-    const expiryDate = new Date(req.fecha_solicitud);
-    expiryDate.setDate(expiryDate.getDate() + 2);
-    return formatDate(expiryDate.toISOString());
-  };
-
-  const renderOptions = (req: Requerimiento) => {
-    const viewButton = (
+  const renderOptions = (comp: Compra) => (
+    <div className='flex flex-row gap-2'>
       <button
         className='text-yellow-500'
-        onClick={() => handleResumen(req)}
+        onClick={() => handleResumen(comp)}
       >
         <FiEye />
       </button>
-    );
-
-    if (req.estado_atencion === "Pendiente de envio") {
-      return (
-        <div className='flex flex-row gap-2'>
-          {viewButton}
-          <button
-            className='text-blue-500'
-            onClick={() => handleEdit(req)}
-          >
-            <FiEdit />
-          </button>
-        </div>
-      );
-    }
-    return viewButton;
-  };
+      <button
+        className='text-blue-500'
+        onClick={() => handleEdit(comp)}
+      >
+        <FiEdit />
+      </button>
+    </div>
+  );
 
   const tableData = {
-    headers: ["obra", "fecha emision", "vence", "estado", "codigo", "descripcion", "solicita", "opciones"],
-    rows: getFilteredRequerimientos().map(req => ({
-      codigo: req.codigo,
-      solicita: req.usuario,
-      obra: req.codigo.split('-')[1],
-      descripcion: req.sustento,
-      estado: req.estado_atencion,
-      "fecha emision": formatDate(req.fecha_solicitud),
-      "vence": calculateExpiryDate(req),
-      opciones: renderOptions(req)
+    headers: ["ID", "Proveedor", "Fecha", "Orden de Compra", "opciones"],
+    rows: getFilteredCompras().map(comp => ({
+      ID: comp.id,
+      Proveedor: comp.proveedor_id,
+      Fecha: formatDate(comp.fecha),
+      "Orden de Compra": comp.orden_compra_id,
+      opciones: renderOptions(comp)
     }))
   };
 
@@ -176,12 +134,11 @@ const RequerimientosComponent: React.FC = () => {
         transition={{ delay: 0.2 }}
       >
         <div className="flex items-center gap-4">
-          <h1 className="text-2xl font-bold text-blue-50">Requerimientos</h1>
-          
+          <h1 className="text-2xl font-bold text-blue-50">Compras</h1>
         </div>
-        <Button  text='Actualizar' color='blanco' onClick={handleRefresh} className="rounded w-auto" 
+        <Button text='Actualizar' color='blanco' onClick={handleRefresh} className="rounded w-auto" 
           icon={<FiRefreshCw className="text-green-500 text-center h-3 w-3" />} />
-        <Button text='+ Nuevo Requerimiento' color='verde' onClick={handleButtonClick} className="rounded w-auto" />
+        <Button text='+ Nueva Cotización' color='verde' onClick={handleButtonClick} className="rounded w-auto" />
       </motion.div>
 
       <motion.div
@@ -200,40 +157,28 @@ const RequerimientosComponent: React.FC = () => {
             <div className="h-full overflow-auto">
               <div className="mb-4 space-x-2">
                 <button
-                  className={`px-3 py-1 ${activeFilter === 'mis_requerimientos' ? 'bg-blue-600' : 'bg-blue-500'} text-white rounded-md text-xs hover:bg-blue-600 transition-colors`}
-                  onClick={() => setActiveFilter('mis_requerimientos')}
+                  className={`px-3 py-1 ${activeFilter === 'mis_compras' ? 'bg-blue-600' : 'bg-blue-500'} text-white rounded-md text-xs hover:bg-blue-600 transition-colors`}
+                  onClick={() => setActiveFilter('mis_compras')}
                 >
-                  Mis requerimientos
+                  Cotizaciones
                 </button>
                 <button
-                  className={`px-3 py-1 ${activeFilter === 'pendientes' ? 'bg-gray-600' : 'bg-gray-500'} text-white rounded-md text-xs hover:bg-gray-600 transition-colors`}
-                  onClick={() => setActiveFilter('pendientes')}
+                  className={`px-3 py-1 ${activeFilter === 'mis_compras2' ? 'bg-sky-600' : 'bg-sky-500'} text-white rounded-md text-xs hover:bg-blue-600 transition-colors`}
+                  onClick={() => setActiveFilter('mis_compras2')}
                 >
-                  Pendientes de Aprobación
+                  Orden de Cotizacion
                 </button>
                 <button
-                  className={`px-3 py-1 ${activeFilter === 'atencion_parcial' ? 'bg-green-600' : 'bg-green-500'} text-white rounded-md text-xs hover:bg-green-600 transition-colors`}
-                  onClick={() => setActiveFilter('atencion_parcial')}
-                >
-                  Atención Parcial
-                </button>
-                <button
-                  className={`px-3 py-1 ${activeFilter === 'completados' ? 'bg-purple-600' : 'bg-purple-500'} text-white rounded-md text-xs hover:bg-purple-600 transition-colors`}
-                  onClick={() => setActiveFilter('completados')}
+                  className={`px-3 py-1 ${activeFilter === 'mis_compras3' ? 'bg-indigo-600' : 'bg-indigo-500'} text-white rounded-md text-xs hover:bg-blue-600 transition-colors`}
+                  onClick={() => setActiveFilter('mis_compras3')}
                 >
                   Completados
                 </button>
                 <button
-                  className={`px-3 py-1 ${activeFilter === 'rechazados' ? 'bg-red-600' : 'bg-red-500'} text-white rounded-md text-xs hover:bg-red-600 transition-colors`}
-                  onClick={() => setActiveFilter('rechazados')}
-                >
-                  Rechazados
-                </button>
-                <button
-                  className={`px-3 py-1 ${activeFilter === 'todos' ? 'bg-indigo-600' : 'bg-indigo-500'} text-white rounded-md text-xs hover:bg-indigo-600 transition-colors`}
+                  className={`px-3 py-1 ${activeFilter === 'todos' ? 'bg-cyan-600' : 'bg-cyan-500'} text-white rounded-md text-xs hover:bg-indigo-600 transition-colors`}
                   onClick={() => setActiveFilter('todos')}
                 >
-                  Todos
+                  Pendiente de Aprobación
                 </button>
               </div>
               <TableComponent tableData={tableData} />
@@ -242,59 +187,14 @@ const RequerimientosComponent: React.FC = () => {
         </main>
       </motion.div>
 
-      <AnimatePresence>
-        {isModalOpen && (
-          <Modal
-            title={editingRequerimiento ? 'Actualizar Requerimiento' : 'Crear Requerimiento'}
-            isOpen={isModalOpen}
-            onClose={handleCloseModal}
-          >
-            <motion.div
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.9 }}
-              transition={{ duration: 0.3 }}
-            >
-              <RequerimientoRecursos
-                initialValues={editingRequerimiento || {
-                  id: '',
-                  usuario_id: '',
-                  usuario: '',
-                  presupuesto_id: '',
-                  fecha_solicitud: '',
-                  estado_atencion: '',
-                  sustento: '',
-                  obra_id: '',
-                  fecha_final: '',
-                  codigo: ''
-                }}
-                onClose={handleCloseModal}
-              />
-            </motion.div>
-          </Modal>
-        )}
-        {isModalResumenOpen && (
-          <Modal
-            title='Resumen Requerimiento'
-            isOpen={isModalResumenOpen}
-            onClose={handleCloseModal}
-          >
-            <motion.div
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.9 }}
-              transition={{ duration: 0.3 }}
-            >
-              <RequerimientoResumen
-                id={editingRequerimiento?.id || ''}                  
-                onClose={handleCloseModal}
-              />
-            </motion.div>
-          </Modal>
-        )}
-      </AnimatePresence>
+      {/* Aquí irían los modales para crear/editar y ver resumen de compras */}
+      {isModalOpen && (
+        <Modal title='Selecciona Recursos a Cotizar' isOpen={isModalOpen} onClose={handleCloseModal}>
+          <ComprasSelectSources />
+        </Modal>
+      )}
     </motion.div>
   );
 };
 
-export default RequerimientosComponent;
+export default ComprasBoard;

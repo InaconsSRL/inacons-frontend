@@ -103,8 +103,8 @@ const solicitudAlmacenSlice = createSlice({
           state.solicitudes[index] = action.payload;
         }
       })
-      .addCase(deleteSolicitudAlmacen.fulfilled, (state, action: PayloadAction<{ id: string }>) => {
-        state.solicitudes = state.solicitudes.filter(sol => sol.id !== action.payload.id);
+      .addCase(deleteSolicitudAlmacen.fulfilled, (state, action: PayloadAction<string>) => {
+        state.solicitudes = state.solicitudes.filter(sol => sol.id !== action.payload);
       });
   },
 });
