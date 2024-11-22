@@ -11,6 +11,7 @@ interface SolicitudCompraRecurso {
   id: string;
   solicitud_compra_id: string;
   recurso_id: {
+    id: string;
     codigo: string;
     nombre: string;
     descripcion: string;

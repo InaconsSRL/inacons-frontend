@@ -9,6 +9,7 @@ const LIST_SOLICITUD_COMPRA_RECURSOS = gql`
       cantidad
       costo
       recurso_id {
+        id
         codigo
         nombre
         descripcion
@@ -30,6 +31,7 @@ const LIST_BY_SOLICITUD_ID = gql`
       cantidad
       costo
       recurso_id {
+        id
         codigo
         nombre
         descripcion
@@ -51,6 +53,7 @@ const ADD_SOLICITUD_COMPRA_RECURSO = gql`
       cantidad
       costo
       recurso_id {
+        id
         codigo
         nombre
         descripcion
@@ -72,6 +75,7 @@ const UPDATE_SOLICITUD_COMPRA_RECURSO = gql`
       cantidad
       costo
       recurso_id {
+        id
         codigo
         nombre
         descripcion
