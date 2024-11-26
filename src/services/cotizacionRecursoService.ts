@@ -23,6 +23,10 @@ const LIST_COTIZACION_RECURSO_QUERY = gql`
         cantidad
         precio_actual
         vigente
+        unidad_id
+        imagenes {
+          file
+        }
       }
     }
   }
@@ -49,6 +53,10 @@ const GET_COTIZACION_RECURSO_QUERY = gql`
         cantidad
         precio_actual
         vigente
+        unidad_id
+        imagenes {
+          file
+        }
       }
     }
   }
@@ -75,6 +83,10 @@ const GET_COTIZACION_RECURSO_FOR_COTIZACION_ID_QUERY = gql`
         cantidad
         precio_actual
         vigente
+        unidad_id
+        imagenes {
+          file
+        }
       }
     }
   }
@@ -101,6 +113,10 @@ const ADD_COTIZACION_RECURSO_MUTATION = gql`
         cantidad
         precio_actual
         vigente
+        unidad_id
+        imagenes {
+          file
+        }
       }
     }
   }
@@ -127,6 +143,10 @@ const UPDATE_COTIZACION_RECURSO_MUTATION = gql`
         cantidad
         precio_actual
         vigente
+        unidad_id
+        imagenes {
+          file
+        }
       }
     }
   }

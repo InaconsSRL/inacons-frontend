@@ -1,5 +1,6 @@
 import React, { ReactNode } from 'react';
 import { FiArrowLeftCircle, FiTrash } from 'react-icons/fi';
+import IMG from '../IMG/IMG';
 
 // Tipos expandidos
 export type CellType = 
@@ -9,7 +10,8 @@ export type CellType =
   | 'formula' 
   | 'icon' 
   | 'actions'
-  | 'custom'; // Nuevo tipo para elementos personalizados
+  | 'custom'
+  | 'image'; 
 
 interface RowData {
   id: string;  // Agregamos id como propiedad obligatoria
@@ -39,8 +41,9 @@ interface TableProps {
   onRowChange?: (index: number, field: string, value: string | number) => void;
   actions?: TableAction[]; // Nueva prop para acciones
   rowStyles?: (row: RowData) => React.CSSProperties;
-  onDelete?: (index: number) => void;
+  onDelete?: (row: RowData) => void; // Modificado para recibir el row completo
 }
+
 const TableComponentSimple: React.FC<TableProps> = ({
   columns,
   data,
@@ -76,12 +79,21 @@ const TableComponentSimple: React.FC<TableProps> = ({
       );
     }
 
-    // Si la columna tiene una función render personalizada, úsala
     if (column.render) {
       return column.render(row[column.key], row, rowIndex);
     }
 
     switch (column.type) {
+      case 'image':
+        return (
+          <div className="flex justify-center items-center">
+            <IMG 
+              src={String(row[column.key])} 
+              alt="table-image"
+              className="w-12 h-12 object-cover rounded"
+            />
+          </div>
+        );
       case 'input':
         return (
           <input
@@ -103,7 +115,7 @@ const TableComponentSimple: React.FC<TableProps> = ({
           <div className="flex space-x-2">
             {onDelete && (
               <button
-                onClick={() => onDelete(rowIndex)}
+                onClick={() => onDelete(row)}
                 className="p-1 text-red-500 hover:bg-red-100 rounded"
               >
                 <FiTrash className="w-4 h-4" />
@@ -138,14 +150,14 @@ const TableComponentSimple: React.FC<TableProps> = ({
                 {column.title}
               </th>
             ))}
-            {actions && (
+            {onDelete && (
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Acciones
               </th>
             )}
           </tr>
         </thead>
-        <tbody className="bg-white divide-y divide-gray-200">
+        <tbody className="bg-white divide-y divide-gray-200 text-sm">
           {data.map((row, rowIndex) => (
             <tr
               key={rowIndex}
@@ -155,12 +167,22 @@ const TableComponentSimple: React.FC<TableProps> = ({
               {columns.map((column) => (
                 <td
                   key={`${rowIndex}-${column.key}`}
-                  className="px-6 py-4 whitespace-nowrap"
+                  className="px-6 py-2 whitespace-nowrap"
                   style={column.style}
                 >
                   {renderCell(column, row, rowIndex)}
                 </td>
               ))}
+              {onDelete && (
+                <td className="px-6 py-2 whitespace-nowrap">
+                  <button
+                    onClick={() => onDelete(row)}
+                    className="p-1 text-red-500 hover:bg-red-100 rounded"
+                  >
+                    <FiTrash className="w-4 h-4" />
+                  </button>
+                </td>
+              )}
             </tr>
           ))}
         </tbody>

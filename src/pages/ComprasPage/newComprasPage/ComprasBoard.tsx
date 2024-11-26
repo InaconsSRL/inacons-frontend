@@ -4,18 +4,25 @@ import Button from '../../../components/Buttons/Button';
 import Modal from '../../../components/Modal/Modal';
 import TableComponent from '../../../components/Table/TableComponent';
 import { useDispatch, useSelector } from 'react-redux';
-import { fetchCompras } from '../../../slices/comprasSlice';
+import { fetchCotizaciones, addCotizacion, deleteCotizacion } from '../../../slices/cotizacionSlice';
 import { RootState, AppDispatch } from '../../../store/store';
 import LoaderPage from '../../../components/Loader/LoaderPage';
-import { FiEdit, FiEye, FiRefreshCw } from 'react-icons/fi';
+import { FiEdit, FiEye, FiRefreshCw, FiTrash2 } from 'react-icons/fi';
 import ComprasSelectSources from './ComprasSelectSources';
+import Toast from '../../../components/Toast/Toast';
 
-interface Compra {
+interface Cotizacion {
   id: string;
-  proveedor_id: string;
-  usuario_id: string;
-  orden_compra_id: string;
+  codigo_cotizacion: string;
+  usuario_id: {
+    apellidos: string;
+    nombres: string;
+    id: string;
+  };
   fecha: string;
+  estado: string;
+  aprobacion: boolean;
+  // ...otros campos necesarios...
 }
 
 const pageVariants = {
@@ -33,42 +40,97 @@ const pageTransition = {
 const ComprasBoard: React.FC = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isModalResumenOpen, setIsModalResumenOpen] = useState(false);
-  const [editingCompra, setEditingCompra] = useState<Compra | null>(null);
+  console.log(isModalResumenOpen)
+  const [editingCompra, setEditingCompra] = useState<Cotizacion | null>(null);
   const [activeFilter, setActiveFilter] = useState('todos');
   const userId = useSelector((state: RootState) => state.user.id);
+  const [toast, setToast] = useState<{
+    show: boolean;
+    message: string;
+    variant: 'success' | 'danger' | 'warning' | 'info';
+  }>({ show: false, message: '', variant: 'info' });
 
   const dispatch = useDispatch<AppDispatch>();
-  const { compras, loading, error } = useSelector((state: RootState) => state.compra);
+  const { cotizaciones, loading, error } = useSelector((state: RootState) => state.cotizacion);
 
   useEffect(() => {
-    dispatch(fetchCompras());
+    dispatch(fetchCotizaciones());
   }, []);
 
-  const handleEdit = (compra: Compra) => {
-    setEditingCompra(compra);
+  const handleEdit = (cotizacion: Cotizacion) => {
+    setEditingCompra(cotizacion);
     setIsModalOpen(true);
   };
 
-  const handleResumen = (compra: Compra) => {
-    setEditingCompra(compra);
+  const handleResumen = (cotizacion: Cotizacion) => {
+    setEditingCompra(cotizacion);
     setIsModalResumenOpen(true);
   };
 
-  const getFilteredCompras = () => {
+  const handleDelete = async (id: string) => {
+    try {
+      await dispatch(deleteCotizacion(id)).unwrap();
+      setToast({
+        show: true,
+        message: 'Cotización eliminada exitosamente',
+        variant: 'success'
+      });
+    } catch (error) {
+      setToast({
+        show: true,
+        message: `Error al eliminar: ${error instanceof Error ? error.message : 'Error desconocido'}`,
+        variant: 'danger'
+      });
+    }
+  };
+
+  const getFilteredCotizaciones = () => {
     switch (activeFilter) {
-      case 'mis_compras':
-        return compras.filter(comp => comp.usuario_id === userId);
+      case 'mis_cotizaciones':
+        return cotizaciones.filter(cot => cot.usuario_id.id === userId);
       default:
-        return compras;
+        return cotizaciones;
     }
   };
 
   if (loading) return <LoaderPage />;
   if (error) return <motion.div initial="initial" animate="in" exit="out" variants={pageVariants} transition={pageTransition}>Error: {error}</motion.div>;
 
-  const handleButtonClick = () => {
-    setEditingCompra(null);
-    setIsModalOpen(true);
+  const handleButtonClick = async () => {
+    try {
+      if (!userId) {
+        throw new Error('No se encontró el ID del usuario');
+      }
+
+      const result = await dispatch(addCotizacion({
+        usuario_id: userId,
+        estado: 'vacio',
+        fecha: new Date().toISOString(),
+        codigo_cotizacion: `COT-${
+          String(new Date().getHours()).padStart(2, '0') +
+          String(new Date().getMinutes()).padStart(2, '0') +
+          String(new Date().getDate()).padStart(2, '0') +
+          String(new Date().getMonth() + 1).padStart(2, '0') +
+          String(new Date().getFullYear()).slice(-2)
+        }`,
+        aprobacion: false,
+      })).unwrap();
+
+      setToast({
+        show: true,
+        message: 'Cotización creada exitosamente',
+        variant: 'success'
+      });
+
+      setEditingCompra(result);
+      setIsModalOpen(true);
+    } catch (error) {
+      setToast({
+        show: true,
+        message: `Error: ${error instanceof Error ? error.message : 'Error desconocido'}`,
+        variant: 'danger'
+      });
+    }
   };
 
   const handleCloseModal = () => {
@@ -78,7 +140,7 @@ const ComprasBoard: React.FC = () => {
   };
 
   const handleRefresh = () => {
-    dispatch(fetchCompras());
+    dispatch(fetchCotizaciones());
   };
 
   const formatDate = (date: string) => {
@@ -90,31 +152,40 @@ const ComprasBoard: React.FC = () => {
     });
   };
 
-  const renderOptions = (comp: Compra) => (
+  const renderOptions = (cot: Cotizacion) => (
     <div className='flex flex-row gap-2'>
       <button
         className='text-yellow-500'
-        onClick={() => handleResumen(comp)}
+        onClick={() => handleResumen(cot)}
       >
         <FiEye />
       </button>
       <button
         className='text-blue-500'
-        onClick={() => handleEdit(comp)}
+        onClick={() => handleEdit(cot)}
       >
         <FiEdit />
       </button>
+      {cot.estado === 'vacio' && (
+        <button
+          className='text-red-500'
+          onClick={() => handleDelete(cot.id)}
+        >
+          <FiTrash2 />
+        </button>
+      )}
     </div>
   );
 
   const tableData = {
-    headers: ["ID", "Proveedor", "Fecha", "Orden de Compra", "opciones"],
-    rows: getFilteredCompras().map(comp => ({
-      ID: comp.id,
-      Proveedor: comp.proveedor_id,
-      Fecha: formatDate(comp.fecha),
-      "Orden de Compra": comp.orden_compra_id,
-      opciones: renderOptions(comp)
+    headers: ["ID", "Código Cotización", "Usuario", "Estado", "Fecha", "Opciones"],
+    rows: getFilteredCotizaciones().map(cot => ({
+      ID: cot.id,
+      "Código Cotización": cot.codigo_cotizacion,
+      Usuario: `${cot.usuario_id.nombres} ${cot.usuario_id.apellidos}`,
+      Fecha: formatDate(cot.fecha),
+      Opciones: renderOptions(cot),
+      Estado: cot.estado
     }))
   };
 
@@ -136,7 +207,7 @@ const ComprasBoard: React.FC = () => {
         <div className="flex items-center gap-4">
           <h1 className="text-2xl font-bold text-blue-50">Compras</h1>
         </div>
-        <Button text='Actualizar' color='blanco' onClick={handleRefresh} className="rounded w-auto" 
+        <Button text='Actualizar' color='blanco' onClick={handleRefresh} className="rounded w-auto"
           icon={<FiRefreshCw className="text-green-500 text-center h-3 w-3" />} />
         <Button text='+ Nueva Cotización' color='verde' onClick={handleButtonClick} className="rounded w-auto" />
       </motion.div>
@@ -187,11 +258,35 @@ const ComprasBoard: React.FC = () => {
         </main>
       </motion.div>
 
-      {/* Aquí irían los modales para crear/editar y ver resumen de compras */}
-      {isModalOpen && (
+      {/* Modificar esta sección del modal */}
+      {isModalOpen && editingCompra && (
         <Modal title='Selecciona Recursos a Cotizar' isOpen={isModalOpen} onClose={handleCloseModal}>
-          <ComprasSelectSources />
+          <ComprasSelectSources
+            cotizacion={{
+              id: editingCompra.id,
+              codigo_cotizacion: editingCompra.codigo_cotizacion,
+              usuario_id: {
+                id: editingCompra.usuario_id.id,
+                nombres: editingCompra.usuario_id.nombres,
+                apellidos: editingCompra.usuario_id.apellidos
+              },
+              estado: editingCompra.estado,
+              fecha: editingCompra.fecha,
+              aprobacion: editingCompra.aprobacion
+            }}
+          />
         </Modal>
+      )}
+      
+      {toast.show && (
+        <Toast
+          message={toast.message}
+          variant={toast.variant}
+          isVisible={toast.show}
+          onClose={() => setToast({ ...toast, show: false })}
+          position="top-right"
+          index={0}
+        />
       )}
     </motion.div>
   );

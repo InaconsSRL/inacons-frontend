@@ -1,12 +1,14 @@
-
+//getCotizacionRecursoForCotizacionIdService añadido exitosamente 2.0
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
 import {
   listCotizacionRecursoService,
+  getCotizacionRecursoService,
+  getCotizacionRecursoForCotizacionIdService,
   addCotizacionRecursoService,
   updateCotizacionRecursoService,
-  getCotizacionRecursoService,
   deleteCotizacionRecursoService,
 } from '../services/cotizacionRecursoService';
+
 
 interface CotizacionRecurso {
   id: string;
@@ -27,6 +29,10 @@ interface CotizacionRecurso {
     cantidad: number;
     precio_actual: number;
     vigente: boolean;
+    unidad_id: string;
+    imagenes: {
+      file: string;
+    }[];
   };
 }
 
@@ -93,6 +99,17 @@ export const deleteCotizacionRecurso = createAsyncThunk(
   async (id: string, { rejectWithValue }) => {
     try {
       return await deleteCotizacionRecursoService(id);
+    } catch (error) {
+      return rejectWithValue((error as Error).message);
+    }
+  }
+);
+
+export const fetchCotizacionRecursoForCotizacionId = createAsyncThunk(
+  'cotizacionRecurso/getCotizacionRecursoForCotizacionId',
+  async (id: string, { rejectWithValue }) => {
+    try {
+      return await getCotizacionRecursoForCotizacionIdService(id);
     } catch (error) {
       return rejectWithValue((error as Error).message);
     }
@@ -167,6 +184,19 @@ const cotizacionRecursoSlice = createSlice({
         state.error = null;
       })
       .addCase(deleteCotizacionRecurso.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
+      })
+      .addCase(fetchCotizacionRecursoForCotizacionId.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(fetchCotizacionRecursoForCotizacionId.fulfilled, (state, action: PayloadAction<CotizacionRecurso[]>) => {
+        state.loading = false;
+        state.cotizacionRecursos = action.payload;
+        state.error = null;
+      })
+      .addCase(fetchCotizacionRecursoForCotizacionId.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload as string;
       });

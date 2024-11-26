@@ -167,7 +167,7 @@ export const AlmacenBoardPage: React.FC = () => {
   };
 
   return (
-    <div className="h-full flex flex-col bg-sky-100">
+    <div className="h-full flex flex-col ">
       {/* Selector de Almacén - Altura fija */}
       <div className="h-16 p-4">
         <select
