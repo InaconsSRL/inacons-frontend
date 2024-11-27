@@ -6,7 +6,7 @@ import TableComponent from '../../components/Table/TableComponent';
 import ProveedorFormComponent from './ProveedorFormComponent';
 
 import { useDispatch, useSelector } from 'react-redux';
-import { fetchProveedores, addProveedor, updateProveedor } from '../../slices/proveedorSlice';
+import { fetchProveedores, addProveedor, updateProveedor, type ProveedorInput } from '../../slices/proveedorSlice';
 import { RootState, AppDispatch } from '../../store/store';
 import LoaderPage from '../../components/Loader/LoaderPage';
 import { FiEdit } from 'react-icons/fi';
@@ -15,6 +15,23 @@ interface Proveedor {
   id: string;
   razon_social: string;
   ruc: string;
+  direccion?: string;
+  nombre_comercial?: string;
+  rubro?: string;
+  estado?: string;
+  contactos?: {
+    id: string;
+    nombres: string;
+    apellidos: string;
+    cargo: string;
+    telefono: string;
+  }[];
+  mediosPago?: {
+    id: string;
+    cuenta_bcp: string;
+    cuenta_bbva: string;
+    yape: string;
+  }[];
 }
 
 const pageVariants = {
@@ -38,14 +55,42 @@ const ProveedorComponent: React.FC = () => {
   console.log(proveedores)
 
   useEffect(() => {
-    dispatch(fetchProveedores());
+    console.log('Dispatching fetchProveedores');
+    dispatch(fetchProveedores())
+      .unwrap()
+      .then((result) => console.log('Fetch result:', result))
+      .catch((error) => console.error('Fetch error:', error));
   }, [dispatch]);
 
-  const handleSubmit = (data: { razon_social: string; ruc: string }) => {
+  useEffect(() => {
+    console.log('Proveedores actualizados:', proveedores);
+  }, [proveedores]);
+
+  interface ProveedorFormData {
+    razon_social: string;
+    ruc: string;
+    direccion?: string;
+    nombre_comercial?: string;
+    rubro?: string;
+    estado?: string;
+  }
+
+  const handleSubmit = (data: ProveedorFormData): void => {
     if (editingProveedor) {
-      dispatch(updateProveedor({ id: editingProveedor.id, ...data }));
+      dispatch(updateProveedor({ 
+        id: editingProveedor.id, 
+        ...data 
+      }));
     } else {
-      dispatch(addProveedor(data));
+      const proveedorData: ProveedorInput = {
+        razon_social: data.razon_social,
+        ruc: data.ruc,
+        direccion: data.direccion,
+        nombre_comercial: data.nombre_comercial,
+        rubro: data.rubro,
+        estado: data.estado
+      };
+      dispatch(addProveedor(proveedorData));
     }
     setIsModalOpen(false);
     setEditingProveedor(null);
@@ -70,11 +115,16 @@ const ProveedorComponent: React.FC = () => {
   };
 
   const tableData = {
-    filter: [true, true, false],
-    headers: ["razon_social", "ruc", "opciones"],
+    filter: [true, true, true, true, true, true, false],
+    headers: ["RazonSocial", "RUC", "Direccion", "NombreComercial", "Rubro", "Estado", "Opciones"],
     rows: proveedores.map(proveedor => ({
-      ...proveedor,
-      opciones: (
+      RazonSocial: proveedor.razon_social ? proveedor.razon_social : "no hay",
+      RUC: proveedor.ruc? proveedor.ruc : "no hay",
+      Direccion: proveedor.direccion ? proveedor.direccion : "no hay",
+      NombreComercial: proveedor.nombre_comercial ? proveedor.nombre_comercial : "no hay",
+      Rubro: proveedor.rubro ? proveedor.rubro : "no hay",
+      Estado: proveedor.estado ? proveedor.estado : "no hay",
+      Opciones: (
         <Button text={<FiEdit size={18} className='text-blue-500'/>} color='transp' className='text-black' onClick={() => handleEdit(proveedor)}></Button>
       )
     }))

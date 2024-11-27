@@ -1,304 +1,163 @@
-import React, { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { FiPlusCircle, FiTrash2, FiAward } from 'react-icons/fi';
+import React, { useState, useMemo } from 'react';
+import { motion } from 'framer-motion';
+import { FiPlusCircle, FiTrash2, FiAward, FiFile } from 'react-icons/fi';
 import Button from '../../../components/Buttons/Button';
-import ModalAgregarProveedor from './ModalAgregarProveedor';
+import 'tailwindcss/tailwind.css';
+import ComparacionTable from './ComparacionTable';
+import { useDispatch, useSelector } from 'react-redux';
+import { AppDispatch, RootState } from '../../../store/store';
+import {ComprasSelectSourcesProps} from './ComprasSelectSources';
+import Modal from '../../../components/Modal/Modal';
+import BuscarProveedoresModal from './BuscarProveedoresModal';
 
-interface CompararProveedoresProps {
+export interface CompararProveedoresProps {
   onClose: () => void;
+  recursos: RecursoItem[];
+  cotizacion: ComprasSelectSourcesProps['cotizacion'];
 }
 
-interface RecursoItem {
+export interface RecursoItem {
   id: string;
-  codigo: string;
-  nombre: string;
-  unidad: string;
-  notas: string;
-  cantidadPpto: number;
-  cantidadSol: number;
-  precio: number;
-  subTotal: number;
+  cantidad: number;
+  atencion: string;
+  costo: number;
+  total: number;
+  cotizacion_id: {
+    codigo_cotizacion: string;
+    aprobacion: boolean;
+  };
+  recurso_id: {
+    id: string;
+    codigo: string;
+    nombre: string;
+    descripcion: string;
+    fecha: string;
+    cantidad: number;
+    precio_actual: number;
+    vigente: boolean;
+    unidad_id: string;
+    imagenes: Array<{file: string}>;
+  };
 }
 
-interface ProveedorCotizacion {
+export interface ProveedorCotizacion {
   id: string;
   nombre: string;
   items: {
-    recursoId: string;
     cantidad: number;
     precio: number;
     subTotal: number;
   }[];
   total: number;
+  notas: string;
 }
 
-const CompararProveedores: React.FC<CompararProveedoresProps> = ({ onClose }) => {
-  const [recursos] = useState<RecursoItem[]>([
+const CompararProveedores: React.FC<CompararProveedoresProps> = ({ cotizacion, recursos, onClose }) => {
+  const dispatch = useDispatch<AppDispatch>();
+  const [showProveedorModal, setShowProveedorModal] = useState(false);
+  
+  const [proveedores, setProveedores] = useState<ProveedorCotizacion[]>([
     {
       id: '1',
-      codigo: '023564',
-      nombre: 'Al_Bolsas de Cemento',
-      unidad: 'Und',
-      notas: '04755_GTTRF',
-      cantidadPpto: 0,
-      cantidadSol: 15,
-      precio: 0,
-      subTotal: 0,
-    },
-    {
-      id: '2',
-      codigo: '023565',
-      nombre: 'Al_Varillas de Acero 1/2"',
-      unidad: 'Und',
-      notas: '04756_GTTRF',
-      cantidadPpto: 0,
-      cantidadSol: 2,
-      precio: 0,
-      subTotal: 0,
-    },
-    {
-      id: '3',
-      codigo: '023566',
-      nombre: 'Al_Arena Gruesa',
-      unidad: 'm³',
-      notas: '04757_GTTRF',
-      cantidadPpto: 0,
-      cantidadSol: 5,
-      precio: 0,
-      subTotal: 0,
-    },
-    {
-      id: '4',
-      codigo: '023567',
-      nombre: 'Al_Piedra Chancada',
-      unidad: 'm³',
-      notas: '04758_GTTRF',
-      cantidadPpto: 0,
-      cantidadSol: 3,
-      precio: 0,
-      subTotal: 0,
-    },
-    {
-      id: '5',
-      codigo: '023568',
-      nombre: 'Al_Ladrillos King Kong',
-      unidad: 'Millar',
-      notas: '04759_GTTRF',
-      cantidadPpto: 0,
-      cantidadSol: 2,
-      precio: 0,
-      subTotal: 0,
-    },
-    {
-      id: '6',
-      codigo: '023569',
-      nombre: 'Al_Tubería PVC 4"',
-      unidad: 'Und',
-      notas: '04760_GTTRF',
-      cantidadPpto: 0,
-      cantidadSol: 10,
-      precio: 0,
-      subTotal: 0,
-    },
-    {
-      id: '7',
-      codigo: '023570',
-      nombre: 'Al_Pintura Látex',
-      unidad: 'Gal',
-      notas: '04761_GTTRF',
-      cantidadPpto: 0,
-      cantidadSol: 8,
-      precio: 0,
-      subTotal: 0,
-    },
-    {
-      id: '8',
-      codigo: '023571',
-      nombre: 'Al_Alambre Negro #16',
-      unidad: 'Kg',
-      notas: '04762_GTTRF',
-      cantidadPpto: 0,
-      cantidadSol: 25,
-      precio: 0,
-      subTotal: 0,
-    },
-    {
-      id: '9',
-      codigo: '023572',
-      nombre: 'Al_Clavos 2"',
-      unidad: 'Kg',
-      notas: '04763_GTTRF',
-      cantidadPpto: 0,
-      cantidadSol: 15,
-      precio: 0,
-      subTotal: 0,
-    },
-    {
-      id: '10',
-      codigo: '023573',
-      nombre: 'Al_Madera Tornillo',
-      unidad: 'p²',
-      notas: '04764_GTTRF',
-      cantidadPpto: 0,
-      cantidadSol: 100,
-      precio: 0,
-      subTotal: 0,
-    },
-    {
-      id: '11',
-      codigo: '023574',
-      nombre: 'Al_Yeso',
-      unidad: 'Kg',
-      notas: '04765_GTTRF',
-      cantidadPpto: 0,
-      cantidadSol: 50,
-      precio: 0,
-      subTotal: 0,
+      nombre: 'JANAMPA GUTIERREZ JULIO',
+      items: recursos.map(recurso => ({
+        cantidad: recurso.cantidad,
+        precio: recurso.recurso_id.precio_actual,
+        subTotal: recurso.cantidad * recurso.recurso_id.precio_actual
+      })),
+      total: recursos.reduce((acc, recurso) => 
+        acc + (recurso.cantidad * recurso.recurso_id.precio_actual), 0),
+      notas: 'Entrega en Obra Costo S/0'
     }
   ]);
 
-  const [proveedores, setProveedores] = useState<ProveedorCotizacion[]>([]);
-  const [showAddProveedor, setShowAddProveedor] = useState(false);
+  const mejorProveedor = useMemo(() => {
+    return proveedores.reduce((mejor, actual) =>
+      actual.total < mejor.total ? actual : mejor
+    );
+  }, [proveedores]);
 
-  const agregarProveedor = (nombre: string) => {
+  const handleProveedorSelect = (proveedor: Proveedor) => {
     const newProveedor: ProveedorCotizacion = {
-      id: Date.now().toString(),
-      nombre,
+      id: proveedor.id,
+      nombre: proveedor.razon_social,
       items: recursos.map(recurso => ({
-        recursoId: recurso.id,
-        cantidad: 0,
-        precio: 0,
-        subTotal: 0
+        cantidad: recurso.cantidad,
+        precio: recurso.recurso_id.precio_actual,
+        subTotal: recurso.cantidad * recurso.recurso_id.precio_actual
       })),
-      total: 0
+      total: recursos.reduce((acc, recurso) => 
+        acc + (recurso.cantidad * recurso.recurso_id.precio_actual), 0),
+      notas: ''
     };
+
     setProveedores([...proveedores, newProveedor]);
-    setShowAddProveedor(false);
-  };
-
-  const actualizarProveedor = (proveedorId: string, itemIndex: number, campo: 'cantidad' | 'precio', valor: number) => {
-    setProveedores(prevProveedores => {
-      return prevProveedores.map(prov => {
-        if (prov.id !== proveedorId) return prov;
-        
-        const newItems = [...prov.items];
-        newItems[itemIndex] = {
-          ...newItems[itemIndex],
-          [campo]: valor,
-          subTotal: campo === 'cantidad' 
-            ? valor * newItems[itemIndex].precio
-            : newItems[itemIndex].cantidad * valor
-        };
-
-        return {
-          ...prov,
-          items: newItems,
-          total: newItems.reduce((sum, item) => sum + item.subTotal, 0)
-        };
-      });
-    });
-  };
-
-  const getMejorPrecio = (recursoIndex: number) => {
-    const precios = proveedores.map(p => p.items[recursoIndex].precio).filter(p => p > 0);
-    return Math.min(...precios);
+    setShowProveedorModal(false);
   };
 
   return (
-    <motion.div 
-      className="w-full h-full bg-gray-50 p-6"
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: 20 }}
+      transition={{ duration: 0.3 }}
+      className="w-full bg-white p-6 rounded-xl shadow-lg"
     >
-      <div className="max-w-[1800px] mx-auto space-y-6">
-        {/* Header */}
-        <div className="flex justify-between items-center bg-white p-4 rounded-lg shadow-sm">
-          <h2 className="text-2xl font-bold text-gray-800">Comparación de Proveedores</h2>
-          <div className="space-x-3">
-            <Button 
-              text="Agregar Proveedor" 
-              color="azul"
-              icon={<FiPlusCircle className="w-5 h-5" />}
-              onClick={() => setShowAddProveedor(true)}
-            />
-            <Button text="Finalizar Comparación" color="verde" />
+      {/* Header */}
+      <div className="flex flex-col md:flex-row justify-between items-center mb-4">
+        <div>
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-2 mt-1 text-gray-500 text-sm">
+            <div>
+              <span className="font-semibold">Cotización:</span> {cotizacion.codigo_cotizacion}
+            </div>
+            {/* <div>
+              <span className="font-semibold">Obra:</span> {cotizacion.obra}
+            </div> */}
+            <div>
+              <span className="font-semibold">Solicita:</span> {cotizacion.usuario_id?.nombres.split(" ")[0]} {cotizacion.usuario_id?.apellidos.split(" ")[0]}
+            </div>
+            <div>
+              <span className="font-semibold">F.Emision:</span> {cotizacion.fecha}
+            </div>
           </div>
         </div>
-
-        {/* Tabla de Comparación */}
-        <div className="bg-white rounded-lg shadow-sm overflow-auto">
-          <table className="w-full min-w-[1200px]">
-            <thead>
-              <tr className="bg-gray-50">
-                <th className="p-3 text-left">Recurso</th>
-                <th className="p-3 text-left">Cant. Sol</th>
-                {proveedores.map(prov => (
-                  <th key={prov.id} className="p-3">
-                    <div className="flex flex-col items-center space-y-2">
-                      <span>{prov.nombre}</span>
-                      <button 
-                        onClick={() => setProveedores(prev => prev.filter(p => p.id !== prov.id))}
-                        className="text-red-500 hover:text-red-700"
-                      >
-                        <FiTrash2 />
-                      </button>
-                    </div>
-                  </th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {recursos.map((recurso, idx) => (
-                <tr key={recurso.id} className="border-t">
-                  <td className="p-3">
-                    <div className="flex flex-col">
-                      <span className="font-medium">{recurso.nombre}</span>
-                      <span className="text-sm text-gray-500">{recurso.codigo}</span>
-                    </div>
-                  </td>
-                  <td className="p-3">{recurso.cantidadSol}</td>
-                  {proveedores.map(prov => (
-                    <td key={prov.id} className="p-3">
-                      <div className="space-y-2">
-                        <input
-                          type="number"
-                          className="w-full p-2 border rounded"
-                          placeholder="Precio"
-                          value={prov.items[idx].precio || ''}
-                          onChange={(e) => actualizarProveedor(prov.id, idx, 'precio', Number(e.target.value))}
-                        />
-                        {prov.items[idx].precio === getMejorPrecio(idx) && prov.items[idx].precio > 0 && (
-                          <div className="flex items-center justify-center text-green-500">
-                            <FiAward className="w-5 h-5" />
-                          </div>
-                        )}
-                      </div>
-                    </td>
-                  ))}
-                </tr>
-              ))}
-              <tr className="bg-gray-50 font-bold">
-                <td colSpan={2} className="p-3">Total</td>
-                {proveedores.map(prov => (
-                  <td key={prov.id} className="p-3 text-center">
-                    S/. {prov.total.toFixed(2)}
-                  </td>
-                ))}
-              </tr>
-            </tbody>
-          </table>
+        <div className="flex gap-2 mt-3 md:mt-0">
+          <Button text="Reordenar" color="azul" className="text-sm shadow-md" />
+          <Button text="Generar OC" color="amarillo" className="text-sm shadow-md" />
+          <Button text="Guardar" color="verde" className="text-sm shadow-md" />
         </div>
       </div>
 
-      {/* Modal para agregar proveedor */}
-      <AnimatePresence>
-        {showAddProveedor && (
-          <ModalAgregarProveedor
-            onClose={() => setShowAddProveedor(false)}
-            onAdd={agregarProveedor}
+      <ComparacionTable
+        recursos={recursos}
+        proveedores={proveedores}
+        mejorProveedor={mejorProveedor}
+      />
+
+      {/* Botón para agregar nuevo proveedor */}
+      <div className="mt-6 flex justify-end">
+        <Button
+          text="Agregar Proveedor"
+          color="azul"
+          className="text-sm shadow-md min-w-40"
+          icon={<FiPlusCircle className="w-4 h-4 mr-2" />}
+          onClick={() => setShowProveedorModal(true)}
+        />
+      </div>
+
+      {showProveedorModal && (
+        <Modal
+          isOpen={showProveedorModal}
+          onClose={() => setShowProveedorModal(false)}
+          title="Buscar Proveedor"
+          size="lg"
+        >
+          <BuscarProveedoresModal
+            onSelectProveedor={handleProveedorSelect}
+            onClose={() => setShowProveedorModal(false)}
           />
-        )}
-      </AnimatePresence>
+        </Modal>
+      )}
     </motion.div>
   );
 };

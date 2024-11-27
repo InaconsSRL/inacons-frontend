@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { AppDispatch } from '../../../store/store';
+import { AppDispatch, RootState } from '../../../store/store';
 import TableComponentSimple, { Column, CellType } from '../../../components/Table/TableComponentSimple';
 import Modal from '../../../components/Modal/Modal';
 import AddRecursoRequerimientoCompra from './AddRecursoRequerimientoCompra';
@@ -8,13 +8,13 @@ import CompararProveedores from './CompararProveedores';
 import { fetchCotizacionRecursoForCotizacionId, deleteCotizacionRecurso } from '../../../slices/cotizacionRecursoSlice';
 import noImage from '../../../assets/NoImage.webp';
 import Loader from '../../../components/Loader/LoaderPage';
-import { RootState } from '../../../store/store';
 import { CotizacionRecurso, updateCotizacion } from '../../../slices/cotizacionSlice';
+import { RecursoItem } from './CompararProveedores';
 
 
 // Definir interfaces si es necesario
 
-interface ComprasSelectSourcesProps {
+export interface ComprasSelectSourcesProps {
     cotizacion: {
         id?: string;
         fecha?: string;
@@ -51,6 +51,7 @@ interface Unidad {
 function ComprasSelectSources({ cotizacion: initialCotizacion }: ComprasSelectSourcesProps) {
     const dispatch = useDispatch<AppDispatch>();
     const [products, setProducts] = useState<FormattedProduct[]>([]);
+    const [recursos, setRecursos] = useState<RecursoItem[]>([]);
     const unidades = useSelector((state: RootState) => state.unidad.unidades);
     
     // Añadir selector para obtener la cotización actualizada del store
@@ -66,7 +67,8 @@ function ComprasSelectSources({ cotizacion: initialCotizacion }: ComprasSelectSo
     const loadResources = React.useCallback(async () => {
         if (cotizacionFromStore.estado !== "vacio" && cotizacionFromStore.id) {
             try {
-                const recursos = await dispatch(fetchCotizacionRecursoForCotizacionId(cotizacionFromStore.id.toString())).unwrap() as CotizacionRecurso[];
+                const recursos = await dispatch(fetchCotizacionRecursoForCotizacionId(cotizacionFromStore.id.toString())).unwrap();
+                setRecursos(recursos);
                 const formattedProducts = recursos.map((recurso: CotizacionRecurso) => ({
                     id: recurso.id,
                     imagen: recurso.recurso_id.imagenes && recurso.recurso_id.imagenes.length > 0
@@ -222,6 +224,8 @@ function ComprasSelectSources({ cotizacion: initialCotizacion }: ComprasSelectSo
             >
                 <CompararProveedores
                     onClose={() => setIsModalProveedorOpen(false)}
+                    recursos={recursos}
+                    cotizacion={cotizacionFromStore}
                 />
             </Modal>
         </div>
