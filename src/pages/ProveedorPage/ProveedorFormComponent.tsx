@@ -1,10 +1,24 @@
 import React, { useState, useEffect } from 'react';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
+import { FiEdit, FiTrash2, FiPlus } from 'react-icons/fi';
 import Button from '../../components/Buttons/Button';
+import TableComponent from '../../components/Table/TableComponent';
 import { consultarRucService } from '../../services/proveedorService';
-import { addContactoProveedor, fetchContactosByProveedor } from '../../slices/contactoProveedorSlice';
-import { addMediosPagoProveedor, fetchMediosPagoByProveedor } from '../../slices/mediosPagoProveedorSlice';
-import type { AppDispatch } from '../../store/store';
+import { 
+  addContactoProveedor, 
+  fetchContactosByProveedor, 
+  updateContactoProveedor, 
+  deleteContactoProveedor
+} from '../../slices/contactoProveedorSlice';
+import { 
+  addMediosPagoProveedor, 
+  fetchMediosPagoByProveedor, 
+  deleteMediosPagoProveedor, 
+  updateMediosPagoProveedor 
+} from '../../slices/mediosPagoProveedorSlice';
+import type { AppDispatch, RootState } from '../../store/store';
+import ContactoForm from './Forms/ContactoForm';
+import MediosPagoForm from './Forms/MediosPagoForm';
 
 interface ProveedorFormData {
   razon_social: string;
@@ -26,8 +40,48 @@ interface FormComponentProps {
   onSubmit: (data: ProveedorFormData) => void;
 }
 
+interface ContactoData {
+  nombres: string;
+  apellidos: string;
+  cargo: string;
+  telefono: string;
+}
+
+interface MediosPagoData {
+  cuenta_bcp: string;
+  cuenta_bbva: string;
+  yape: string;
+}
+
+// Actualizar las interfaces para coincidir con los datos del servidor
+interface Proveedor {
+  id: string;
+  razon_social: string;
+  direccion: string;
+  nombre_comercial: string;
+  ruc: string;
+  rubro: string;
+  estado: string;
+}
+
+interface ContactoProveedor {
+  id: string;
+  proveedor_id: Proveedor;
+  nombres: string;
+  apellidos: string;
+  cargo: string;
+  telefono: string;
+}
+
+interface MediosPagoProveedor {
+  id: string;
+  proveedor_id: Proveedor;
+  cuenta_bcp: string;
+  cuenta_bbva: string;
+  yape: string;
+}
+
 const ProveedorFormComponent: React.FC<FormComponentProps> = ({ initialValues, onSubmit }) => {
-  console.log(initialValues)
   const dispatch = useDispatch<AppDispatch>();
   const [formData, setFormData] = useState<ProveedorFormData>({
     razon_social: initialValues?.razon_social || '',
@@ -41,18 +95,27 @@ const ProveedorFormComponent: React.FC<FormComponentProps> = ({ initialValues, o
   const [errors, setErrors] = useState<FormErrors>({});
   const [isSearching, setIsSearching] = useState(false);
 
-  const [contactoData, setContactoData] = useState({
+  const [showContactForm, setShowContactForm] = useState(false);
+  const [showMediosPagoForm, setShowMediosPagoForm] = useState(false);
+
+  const [editContactoId, setEditContactoId] = useState<string | null>(null);
+  const [editContactoData, setEditContactoData] = useState<ContactoData>({
     nombres: '',
     apellidos: '',
     cargo: '',
     telefono: ''
   });
-
-  const [mediosPagoData, setMediosPagoData] = useState({
+  const [editMediosPagoId, setEditMediosPagoId] = useState<string | null>(null);
+  const [editMediosPagoData, setEditMediosPagoData] = useState<MediosPagoData>({
     cuenta_bcp: '',
     cuenta_bbva: '',
     yape: ''
   });
+
+  const contactos = useSelector((state: RootState) => state.contactoProveedor.contactos);
+  const mediosPago = useSelector((state: RootState) => state.mediosPagoProveedor.mediosPago);
+
+  console.log(contactos, mediosPago);
 
   useEffect(() => {
     if (initialValues?.id) {
@@ -116,26 +179,141 @@ const ProveedorFormComponent: React.FC<FormComponentProps> = ({ initialValues, o
     }
   };
 
-  const handleContactoSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleContactoSubmit = (contactoData: ContactoData) => {
     if (initialValues?.id) {
-      dispatch(addContactoProveedor({
-        proveedor_id: initialValues.id,
-        ...contactoData
-      }));
-      setContactoData({ nombres: '', apellidos: '', cargo: '', telefono: '' });
+      if (editContactoId) {
+        // Editar contacto existente
+        dispatch(updateContactoProveedor({
+          id: editContactoId,
+          proveedor_id: initialValues.id,
+          ...contactoData
+        })).then(() => {
+          setEditContactoId(null);
+          setEditContactoData({
+            nombres: '',
+            apellidos: '',
+            cargo: '',
+            telefono: ''
+          });
+          setShowContactForm(false);
+        });
+      } else {
+        // Crear nuevo contacto
+        dispatch(addContactoProveedor({
+          proveedor_id: initialValues.id,
+          ...contactoData
+        })).then(() => {
+          setShowContactForm(false);
+        });
+      }
     }
   };
 
-  const handleMediosPagoSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleMediosPagoSubmit = (mediosPagoData: MediosPagoData) => {
     if (initialValues?.id) {
-      dispatch(addMediosPagoProveedor({
-        proveedor_id: initialValues.id,
-        ...mediosPagoData
-      }));
-      setMediosPagoData({ cuenta_bcp: '', cuenta_bbva: '', yape: '' });
+      if (editMediosPagoId) {
+        // Editar medio de pago existente
+        dispatch(updateMediosPagoProveedor({
+          id: editMediosPagoId,
+          proveedor_id: initialValues.id,
+          ...mediosPagoData
+        })).then(() => {
+          setEditMediosPagoId(null);
+          setEditMediosPagoData({
+            cuenta_bcp: '',
+            cuenta_bbva: '',
+            yape: ''
+          });
+          setShowMediosPagoForm(false);
+        });
+      } else {
+        // Crear nuevo medio de pago
+        dispatch(addMediosPagoProveedor({
+          proveedor_id: initialValues.id,
+          ...mediosPagoData
+        })).then(() => {
+          setShowMediosPagoForm(false);
+        });
+      }
     }
+  };
+
+  const handleEditContacto = (contacto: ContactoProveedor) => {
+    setEditContactoId(contacto.id);
+    setEditContactoData({
+      nombres: contacto.nombres,
+      apellidos: contacto.apellidos,
+      cargo: contacto.cargo,
+      telefono: contacto.telefono
+    });
+    setShowContactForm(true);
+  };
+
+  const handleEditMedioPago = (medio: MediosPagoProveedor) => {
+    setEditMediosPagoId(medio.id);
+    setEditMediosPagoData({
+      cuenta_bcp: medio.cuenta_bcp,
+      cuenta_bbva: medio.cuenta_bbva,
+      yape: medio.yape
+    });
+    setShowMediosPagoForm(true);
+  };
+
+  const handleDeleteContacto = (contactoId: string) => {
+    if (window.confirm('¿Está seguro de eliminar este contacto?')) {
+      dispatch(deleteContactoProveedor(contactoId));
+    }
+  };
+
+  const handleDeleteMedioPago = (medioId: string) => {
+    if (window.confirm('¿Está seguro de eliminar este medio de pago?')) {
+      dispatch(deleteMediosPagoProveedor(medioId));
+    }
+  };
+
+  const contactosTableData = {
+    headers: ['Nombres', 'Apellidos', 'Cargo', 'Telefono', 'Acciones'],
+    filter: [true, true, true, true, false],
+    rows: contactos.map((contacto: ContactoProveedor) => ({
+      Nombres: contacto.nombres,
+      Apellidos: contacto.apellidos,
+      Cargo: contacto.cargo,
+      Telefono: contacto.telefono,
+      Acciones: (
+        <div className="flex gap-2">
+          <FiEdit 
+            className="cursor-pointer text-blue-500 hover:text-blue-700"
+            onClick={() => handleEditContacto(contacto)}
+          />
+          <FiTrash2 
+            className="cursor-pointer text-red-500 hover:text-red-700"
+            onClick={() => handleDeleteContacto(contacto.id)}
+          />
+        </div>
+      )
+    }))
+  };
+
+  const mediosPagoTableData = {
+    headers: ['Entidad', 'NroCuenta', 'Notas', 'Acciones'],
+    filter: [true, true, true, false],
+    rows: mediosPago.map((medio: MediosPagoProveedor) => ({
+      'Entidad': medio.cuenta_bcp || '-',
+      'NroCuenta': medio.cuenta_bbva || '-',
+      'Notas': medio.yape || '-',
+      Acciones: (
+        <div className="flex gap-2">
+          <FiEdit 
+            className="cursor-pointer text-blue-500 hover:text-blue-700"
+            onClick={() => handleEditMedioPago(medio)}
+          />
+          <FiTrash2 
+            className="cursor-pointer text-red-500 hover:text-red-700"
+            onClick={() => handleDeleteMedioPago(medio.id)}
+          />
+        </div>
+      )
+    }))
   };
 
   return (
@@ -143,7 +321,7 @@ const ProveedorFormComponent: React.FC<FormComponentProps> = ({ initialValues, o
       <div className='flex flex-row'>
 
 
-        <div className='mr-4'>
+        <div className='mr-4 min-w-[400px] '>
 
           <form onSubmit={handleSubmit} className="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4 max-w-md mx-auto">
             <div className="mb-4">
@@ -262,96 +440,51 @@ const ProveedorFormComponent: React.FC<FormComponentProps> = ({ initialValues, o
           <div className=''>
             <div className='grid gap-4'>
               <div>
-                <form onSubmit={handleContactoSubmit} className="bg-white shadow-md rounded px-8 pt-6 pb-8">
-                  <h3 className="text-lg font-semibold mb-4">Agregar Contacto</h3>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-gray-700 text-sm font-bold mb-2">Nombres:</label>
-                      <input
-                        type="text"
-                        value={contactoData.nombres}
-                        onChange={(e) => setContactoData(prev => ({ ...prev, nombres: e.target.value }))}
-                        className="shadow appearance-none border rounded w-full py-2 px-3"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-gray-700 text-sm font-bold mb-2">Apellidos:</label>
-                      <input
-                        type="text"
-                        value={contactoData.apellidos}
-                        onChange={(e) => setContactoData(prev => ({ ...prev, apellidos: e.target.value }))}
-                        className="shadow appearance-none border rounded w-full py-2 px-3"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-gray-700 text-sm font-bold mb-2">Cargo:</label>
-                      <input
-                        type="text"
-                        value={contactoData.cargo}
-                        onChange={(e) => setContactoData(prev => ({ ...prev, cargo: e.target.value }))}
-                        className="shadow appearance-none border rounded w-full py-2 px-3"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-gray-700 text-sm font-bold mb-2">Teléfono:</label>
-                      <input
-                        type="text"
-                        value={contactoData.telefono}
-                        onChange={(e) => setContactoData(prev => ({ ...prev, telefono: e.target.value }))}
-                        className="shadow appearance-none border rounded w-full py-2 px-3"
-                      />
-                    </div>
-                  </div>
-                  <div className="mt-4">
+                <div className="bg-white shadow-md rounded px-8 p-2">
+                  <div className="flex justify-between items-center mb-2 mt-2 gap-20">
+                    <h3 className="text-lg font-semibold">Contactos</h3>
                     <Button
-                      text="Agregar Contacto"
+                      text="Nuevo Contacto"
                       color="azul"
-                      className="w-full"
+                      className='w-auto px-6 py-2 text-sm font-medium'
+                      icon={<FiPlus />}
+                      onClick={() => setShowContactForm(true)}
                     />
                   </div>
-                </form>
+                  {showContactForm ? (
+                    <ContactoForm
+                      onSubmit={handleContactoSubmit}
+                      onCancel={() => setShowContactForm(false)}
+                      initialData={editContactoData}
+                    />
+                  ) : (
+                    <TableComponent tableData={contactosTableData} />
+                  )}
+                </div>
               </div>
 
               <div>
-                <form onSubmit={handleMediosPagoSubmit} className="bg-white shadow-md rounded px-8 pt-6 pb-8">
-                  <h3 className="text-lg font-semibold mb-4">Agregar Medios de Pago</h3>
-                  <div className="grid grid-cols-1 gap-4">
-                    <div>
-                      <label className="block text-gray-700 text-sm font-bold mb-2">Cuenta BCP:</label>
-                      <input
-                        type="text"
-                        value={mediosPagoData.cuenta_bcp}
-                        onChange={(e) => setMediosPagoData(prev => ({ ...prev, cuenta_bcp: e.target.value }))}
-                        className="shadow appearance-none border rounded w-full py-2 px-3"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-gray-700 text-sm font-bold mb-2">Cuenta BBVA:</label>
-                      <input
-                        type="text"
-                        value={mediosPagoData.cuenta_bbva}
-                        onChange={(e) => setMediosPagoData(prev => ({ ...prev, cuenta_bbva: e.target.value }))}
-                        className="shadow appearance-none border rounded w-full py-2 px-3"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-gray-700 text-sm font-bold mb-2">Otros:</label>
-                      <input
-                        type="text"
-                        value={mediosPagoData.yape}
-                        onChange={(e) => setMediosPagoData(prev => ({ ...prev, yape: e.target.value }))}
-                        className="shadow appearance-none border rounded w-full py-2 px-3"
-                      />
-                    </div>
-                  </div>
-                  <div className="mt-4">
+                <div className="bg-white shadow-md rounded px-8 p-2">
+                  <div className="flex justify-between items-center mb-2 mt-2 gap-20">
+                    <h3 className="text-lg font-semibold">Medios de Pago</h3>
                     <Button
-                      text="Agregar Medios de Pago"
+                      text="Nuevo Medio de Pago"
+                      className='w-auto px-6 py-2 text-sm font-medium'
                       color="azul"
-                      className="w-full"
+                      icon={<FiPlus />}
+                      onClick={() => setShowMediosPagoForm(true)}
                     />
                   </div>
-                </form>
+                  {showMediosPagoForm ? (
+                    <MediosPagoForm
+                      onSubmit={handleMediosPagoSubmit}
+                      onCancel={() => setShowMediosPagoForm(false)}
+                      initialData={editMediosPagoData}
+                    />
+                  ) : (
+                    <TableComponent tableData={mediosPagoTableData} />
+                  )}
+                </div>
               </div>
             </div>
           </div>

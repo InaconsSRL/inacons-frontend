@@ -22,9 +22,9 @@ const Button: React.FC<ButtonProps> = ({ onClick, color = 'blanco', options = []
   const buttonColors = {
     transp: 'bg-white/10 hover:bg-white/20 active:bg-white/30 text-blue-500 hover:text-blue-600',
     azul: 'bg-blue-500 hover:bg-blue-600 active:bg-blue-700 text-white hover:text-white',
-    verde: 'bg-green-500 hover:bg-green-600 active:bg-green-700 text-green-800 hover:text-white',
+    verde: 'bg-green-500 hover:bg-green-600 active:bg-green-700 text-white hover:text-white',
     blanco: 'bg-white border border-gray-300 text-black hover:bg-gray-100 active:bg-gray-200 hover:text-black',
-    rojo: 'bg-red-500 hover:bg-red-600 active:bg-red-700 text-red-800 hover:text-white',
+    rojo: 'bg-red-500 hover:bg-red-600 active:bg-red-700 text-white hover:text-white',
     amarillo: 'bg-yellow-500 hover:bg-yellow-600 active:bg-yellow-700 text-yellow-800 hover:text-white',
   };
 
@@ -49,7 +49,7 @@ const Button: React.FC<ButtonProps> = ({ onClick, color = 'blanco', options = []
           duration-200 
           w-28
           ${className}
-          flex items-center justify-between
+          flex items-center justify-center
         `}
       >
         {icon && <span className="mr-2">{icon}</span>}

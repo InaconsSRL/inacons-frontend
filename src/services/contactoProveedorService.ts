@@ -2,7 +2,7 @@ import { gql } from '@apollo/client';
 import client from '../apolloClient';
 
 const LIST_CONTACTOS_PROVEEDOR = gql`
-  query list_contactos_proveedor {
+  query ListContactosProveedor {
     listContactosProveedor {
       id
       proveedor_id {
@@ -23,8 +23,8 @@ const LIST_CONTACTOS_PROVEEDOR = gql`
 `;
 
 const LIST_CONTACTOS_BY_PROVEEDOR = gql`
-  query list_contactos_by_proveedor($proveedor_id: ID!) {
-    listContactosByProveedor(proveedor_id: $proveedor_id) {
+  query ListContactosByProveedor($proveedorId: ID!) {
+    listContactosByProveedor(proveedor_id: $proveedorId) {
       id
       proveedor_id {
         id
@@ -44,17 +44,12 @@ const LIST_CONTACTOS_BY_PROVEEDOR = gql`
 `;
 
 const ADD_CONTACTO_PROVEEDOR = gql`
-  mutation add_contacto_proveedor($proveedor_id: ID!, $nombres: String!, $apellidos: String!, $cargo: String!, $telefono: String!) {
+  mutation AddContactoProveedor($proveedor_id: ID!, $nombres: String!, $apellidos: String!, $cargo: String!, $telefono: String!) {
     addContactoProveedor(proveedor_id: $proveedor_id, nombres: $nombres, apellidos: $apellidos, cargo: $cargo, telefono: $telefono) {
       id
       proveedor_id {
         id
         razon_social
-        direccion
-        nombre_comercial
-        ruc
-        rubro
-        estado
       }
       nombres
       apellidos
@@ -65,17 +60,12 @@ const ADD_CONTACTO_PROVEEDOR = gql`
 `;
 
 const UPDATE_CONTACTO_PROVEEDOR = gql`
-  mutation update_contacto_proveedor($id: ID!, $proveedor_id: ID, $nombres: String, $apellidos: String, $cargo: String, $telefono: String) {
-    updateContactoProveedor(id: $id, proveedor_id: $proveedor_id, nombres: $nombres, apellidos: $apellidos, cargo: $cargo, telefono: $telefono) {
+  mutation UpdateContactoProveedor($updateContactoProveedorId: ID!, $proveedor_id: ID, $nombres: String, $apellidos: String, $cargo: String, $telefono: String) {
+    updateContactoProveedor(id: $updateContactoProveedorId, proveedor_id: $proveedor_id, nombres: $nombres, apellidos: $apellidos, cargo: $cargo, telefono: $telefono) {
       id
       proveedor_id {
         id
         razon_social
-        direccion
-        nombre_comercial
-        ruc
-        rubro
-        estado
       }
       nombres
       apellidos
@@ -86,8 +76,8 @@ const UPDATE_CONTACTO_PROVEEDOR = gql`
 `;
 
 const DELETE_CONTACTO_PROVEEDOR = gql`
-  mutation delete_contacto_proveedor($id: ID!) {
-    deleteContactoProveedor(id: $id) {
+  mutation DeleteContactoProveedor($deleteContactoProveedorId: ID!) {
+    deleteContactoProveedor(id: $deleteContactoProveedorId) {
       id
     }
   }
@@ -95,10 +85,8 @@ const DELETE_CONTACTO_PROVEEDOR = gql`
 
 export const listContactosProveedorService = async () => {
   try {
-    const { data } = await client.query({
-      query: LIST_CONTACTOS_PROVEEDOR,
-    });
-    return data.list_contactos_proveedor;
+    const { data } = await client.query({ query: LIST_CONTACTOS_PROVEEDOR });
+    return data.listContactosProveedor;
   } catch (error) {
     throw new Error(`Error fetching contactos proveedor: ${error}`);
   }
@@ -108,9 +96,9 @@ export const listContactosByProveedorService = async (proveedorId: string) => {
   try {
     const { data } = await client.query({
       query: LIST_CONTACTOS_BY_PROVEEDOR,
-      variables: { proveedor_id: proveedorId },
+      variables: { proveedorId }
     });
-    return data.list_contactos_by_proveedor;
+    return data.listContactosByProveedor;
   } catch (error) {
     throw new Error(`Error fetching contactos by proveedor: ${error}`);
   }
@@ -126,15 +114,9 @@ export const addContactoProveedorService = async (contactoData: {
   try {
     const { data } = await client.mutate({
       mutation: ADD_CONTACTO_PROVEEDOR,
-      variables: {
-        proveedor_id: contactoData.proveedor_id,
-        nombres: contactoData.nombres,
-        apellidos: contactoData.apellidos,
-        cargo: contactoData.cargo,
-        telefono: contactoData.telefono,
-      },
+      variables: contactoData
     });
-    return data.add_contacto_proveedor;
+    return data.addContactoProveedor;
   } catch (error) {
     throw new Error(`Error adding contacto proveedor: ${error}`);
   }
@@ -152,15 +134,11 @@ export const updateContactoProveedorService = async (contactoData: {
     const { data } = await client.mutate({
       mutation: UPDATE_CONTACTO_PROVEEDOR,
       variables: {
-        id: contactoData.id,
-        proveedor_id: contactoData.proveedor_id,
-        nombres: contactoData.nombres,
-        apellidos: contactoData.apellidos,
-        cargo: contactoData.cargo,
-        telefono: contactoData.telefono,
-      },
+        updateContactoProveedorId: contactoData.id,
+        ...contactoData
+      }
     });
-    return data.update_contacto_proveedor;
+    return data.updateContactoProveedor;
   } catch (error) {
     throw new Error(`Error updating contacto proveedor: ${error}`);
   }
@@ -170,9 +148,9 @@ export const deleteContactoProveedorService = async (id: string) => {
   try {
     const { data } = await client.mutate({
       mutation: DELETE_CONTACTO_PROVEEDOR,
-      variables: { id },
+      variables: { deleteContactoProveedorId: id }
     });
-    return data.delete_contacto_proveedor;
+    return data.deleteContactoProveedor;
   } catch (error) {
     throw new Error(`Error deleting contacto proveedor: ${error}`);
   }

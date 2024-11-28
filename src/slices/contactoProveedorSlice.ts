@@ -1,5 +1,5 @@
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
-import { 
+import {
   listContactosProveedorService,
   listContactosByProveedorService,
   addContactoProveedorService,
@@ -28,20 +28,18 @@ interface ContactoProveedor {
 
 interface ContactoProveedorState {
   contactos: ContactoProveedor[];
-  selectedContacto: ContactoProveedor | null;
   loading: boolean;
   error: string | null;
 }
 
 const initialState: ContactoProveedorState = {
   contactos: [],
-  selectedContacto: null,
   loading: false,
-  error: null,
+  error: null
 };
 
 export const fetchContactosProveedor = createAsyncThunk(
-  'contactoProveedor/fetchContactos',
+  'contactoProveedor/fetchAll',
   async (_, { rejectWithValue }) => {
     try {
       return await listContactosProveedorService();
@@ -52,7 +50,7 @@ export const fetchContactosProveedor = createAsyncThunk(
 );
 
 export const fetchContactosByProveedor = createAsyncThunk(
-  'contactoProveedor/fetchContactosByProveedor',
+  'contactoProveedor/fetchByProveedor',
   async (proveedorId: string, { rejectWithValue }) => {
     try {
       return await listContactosByProveedorService(proveedorId);
@@ -63,10 +61,16 @@ export const fetchContactosByProveedor = createAsyncThunk(
 );
 
 export const addContactoProveedor = createAsyncThunk(
-  'contactoProveedor/addContacto',
-  async (data: { proveedor_id: string; nombres: string; apellidos: string; cargo: string; telefono: string }, { rejectWithValue }) => {
+  'contactoProveedor/add',
+  async (contactoData: {
+    proveedor_id: string;
+    nombres: string;
+    apellidos: string;
+    cargo: string;
+    telefono: string;
+  }, { rejectWithValue }) => {
     try {
-      return await addContactoProveedorService(data);
+      return await addContactoProveedorService(contactoData);
     } catch (error) {
       return rejectWithValue((error as Error).message);
     }
@@ -74,10 +78,17 @@ export const addContactoProveedor = createAsyncThunk(
 );
 
 export const updateContactoProveedor = createAsyncThunk(
-  'contactoProveedor/updateContacto',
-  async (data: { id: string; proveedor_id?: string; nombres?: string; apellidos?: string; cargo?: string; telefono?: string }, { rejectWithValue }) => {
+  'contactoProveedor/update',
+  async (contactoData: {
+    id: string;
+    proveedor_id?: string;
+    nombres?: string;
+    apellidos?: string;
+    cargo?: string;
+    telefono?: string;
+  }, { rejectWithValue }) => {
     try {
-      return await updateContactoProveedorService(data);
+      return await updateContactoProveedorService(contactoData);
     } catch (error) {
       return rejectWithValue((error as Error).message);
     }
@@ -85,11 +96,11 @@ export const updateContactoProveedor = createAsyncThunk(
 );
 
 export const deleteContactoProveedor = createAsyncThunk(
-  'contactoProveedor/deleteContacto',
+  'contactoProveedor/delete',
   async (id: string, { rejectWithValue }) => {
     try {
       await deleteContactoProveedorService(id);
-      return { id };
+      return id;
     } catch (error) {
       return rejectWithValue((error as Error).message);
     }
@@ -103,9 +114,6 @@ const contactoProveedorSlice = createSlice({
     clearErrors: (state) => {
       state.error = null;
     },
-    clearContactos: (state) => {
-      state.contactos = [];
-    }
   },
   extraReducers: (builder) => {
     builder
@@ -122,9 +130,15 @@ const contactoProveedorSlice = createSlice({
         state.loading = false;
         state.error = action.payload as string;
       })
+      // Fetch by proveedor cases
+      .addCase(fetchContactosByProveedor.fulfilled, (state, action: PayloadAction<ContactoProveedor[]>) => {
+        state.contactos = action.payload;
+        state.loading = false;
+      })
       // Add cases
       .addCase(addContactoProveedor.fulfilled, (state, action: PayloadAction<ContactoProveedor>) => {
         state.contactos.push(action.payload);
+        state.loading = false;
       })
       // Update cases
       .addCase(updateContactoProveedor.fulfilled, (state, action: PayloadAction<ContactoProveedor>) => {
@@ -132,13 +146,15 @@ const contactoProveedorSlice = createSlice({
         if (index !== -1) {
           state.contactos[index] = action.payload;
         }
+        state.loading = false;
       })
       // Delete cases
-      .addCase(deleteContactoProveedor.fulfilled, (state, action: PayloadAction<{ id: string }>) => {
-        state.contactos = state.contactos.filter(contacto => contacto.id !== action.payload.id);
+      .addCase(deleteContactoProveedor.fulfilled, (state, action: PayloadAction<string>) => {
+        state.contactos = state.contactos.filter(contacto => contacto.id !== action.payload);
+        state.loading = false;
       });
   },
 });
 
-export const { clearErrors, clearContactos } = contactoProveedorSlice.actions;
+export const { clearErrors } = contactoProveedorSlice.actions;
 export const contactoProveedorReducer = contactoProveedorSlice.reducer;
