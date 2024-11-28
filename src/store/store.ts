@@ -10,6 +10,7 @@ import { clasificacionRecursoReducer } from '../slices/clasificacionRecursoSlice
 import { compraReducer } from '../slices/comprasSlice';
 import { comprasRecursoReducer } from '../slices/comprasRecursoSlice';
 import { contactoProveedorReducer } from '../slices/contactoProveedorSlice';
+import { cotizacionProveedorReducer } from '../slices/cotizacionProveedorSlice';
 import { cotizacionRecursoReducer } from '../slices/cotizacionRecursoSlice';
 import { cotizacionReducer } from '../slices/cotizacionSlice';
 import { guiaTransferenciaReducer } from '../slices/guiaTransferenciaSlice';
@@ -43,6 +44,7 @@ import { unidadReducer } from '../slices/unidadSlice';
 import { userReducer } from '../slices/userSlice';
 import { usuarioReducer } from '../slices/usuarioSlice';
 import { mediosPagoProveedorReducer } from '../slices/mediosPagoProveedorSlice';
+import { cotizacionProveedoresRecursoReducer } from '../slices/cotizacionProveedoresRecursoSlice';
 
 export const store = configureStore({
   reducer: {
@@ -56,6 +58,8 @@ export const store = configureStore({
     compra: compraReducer,
     compraRecurso: comprasRecursoReducer,
     contactoProveedor: contactoProveedorReducer,
+    cotizacionProveedor: cotizacionProveedorReducer,
+    cotizacionProveedoresRecurso: cotizacionProveedoresRecursoReducer,
     cotizacionRecurso: cotizacionRecursoReducer,
     cotizacion: cotizacionReducer,
     guiaTransferencia: guiaTransferenciaReducer,

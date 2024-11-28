@@ -95,7 +95,6 @@ const GET_PROVEEDOR_QUERY = gql`
   }
 `;
 
-// ...existing code...
 
 export const listProveedoresService = async () => {
   try {
@@ -113,8 +112,6 @@ export const listProveedoresService = async () => {
   }
 };
 
-// ...existing code...
-
 export const addProveedorService = async (proveedorData: {
   razon_social: string;
   ruc: string;
@@ -124,10 +121,12 @@ export const addProveedorService = async (proveedorData: {
   estado?: string;
 }) => {
   try {
+    console.log('Datos a enviar:', proveedorData); // Para debug
     const response = await client.mutate({
       mutation: ADD_PROVEEDOR_MUTATION,
-      variables: { input: proveedorData },
+      variables: proveedorData,
     });
+    
     if (response.errors) {
       throw new Error(response.errors[0]?.message || 'Error desconocido');
     }

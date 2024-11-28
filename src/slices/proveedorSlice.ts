@@ -72,6 +72,7 @@ export const addProveedor = createAsyncThunk(
   'proveedor/addProveedor',
   async (proveedorData: ProveedorInput, { rejectWithValue }) => {
     try {
+      console.log('Creando proveedorSlice:', proveedorData);
       if (!proveedorData.razon_social || !proveedorData.ruc) {
         throw new Error('Razón social y RUC son requeridos');
       }

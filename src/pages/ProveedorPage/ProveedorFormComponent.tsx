@@ -16,6 +16,7 @@ import {
   deleteMediosPagoProveedor, 
   updateMediosPagoProveedor 
 } from '../../slices/mediosPagoProveedorSlice';
+import { addProveedor, updateProveedor } from '../../slices/proveedorSlice';
 import type { AppDispatch, RootState } from '../../store/store';
 import ContactoForm from './Forms/ContactoForm';
 import MediosPagoForm from './Forms/MediosPagoForm';
@@ -37,7 +38,7 @@ interface FormErrors {
 
 interface FormComponentProps {
   initialValues?: Partial<ProveedorFormData>;
-  onSubmit: (data: ProveedorFormData) => void;
+  onSuccess?: () => void;
 }
 
 interface ContactoData {
@@ -81,7 +82,10 @@ interface MediosPagoProveedor {
   yape: string;
 }
 
-const ProveedorFormComponent: React.FC<FormComponentProps> = ({ initialValues, onSubmit }) => {
+const ProveedorFormComponent: React.FC<FormComponentProps> = ({ 
+  initialValues,
+  onSuccess 
+}) => {
   const dispatch = useDispatch<AppDispatch>();
   const [formData, setFormData] = useState<ProveedorFormData>({
     razon_social: initialValues?.razon_social || '',
@@ -149,10 +153,33 @@ const ProveedorFormComponent: React.FC<FormComponentProps> = ({ initialValues, o
     }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (validateForm()) {
-      onSubmit(formData);
+      try {
+        const proveedorData = {
+          razon_social: formData.razon_social,
+          ruc: formData.ruc,
+          direccion: formData.direccion,
+          nombre_comercial: formData.nombre_comercial,
+          rubro: formData.rubro,
+          estado: formData.estado
+        };
+
+        if (initialValues?.id) {
+          await dispatch(updateProveedor({ 
+            id: initialValues.id, 
+            ...proveedorData 
+          })).unwrap();
+        } else {
+          await dispatch(addProveedor(proveedorData)).unwrap();
+        }
+        
+        onSuccess?.();
+      } catch (error) {
+        console.error('Error al guardar el proveedor:', error);
+        // Aquí podrías manejar el error, por ejemplo mostrando una notificación
+      }
     }
   };
 

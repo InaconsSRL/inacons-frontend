@@ -6,10 +6,12 @@ import TableComponent from '../../components/Table/TableComponent';
 import ProveedorFormComponent from './ProveedorFormComponent';
 
 import { useDispatch, useSelector } from 'react-redux';
-import { fetchProveedores, addProveedor, updateProveedor, type ProveedorInput } from '../../slices/proveedorSlice';
+import { fetchProveedores } from '../../slices/proveedorSlice';
 import { RootState, AppDispatch } from '../../store/store';
 import LoaderPage from '../../components/Loader/LoaderPage';
 import { FiEdit } from 'react-icons/fi';
+
+//todo bien
 
 interface Proveedor {
   id: string;
@@ -65,36 +67,6 @@ const ProveedorComponent: React.FC = () => {
   useEffect(() => {
     console.log('Proveedores actualizados:', proveedores);
   }, [proveedores]);
-
-  interface ProveedorFormData {
-    razon_social: string;
-    ruc: string;
-    direccion?: string;
-    nombre_comercial?: string;
-    rubro?: string;
-    estado?: string;
-  }
-
-  const handleSubmit = (data: ProveedorFormData): void => {
-    if (editingProveedor) {
-      dispatch(updateProveedor({ 
-        id: editingProveedor.id, 
-        ...data 
-      }));
-    } else {
-      const proveedorData: ProveedorInput = {
-        razon_social: data.razon_social,
-        ruc: data.ruc,
-        direccion: data.direccion,
-        nombre_comercial: data.nombre_comercial,
-        rubro: data.rubro,
-        estado: data.estado
-      };
-      dispatch(addProveedor(proveedorData));
-    }
-    setIsModalOpen(false);
-    setEditingProveedor(null);
-  };
 
   const handleEdit = (proveedor: Proveedor) => {
     setEditingProveedor(proveedor);
@@ -183,7 +155,11 @@ const ProveedorComponent: React.FC = () => {
             >
               <ProveedorFormComponent
                 initialValues={editingProveedor || undefined}
-                onSubmit={handleSubmit}
+                onSuccess={() => {
+                  setIsModalOpen(false);
+                  setEditingProveedor(null);
+                  dispatch(fetchProveedores());
+                }}
               />
             </motion.div>
           </Modal>
