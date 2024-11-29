@@ -7,6 +7,8 @@ import { fetchAlmacenes } from '../../../slices/almacenSlice';
 import { fetchAlmacenRecursos } from '../../../slices/almacenRecursoSlice';
 import { FilterSection } from './FilterSection';
 import { InventoryTable } from './InventoryTable';
+import { TransferTable } from '../../Tranferencias/TransfersTable';
+//import { TransfersTable } from './TransfersTable';
 import { ItemDetailModal } from './ItemDetailModal';
 import { NewMovementModal } from './NewMovementModal';
 import { generateMockData } from './mockData';
@@ -39,6 +41,7 @@ export const AlmacenBoardPage: React.FC = () => {
   });
   const [selectedItem, setSelectedItem] = useState<InventoryItem | null>(null);
   const [showNewMovementModal, setShowNewMovementModal] = useState(false);
+  const [showTransfers, setShowTransfers] = useState(false);
   const [page, setPage] = useState(1);
   const itemsPerPage = 10;
 
@@ -159,6 +162,7 @@ export const AlmacenBoardPage: React.FC = () => {
           movements: [...item.movements, fullMovement],
           lastUpdated: new Date()
         };
+        
       }
       return item;
     });
@@ -167,116 +171,118 @@ export const AlmacenBoardPage: React.FC = () => {
   };
 
   return (
-    <div className="h-full flex flex-col bg-sky-100">
-      {/* Selector de Almacén - Altura fija */}
-      <div className="h-16 p-4">
-        <select
-          className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
-          value={selectedAlmacenId}
-          onChange={(e) => setSelectedAlmacenId(e.target.value)}
-        >
-          <option value="">Seleccione un almacén</option>
-          {almacenes.map(almacen => (
-            <option key={almacen.id} value={almacen.id}>
-              {almacen.nombre}
-            </option>
-          ))}
-        </select>
-      </div>
+      <div className="container mx-auto px-6">
+        <div className="text-white pb-4">
+          <h1 className="text-2xl font-bold">Sistema de Kardex Empresarial</h1>
+        </div>
 
-      {selectedAlmacenId ? (
-        <div className="flex-1 flex flex-col min-h-0"> {/* Contenedor flexible con scroll */}
-          {/* Header - Altura fija */}
-          <div className="h-16 flex justify-between items-center px-4">
-            <h1 className="text-xl font-bold text-gray-800">
-              Sistema de Kardex Empresarial
-            </h1>
-            <div className="flex gap-2">
-              <button 
-                className="bg-blue-600 text-white px-3 py-1 text-sm rounded-lg hover:bg-blue-700"
-                onClick={() => setShowNewMovementModal(true)}
-              >
-                Nuevo Movimiento
-              </button>
-              <button 
-                className="bg-green-600 text-white px-3 py-1 text-sm rounded-lg hover:bg-green-700"
-              >
-                Exportar
-              </button>
-            </div>
+        <div className="flex justify-between items-center mb-6">
+          <select
+            value={selectedAlmacenId}
+            onChange={(e) => setSelectedAlmacenId(e.target.value)}
+            className="w-64 p-2 rounded"
+          >
+            <option value="">Seleccione un Almacen</option>
+            {almacenes.map(almacen => (
+              <option key={almacen.id} value={almacen.id}>
+                {almacen.nombre}
+              </option>
+            ))}
+          </select>
+
+          <button className="bg-violet-600 text-white px-4 py-2 rounded">
+            Transferencias
+          </button>
+        </div>
+
+        <div className="flex justify-end gap-4 mb-6">
+          <button 
+            className="bg-blue-600 text-white px-4 py-2 rounded"
+            onClick={() => setShowNewMovementModal(true)}
+          >
+            Nuevo Movimiento
+          </button>
+          <button className="bg-green-600 text-white px-4 py-2 rounded">
+            Exportar
+          </button>
+        </div>
+            
+          <div className="bg-white rounded-lg shadow-lg p-6">
+              <div className="flex justify-between items-center mb-6">   
           </div>
-
           {/* Filtros - Altura fija */}
-          <div className="h-24">
-            <FilterSection
-              filters={filters}
-              selectedAlmacenId={selectedAlmacenId}
-              onAlmacenChange={setSelectedAlmacenId}
-              onFilterChange={(newFilters) => setFilters(prev => ({ ...prev, ...newFilters }))}
-            />
-          </div>
-
-          {/* Tabla - Altura flexible con scroll */}
-          <div className="flex-1 min-h-0 overflow-auto">
-            <InventoryTable
-              items={filteredItems.slice((page - 1) * itemsPerPage, page * itemsPerPage)}
-              sortConfig={sortConfig}
-              onSort={handleSort}
-              onItemSelect={setSelectedItem}
-              onMovement={(itemId, type, quantity) => handleMovement({
-                id: String(itemId),
-                type,
-                quantity
-              })}
-            />
-          </div>
-
-          {/* Paginación - Altura fija */}
-          <div className="h-16 flex justify-between items-center px-4 border-t">
-            <div className="text-sm text-gray-700">
-              Mostrando {((page - 1) * itemsPerPage) + 1} a {Math.min(page * itemsPerPage, filteredItems.length)} de {filteredItems.length}
+            <div className="h-24">
+              <FilterSection
+                filters={filters}
+                selectedAlmacenId={selectedAlmacenId}
+                onAlmacenChange={setSelectedAlmacenId}
+                onFilterChange={(newFilters) => setFilters(prev => ({ ...prev, ...newFilters }))}
+              />
             </div>
-            <div className="flex gap-2">
-              <button 
-                className="px-3 py-1 border rounded-lg text-sm disabled:opacity-50"
-                disabled={page === 1}
-                onClick={() => setPage(page - 1)}
-              >
-                Anterior
-              </button>
-              <button 
-                className="px-3 py-1 border rounded-lg text-sm disabled:opacity-50"
-                disabled={page >= Math.ceil(filteredItems.length / itemsPerPage)}
-                onClick={() => setPage(page + 1)}
-              >
-                Siguiente
-              </button>
+            {/*tabla de trasnferencia */}
+
+
+            {/* Tabla - Altura flexible con scroll */}
+            <div className="flex-1 min-h-0 overflow-auto">
+              <InventoryTable
+                items={filteredItems.slice((page - 1) * itemsPerPage, page * itemsPerPage)}
+                sortConfig={sortConfig}
+                onSort={handleSort}
+                onItemSelect={setSelectedItem}
+                onMovement={(itemId, type, quantity) => handleMovement({
+                  id: String(itemId),
+                  type,
+                  quantity
+                })}
+              />
+            </div>
+            {/* Paginación - Altura fija */}
+            <div className="h-16 flex justify-between items-center px-4 border-t">
+              <div className="text-sm text-gray-700">
+                Mostrando {((page - 1) * itemsPerPage) + 1} a {Math.min(page * itemsPerPage, filteredItems.length)} de {filteredItems.length}
+              </div>
+              <div className="flex gap-2">
+                <button 
+                  className="px-3 py-1 border rounded-lg text-sm disabled:opacity-50"
+                  disabled={page === 1}
+                  onClick={() => setPage(page - 1)}
+                >
+                  Anterior
+                </button>
+                <button 
+                  className="px-3 py-1 border rounded-lg text-sm disabled:opacity-50"
+                  disabled={page >= Math.ceil(filteredItems.length / itemsPerPage)}
+                  onClick={() => setPage(page + 1)}
+                >
+                  Siguiente
+                </button>
+              </div>
             </div>
           </div>
-        </div>
-      ) : (
-        <div className="flex-1 flex items-center justify-center">
-          Por favor seleccione un almacén para ver su inventario
-        </div>
-      )}
-
-      {/* Modales */}
-      {selectedItem && (
-        <ItemDetailModal
-          item={selectedItem}
-          onClose={() => setSelectedItem(null)}
-        />
-      )}
-
-      {showNewMovementModal && (
-        <NewMovementModal
-          inventory={inventory}
-          selectedAlmacenId={selectedAlmacenId}
-          onClose={() => setShowNewMovementModal(false)}
-          onSave={handleMovement}
-        />
-      )}
-    </div>
+        : (
+          <div className="flex-1 flex items-center justify-center">
+            Por favor seleccione un almacén para ver su inventario
+          </div>
+        )
+  
+        {/* Modales */}
+        {selectedItem && (
+          <ItemDetailModal
+            item={selectedItem}
+            onClose={() => setSelectedItem(null)}
+          />
+        )}
+  
+        {showNewMovementModal && (
+          <NewMovementModal
+            inventory={inventory}
+            selectedAlmacenId={selectedAlmacenId}
+            onClose={() => setShowNewMovementModal(false)}
+            onSave={handleMovement}
+          />
+        )}
+  
+      </div>
   );
 };
 

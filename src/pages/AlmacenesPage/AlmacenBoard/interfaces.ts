@@ -40,6 +40,26 @@ export interface InventoryItem {
   dimensions: Dimensions;
 }
 
+export interface TransferItem {
+  id: number;
+  code: string;
+  name: string;
+  description: string;
+  location: string;
+  supplier: string;
+  status: 'Activo' | 'en camino' | 'completado' ;
+  minStock: number;
+  maxStock: number;
+  currentStock: number;
+  unitPrice: number;
+  lastUpdated: Date;
+  movements: Movement[];
+  qrCode: string;
+  batchNumber: string;
+  expirationDate: Date;
+  dimensions: Dimensions;
+}
+
 export interface SortConfig {
   key: keyof InventoryItem;
   direction: 'asc' | 'desc';
