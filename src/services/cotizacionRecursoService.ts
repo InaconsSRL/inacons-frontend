@@ -1,4 +1,3 @@
-
 import { gql } from '@apollo/client';
 import client from '../apolloClient';
 
@@ -257,7 +256,9 @@ export const deleteCotizacionRecursoService = async (id: string) => {
     if (response.errors) {
       throw new Error(response.errors[0]?.message || 'Error desconocido');
     }
-    return response.data.deleteCotizacionRecurso;
+    
+    // Retornamos directamente el ID que eliminamos
+    return id;
   } catch (error) {
     console.error('Error al eliminar la cotización recurso:', error);
     throw error;

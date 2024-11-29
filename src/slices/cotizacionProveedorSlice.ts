@@ -23,7 +23,7 @@ interface CotizacionProveedor {
   estado: string;
   fecha_inicio: string;
   fecha_fin: string;
-  entrega: number;
+  entrega: string;
   c_pago: string;
   observaciones: string;
 }
@@ -70,7 +70,7 @@ export const addCotizacionProveedor = createAsyncThunk(
     estado: string;
     fecha_inicio: Date;
     fecha_fin: Date;
-    entrega: number;
+    entrega: Date;
     c_pago: string;
     observaciones: string;
   }, { rejectWithValue }) => {
@@ -79,6 +79,7 @@ export const addCotizacionProveedor = createAsyncThunk(
         ...data,
         fecha_inicio: data.fecha_inicio.toISOString(),
         fecha_fin: data.fecha_fin.toISOString(),
+        entrega: data.entrega.toISOString(),
       };
       return await addCotizacionProveedorService(formattedData);
     } catch (error) {
@@ -96,7 +97,7 @@ export const updateCotizacionProveedor = createAsyncThunk(
     estado?: string;
     fecha_inicio?: Date;
     fecha_fin?: Date;
-    entrega?: number;
+    entrega?: Date;
     c_pago?: string;
     observaciones?: string;
   }, { rejectWithValue }) => {
@@ -105,6 +106,7 @@ export const updateCotizacionProveedor = createAsyncThunk(
         ...data,
         fecha_inicio: data.fecha_inicio?.toISOString(),
         fecha_fin: data.fecha_fin?.toISOString(),
+        entrega: data.entrega?.toISOString(),
       };
       return await updateCotizacionProveedorService(formattedData);
     } catch (error) {

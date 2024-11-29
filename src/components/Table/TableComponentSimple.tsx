@@ -42,6 +42,7 @@ interface TableProps {
   actions?: TableAction[]; // Nueva prop para acciones
   rowStyles?: (row: RowData) => React.CSSProperties;
   onDelete?: (row: RowData) => void; // Modificado para recibir el row completo
+  cotizacionEstado?: string;
 }
 
 const TableComponentSimple: React.FC<TableProps> = ({
@@ -50,7 +51,8 @@ const TableComponentSimple: React.FC<TableProps> = ({
   onRowChange,
   actions,
   rowStyles,
-  onDelete
+  onDelete,
+  cotizacionEstado
 }) => {
   const handleInputChange = (
     index: number,
@@ -173,7 +175,7 @@ const TableComponentSimple: React.FC<TableProps> = ({
                   {renderCell(column, row, rowIndex)}
                 </td>
               ))}
-              {onDelete && (
+              {onDelete && (cotizacionEstado === "pendiente" || cotizacionEstado === "iniciada") && (
                 <td className="px-6 py-2 whitespace-nowrap">
                   <button
                     onClick={() => onDelete(row)}

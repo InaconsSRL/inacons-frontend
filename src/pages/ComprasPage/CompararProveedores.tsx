@@ -1,15 +1,17 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { FiPlusCircle } from 'react-icons/fi';
-import Button from '../../components/Buttons/Button';
-import 'tailwindcss/tailwind.css';
-import ComparacionTable from './ComparacionTable';
 import { useDispatch, useSelector } from 'react-redux';
-import { AppDispatch, RootState } from '../../store/store';
-import {ComprasSelectSourcesProps} from './ComprasSelectSources';
+import Button from '../../components/Buttons/Button';
 import Modal from '../../components/Modal/Modal';
+import ComparacionTable from './ComparacionTable';
 import BuscarProveedoresModal from './BuscarProveedoresModal';
-import { fetchCotizacionProveedoresByCotizacionId } from '../../slices/cotizacionProveedorSlice';
+import { AppDispatch, RootState } from '../../store/store';
+import { ComprasSelectSourcesProps } from './ComprasSelectSources';
+import { fetchCotizacionProveedoresByCotizacionId, updateCotizacionProveedor } from '../../slices/cotizacionProveedorSlice';
+import { updateCotizacion } from '../../slices/cotizacionSlice';
+
+//Todo Ok
 
 export interface CompararProveedoresProps {
   onClose: () => void;
@@ -44,6 +46,10 @@ export interface RecursoItem {
 export interface ProveedorCotizacion {
   id: string;
   nombre: string;
+  estado: string;
+  fechaInicio: string;
+  fechaFin: string;
+  entrega: string;
   items: {
     cantidad: number;
     precio: number;
@@ -64,16 +70,41 @@ const CompararProveedores: React.FC<CompararProveedoresProps> = ({ cotizacion, r
   console.log(cotizacionProveedores)
 
   useEffect(() => {
-    if (cotizacion.id) {
-      dispatch(fetchCotizacionProveedoresByCotizacionId(cotizacion.id));
-    }
-  }, [dispatch, cotizacion.id]);
+    const fetchAndUpdateProveedores = async () => {
+      if (cotizacion.id) {
+        await dispatch(fetchCotizacionProveedoresByCotizacionId(cotizacion.id));
+        
+        // Verifica si el estado de la cotización es "enEvaluacion"
+        if (cotizacion.estado === "enEvaluacion") {
+          // Actualiza el estado de todos los proveedores
+          const updatePromises = cotizacionProveedores.map(proveedor => 
+            dispatch(updateCotizacionProveedor({
+              id: proveedor.id,
+              estado: "enEvaluacion"
+            }))
+          );
+          
+          try {
+            await Promise.all(updatePromises);
+          } catch (error) {
+            console.error('Error al actualizar el estado de los proveedores:', error);
+          }
+        }
+      }
+    };
+
+    fetchAndUpdateProveedores();
+  }, [dispatch, cotizacion.id, cotizacion.estado]);
 
   // Transformar los datos de la API al formato necesario para la tabla
   const proveedores = useMemo(() => {
     return cotizacionProveedores.map(cp => ({
       id: cp.id,
       nombre: cp.proveedor_id.nombre_comercial,
+      estado: cp.estado,
+      fechaInicio: cp.fecha_inicio,
+      fechaFin: cp.fecha_fin,
+      entrega: cp.entrega,
       items: recursos.map(recurso => ({
         cantidad: recurso.cantidad,
         precio: recurso.recurso_id.precio_actual, // Este precio deberá actualizarse cuando implementes la edición
@@ -92,9 +123,18 @@ const CompararProveedores: React.FC<CompararProveedoresProps> = ({ cotizacion, r
     );
   }, [proveedores]);
 
-  const handleProveedorSelect = (proveedor) => {
-    setShowProveedorModal(false);
-  };
+  const handleEnEvaluacion = async () => {
+    if (!cotizacion.id) return;
+    try {
+        await dispatch(updateCotizacion({
+            id: cotizacion.id,
+            estado: 'enEvaluacion'
+        })).unwrap();
+    } catch (error) {
+        console.error('Error al actualizar estado:', error);
+        alert('Error al actualizar el estado del proveedor');
+    }
+}
 
   return (
     <motion.div
@@ -111,9 +151,9 @@ const CompararProveedores: React.FC<CompararProveedoresProps> = ({ cotizacion, r
             <div>
               <span className="font-semibold">Cotización:</span> {cotizacion.codigo_cotizacion}
             </div>
-            {/* <div>
-              <span className="font-semibold">Obra:</span> {cotizacion.obra}
-            </div> */}
+            <div>
+              <span className="font-semibold">Estado:</span> {cotizacion.estado}
+            </div>
             <div>
               <span className="font-semibold">Solicita:</span> {cotizacion.usuario_id?.nombres.split(" ")[0]} {cotizacion.usuario_id?.apellidos.split(" ")[0]}
             </div>
@@ -123,28 +163,32 @@ const CompararProveedores: React.FC<CompararProveedoresProps> = ({ cotizacion, r
           </div>
         </div>
         <div className="flex gap-2 mt-3 md:mt-0">
-          <Button text="Reordenar" color="azul" className="text-sm shadow-md" />
-          <Button text="Generar OC" color="amarillo" className="text-sm shadow-md" />
-          <Button text="Guardar" color="verde" className="text-sm shadow-md" />
+      {/* {(cotizacion.estado === 'vacio' || cotizacion.estado === 'pendiente'|| cotizacion.estado === 'iniciada' || cotizacion.estado === 'cotizada') &&(<Button */}
+      {(cotizacion.estado === 'vacio' || cotizacion.estado === 'pendiente'|| cotizacion.estado === 'iniciada') &&(<Button
+        text="Proveedor"
+        color="rojo"
+        className="text-sm shadow-md min-w-32"
+        icon={<FiPlusCircle className="w-4 h-4" />}
+        onClick={() => setShowProveedorModal(true)}
+      />)}
+      {
+        (cotizacion.estado === 'iniciada' || cotizacion.estado === 'cotizada') && (
+          <Button onClick={handleEnEvaluacion} text="IniciarAdjudicar" color="azul" className="text-sm shadow-md min-w-36" />
+        )
+      }
+          
+          <Button onClick={onClose} text="Guardar" color="verde" className="text-sm shadow-md" />
+          {(cotizacion.estado === 'adjudicada')&&(<Button text="Generar OC" color="amarillo" className="text-sm shadow-md" />)}
         </div>
       </div>
 
       <ComparacionTable
         recursos={recursos}
         proveedores={proveedores}
-        mejorProveedor={mejorProveedor}
+        estadoCotizacion={cotizacion.estado || ''}
+        mejorProveedor={mejorProveedor || {} as ProveedorCotizacion}
+        cotizacionId={cotizacion.id || ''}
       />
-
-      {/* Botón para agregar nuevo proveedor */}
-      <div className="mt-6 flex justify-end">
-        <Button
-          text="Agregar Proveedor"
-          color="azul"
-          className="text-sm shadow-md min-w-40"
-          icon={<FiPlusCircle className="w-4 h-4 mr-2" />}
-          onClick={() => setShowProveedorModal(true)}
-        />
-      </div>
 
       {showProveedorModal && (
         <Modal
@@ -153,7 +197,6 @@ const CompararProveedores: React.FC<CompararProveedoresProps> = ({ cotizacion, r
           title="Buscar Proveedor"
         >
           <BuscarProveedoresModal
-            onSelectProveedor={handleProveedorSelect}
             cotizacionId={cotizacion.id || ''}
             proveedoresActuales={cotizacionProveedores.map(cp => ({
               id: cp.proveedor_id.id || ''

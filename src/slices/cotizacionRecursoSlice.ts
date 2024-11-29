@@ -98,7 +98,9 @@ export const deleteCotizacionRecurso = createAsyncThunk(
   'cotizacionRecurso/deleteCotizacionRecurso',
   async (id: string, { rejectWithValue }) => {
     try {
-      return await deleteCotizacionRecursoService(id);
+      // El service ahora retorna el ID
+      const deletedId = await deleteCotizacionRecursoService(id);
+      return deletedId;
     } catch (error) {
       return rejectWithValue((error as Error).message);
     }
@@ -178,8 +180,9 @@ const cotizacionRecursoSlice = createSlice({
       })
       .addCase(deleteCotizacionRecurso.fulfilled, (state, action: PayloadAction<string>) => {
         state.loading = false;
+        // Filtramos el recurso eliminado usando el ID retornado
         state.cotizacionRecursos = state.cotizacionRecursos.filter(
-          (recurso) => recurso.id !== action.payload
+          recurso => recurso.id !== action.payload
         );
         state.error = null;
       })

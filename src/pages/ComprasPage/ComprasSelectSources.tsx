@@ -7,12 +7,12 @@ import AddRecursoRequerimientoCompra from './AddRecursoRequerimientoCompra';
 import CompararProveedores from './CompararProveedores';
 import { fetchCotizacionRecursoForCotizacionId, deleteCotizacionRecurso } from '../../slices/cotizacionRecursoSlice';
 import noImage from '../../assets/NoImage.webp';
-import Loader from '../../components/Loader/LoaderPage';
 import { CotizacionRecurso, updateCotizacion } from '../../slices/cotizacionSlice';
-import { RecursoItem } from './CompararProveedores';
+import Button from '../../components/Buttons/Button';
+import { FiPlusCircle } from 'react-icons/fi';
+import { useModal } from './ContextoParaLosModales';
 
-
-// Definir interfaces si es necesario
+//Todo Ok 
 
 export interface ComprasSelectSourcesProps {
     cotizacion: {
@@ -30,18 +30,18 @@ export interface ComprasSelectSourcesProps {
     };
 }
 
-interface FormattedProduct {
-    id: string;
-    imagen: string;
-    codigo: string;
-    nombre: string;
-    unidad: string | undefined;
-    cantidad: number;
-    costo: number;
-    subtotal: number;
-    nota: string;
-    [key: string]: string | number | undefined;
-}
+// interface FormattedProduct {
+//     id: string;
+//     imagen: string;
+//     codigo: string;
+//     nombre: string;
+//     unidad: string | undefined;
+//     cantidad: number;
+//     costo: number;
+//     subtotal: number;
+//     nota: string;
+//     [key: string]: string | number | undefined;
+// }
 
 interface Unidad {
     id: string;
@@ -50,49 +50,38 @@ interface Unidad {
 
 function ComprasSelectSources({ cotizacion: initialCotizacion }: ComprasSelectSourcesProps) {
     const dispatch = useDispatch<AppDispatch>();
-    const [products, setProducts] = useState<FormattedProduct[]>([]);
-    const [recursos, setRecursos] = useState<RecursoItem[]>([]);
-    const unidades = useSelector((state: RootState) => state.unidad.unidades);
+    const { modalStates, openModal, closeModal } = useModal();
     
-    // Añadir selector para obtener la cotización actualizada del store
+    // Reemplazar el estado local por el selector de Redux
+    const cotizacionRecursos = useSelector((state: RootState) => state.cotizacionRecurso.cotizacionRecursos);
     const cotizacionFromStore = useSelector((state: RootState) => 
         state.cotizacion.cotizaciones.find(c => c.id === initialCotizacion.id)
     ) || initialCotizacion;
+    const unidades = useSelector((state: RootState) => state.unidad.unidades);
+    
+    // Formatear productos desde el estado de Redux
+    const products = React.useMemo(() => {
+        return cotizacionRecursos.map((recurso: CotizacionRecurso) => ({
+            id: recurso.id,
+            imagen: recurso.recurso_id.imagenes && recurso.recurso_id.imagenes.length > 0
+                ? recurso.recurso_id.imagenes[0].file
+                : noImage,
+            codigo: recurso.recurso_id.codigo,
+            nombre: recurso.recurso_id.nombre,
+            unidad: unidades.find((unidad: Unidad) => unidad.id === recurso.recurso_id.unidad_id)?.nombre,
+            cantidad: recurso.cantidad,
+            costo: recurso.costo,
+            subtotal: recurso.cantidad * recurso.costo,
+            nota: recurso.atencion
+        }));
+    }, [cotizacionRecursos, unidades]);
 
-    // Añadir selectores para loading states
-    const cotizacionRecursoLoading = useSelector((state: RootState) => state.cotizacionRecurso.loading);
-    const cotizacionLoading = useSelector((state: RootState) => state.cotizacion.loading);
-
-    // Función para cargar los recursos
-    const loadResources = React.useCallback(async () => {
-        if (cotizacionFromStore.estado !== "vacio" && cotizacionFromStore.id) {
-            try {
-                const recursos = await dispatch(fetchCotizacionRecursoForCotizacionId(cotizacionFromStore.id.toString())).unwrap();
-                setRecursos(recursos);
-                const formattedProducts = recursos.map((recurso: CotizacionRecurso) => ({
-                    id: recurso.id,
-                    imagen: recurso.recurso_id.imagenes && recurso.recurso_id.imagenes.length > 0
-                        ? recurso.recurso_id.imagenes[0].file
-                        : noImage,
-                    codigo: recurso.recurso_id.codigo,
-                    nombre: recurso.recurso_id.nombre,
-                    unidad: unidades.find((unidad: Unidad) => unidad.id === recurso.recurso_id.unidad_id)?.nombre,
-                    cantidad: recurso.cantidad,
-                    costo: recurso.costo,
-                    subtotal: recurso.cantidad * recurso.costo,
-                    nota: recurso.atencion
-                }));
-                setProducts(formattedProducts);
-            } catch (error) {
-                console.error('Error al cargar recursos:', error);
-            }
-        }
-    }, [cotizacionFromStore.estado, cotizacionFromStore.id, dispatch, unidades]);
-
-    // Efecto inicial para cargar recursos
+    // Cargar recursos solo una vez al inicio
     useEffect(() => {
-        loadResources();
-    }, [loadResources]);
+        if (cotizacionFromStore.estado !== "vacio" && cotizacionFromStore.id) {
+            dispatch(fetchCotizacionRecursoForCotizacionId(cotizacionFromStore.id.toString()));
+        }
+    }, [cotizacionFromStore.estado, cotizacionFromStore.id, dispatch]);
 
     const [header] = useState({
         codigo: cotizacionFromStore.codigo_cotizacion,
@@ -111,24 +100,20 @@ function ComprasSelectSources({ cotizacion: initialCotizacion }: ComprasSelectSo
         { key: 'subtotal', title: 'Subtotal', type: 'number' as CellType },
     ];
 
-    const [isModalOpen, setIsModalOpen] = useState(false);
-    const [isModalProveedorOpen, setIsModalProveedorOpen] = useState(false);
-
-    const handleModalClose = () => {
-        loadResources(); // Recargar recursos cuando se cierra el modal
-        setIsModalOpen(false);
+    const handleOpenProveedoresModal = () => openModal('proveedores');
+    const handleCloseProveedoresModal = () => closeModal('proveedores');
+    const handleOpenRecursosModal = () => openModal('recursos');
+    const handleCloseRecursosModal = () => {
+        closeModal('recursos');
     };
 
     const handleDelete = async (id: string) => {
         try {
-            await dispatch(deleteCotizacionRecurso(id));
-            await loadResources(); // Recargar la lista después de eliminar
-            
-            // Verificar si quedan recursos después de eliminar
-            const recursos = await dispatch(fetchCotizacionRecursoForCotizacionId(cotizacionFromStore.id!.toString())).unwrap() as CotizacionRecurso[];
+            // Eliminar recurso
+            await dispatch(deleteCotizacionRecurso(id)).unwrap();
             
             // Si no quedan recursos, actualizar el estado de la cotización a "vacio"
-            if (recursos.length === 0 && cotizacionFromStore.id) {
+            if (cotizacionRecursos.length === 1 && cotizacionFromStore.id) {
                 await dispatch(updateCotizacion({
                     id: cotizacionFromStore.id,
                     estado: "vacio"
@@ -140,9 +125,6 @@ function ComprasSelectSources({ cotizacion: initialCotizacion }: ComprasSelectSo
     };
 
     // Mostrar loader si cualquier operación está en progreso
-    if (cotizacionRecursoLoading || cotizacionLoading) {
-        return <Loader />;
-    }
 
     return (
         <div className="min-h-[80vh] bg-gray-100 p-4">
@@ -170,25 +152,26 @@ function ComprasSelectSources({ cotizacion: initialCotizacion }: ComprasSelectSo
 
             {/* Buttons */}
             <div className="flex gap-4 mb-6">
-                <button
-                    onClick={() => setIsModalProveedorOpen(true)}
-                    className="bg-blue-800 text-white px-4 py-2 rounded">
-                    Proveedor
-                </button>
+            {(cotizacionFromStore.estado !== "vacio") && (
+                <Button 
+                    onClick={handleOpenProveedoresModal}
+                    className="text-white px-4 py-2 rounded min-w-52"
+                    text="Gestionar Proveedores"
+                    color='azul'
+                    icon={<FiPlusCircle />}
+                />                
+            )}
                 {cotizacionFromStore.estado === "vacio" && (
-                    <button
-                        onClick={() => setIsModalOpen(true)}
-                        className="bg-blue-500 text-white px-4 py-2 rounded"
-                    >
-                        Añadir Recursos
-                    </button>
+                    
+                    <Button 
+                    onClick={handleOpenRecursosModal}
+                    className="text-white px-4 py-2 rounded min-w-52"
+                    text="Añadir Recursos"
+                    color='verde'
+                    icon={<FiPlusCircle />}
+                />
                 )}
-                <button className="bg-green-500 text-white px-4 py-2 rounded">
-                    Guardar
-                </button>
-                <button className="bg-yellow-400 text-white px-4 py-2 rounded">
-                    Enviar
-                </button>
+
             </div>
 
             {/* Reemplazar la tabla existente por TableComponentSimple */}
@@ -201,30 +184,37 @@ function ComprasSelectSources({ cotizacion: initialCotizacion }: ComprasSelectSo
                         columns={columns}
                         data={products}
                         onDelete={(row) => handleDelete(row.id)}
+                        cotizacionEstado={cotizacionFromStore.estado}
                     />
                 </div>
             </div>
 
             {/* Modal con ComprasForm */}
             <Modal
-                isOpen={isModalOpen}
-                onClose={handleModalClose}
+                isOpen={modalStates['recursos'] || false}
+                onClose={handleCloseRecursosModal}
                 title="Seleccionar Recursos"
             >
                 <AddRecursoRequerimientoCompra
                     cotizacionId={cotizacionFromStore.id ? cotizacionFromStore.id.toString() : null}
-                    onClose={handleModalClose}
+                    onClose={handleCloseRecursosModal}
                 />
             </Modal>
             <Modal
-                isOpen={isModalProveedorOpen}
-                onClose={() => setIsModalProveedorOpen(false)}
+                isOpen={modalStates['proveedores'] || false}
+                onClose={handleCloseProveedoresModal}
                 title="Añadir Proveedores"
 
             >
                 <CompararProveedores
-                    onClose={() => setIsModalProveedorOpen(false)}
-                    recursos={recursos}
+                    onClose={handleCloseProveedoresModal}
+                    recursos={cotizacionRecursos.map(recurso => ({
+                        ...recurso,
+                        cotizacion_id: {
+                            ...recurso.cotizacion_id,
+                            aprobacion: recurso.cotizacion_id.aprobacion === 'true'
+                        }
+                    }))}
                     cotizacion={cotizacionFromStore}
                 />
             </Modal>

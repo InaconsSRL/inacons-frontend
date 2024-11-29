@@ -1,15 +1,15 @@
 import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
+import { FiSearch, FiPlusCircle } from 'react-icons/fi';
 import { AppDispatch, RootState } from '../../store/store';
 import { fetchProveedores } from '../../slices/proveedorSlice';
 import { addCotizacionProveedor } from '../../slices/cotizacionProveedorSlice';
+import { updateCotizacion } from '../../slices/cotizacionSlice';
 import type { Proveedor } from '../../slices/proveedorSlice';
 import Button from '../../components/Buttons/Button';
-import { FiSearch, FiPlusCircle } from 'react-icons/fi';
 import ProveedorFormComponent from '../ProveedorPage/ProveedorFormComponent';
 
 interface BuscarProveedoresModalProps {
-  onSelectProveedor: (proveedor: Proveedor) => void;
   cotizacionId: string; // Añadir esta prop
   proveedoresActuales: Array<{ id: string }>;  // Añadir esta prop
 }
@@ -20,10 +20,9 @@ const estadosProveedor=[
   "enEvaluacion",
   "buenaProAdjudicada",
   "noAdjudicada",
-  "contratoEnProceso"
   ];
 
-const BuscarProveedoresModal: React.FC<BuscarProveedoresModalProps> = ({ onSelectProveedor, cotizacionId, proveedoresActuales }) => {
+const BuscarProveedoresModal: React.FC<BuscarProveedoresModalProps> = ({ cotizacionId, proveedoresActuales }) => {
   console.log(proveedoresActuales);
 
   const dispatch = useDispatch<AppDispatch>();
@@ -53,17 +52,17 @@ const BuscarProveedoresModal: React.FC<BuscarProveedoresModalProps> = ({ onSelec
   const handleConfirm = async () => {
     if (selectedProveedor) {
       try {
+        await dispatch(updateCotizacion({ id: cotizacionId, estado: 'iniciada' })).unwrap();
         await dispatch(addCotizacionProveedor({
           cotizacionId,
           proveedor_id: selectedProveedor.id,
           estado: estadosProveedor[0],
           fecha_inicio: new Date(),
           fecha_fin: new Date(new Date().setDate(new Date().getDate() + 3)), // 3 días por defecto
-          entrega: 0,
+          entrega: new Date(new Date().setDate(new Date().getDate() + 3)),
           c_pago: '',
           observaciones: ''
         })).unwrap();
-        onSelectProveedor(selectedProveedor);
       } catch (error) {
         console.error('Error al agregar cotización proveedor:', error);
       }
