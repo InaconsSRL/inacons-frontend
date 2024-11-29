@@ -1,12 +1,62 @@
-
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
-import { listTransferenciaRecursosService, listTransferenciaRecursosByDetalleService, addTransferenciaRecursoService, updateTransferenciaRecursoService, deleteTransferenciaRecursoService } from '../services/transferenciaRecursoService';
+import { listTransferenciaRecursosService, listTransferenciaRecursosByDetalleService, addTransferenciaRecursoService, updateTransferenciaRecursoService, deleteTransferenciaRecursoService, listTransferenciaRecursosByTransferenciaDetalleService } from '../services/transferenciaRecursoService';
+
+interface Movilidad {
+  id: string;
+  denominacion: string;
+  descripcion: string;
+}
+
+interface Movimiento {
+  id: string;
+  nombre: string;
+  descripcion: string;
+  tipo: string;
+}
+
+interface Usuario {
+  id: string;
+  apellidos: string;
+  nombres: string;
+}
+
+interface Transferencia {
+  fecha: string;
+  id: string;
+  movilidad_id: Movilidad;
+  movimiento_id: Movimiento;
+  usuario_id: Usuario;
+}
+
+interface TransferenciaDetalle {
+  id: string;
+  fecha: string;
+  referencia: string;
+  referencia_id: string;
+  tipo: string;
+  transferencia_id: Transferencia;
+}
+
+interface Imagen {
+  file: string;
+}
+
+interface Recurso {
+  cantidad: number;
+  codigo: string;
+  id: string;
+  imagenes: Imagen[];
+  nombre: string;
+  precio_actual: number;
+  vigente: boolean;
+}
 
 interface TransferenciaRecurso {
   id: string;
-  transferencia_detalle_id: string;
-  recurso_id: string;
+  transferencia_detalle_id: TransferenciaDetalle;
+  recurso_id: Recurso;
   cantidad: number;
+  costo: number;
 }
 
 interface TransferenciaRecursoState {
@@ -38,6 +88,18 @@ export const fetchTransferenciaRecursosByDetalle = createAsyncThunk(
   async (id: string, { rejectWithValue }) => {
     try {
       const data = await listTransferenciaRecursosByDetalleService(id);
+      return data;
+    } catch (error) {
+      return rejectWithValue((error as Error).message);
+    }
+  }
+);
+
+export const fetchTransferenciaRecursosByTransferenciaDetalle = createAsyncThunk(
+  'transferenciaRecurso/fetchByTransferenciaDetalle',
+  async (id: string, { rejectWithValue }) => {
+    try {
+      const data = await listTransferenciaRecursosByTransferenciaDetalleService(id);
       return data;
     } catch (error) {
       return rejectWithValue((error as Error).message);
@@ -115,6 +177,18 @@ const transferenciaRecursoSlice = createSlice({
         state.transferenciaRecursos = action.payload;
       })
       .addCase(fetchTransferenciaRecursosByDetalle.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
+      })
+      .addCase(fetchTransferenciaRecursosByTransferenciaDetalle.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(fetchTransferenciaRecursosByTransferenciaDetalle.fulfilled, (state, action: PayloadAction<TransferenciaRecurso[]>) => {
+        state.loading = false;
+        state.transferenciaRecursos = action.payload;
+      })
+      .addCase(fetchTransferenciaRecursosByTransferenciaDetalle.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload as string;
       })

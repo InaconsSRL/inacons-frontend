@@ -5,7 +5,26 @@ const LIST_TRANSFERENCIA_DETALLES = gql`
   query ListTransferenciaDetalles {
     listTransferenciaDetalles {
       id
-      transferencia_id
+      transferencia_id {
+        id
+        usuario_id {
+          id
+          nombres
+          apellidos
+        }
+        fecha
+        movimiento_id {
+          id
+          nombre
+          descripcion
+          tipo
+        }
+        movilidad_id {
+          id
+          denominacion
+          descripcion
+        }
+      }
       referencia_id
       fecha
       tipo
@@ -18,7 +37,26 @@ const LIST_TRANSFERENCIA_DETALLES_BY_TRANSFERENCIA_ID = gql`
   query ListTransferenciaDetallesByTransferenciaId($transferenciaId: ID!) {
     listTransferenciaDetallesByTransferenciaId(transferencia_id: $transferenciaId) {
       id
-      transferencia_id
+      transferencia_id {
+        id
+        usuario_id {
+          id
+          nombres
+          apellidos
+        }
+        fecha
+        movimiento_id {
+          id
+          nombre
+          descripcion
+          tipo
+        }
+        movilidad_id {
+          id
+          denominacion
+          descripcion
+        }
+      }
       referencia_id
       fecha
       tipo
@@ -28,23 +66,29 @@ const LIST_TRANSFERENCIA_DETALLES_BY_TRANSFERENCIA_ID = gql`
 `;
 
 const ADD_TRANSFERENCIA_DETALLE = gql`
-  mutation AddTransferenciaDetalle($transferenciaId: ID!, $referenciaId: Int!, $fecha: DateTime!, $tipo: String!, $referencia: String!) {
-    addTransferenciaDetalle(transferencia_id: $transferenciaId, referencia_id: $referenciaId, fecha: $fecha, tipo: $tipo, referencia: $referencia) {
+  mutation AddTransferenciaDetalle($transferenciaId: ID!, $referenciaId: String!, $tipo: String!, $referencia: String!, $fecha: DateTime) {
+    addTransferenciaDetalle(transferencia_id: $transferenciaId, referencia_id: $referenciaId, tipo: $tipo, referencia: $referencia, fecha: $fecha) {
       id
-      transferencia_id
-      referencia_id
       fecha
-      tipo
       referencia
+      referencia_id
+      tipo
+      transferencia_id {
+        id
+        fecha
+      }
     }
   }
 `;
 
 const UPDATE_TRANSFERENCIA_DETALLE = gql`
-  mutation UpdateTransferenciaDetalle($updateTransferenciaDetalleId: ID!, $transferenciaId: ID, $referenciaId: Int, $fecha: DateTime, $tipo: String, $referencia: String) {
-    updateTransferenciaDetalle(id: $updateTransferenciaDetalleId, transferencia_id: $transferenciaId, referencia_id: $referenciaId, fecha: $fecha, tipo: $tipo, referencia: $referencia) {
+  mutation UpdateTransferenciaDetalle($updateTransferenciaDetalleId: ID!, $referencia: String, $tipo: String, $fecha: DateTime, $referenciaId: String, $transferenciaId: ID) {
+    updateTransferenciaDetalle(id: $updateTransferenciaDetalleId, referencia: $referencia, tipo: $tipo, fecha: $fecha, referencia_id: $referenciaId, transferencia_id: $transferenciaId) {
       id
-      transferencia_id
+      transferencia_id {
+        id
+        fecha
+      }
       referencia_id
       fecha
       tipo
@@ -86,8 +130,8 @@ export const listTransferenciaDetallesByTransferenciaIdService = async (transfer
 
 export const addTransferenciaDetalleService = async (transferenciaDetalle: {
   transferencia_id: string;
-  referencia_id: number;
-  fecha: Date;
+  referencia_id: string;
+  fecha?: Date;
   tipo: string;
   referencia: string;
 }) => {
@@ -105,7 +149,7 @@ export const addTransferenciaDetalleService = async (transferenciaDetalle: {
 export const updateTransferenciaDetalleService = async (transferenciaDetalle: {
   id: string;
   transferencia_id?: string;
-  referencia_id?: number;
+  referencia_id?: string;
   fecha?: Date;
   tipo?: string;
   referencia?: string;

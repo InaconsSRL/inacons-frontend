@@ -4,7 +4,15 @@ import { RecursoItem, ProveedorCotizacion } from './CompararProveedores';
 import { useSelector, useDispatch } from 'react-redux';
 import { RootState, AppDispatch } from '../../store/store';
 import { motion, AnimatePresence } from 'framer-motion';
-import { addCotizacionProveedoresRecurso, fetchCotizacionesByProveedor } from '../../slices/cotizacionProveedoresRecursoSlice';
+import { addCotizacionProveedoresRecurso, fetchCotizacionesByProveedor, updateCotizacionProveedoresRecurso } from '../../slices/cotizacionProveedoresRecursoSlice';
+
+interface CotizacionRecurso {
+    id: string;
+    cotizacion_proveedor_id: { id: string };
+    recurso_id: { id: string };
+    cantidad: number;
+    costo: number;
+}
 
 const TableSkeleton: React.FC<{ proveedoresCount: number }> = ({ proveedoresCount }) => {
     return (
@@ -77,9 +85,24 @@ const ComparacionTable: React.FC<ComparacionTableProps> = ({
 
     const handleEdit = (proveedorId: string) => {
         setEditingProveedor(proveedorId);
+        
+        // Preparar los valores iniciales basados en las cotizaciones existentes
+        const initialValues = recursos.map(recurso => {
+            const cotizacionExistente = cotizacionesRecursos.find(
+                (c: CotizacionRecurso) => 
+                    c.cotizacion_proveedor_id.id === proveedorId && 
+                    c.recurso_id.id === recurso.recurso_id.id
+            );
+
+            return {
+                cantidad: cotizacionExistente ? String(cotizacionExistente.cantidad) : '',
+                precio: cotizacionExistente ? String(cotizacionExistente.costo) : ''
+            };
+        });
+
         setEditedValues(prev => ({
             ...prev,
-            [proveedorId]: recursos.map(() => ({ cantidad: '', precio: '' }))
+            [proveedorId]: initialValues
         }));
     };
 
@@ -98,7 +121,7 @@ const ComparacionTable: React.FC<ComparacionTableProps> = ({
                 }
                 if (isNaN(precio) || precio <= 0) return null;
 
-                // Preparar datos para guardar
+                // Datos para guardar/actualizar
                 const data = {
                     cotizacion_proveedor_id: proveedorId,
                     recurso_id: recurso.recurso_id.id,
@@ -106,8 +129,35 @@ const ComparacionTable: React.FC<ComparacionTableProps> = ({
                     costo: precio
                 };
 
-                // Guardar
-                return dispatch(addCotizacionProveedoresRecurso(data)).unwrap();
+                interface CotizacionRecurso {
+                    id: string;
+                    cotizacion_proveedor_id: { id: string };
+                    recurso_id: { id: string };
+                    cantidad: number;
+                    costo: number;
+                }
+            
+                // Buscar si ya existe una cotización para este recurso y proveedor
+                            const cotizacionExistente = cotizacionesRecursos.find(
+                                (c: CotizacionRecurso) => 
+                                    c.cotizacion_proveedor_id.id === proveedorId && 
+                                    c.recurso_id.id === recurso.recurso_id.id
+                            );
+
+                if (cotizacionExistente) {
+                    // Si existe y los valores son diferentes, actualizar
+                    if (cotizacionExistente.cantidad !== cantidad || 
+                        cotizacionExistente.costo !== precio) {
+                        return dispatch(updateCotizacionProveedoresRecurso({
+                            id: cotizacionExistente.id,
+                            ...data
+                        })).unwrap();
+                    }
+                    return null; // No hay cambios que actualizar
+                } else {
+                    // Si no existe y hay valores válidos, crear nuevo
+                    return dispatch(addCotizacionProveedoresRecurso(data)).unwrap();
+                }
             });
 
             // Esperar a que todas las promesas se resuelvan
@@ -115,11 +165,10 @@ const ComparacionTable: React.FC<ComparacionTableProps> = ({
             const savedItems = results.filter(Boolean);
 
             if (savedItems.length > 0) {
-                // Limpiar el estado de edición
                 setEditingProveedor(null);
                 setEditedValues(prev => {
                     const { [proveedorId]: _, ...rest } = prev;
-                    console.log(_);
+                    console.log(_)
                     return rest;
                 });
             }
@@ -164,7 +213,38 @@ const ComparacionTable: React.FC<ComparacionTableProps> = ({
         };
     };
 
+    // Función para calcular totales
+    const calculateTotals = () => {
+        const presupuestoTotal = recursos.reduce((sum, recurso) => sum + recurso.total, 0);
+        
+        const proveedoresTotales = proveedores.reduce((acc, prov) => {
+            const total = recursos.reduce((sum, recurso) => {
+                const valores = getRecursoValores(prov.id, recurso.recurso_id.id);
+                return sum + (valores.subTotal !== '--' ? +valores.subTotal : 0);
+            }, 0);
+            
+            return { ...acc, [prov.id]: total };
+        }, {} as { [key: string]: number });
+
+        return {
+            presupuestoTotal,
+            proveedoresTotales
+        };
+    };
+
     const headers = ['Código', 'Nombre', 'Unidad', 'Notas', 'Cant.Ppto', 'Cant.Sol', 'PrecioP', 'SubTotalP'];
+
+    // Añade esta función helper para obtener el color de fondo del proveedor
+    const getProveedorBgColor = (provIndex: number) => {
+        const colors = [
+            'bg-blue-50/50',
+            'bg-purple-50/50',
+            'bg-pink-50/50',
+            'bg-indigo-50/50',
+            'bg-cyan-50/50'
+        ];
+        return colors[provIndex % colors.length];
+    };
 
     if (loading) {
         return (
@@ -263,15 +343,16 @@ const ComparacionTable: React.FC<ComparacionTableProps> = ({
                                 <td className="border p-2 text-right">{recurso.cantidad}</td>
                                 <td className="border p-2 text-right">{formatCurrency(recurso.recurso_id.precio_actual)}</td>
                                 <td className="border p-2 text-right">{formatCurrency(recurso.total)}</td>
-                                {proveedores.map((prov) => {
+                                {proveedores.map((prov, provIndex) => {
                                     const item = prov.items[idx];
                                     const isMejorPrecio = Math.min(...proveedores.map(p => p.items[idx].precio)) === item.precio;
                                     const isEditing = editingProveedor === prov.id;
                                     const editedData = editedValues[prov.id]?.[idx] || { cantidad: '', precio: '' };
                                     const savedValues = getRecursoValores(prov.id, recurso.recurso_id.id);
+                                    const bgColor = getProveedorBgColor(provIndex);
                                     return (
                                         <React.Fragment key={`provider-${prov.id}-row-${idx}`}>
-                                            <td className={`border px-2 text-right ${isMejorPrecio ? 'bg-green-50' : ''}`}>
+                                            <td className={`border px-2 text-right ${isMejorPrecio ?  bgColor : 'bg-green-50'}`}>
                                                 {isEditing ? (
                                                     <input
                                                         type="text"
@@ -283,7 +364,7 @@ const ComparacionTable: React.FC<ComparacionTableProps> = ({
                                                     <span className="text-gray-500">{savedValues.cantidad}</span>
                                                 )}
                                             </td>
-                                            <td className={`border px-2 text-right ${isMejorPrecio ? 'bg-green-50' : ''}`}>
+                                            <td className={`border px-2 text-right ${isMejorPrecio ?  bgColor : 'bg-green-50'}`}>
                                                 {isEditing ? (
                                                     <input
                                                         type="text"
@@ -297,7 +378,7 @@ const ComparacionTable: React.FC<ComparacionTableProps> = ({
                                                     </span>
                                                 )}
                                             </td>
-                                            <td className={`border p-2 text-right ${isMejorPrecio ? 'bg-green-50' : ''}`}>
+                                            <td className={`border p-2 text-right ${isMejorPrecio ?  bgColor : 'bg-green-50'}`}>
                                                 <span className="text-gray-500">
                                                     {savedValues.subTotal !== '--' ? formatCurrency(+savedValues.subTotal) : '--'}
                                                 </span>
@@ -309,6 +390,26 @@ const ComparacionTable: React.FC<ComparacionTableProps> = ({
                         ))}
                     </AnimatePresence>
                 </tbody>
+                <tfoot className="bg-gray-100 font-semibold text-xs">
+                    <tr>
+                        <td colSpan={6} className="border p-2 text-right"></td>
+                        <td colSpan={1} className="border p-2 text-right">TOTAL</td>
+                        <td className="border p-2 text-right">
+                            {formatCurrency(calculateTotals().presupuestoTotal)}
+                        </td>
+                        {proveedores.map((prov) => {
+                            const proveedorTotal = calculateTotals().proveedoresTotales[prov.id];
+                            return (
+                                <React.Fragment key={`total-${prov.id}`}>
+                                    <td colSpan={2} className={`border p-2 text-right ${prov.id === mejorProveedor.id ? 'bg-green-200' : ''}`} >TOTAL</td>
+                                    <td className={`border p-2 text-right ${prov.id === mejorProveedor.id ? 'bg-green-200' : ''}`}>
+                                        {formatCurrency(proveedorTotal)}
+                                    </td>
+                                </React.Fragment>
+                            );
+                        })}
+                    </tr>
+                </tfoot>
             </table>
         </motion.div>
     );
