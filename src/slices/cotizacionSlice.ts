@@ -1,20 +1,11 @@
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
-import {
+import { 
   listCotizacionesService,
+  getCotizacionService,
   addCotizacionService,
   updateCotizacionService,
-  getCotizacionService,
-  deleteCotizacionService,
+  deleteCotizacionService 
 } from '../services/cotizacionService';
-
-// Definir interfaces
-interface Proveedor {
-  id: string;
-  razon_social: string;
-  ruc: string;
-  direccion: string;
-  nombre_comercial: string;
-}
 
 interface Usuario {
   id: string;
@@ -24,31 +15,54 @@ interface Usuario {
 
 interface Requerimiento {
   id: string;
-  presupuesto_id: string;
-  fecha_solicitud: string;
-  fecha_final: string;
-  estado_atencion: string;
-  sustento: string;
-  obra_id: string;
-  codigo: string;
-  usuario_id: string;
   usuario: string;
+  estado_atencion: string;
+  codigo: string;
+  fecha_final: string;
+  fecha_solicitud: string;
+  sustento: string;
 }
 
 interface SolicitudCompra {
   id: string;
-  fecha: string;
-  requerimiento_id: Requerimiento;
   usuario_id: Usuario;
+  requerimiento_id: Requerimiento;
 }
 
-export interface Cotizacion {
+interface Cotizacion {
   id: string;
-  aprobacion: boolean;
   codigo_cotizacion: string;
-  proveedor_id: Proveedor;
-  solicitud_compra_id: SolicitudCompra;
   usuario_id: Usuario;
+  solicitud_compra_id: SolicitudCompra;
+  aprobacion: boolean;
+  estado: string;
+  fecha: string;
+}
+
+export interface CotizacionRecurso {
+  id: string;
+  cantidad: number;
+  atencion: string;
+  costo: number;
+  total: number;
+  cotizacion_id: {
+    codigo_cotizacion: string;
+    aprobacion: string;
+  };
+  recurso_id: {
+    id: string;
+    codigo: string;
+    nombre: string;
+    descripcion: string;
+    fecha: string;
+    cantidad: number;
+    precio_actual: number;
+    vigente: boolean;
+    unidad_id: string;
+    imagenes: {
+      file: string;
+    }[];
+  };
 }
 
 interface CotizacionState {
@@ -65,60 +79,13 @@ const initialState: CotizacionState = {
   error: null,
 };
 
-const handleError = (error: unknown): string => {
-  if (error instanceof Error) return error.message;
-  return String(error);
-};
-
-// Thunks
 export const fetchCotizaciones = createAsyncThunk(
   'cotizacion/fetchCotizaciones',
   async (_, { rejectWithValue }) => {
     try {
       return await listCotizacionesService();
     } catch (error) {
-      return rejectWithValue(handleError(error));
-    }
-  }
-);
-
-export const addCotizacion = createAsyncThunk(
-  'cotizacion/addCotizacion',
-  async (
-    cotizacionData: {
-      codigo_cotizacion: string;
-      proveedor_id: string;
-      usuario_id: string;
-      solicitud_compra_id: string;
-      aprobacion: boolean;
-    },
-    { rejectWithValue }
-  ) => {
-    try {
-      return await addCotizacionService(cotizacionData);
-    } catch (error) {
-      return rejectWithValue(handleError(error));
-    }
-  }
-);
-
-export const updateCotizacion = createAsyncThunk(
-  'cotizacion/updateCotizacion',
-  async (
-    cotizacion: {
-      id: string;
-      codigo_cotizacion: string;
-      proveedor_id: string;
-      usuario_id: string;
-      solicitud_compra_id: string;
-      aprobacion: boolean;
-    },
-    { rejectWithValue }
-  ) => {
-    try {
-      return await updateCotizacionService(cotizacion);
-    } catch (error) {
-      return rejectWithValue(handleError(error));
+      return rejectWithValue((error as Error).message);
     }
   }
 );
@@ -129,7 +96,45 @@ export const getCotizacion = createAsyncThunk(
     try {
       return await getCotizacionService(id);
     } catch (error) {
-      return rejectWithValue(handleError(error));
+      return rejectWithValue((error as Error).message);
+    }
+  }
+);
+
+
+export const addCotizacion = createAsyncThunk(
+  'cotizacion/addCotizacion',
+  async (data: { usuario_id: string; codigo_cotizacion?: string; estado?: string; fecha?:string; aprobacion?:boolean }, { rejectWithValue }) => {
+    try {
+      const completeData = {
+        usuario_id: data.usuario_id,
+        codigo_cotizacion: data.codigo_cotizacion || '',
+        estado: data.estado || 'PENDIENTE',
+        fecha: data.fecha || new Date().toISOString(),
+        aprobacion: data.aprobacion || false
+      };
+      return await addCotizacionService(completeData);
+    } catch (error) {
+      return rejectWithValue((error as Error).message);
+    }
+  }
+);
+
+export const updateCotizacion = createAsyncThunk(
+  'cotizacion/updateCotizacion',
+  async (data: {
+    id: string;
+    solicitud_compra_id?: string;
+    aprobacion?: boolean;
+    estado?: string;
+    fecha?: Date;
+    usuario_id?: string;
+    codigo_cotizacion?: string;
+  }, { rejectWithValue }) => {
+    try {
+      return await updateCotizacionService(data);
+    } catch (error) {
+      return rejectWithValue((error as Error).message);
     }
   }
 );
@@ -140,19 +145,21 @@ export const deleteCotizacion = createAsyncThunk(
     try {
       return await deleteCotizacionService(id);
     } catch (error) {
-      return rejectWithValue(handleError(error));
+      return rejectWithValue((error as Error).message);
     }
   }
 );
 
-// Slice
 const cotizacionSlice = createSlice({
   name: 'cotizacion',
   initialState,
-  reducers: {},
+  reducers: {
+    clearErrors: (state) => {
+      state.error = null;
+    },
+  },
   extraReducers: (builder) => {
     builder
-      // Fetch Cotizaciones
       .addCase(fetchCotizaciones.pending, (state) => {
         state.loading = true;
         state.error = null;
@@ -165,36 +172,6 @@ const cotizacionSlice = createSlice({
         state.loading = false;
         state.error = action.payload as string;
       })
-      // Add Cotizacion
-      .addCase(addCotizacion.pending, (state) => {
-        state.loading = true;
-        state.error = null;
-      })
-      .addCase(addCotizacion.fulfilled, (state, action: PayloadAction<Cotizacion>) => {
-        state.loading = false;
-        state.cotizaciones.push(action.payload);
-      })
-      .addCase(addCotizacion.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.payload as string;
-      })
-      // Update Cotizacion
-      .addCase(updateCotizacion.pending, (state) => {
-        state.loading = true;
-        state.error = null;
-      })
-      .addCase(updateCotizacion.fulfilled, (state, action: PayloadAction<Cotizacion>) => {
-        state.loading = false;
-        const index = state.cotizaciones.findIndex((c) => c.id === action.payload.id);
-        if (index !== -1) {
-          state.cotizaciones[index] = action.payload;
-        }
-      })
-      .addCase(updateCotizacion.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.payload as string;
-      })
-      // Get Cotizacion
       .addCase(getCotizacion.pending, (state) => {
         state.loading = true;
         state.error = null;
@@ -207,14 +184,40 @@ const cotizacionSlice = createSlice({
         state.loading = false;
         state.error = action.payload as string;
       })
-      // Delete Cotizacion
+      .addCase(addCotizacion.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(addCotizacion.fulfilled, (state, action: PayloadAction<Cotizacion>) => {
+        state.loading = false;
+        state.cotizaciones.push(action.payload);
+      })
+      .addCase(addCotizacion.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
+      })
+      .addCase(updateCotizacion.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(updateCotizacion.fulfilled, (state, action: PayloadAction<Cotizacion>) => {
+        state.loading = false;
+        const index = state.cotizaciones.findIndex(cot => cot.id === action.payload.id);
+        if (index !== -1) {
+          state.cotizaciones[index] = action.payload;
+        }
+      })
+      .addCase(updateCotizacion.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
+      })
       .addCase(deleteCotizacion.pending, (state) => {
         state.loading = true;
         state.error = null;
       })
       .addCase(deleteCotizacion.fulfilled, (state, action: PayloadAction<{ id: string }>) => {
         state.loading = false;
-        state.cotizaciones = state.cotizaciones.filter((c) => c.id !== action.payload.id);
+        state.cotizaciones = state.cotizaciones.filter(cot => cot.id !== action.payload.id);
       })
       .addCase(deleteCotizacion.rejected, (state, action) => {
         state.loading = false;
@@ -223,4 +226,5 @@ const cotizacionSlice = createSlice({
   },
 });
 
+export const { clearErrors } = cotizacionSlice.actions;
 export const cotizacionReducer = cotizacionSlice.reducer;

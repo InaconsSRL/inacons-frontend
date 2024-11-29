@@ -25,7 +25,7 @@ import AlmacenBoardPage from './pages/AlmacenesPage/AlmacenBoard/AlmacenBoardPag
 import { Presupuestos } from './pages/PresupuestosDemo/Presupuestos';
 import TipoAlmacenPage from './pages/TipoAlmacenPage/TipoAlmacenPage';
 import ObrasComponent from './pages/ObrasPage/ObrasPage';
-import ComprasBoard from './pages/ComprasPage/newComprasPage/ComprasBoard';
+import ComprasBoard from './pages/ComprasPage/ComprasBoard';
 
 const App: React.FC = () => {
   const user = useSelector((state: RootState) => state.user);

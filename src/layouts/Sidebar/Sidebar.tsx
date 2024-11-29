@@ -40,16 +40,17 @@ const Sidebar: React.FC<SidebarProps> = ({ isSidebarOpen, toggleSidebar }) => {
 
   const moduloCompras = [
     { to: "/dashboard/compras", icon: FaShoppingCart, text: "ComprasPage" },
+    { to: "/dashboard/proveedor", icon: FaHandshake, text: "Proveedores" },
   ];
 
   const moduloProyectos = [
     { to: "/dashboard/obras", icon: GiConcreteBag , text: "Obras" },
+    { to: "/dashboard/presupuestoBoard", icon: FaMoneyBillWave, text: "Presupuestos" },
   ];
 
   const moduloAlmacen = [
     { to: "/dashboard/almacen", icon: FaWarehouse, text: "Almacen" },
     { to: "/dashboard/almacenBoard", icon: FaClipboardList, text: "AlmacenBoard" },
-    { to: "/dashboard/presupuestoBoard", icon: FaMoneyBillWave, text: "Presupuestos" },
     { to: "/dashboard/tipoAlmacen", icon: IoIosArchive, text: "TipoDeAlmacen" },
   ];
 
@@ -57,7 +58,6 @@ const Sidebar: React.FC<SidebarProps> = ({ isSidebarOpen, toggleSidebar }) => {
     { to: "/dashboard/requerimiento", icon: FaClipboardList, text: "Requerimiento" },
     { to: "/dashboard/reqRecursos", icon: FaTasks, text: "GenerarRequerimiento" },
     { to: "/dashboard/kanban", icon: MdViewKanban, text: "Kanban" },
-    { to: "/dashboard/proveedor", icon: FaHandshake, text: "Proveedores" },
   ];
 
   useEffect(() => {

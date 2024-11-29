@@ -1,4 +1,3 @@
-
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
 import { 
   listTransferenciasService, 
@@ -7,11 +6,31 @@ import {
   deleteTransferenciaService 
 } from '../services/transferenciaService';
 
+interface Movimiento {
+  id: string;
+  nombre: string;
+  descripcion: string;
+  tipo: string;
+}
+
+interface Movilidad {
+  id: string;
+  denominacion: string;
+  descripcion: string;
+}
+
+interface Usuario {
+  id: string;
+  apellidos: string;
+  nombres: string;
+}
+
 interface Transferencia {
   id: string;
-  usuario_id: string;
   fecha: Date;
-  movimiento_id: string;
+  movimiento_id: Movimiento;
+  movilidad_id: Movilidad;
+  usuario_id: Usuario;
 }
 
 interface TransferenciaState {
@@ -39,7 +58,7 @@ export const fetchTransferencias = createAsyncThunk(
 
 export const addTransferencia = createAsyncThunk(
   'transferencia/addTransferencia',
-  async (data: { usuario_id: string; fecha: Date; movimiento_id: string }, { rejectWithValue }) => {
+  async (data: { usuario_id: string; fecha: Date; movimiento_id: string; movilidad_id: string }, { rejectWithValue }) => {
     try {
       return await addTransferenciaService(data);
     } catch (error) {
@@ -50,7 +69,7 @@ export const addTransferencia = createAsyncThunk(
 
 export const updateTransferencia = createAsyncThunk(
   'transferencia/updateTransferencia',
-  async (data: { id: string; usuario_id?: string; fecha?: Date; movimiento_id?: string }, { rejectWithValue }) => {
+  async (data: { id: string; usuario_id?: string; fecha?: Date; movimiento_id?: string; movilidad_id?: string }, { rejectWithValue }) => {
     try {
       return await updateTransferenciaService(data);
     } catch (error) {

@@ -7,10 +7,37 @@ import {
   deleteTransferenciaDetalleService,
 } from '../services/transferenciaDetalleService';
 
+interface Usuario {
+  id: string;
+  nombres: string;
+  apellidos: string;
+}
+
+interface Movimiento {
+  id: string;
+  nombre: string;
+  descripcion: string;
+  tipo: string;
+}
+
+interface Movilidad {
+  id: string;
+  denominacion: string;
+  descripcion: string;
+}
+
+interface Transferencia {
+  id: string;
+  usuario_id: Usuario;
+  fecha: string;
+  movimiento_id: Movimiento;
+  movilidad_id: Movilidad;
+}
+
 interface TransferenciaDetalle {
   id: string;
-  transferencia_id: string;
-  referencia_id: number;
+  transferencia_id: Transferencia;
+  referencia_id: string;
   fecha: string;
   tipo: string;
   referencia: string;
@@ -46,8 +73,8 @@ export const addTransferenciaDetalle = createAsyncThunk(
   'transferenciaDetalle/add',
   async (data: {
     transferencia_id: string;
-    referencia_id: number;
-    fecha: Date;
+    referencia_id: string;
+    fecha?: Date;
     tipo: string;
     referencia: string;
   }) => {
@@ -60,7 +87,7 @@ export const updateTransferenciaDetalle = createAsyncThunk(
   async (data: {
     id: string;
     transferencia_id?: string;
-    referencia_id?: number;
+    referencia_id?: string;
     fecha?: Date;
     tipo?: string;
     referencia?: string;

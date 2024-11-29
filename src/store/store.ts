@@ -1,90 +1,99 @@
 import { configureStore } from '@reduxjs/toolkit';
 import { setupListeners } from '@reduxjs/toolkit/query';
-import { userReducer } from '../slices/userSlice';
-import { cargoReducer } from '../slices/cargoSlice';
-import { tipoRecursoReducer } from '../slices/tipoRecursoSlice';
-import { recursoReducer } from '../slices/recursoSlice';
-import { usuarioReducer } from '../slices/usuarioSlice';
-import { unidadReducer } from '../slices/unidadSlice';
-import { clasificacionRecursoReducer } from '../slices/clasificacionRecursoSlice';
-import { obraReducer } from '../slices/obrasSlice';
-import { roleReducer } from '../slices/rolesSlice';
-import { menuReducer } from '../slices/menuSlice';
-import { proveedorReducer } from '../slices/proveedorSlice';
-import { requerimientoReducer } from '../slices/requerimientoSlice';
-import { requerimientoRecursoReducer } from '../slices/requerimientoRecursoSlice';
-import { tipoCostoRecursoReducer } from '../slices/tipoCostoRecursoSlice';
-import { almacenReducer } from '../slices/almacenSlice';
+import { almacenCentroCostoReducer } from '../slices/almacenCentroCostoSlice';
 import { almacenRecursoReducer } from '../slices/almacenRecursoSlice';
-import { requerimientoAprobacionReducer } from '../slices/requerimientoAprobacionSlice';
-import { comprasRecursoReducer } from '../slices/comprasRecursoSlice';
+import { almacenReducer } from '../slices/almacenSlice';
+import { bodegaReducer } from '../slices/bodegaSlice';
+import { cargoReducer } from '../slices/cargoSlice';
+import { centroCostoReducer } from '../slices/centroCostoSlice';
+import { clasificacionRecursoReducer } from '../slices/clasificacionRecursoSlice';
 import { compraReducer } from '../slices/comprasSlice';
-import { solicitudAlmacenReducer } from '../slices/solicitudAlmacenSlice';
-import { solicitudRecursoAlmacenReducer } from '../slices/solicitudRecursoAlmacenSlice';
-import { ordenCompraReducer } from '../slices/ordenCompraSlice';
-import { ordenCompraRecursosReducer } from '../slices/ordenCompraRecursosSlice';
-import { requerimientoRecursoWithAlmacenReducer } from '../slices/requerimientoRecursoWithAlmacenSlice';
-import { preSolicitudAlmacenReducer } from '../slices/preSolicitudAlmacenSlice';
-import { preSolicitudAlmacenRecursoReducer } from '../slices/preSolicitudAlmacenRecursoSlice';
+import { comprasRecursoReducer } from '../slices/comprasRecursoSlice';
+import { contactoProveedorReducer } from '../slices/contactoProveedorSlice';
+import { cotizacionProveedorReducer } from '../slices/cotizacionProveedorSlice';
+import { cotizacionRecursoReducer } from '../slices/cotizacionRecursoSlice';
 import { cotizacionReducer } from '../slices/cotizacionSlice';
 import { guiaTransferenciaReducer } from '../slices/guiaTransferenciaSlice';
-import { transferenciaReducer } from '../slices/transferenciaSlice';
-import { transferenciaDetalleReducer } from '../slices/transferenciaDetalleSlice';
-import { requerimientoEstadoHistorialReducer } from '../slices/requerimientoEstadoHistorialSlice';
-import { almacenCentroCostoReducer } from '../slices/almacenCentroCostoSlice';
-import { bodegaReducer } from '../slices/bodegaSlice';
-import { centroCostoReducer } from '../slices/centroCostoSlice';
-import { solicitudCompraReducer } from '../slices/solicitudCompraSlice';
+import { menuReducer } from '../slices/menuSlice';
 import { movimientoReducer } from '../slices/movimientoSlice';
+import { obraReducer } from '../slices/obrasSlice';
+import { ordenCompraRecursosReducer } from '../slices/ordenCompraRecursosSlice';
+import { ordenCompraReducer } from '../slices/ordenCompraSlice';
+import { preSolicitudAlmacenRecursoReducer } from '../slices/preSolicitudAlmacenRecursoSlice';
+import { preSolicitudAlmacenReducer } from '../slices/preSolicitudAlmacenSlice';
+import { proveedorReducer } from '../slices/proveedorSlice';
+import { recursoReducer } from '../slices/recursoSlice';
 import { recursosObraReducer } from '../slices/recursosObraSlice';
-import { transferenciaRecursoReducer } from '../slices/transferenciaRecursoSlice';
-import { tipoAlmacenReducer } from '../slices/tipoAlmacenSlice';
-import { cotizacionRecursoReducer } from '../slices/cotizacionRecursoSlice';
+import { requerimientoAprobacionReducer } from '../slices/requerimientoAprobacionSlice';
+import { requerimientoEstadoHistorialReducer } from '../slices/requerimientoEstadoHistorialSlice';
+import { requerimientoRecursoReducer } from '../slices/requerimientoRecursoSlice';
+import { requerimientoRecursoWithAlmacenReducer } from '../slices/requerimientoRecursoWithAlmacenSlice';
+import { requerimientoReducer } from '../slices/requerimientoSlice';
+import { roleReducer } from '../slices/rolesSlice';
+import { solicitudAlmacenReducer } from '../slices/solicitudAlmacenSlice';
 import { solicitudCompraRecursoReducer } from '../slices/solicitudCompraRecursoSlice';
+import { solicitudCompraReducer } from '../slices/solicitudCompraSlice';
+import { solicitudRecursoAlmacenReducer } from '../slices/solicitudRecursoAlmacenSlice';
+import { tipoAlmacenReducer } from '../slices/tipoAlmacenSlice';
+import { tipoCostoRecursoReducer } from '../slices/tipoCostoRecursoSlice';
+import { tipoRecursoReducer } from '../slices/tipoRecursoSlice';
+import { transferenciaDetalleReducer } from '../slices/transferenciaDetalleSlice';
+import { transferenciaRecursoReducer } from '../slices/transferenciaRecursoSlice';
+import { transferenciaReducer } from '../slices/transferenciaSlice';
+import { unidadReducer } from '../slices/unidadSlice';
+import { userReducer } from '../slices/userSlice';
+import { usuarioReducer } from '../slices/usuarioSlice';
+import { mediosPagoProveedorReducer } from '../slices/mediosPagoProveedorSlice';
+import { cotizacionProveedoresRecursoReducer } from '../slices/cotizacionProveedoresRecursoSlice';
 
 export const store = configureStore({
   reducer: {
-    user: userReducer,
-    cargo: cargoReducer,
-    tipoRecurso: tipoRecursoReducer,
-    recurso: recursoReducer,
-    usuario: usuarioReducer,
-    unidad: unidadReducer,
-    clasificacionRecurso: clasificacionRecursoReducer,
-    obra: obraReducer,
-    role: roleReducer,
-    menu: menuReducer,
-    proveedor: proveedorReducer,
-    requerimiento: requerimientoReducer,
-    requerimientoRecurso: requerimientoRecursoReducer,
-    tipoCostoRecurso: tipoCostoRecursoReducer,
-    almacen: almacenReducer,
+    almacenCentroCosto: almacenCentroCostoReducer,
     almacenRecurso: almacenRecursoReducer,
-    requerimientoAprobacion: requerimientoAprobacionReducer,
-    compraRecurso: comprasRecursoReducer,
+    almacen: almacenReducer,
+    bodega: bodegaReducer,
+    cargo: cargoReducer,
+    centroCosto: centroCostoReducer,
+    clasificacionRecurso: clasificacionRecursoReducer,
     compra: compraReducer,
-    solicitudAlmacen: solicitudAlmacenReducer,
-    solicitudRecursoAlmacen: solicitudRecursoAlmacenReducer,
-    ordenCompra: ordenCompraReducer,
-    ordenCompraRecursos: ordenCompraRecursosReducer,
-    requerimientoRecursoWithAlmacen: requerimientoRecursoWithAlmacenReducer,
-    preSolicitudAlmacen: preSolicitudAlmacenReducer,
-    preSolicitudAlmacenRecurso: preSolicitudAlmacenRecursoReducer,
+    compraRecurso: comprasRecursoReducer,
+    contactoProveedor: contactoProveedorReducer,
+    cotizacionProveedor: cotizacionProveedorReducer,
+    cotizacionProveedoresRecurso: cotizacionProveedoresRecursoReducer,
+    cotizacionRecurso: cotizacionRecursoReducer,
     cotizacion: cotizacionReducer,
     guiaTransferencia: guiaTransferenciaReducer,
-    transferencia: transferenciaReducer,
-    transferenciaDetalle: transferenciaDetalleReducer,
-    requerimientoEstadoHistorial: requerimientoEstadoHistorialReducer,
-    almacenCentroCosto: almacenCentroCostoReducer,
-    bodega: bodegaReducer,
-    centroCosto: centroCostoReducer,
-    solicitudCompra: solicitudCompraReducer,
+    mediosPagoProveedor: mediosPagoProveedorReducer,
+    menu: menuReducer,
     movimiento: movimientoReducer,
+    obra: obraReducer,
+    ordenCompraRecursos: ordenCompraRecursosReducer,
+    ordenCompra: ordenCompraReducer,
+    preSolicitudAlmacenRecurso: preSolicitudAlmacenRecursoReducer,
+    preSolicitudAlmacen: preSolicitudAlmacenReducer,
+    proveedor: proveedorReducer,
+    recurso: recursoReducer,
     recursosObra: recursosObraReducer,
-    transferenciaRecurso: transferenciaRecursoReducer,
-    tipoAlmacen: tipoAlmacenReducer,
-    cotizacionRecurso: cotizacionRecursoReducer,
+    requerimientoAprobacion: requerimientoAprobacionReducer,
+    requerimientoEstadoHistorial: requerimientoEstadoHistorialReducer,
+    requerimientoRecurso: requerimientoRecursoReducer,
+    requerimientoRecursoWithAlmacen: requerimientoRecursoWithAlmacenReducer,
+    requerimiento: requerimientoReducer,
+    role: roleReducer,
+    solicitudAlmacen: solicitudAlmacenReducer,
     solicitudCompraRecurso: solicitudCompraRecursoReducer,
+    solicitudCompra: solicitudCompraReducer,
+    solicitudRecursoAlmacen: solicitudRecursoAlmacenReducer,
+    tipoAlmacen: tipoAlmacenReducer,
+    tipoCostoRecurso: tipoCostoRecursoReducer,
+    tipoRecurso: tipoRecursoReducer,
+    transferenciaDetalle: transferenciaDetalleReducer,
+    transferenciaRecurso: transferenciaRecursoReducer,
+    transferencia: transferenciaReducer,
+    unidad: unidadReducer,
+    user: userReducer,
+    usuario: usuarioReducer,
+
   },
 });
 

@@ -1,20 +1,52 @@
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
-import { listProveedoresService, addProveedorService, updateProveedorService } from '../services/proveedorService';
+import { listProveedoresService, addProveedorService, updateProveedorService, getProveedorByIdService } from '../services/proveedorService';
 
-interface Proveedor {
+export interface Proveedor {
   id: string;
   razon_social: string;
   ruc: string;
+  direccion?: string;
+  nombre_comercial?: string;
+  rubro?: string;
+  estado?: string;
+  contactos?: Contacto[];
+  mediosPago?: MedioPago[];
 }
 
-interface ProveedorState {
+export interface ProveedorInput {
+  razon_social: string;
+  ruc: string;
+  direccion?: string;
+  nombre_comercial?: string;
+  rubro?: string;
+  estado?: string;
+}
+
+export interface Contacto {
+  id: string;
+  nombres: string;
+  apellidos: string;
+  cargo: string;
+  telefono: string;
+}
+
+export interface MedioPago {
+  id: string;
+  cuenta_bcp: string;
+  cuenta_bbva: string;
+  yape: string;
+}
+
+export interface ProveedorState {
   proveedores: Proveedor[];
+  selectedProveedor: Proveedor | null;
   loading: boolean;
   error: string | null;
 }
 
 const initialState: ProveedorState = {
   proveedores: [],
+  selectedProveedor: null,
   loading: false,
   error: null,
 };
@@ -28,7 +60,8 @@ export const fetchProveedores = createAsyncThunk(
   'proveedor/fetchProveedores',
   async (_, { rejectWithValue }) => {
     try {
-      return await listProveedoresService();
+      const proveedores = await listProveedoresService();
+      return proveedores; // Ya no necesitamos acceder a .proveedores
     } catch (error) {
       return rejectWithValue(handleError(error));
     }
@@ -37,8 +70,12 @@ export const fetchProveedores = createAsyncThunk(
 
 export const addProveedor = createAsyncThunk(
   'proveedor/addProveedor',
-  async (proveedorData: { razon_social: string; ruc: string }, { rejectWithValue }) => {
+  async (proveedorData: ProveedorInput, { rejectWithValue }) => {
     try {
+      console.log('Creando proveedorSlice:', proveedorData);
+      if (!proveedorData.razon_social || !proveedorData.ruc) {
+        throw new Error('Razón social y RUC son requeridos');
+      }
       return await addProveedorService(proveedorData);
     } catch (error) {
       return rejectWithValue(handleError(error));
@@ -48,9 +85,20 @@ export const addProveedor = createAsyncThunk(
 
 export const updateProveedor = createAsyncThunk(
   'proveedor/updateProveedor',
-  async (proveedor: Proveedor, { rejectWithValue }) => {
+  async (proveedor: Partial<Proveedor> & { id: string }, { rejectWithValue }) => {
     try {
       return await updateProveedorService(proveedor);
+    } catch (error) {
+      return rejectWithValue(handleError(error));
+    }
+  }
+);
+
+export const getProveedorById = createAsyncThunk(
+  'proveedor/getProveedorById',
+  async (id: string, { rejectWithValue }) => {
+    try {
+      return await getProveedorByIdService(id);
     } catch (error) {
       return rejectWithValue(handleError(error));
     }
@@ -83,6 +131,18 @@ const proveedorSlice = createSlice({
         if (index !== -1) {
           state.proveedores[index] = action.payload;
         }
+      })
+      .addCase(getProveedorById.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(getProveedorById.fulfilled, (state, action) => {
+        state.loading = false;
+        state.selectedProveedor = action.payload;
+      })
+      .addCase(getProveedorById.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
       });
   },
 });
