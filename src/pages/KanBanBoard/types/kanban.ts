@@ -42,12 +42,20 @@ export interface Aprobacion {
   id_aprobacion: string;
 }
 
+export interface cotizacion {
+  cargo: string;
+  id_usuario: string;
+  gerarquia: number;
+  id_aprobacion: string;
+}
+
 export interface Column {
   id: string;
   title: string;
   limit?: number;
   color: string;
   requerimiento: Requerimiento[];
+  cotizacion?: cotizacion[];
 }
 
 export interface Board {

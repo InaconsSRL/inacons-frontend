@@ -15,7 +15,7 @@ interface KanbanColumnProps {
 
 const KanbanColumn: React.FC<KanbanColumnProps> = ({ column, CardComponent }) => {
   return (
-    <div className="flex-shrink-0 w-[250px] bg-white/10 rounded-lg shadow-lg scale-90 lg:scale-100 min-h-[65vh] max-h-[calc(100vh-400px)] ">
+    <div className="flex-shrink-0 w-[250px] bg-white/10 rounded-lg shadow-lg scale-90 lg:scale-100 min-h-[69vh] max-h-[calc(100vh-300px)] ">
       <div className="p-4 rounded-t-lg" style={{ backgroundColor: column.color }}>
         <h2 className="text-sm font-semibold flex justify-between items-center text-white">
           {column.title}
