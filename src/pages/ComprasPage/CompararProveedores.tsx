@@ -10,6 +10,9 @@ import { AppDispatch, RootState } from '../../store/store';
 import { ComprasSelectSourcesProps } from './ComprasSelectSources';
 import { fetchCotizacionProveedoresByCotizacionId, updateCotizacionProveedor } from '../../slices/cotizacionProveedorSlice';
 import { updateCotizacion } from '../../slices/cotizacionSlice';
+import { addOrdenCompra } from '../../slices/ordenCompraSlice';
+import { addOrdenCompraRecurso } from '../../slices/ordenCompraRecursosSlice';
+import { fetchCotizacionesByProveedor } from '../../slices/cotizacionProveedoresRecursoSlice';
 
 //Todo Ok
 
@@ -62,10 +65,22 @@ export interface ProveedorCotizacion {
 const CompararProveedores: React.FC<CompararProveedoresProps> = ({ cotizacion, recursos, onClose }) => {
   const dispatch = useDispatch<AppDispatch>();
   const [showProveedorModal, setShowProveedorModal] = useState(false);
+  const [showGenerarOCModal, setShowGenerarOCModal] = useState(false);
   
   const cotizacionProveedores = useSelector((state: RootState) => 
     state.cotizacionProveedor.cotizacionProveedores
   );
+  const cotizacionProveedoresRecursos = useSelector((state: RootState) => state.cotizacionProveedoresRecurso.cotizacionProveedoresRecursos);
+
+  const proveedorAdjudicado = useMemo(() => {
+    return cotizacionProveedores.find(proveedor => proveedor.estado === 'buenaProAdjudicada');
+  }, [cotizacionProveedores]);
+
+  useEffect(() => {
+    if (proveedorAdjudicado) {
+      dispatch(fetchCotizacionesByProveedor(proveedorAdjudicado.id));
+    }
+  }, [dispatch, proveedorAdjudicado]);
 
   console.log(cotizacionProveedores)
 
@@ -126,15 +141,72 @@ const CompararProveedores: React.FC<CompararProveedoresProps> = ({ cotizacion, r
   const handleEnEvaluacion = async () => {
     if (!cotizacion.id) return;
     try {
-        await dispatch(updateCotizacion({
-            id: cotizacion.id,
-            estado: 'enEvaluacion'
-        })).unwrap();
+      // Actualizar estado de cotización
+      await dispatch(updateCotizacion({
+        id: cotizacion.id,
+        estado: 'enEvaluacion'
+      })).unwrap();
+
+      // Actualizar estado de proveedores
+      const updatePromises = cotizacionProveedores.map(proveedor => 
+        dispatch(updateCotizacionProveedor({
+          id: proveedor.id,
+          estado: "enEvaluacion"
+        }))
+      );
+      
+      await Promise.all(updatePromises);
     } catch (error) {
-        console.error('Error al actualizar estado:', error);
-        alert('Error al actualizar el estado del proveedor');
+      console.error('Error al actualizar estados:', error);
+      alert('Error al actualizar los estados');
     }
-}
+  };
+
+const handleGenerarOC = () => {
+  setShowGenerarOCModal(true);
+};
+
+const handleConfirmarGenerarOC = async () => {
+  if (!proveedorAdjudicado || !cotizacion.id) return;
+
+  try {
+    // Crear la Orden de Compra
+    const nuevaOrdenCompra = {
+      proveedor_id: proveedorAdjudicado.proveedor_id.id,
+      codigo_orden: 'ORD-' + new Date().getTime(), // Example code
+      cotizacion_id: cotizacion.id,
+      estado: false, // Cambiado de 'PENDIENTE' a false para cumplir con el tipo boolean
+      descripcion: 'Orden de compra generada automáticamente',
+      fecha: new Date().toISOString(),
+      fecha_ini: new Date().toISOString(),
+      fecha_fin: new Date(new Date().setDate(new Date().getDate() + 7)).toISOString(), // 7 days from now
+    };
+
+    const ordenCompraCreada = await dispatch(addOrdenCompra(nuevaOrdenCompra)).unwrap();
+
+    // Crear los recursos de la Orden de Compra
+    const recursosOC = cotizacionProveedoresRecursos
+      .filter(cpr => cpr.cotizacion_proveedor_id.id === proveedorAdjudicado.id)
+      .map(cpr => ({
+        orden_compra_id: ordenCompraCreada.id,
+        id_recurso: cpr.recurso_id.id, // Cambiado de recurso_id a id_recurso
+        cantidad: cpr.cantidad,
+        costo_real: cpr.costo,
+        costo_aproximado: cpr.costo, // Si es necesario
+        estado: 'PENDIENTE' // Cambiado de 'PENDIENTE' a false asumiendo que el estado es boolean
+      }));
+
+    for (const recurso of recursosOC) {
+      await dispatch(addOrdenCompraRecurso(recurso));
+    }
+
+    setShowGenerarOCModal(false);
+    // ...acciones adicionales si es necesario...
+
+  } catch (error) {
+    console.error('Error al generar la Orden de Compra:', error);
+  }
+};
 
   return (
     <motion.div
@@ -163,22 +235,38 @@ const CompararProveedores: React.FC<CompararProveedoresProps> = ({ cotizacion, r
           </div>
         </div>
         <div className="flex gap-2 mt-3 md:mt-0">
-      {/* {(cotizacion.estado === 'vacio' || cotizacion.estado === 'pendiente'|| cotizacion.estado === 'iniciada' || cotizacion.estado === 'cotizada') &&(<Button */}
-      {(cotizacion.estado === 'vacio' || cotizacion.estado === 'pendiente'|| cotizacion.estado === 'iniciada') &&(<Button
-        text="Proveedor"
-        color="rojo"
-        className="text-sm shadow-md min-w-32"
-        icon={<FiPlusCircle className="w-4 h-4" />}
-        onClick={() => setShowProveedorModal(true)}
-      />)}
-      {
-        (cotizacion.estado === 'iniciada' || cotizacion.estado === 'cotizada') && (
-          <Button onClick={handleEnEvaluacion} text="IniciarAdjudicar" color="azul" className="text-sm shadow-md min-w-36" />
-        )
-      }
-          
+          {/* Mostrar botón de Proveedor solo en estados iniciales */}
+          {['vacio', 'pendiente', 'iniciada'].includes(cotizacion.estado || '') && (
+            <Button
+              text="Proveedor"
+              color="rojo"
+              className="text-sm shadow-md min-w-32"
+              icon={<FiPlusCircle className="w-4 h-4" />}
+              onClick={() => setShowProveedorModal(true)}
+            />
+          )}
+
+          {/* Mostrar botón de IniciarAdjudicar */}
+          {['iniciada', 'cotizada'].includes(cotizacion.estado || '') && (
+            <Button 
+              onClick={handleEnEvaluacion} 
+              text="IniciarAdjudicar" 
+              color="azul" 
+              className="text-sm shadow-md min-w-36" 
+            />
+          )}
+
           <Button onClick={onClose} text="Guardar" color="verde" className="text-sm shadow-md" />
-          {(cotizacion.estado === 'adjudicada')&&(<Button text="Generar OC" color="amarillo" className="text-sm shadow-md" />)}
+
+          {/* Mostrar botón de Generar OC solo si hay proveedor adjudicado */}
+          {cotizacion.estado === 'adjudicada' && proveedorAdjudicado && (
+            <Button 
+              text="Generar OC" 
+              color="amarillo" 
+              className="text-sm shadow-md" 
+              onClick={handleGenerarOC} 
+            />
+          )}
         </div>
       </div>
 
@@ -202,6 +290,24 @@ const CompararProveedores: React.FC<CompararProveedoresProps> = ({ cotizacion, r
               id: cp.proveedor_id.id || ''
             }))}
           />
+        </Modal>
+      )}
+
+      {showGenerarOCModal && (
+        <Modal
+          isOpen={showGenerarOCModal}
+          onClose={() => setShowGenerarOCModal(false)}
+          title="Confirmar generación de Orden de Compra"
+        >
+          <div className="p-4">
+            <p>
+              ¿Está seguro que desea generar la Orden de Compra para el proveedor {proveedorAdjudicado?.proveedor_id.nombre_comercial}?
+            </p>
+            <div className="flex justify-end gap-2 mt-4">
+              <Button text="Cancelar" color="rojo" onClick={() => setShowGenerarOCModal(false)} />
+              <Button text="Confirmar" color="verde" onClick={handleConfirmarGenerarOC} />
+            </div>
+          </div>
         </Modal>
       )}
     </motion.div>

@@ -13,14 +13,24 @@ import Button from '../../components/Buttons/Button';
 import { FiRefreshCcw } from 'react-icons/fi';
 import KanbanCardAlmacen from './KanbanCardAlmacen';
 import KanbanCardOrdenCompra from './KanbanCardOrdenCompra';
-import KanbanColumnCotizacion from './KanbanColumnCotizacion';
+import KanbanColumnCotizacion, { 
+  ColumnCotizacion, 
+  Cotizacion 
+} from './KanbanColumnCotizacion';
 
 const KanbanBoard = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const dispatch = useDispatch<AppDispatch>();
   const requerimientos: Requerimiento[] = useSelector((state: RootState) => state.requerimiento.requerimientos);
-  const cotizaciones = useSelector((state: RootState) => state.cotizacion.cotizaciones);
-  const cotizacionesAdjudicadas = cotizaciones.filter(cot => cot.estado === 'adjudicada');
+  const cotizaciones: Cotizacion[] = useSelector((state: RootState) => 
+    state.cotizacion.cotizaciones.map(cot => ({
+      ...cot,
+      fecha_solicitud: new Date().toISOString(),
+      title: `Cotización ${cot.codigo_cotizacion}`,
+      color: '#F7AA01'
+    }))
+  );
+  const cotizacionesAdjudicadas = cotizaciones.filter((cot: Cotizacion) => cot.estado === 'adjudicada');
   const [modalNuevoRequerimiento, setModalNuevoRequerimiento] = useState(false);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const [showButtons, setShowButtons] = useState(false);
@@ -104,7 +114,7 @@ const KanbanBoard = () => {
     requerimiento: filteredRequerimientos.filter(req => req.estado_atencion === "estado de transferencia")
   };
 
-  const gestionOrdenDeCompra: Column = {
+  const gestionOrdenDeCompra: ColumnCotizacion = {
     id: 'gestion_orden_compra',
     title: 'Aprobar Orden de Compra',
     color: "#F7AA01",
@@ -198,7 +208,7 @@ const KanbanBoard = () => {
             <KanbanColumn key={gestionTransferencias.id} column={gestionTransferencias} CardComponent={KanbanCardAprobacion} />
           </div>
           <div className="snap-center min-w-[240px] min-h-[calc(100vh-15rem)] ">
-            <KanbanColumnCotizacion key={gestionOrdenDeCompra.id} column={gestionOrdenDeCompra} CardComponent={KanbanCardOrdenCompra} />
+            <KanbanColumnCotizacion key={gestionOrdenDeCompra.id} columna={gestionOrdenDeCompra} CardComponentC={KanbanCardOrdenCompra} />
           </div>
           <div className="snap-center min-w-[240px] min-h-[calc(100vh-15rem)] ">
             <KanbanColumn key={gestionatencionParcial.id} column={gestionatencionParcial} CardComponent={KanbanCardAprobacion} />

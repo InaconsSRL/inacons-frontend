@@ -20,8 +20,8 @@ import ProveedorComponent from './pages/ProveedorPage/ProveedorComponent';
 import RequerimientosComponent from './pages/RequerimientosPage/RequerimientosComponent';
 import TipoCostoRecursoComponent from './pages/TipoCostoRecursoPage/TipoCostoRecursoComponent';
 import RequermientoRecursos from './pages/RequerimientosPage/CrearRequerimientoYRecursos/RequerimientoRecursos';
-import AlmacenesComponent from './pages/AlmacenesPage/AlmacenesComponent';
-import AlmacenBoardPage from './pages/AlmacenesPage/AlmacenBoard/AlmacenBoardPage';
+// import AlmacenesComponent from './pages/AlmacenesPage/AlmacenesComponent';
+// import AlmacenBoardPage from './pages/AlmacenesPage/AlmacenBoard/AlmacenBoardPage';
 import { Presupuestos } from './pages/PresupuestosDemo/Presupuestos';
 import TipoAlmacenPage from './pages/TipoAlmacenPage/TipoAlmacenPage';
 import ObrasComponent from './pages/ObrasPage/ObrasPage';
@@ -52,8 +52,8 @@ const App: React.FC = () => {
         <Route path="requerimiento" element={<RequerimientosComponent />} />
         <Route path="tipoCostoRecurso" element={<TipoCostoRecursoComponent />} />
         <Route path="reqRecursos" element={<RequermientoRecursos onClose={() => {}} />} />
-        <Route path="almacen" element={<AlmacenesComponent />}> </Route>
-        <Route path="almacenBoard" element={<AlmacenBoardPage />}> </Route>
+        {/* <Route path="almacen" element={<AlmacenesComponent />}> </Route>
+        <Route path="almacenBoard" element={<AlmacenBoardPage />}> </Route> */}
         <Route path="presupuestoBoard" element={<Presupuestos />}> </Route>
         <Route path="compras" element={<ComprasBoard />}> </Route>
         <Route path="tipoAlmacen" element={<TipoAlmacenPage />}> </Route>

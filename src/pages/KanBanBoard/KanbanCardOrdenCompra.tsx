@@ -1,13 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { KanbanCardBaseProps } from './KanbanColumn';
-import { useSelector, useDispatch} from 'react-redux';
-import { RootState, AppDispatch } from '../../store/store';
+import { KanbanCardCotizacionProps, Cotizacion } from './KanbanColumnCotizacion';
+import { useDispatch} from 'react-redux';
+import { AppDispatch } from '../../store/store';
 import Modal from '../../components/Modal/Modal';
-import AprobacionTransferenciaPage from '../AprobacionTransferenciaPage/AprobacionTransferenciaPageLogistica';
 import CompararProveedores from '../ComprasPage/CompararProveedores';
 import { fetchCotizacionRecursoForCotizacionId } from '../../slices/cotizacionRecursoSlice';
 
-const KanbanCardOrdenCompra: React.FC<KanbanCardBaseProps> = ({ column }) => {
+const KanbanCardOrdenCompra: React.FC<KanbanCardCotizacionProps> = ({ column }) => {
   const [modalAprobacionReqSup, setModalAprobacionReqSup] = useState(false);
   const [recursos, setRecursos] = useState([]);
   const dispatch = useDispatch<AppDispatch>();
@@ -16,7 +15,7 @@ const KanbanCardOrdenCompra: React.FC<KanbanCardBaseProps> = ({ column }) => {
     setModalAprobacionReqSup(true);
   };
 
-  const cotizacion = column.cotizacion;
+  const cotizacion: Cotizacion = column.cotizacion as Cotizacion;
   const cotizacionId = cotizacion.id;
 
   useEffect(() => {
@@ -78,7 +77,10 @@ const KanbanCardOrdenCompra: React.FC<KanbanCardBaseProps> = ({ column }) => {
       >
         {cotizacion && (
           <CompararProveedores
-            cotizacion={cotizacion}
+            cotizacion={{
+              ...cotizacion,
+              fecha: cotizacion.fecha_solicitud?.toString()
+            }}
             recursos={recursos ? recursos : []}
             onClose={() => setModalAprobacionReqSup(false)}
           />

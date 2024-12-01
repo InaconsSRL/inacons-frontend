@@ -1,19 +1,13 @@
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
 import { listOrdenCompraRecursosService, addOrdenCompraRecursoService, updateOrdenCompraRecursoService, deleteOrdenCompraRecursoService } from '../services/ordenCompraRecursosService';
 
-export enum EstadoOrdenCompraRecurso {
-  PENDIENTE = 'PENDIENTE',
-  APROBADO = 'APROBADO',
-  RECHAZADO = 'RECHAZADO'
-}
-
 interface OrdenCompraRecurso {
   id: string;
   orden_compra_id: string;
   id_recurso: string;
   costo_real: number;
   costo_aproximado: number;
-  estado: EstadoOrdenCompraRecurso;
+  estado: string;
 }
 
 interface OrdenCompraRecursoState {

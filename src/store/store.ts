@@ -93,8 +93,20 @@ export const store = configureStore({
     unidad: unidadReducer,
     user: userReducer,
     usuario: usuarioReducer,
-
   },
+
+  //Para que se tome mas tiempo en responder todas las solicitudes de la API
+  middleware: (getDefaultMiddleware) =>
+    getDefaultMiddleware({
+      serializableCheck: {
+        // Aumentar el tiempo de advertencia a 100ms
+        warnAfter: 100,
+        // Opcionalmente, puedes ignorar ciertas acciones
+        ignoredActions: ['some/action/type'],
+        // Opcionalmente, puedes ignorar ciertas rutas del estado
+        ignoredPaths: ['some.path.to.ignore'],
+      },
+    }),
 });
 
 export type RootState = ReturnType<typeof store.getState>;

@@ -423,9 +423,9 @@ const ComparacionTable: React.FC<ComparacionTableProps> = ({
                         <th className="border-b border-gray-200 p-2 bg-slate-200" colSpan={4}>
                             <div className="ffont-bold text-xl font-poppins text-sky-800 drop-shadow-sm">Presupuestado</div>
                         </th>
-                        {proveedores.map((prov, i) => (
+                        {proveedores.map((prov) => (
                             <th
-                                key={i}
+                                key={`provider-header-${prov.id}`}
                                 colSpan={3}
                                 className={`border-b border-gray-200 p-2 transition-all duration-200 
                                 ${prov.id === mejorProveedor.id
@@ -528,12 +528,12 @@ const ComparacionTable: React.FC<ComparacionTableProps> = ({
                                 {header}
                             </th>
                         ))}
-                        {proveedores.map(() => (
-                            <>
+                        {proveedores.map((prov) => (
+                            <React.Fragment key={`provider-columns-${prov.id}`}>
                                 <th className="border-b border-gray-200 p-2.5 text-gray-700 font-semibold">Cant</th>
                                 <th className="border-b border-gray-200 p-2.5 text-gray-700 font-semibold">Precio</th>
                                 <th className="border-b border-gray-200 p-2.5 text-gray-700 font-semibold">SubTotal</th>
-                            </>
+                            </React.Fragment>
                         ))}
                     </tr>
                 </thead>
@@ -614,7 +614,7 @@ const ComparacionTable: React.FC<ComparacionTableProps> = ({
                         {proveedores.map((prov) => {
                             const proveedorTotal = calculateTotals().proveedoresTotales[prov.id];
                             return (
-                                <React.Fragment key={`total-${prov.id}`}>
+                                <React.Fragment key={`total-section-${prov.id}`}>
                                     <td colSpan={2} className={`border p-2 text-right ${prov.id === mejorProveedor.id ? 'bg-green-200' : ''}`} >TOTAL</td>
                                     <td className={`border p-2 text-right ${prov.id === mejorProveedor.id ? 'bg-green-200' : ''}`}>
                                         {formatCurrency(proveedorTotal)}
@@ -626,7 +626,7 @@ const ComparacionTable: React.FC<ComparacionTableProps> = ({
                     <tr>
                         <td colSpan={8} className="border p-2 text-right">Notas</td>
                         {proveedores.map((prov) => (
-                            <td key={`notas-${prov.id}`} colSpan={3} className={`border p-2 ${prov.id === mejorProveedor.id ? 'bg-green-200' : ''}`}>
+                            <td key={`notes-${prov.id}`} colSpan={3} className={`border p-2 ${prov.id === mejorProveedor.id ? 'bg-green-200' : ''}`}>
                                 {editingProveedor === prov.id ? (
                                     <input
                                         type="text"
