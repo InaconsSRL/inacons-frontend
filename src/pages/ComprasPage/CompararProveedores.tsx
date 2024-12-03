@@ -13,6 +13,7 @@ import { updateCotizacion } from '../../slices/cotizacionSlice';
 import { addOrdenCompra } from '../../slices/ordenCompraSlice';
 import { addOrdenCompraRecurso } from '../../slices/ordenCompraRecursosSlice';
 import { fetchCotizacionesByProveedor } from '../../slices/cotizacionProveedoresRecursoSlice';
+import GeneracionOCLoader from '../../components/Loaders/GeneracionOCLoader';
 
 //Todo Ok
 
@@ -66,6 +67,9 @@ const CompararProveedores: React.FC<CompararProveedoresProps> = ({ cotizacion, r
   const dispatch = useDispatch<AppDispatch>();
   const [showProveedorModal, setShowProveedorModal] = useState(false);
   const [showGenerarOCModal, setShowGenerarOCModal] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [loadingStep, setLoadingStep] = useState(0);
+  const [loadingProgress, setLoadingProgress] = useState(0);
   
   const cotizacionProveedores = useSelector((state: RootState) => 
     state.cotizacionProveedor.cotizacionProveedores
@@ -169,13 +173,24 @@ const handleGenerarOC = () => {
 const handleConfirmarGenerarOC = async () => {
   if (!proveedorAdjudicado || !cotizacion.id) return;
 
+  setLoading(true);
+  setLoadingStep(0);
+  setLoadingProgress(0);
+
   try {
-    // Crear la Orden de Compra
+    // Paso 1: Iniciando
+    setLoadingStep(0);
+    setLoadingProgress(25);
+    await new Promise(resolve => setTimeout(resolve, 1000));
+
+    // Paso 2: Creando OC
+    setLoadingStep(1);
+    setLoadingProgress(50);
     const nuevaOrdenCompra = {
       proveedor_id: proveedorAdjudicado.proveedor_id.id,
       codigo_orden: 'ORD-' + new Date().getTime(), // Example code
       cotizacion_id: cotizacion.id,
-      estado: false, // Cambiado de 'PENDIENTE' a false para cumplir con el tipo boolean
+      estado: true, // Cambiado de 'PENDIENTE' a false para cumplir con el tipo boolean
       descripcion: 'Orden de compra generada automáticamente',
       fecha: new Date().toISOString(),
       fecha_ini: new Date().toISOString(),
@@ -184,7 +199,9 @@ const handleConfirmarGenerarOC = async () => {
 
     const ordenCompraCreada = await dispatch(addOrdenCompra(nuevaOrdenCompra)).unwrap();
 
-    // Crear los recursos de la Orden de Compra
+    // Paso 3: Asociando recursos
+    setLoadingStep(2);
+    setLoadingProgress(75);
     const recursosOC = cotizacionProveedoresRecursos
       .filter(cpr => cpr.cotizacion_proveedor_id.id === proveedorAdjudicado.id)
       .map(cpr => ({
@@ -193,18 +210,32 @@ const handleConfirmarGenerarOC = async () => {
         cantidad: cpr.cantidad,
         costo_real: cpr.costo,
         costo_aproximado: cpr.costo, // Si es necesario
-        estado: 'PENDIENTE' // Cambiado de 'PENDIENTE' a false asumiendo que el estado es boolean
+        estado: 'pendiente' // Cambiado de 'PENDIENTE' a false asumiendo que el estado es boolean
       }));
 
     for (const recurso of recursosOC) {
       await dispatch(addOrdenCompraRecurso(recurso));
     }
 
+    // Paso 4: Actualizando estado de cotización
+    setLoadingStep(3);
+    setLoadingProgress(90);
+    
+    await dispatch(updateCotizacion({
+      id: cotizacion.id,
+      estado: 'OCGenerada'
+    })).unwrap();
+
+    // Finalizando
+    setLoadingProgress(100);
+    await new Promise(resolve => setTimeout(resolve, 1000));
+
     setShowGenerarOCModal(false);
-    // ...acciones adicionales si es necesario...
+    setLoading(false);
 
   } catch (error) {
     console.error('Error al generar la Orden de Compra:', error);
+    setLoading(false);
   }
 };
 
@@ -299,15 +330,19 @@ const handleConfirmarGenerarOC = async () => {
           onClose={() => setShowGenerarOCModal(false)}
           title="Confirmar generación de Orden de Compra"
         >
-          <div className="p-4">
-            <p>
-              ¿Está seguro que desea generar la Orden de Compra para el proveedor {proveedorAdjudicado?.proveedor_id.nombre_comercial}?
-            </p>
-            <div className="flex justify-end gap-2 mt-4">
-              <Button text="Cancelar" color="rojo" onClick={() => setShowGenerarOCModal(false)} />
-              <Button text="Confirmar" color="verde" onClick={handleConfirmarGenerarOC} />
+          {loading ? (
+            <GeneracionOCLoader step={loadingStep} progress={loadingProgress} />
+          ) : (
+            <div className="p-4">
+              <p>
+                ¿Está seguro que desea generar la Orden de Compra para el proveedor {proveedorAdjudicado?.proveedor_id.nombre_comercial}?
+              </p>
+              <div className="flex justify-end gap-2 mt-4">
+                <Button text="Cancelar" color="rojo" onClick={() => setShowGenerarOCModal(false)} />
+                <Button text="Confirmar" color="verde" onClick={handleConfirmarGenerarOC} />
+              </div>
             </div>
-          </div>
+          )}
         </Modal>
       )}
     </motion.div>

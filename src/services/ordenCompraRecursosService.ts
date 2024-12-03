@@ -5,45 +5,85 @@ const LIST_ORDEN_COMPRA_RECURSOS_QUERY = gql`
   query ListOrdenCompraRecursos {
     listOrdenCompraRecursos {
       id
-      orden_compra_id
-      id_recurso
-      costo_real
-      costo_aproximado
-      estado
+    orden_compra_id {
+      id
     }
+    id_recurso {
+      id
+    }
+    costo_real
+    costo_aproximado
+    estado
+    cantidad
   }
+}
 `;
 
 const ADD_ORDEN_COMPRA_RECURSO_MUTATION = gql`
-  mutation AddOrdenCompraRecurso($ordenCompraId: ID!, $idRecurso: ID!, $costoReal: Float!, $costoAproximado: Float!, $estado: EstadoOrdenCompraRecurso!) {
-    addOrdenCompraRecurso(orden_compra_id: $ordenCompraId, id_recurso: $idRecurso, costo_real: $costoReal, costo_aproximado: $costoAproximado, estado: $estado) {
+  mutation AddOrdenCompraRecurso($ordenCompraId: ID!, $idRecurso: ID!, $costoReal: Float!, $cantidad:Int!, $costoAproximado: Float!, $estado: EstadoOrdenCompraRecurso!) {
+    addOrdenCompraRecurso(orden_compra_id: $ordenCompraId, id_recurso: $idRecurso, cantidad:$cantidad, costo_real: $costoReal, costo_aproximado: $costoAproximado, estado: $estado) {
       id
-      orden_compra_id
-      id_recurso
-      costo_real
-      costo_aproximado
-      estado
+    orden_compra_id {
+      id
     }
+    id_recurso {
+      id
+    }
+    costo_real
+    costo_aproximado
+    estado
+    cantidad
   }
+}
 `;
 
 const UPDATE_ORDEN_COMPRA_RECURSO_MUTATION = gql`
-  mutation UpdateOrdenCompraRecurso($updateOrdenCompraRecursoId: ID!, $ordenCompraId: ID!, $idRecurso: ID!, $costoReal: Float!, $costoAproximado: Float!, $estado: EstadoOrdenCompraRecurso!) {
-    updateOrdenCompraRecurso(id: $updateOrdenCompraRecursoId, orden_compra_id: $ordenCompraId, id_recurso: $idRecurso, costo_real: $costoReal, costo_aproximado: $costoAproximado, estado: $estado) {
+  mutation UpdateOrdenCompraRecurso($updateOrdenCompraRecursoId: ID!, $ordenCompraId: ID!, $cantidad:Int!, $idRecurso: ID!, $costoReal: Float!, $costoAproximado: Float!, $estado: EstadoOrdenCompraRecurso!) {
+    updateOrdenCompraRecurso(id: $updateOrdenCompraRecursoId, cantidad:$cantidad, orden_compra_id: $ordenCompraId, id_recurso: $idRecurso, costo_real: $costoReal, costo_aproximado: $costoAproximado, estado: $estado) {
       id
-      orden_compra_id
-      id_recurso
-      costo_real
-      costo_aproximado
-      estado
+    orden_compra_id {
+      id
     }
+    id_recurso {
+      id
+    }
+    costo_real
+    costo_aproximado
+    estado
+    cantidad
   }
+}
 `;
 
 const DELETE_ORDEN_COMPRA_RECURSO_MUTATION = gql`
   mutation DeleteOrdenCompraRecurso($deleteOrdenCompraRecursoId: ID!) {
     deleteOrdenCompraRecurso(id: $deleteOrdenCompraRecursoId) {
       id
+    }
+  }
+`;
+
+const GET_ORDEN_COMPRA_RECURSOS_BY_ORDEN_ID = gql`
+  query GetOrdenCompraRecursoforOrdenId($getOrdenCompraRecursoforOrdenIdId: ID!) {
+    getOrdenCompraRecursoforOrdenId(id: $getOrdenCompraRecursoforOrdenIdId) {
+      id
+      orden_compra_id {
+        id
+      }
+      id_recurso {
+        id
+        nombre
+        codigo
+        imagenes {
+          file
+        }
+        precio_actual
+        unidad_id
+      }
+      costo_real
+      costo_aproximado
+      estado
+      cantidad
     }
   }
 `;
@@ -69,6 +109,7 @@ export const addOrdenCompraRecursoService = async (data: {
   costo_real: number;
   costo_aproximado: number;
   estado: string;
+  cantidad: number;
 }) => {
   try {
     const response = await client.mutate({
@@ -79,6 +120,7 @@ export const addOrdenCompraRecursoService = async (data: {
         costoReal: data.costo_real,
         costoAproximado: data.costo_aproximado,
         estado: data.estado,
+        cantidad: data.cantidad,
       },
     });
     if (response.errors) {
@@ -98,6 +140,7 @@ export const updateOrdenCompraRecursoService = async (data: {
   costo_real: number;
   costo_aproximado: number;
   estado: string;
+  cantidad: number;
 }) => {
   try {
     const response = await client.mutate({
@@ -109,6 +152,7 @@ export const updateOrdenCompraRecursoService = async (data: {
         costoReal: data.costo_real,
         costoAproximado: data.costo_aproximado,
         estado: data.estado,
+        cantidad: data.cantidad,
       },
     });
     if (response.errors) {
@@ -133,6 +177,22 @@ export const deleteOrdenCompraRecursoService = async (id: string) => {
     return response.data.deleteOrdenCompraRecurso;
   } catch (error) {
     console.error('Error al eliminar el recurso de orden de compra:', error);
+    throw error;
+  }
+};
+
+export const getOrdenCompraRecursosByOrdenIdService = async (ordenId: string) => {
+  try {
+    const response = await client.query({
+      query: GET_ORDEN_COMPRA_RECURSOS_BY_ORDEN_ID,
+      variables: { getOrdenCompraRecursoforOrdenIdId: ordenId },
+    });
+    if (response.errors) {
+      throw new Error(response.errors[0]?.message || 'Error desconocido');
+    }
+    return response.data.getOrdenCompraRecursoforOrdenId;
+  } catch (error) {
+    console.error('Error al obtener recursos por ID de orden de compra:', error);
     throw error;
   }
 };

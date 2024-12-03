@@ -22,6 +22,8 @@ import {
   Tooltip,
   ResponsiveContainer,
 } from 'recharts';
+// import SorteoPage from './Sorteo';
+import ShipmentTracker from './ShipmentTracker';
 
 const HomePage = () => {
   const [activeUsers, setActiveUsers] = useState(42);
@@ -66,6 +68,7 @@ const HomePage = () => {
 
   return (
     <div className='h-[84vh] bg-white opacity-95 rounded-xl'>
+      <ShipmentTracker />
       <Box sx={{ backgroundColor: '#CCC', minHeight: '84vh', py: 2, borderRadius: '10px' }}>
       <Box sx={{ px: { xs: 2, md: 8 }, mb: 8 }}>
         <Typography variant="h4" fontWeight="bold" color="primary" gutterBottom>

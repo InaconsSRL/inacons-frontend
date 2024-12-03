@@ -7,7 +7,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { fetchCotizaciones, addCotizacion, deleteCotizacion } from '../../slices/cotizacionSlice';
 import { RootState, AppDispatch } from '../../store/store';
 import LoaderPage from '../../components/Loader/LoaderPage';
-import { FiEdit, FiEye, FiRefreshCw, FiTrash2 } from 'react-icons/fi';
+import { FiEdit, FiRefreshCw, FiTrash2 } from 'react-icons/fi';
 import ComprasSelectSources from './ComprasSelectSources';
 import Toast from '../../components/Toast/Toast';
 import { ModalProvider } from './ContextoParaLosModales';
@@ -25,7 +25,6 @@ interface Cotizacion {
   fecha: string;
   estado: string;
   aprobacion: boolean;
-  // ...otros campos necesarios...
 }
 
 const pageVariants = {
@@ -65,10 +64,10 @@ const ComprasBoard: React.FC = () => {
     setIsModalOpen(true);
   };
 
-  const handleResumen = (cotizacion: Cotizacion) => {
-    setEditingCompra(cotizacion);
-    setIsModalResumenOpen(true);
-  };
+  // const handleResumen = (cotizacion: Cotizacion) => {
+  //   setEditingCompra(cotizacion);
+  //   setIsModalResumenOpen(true);
+  // };
 
   const handleDelete = async (id: string) => {
     try {
@@ -156,12 +155,12 @@ const ComprasBoard: React.FC = () => {
 
   const renderOptions = (cot: Cotizacion) => (
     <div className='flex flex-row gap-2'>
-      <button
+      {/* <button
         className='text-yellow-500'
         onClick={() => handleResumen(cot)}
       >
         <FiEye />
-      </button>
+      </button> */}
       <button
         className='text-blue-500'
         onClick={() => handleEdit(cot)}

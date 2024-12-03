@@ -6,7 +6,9 @@ const LIST_ORDEN_COMPRAS_QUERY = gql`
     listOrdenCompras {
       id
       codigo_orden
-      cotizacion_id
+      cotizacion_id {
+        id
+      }
       estado
       descripcion
       fecha_ini
@@ -20,7 +22,9 @@ const ADD_ORDEN_COMPRA_MUTATION = gql`
     addOrdenCompra(codigo_orden: $codigoOrden, cotizacion_id: $cotizacionId, descripcion: $descripcion, fecha_ini: $fechaIni, fecha_fin: $fechaFin, estado: $estado) {
       id
       codigo_orden
-      cotizacion_id
+      cotizacion_id {
+        id
+      }
       estado
       descripcion
       fecha_ini
@@ -34,7 +38,9 @@ const UPDATE_ORDEN_COMPRA_MUTATION = gql`
     updateOrdenCompra(id: $updateOrdenCompraId, codigo_orden: $codigoOrden, cotizacion_id: $cotizacionId, descripcion: $descripcion, fecha_ini: $fechaIni, fecha_fin: $fechaFin, estado: $estado) {
       id
       codigo_orden
-      cotizacion_id
+      cotizacion_id {
+        id
+      }
       estado
       descripcion
       fecha_ini
