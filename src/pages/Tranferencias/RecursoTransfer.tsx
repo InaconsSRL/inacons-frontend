@@ -87,20 +87,19 @@ const RecursoTransfer: React.FC<ModalProps> = ({ onClose, transferenciaId }) => 
 
   useEffect(() => {
     const fetchRecursos = async () => {
-        if (selectedSolicitud) {
-            setLoading(true);
-            setError(null);
-            try {
-                await dispatch(fetchTransferenciaRecursos()).unwrap();
-            } catch (err) {
-                setError('Error al obtener los recursos de transferencia');
-            } finally {
-                setLoading(false);
+            if (selectedSolicitud) {
+                setIsLoadingRecursos(true); // Cambiar setLoading a setIsLoadingRecursos
+                try {
+                    await dispatch(fetchTransferenciaRecursos()).unwrap();
+                } catch (err) {
+                    console.error('Error al obtener los recursos de transferencia', err);
+                } finally {
+                    setIsLoadingRecursos(false); // Cambiar setLoading a setIsLoadingRecursos
+                }
             }
-        }
-    };
-    fetchRecursos();
-}, [selectedSolicitud, dispatch]);
+        };
+        fetchRecursos();
+    }, [selectedSolicitud, dispatch]);
   // Limpiar recursos seleccionados cuando se cambia de solicitud
   useEffect(() => {
     setSelectedRecursos([]);
@@ -251,15 +250,15 @@ const RecursoTransfer: React.FC<ModalProps> = ({ onClose, transferenciaId }) => 
         </div>
 
         {/* Panel derecho - Recursos de la solicitud */}
-        <div className="flex-1 flex flex-col h-full">
+        <div className="flex-1  w-full flex flex-col h-full">
           {selectedSolicitud ? (
             <>
               <div className="p-3 bg-white border-b border-gray-100">
                 <h3 className="text-sm font-medium text-gray-700">Recursos de la Solicitud</h3>
               </div>
 
-              <div className="flex-1 overflow-auto overflow-x-auto p-3">
-                <table className="w-full border-collapse min-w-full divide-y divide-gray-200">
+                <div className="flex-1 overflow-auto overflow-x-auto p-3 w-full">
+                  <table className="w-full border-collapse ">
                   <thead className="bg-gray-50 sticky -top-3">
                     <tr className="bg-gray-50">
                       <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -275,14 +274,15 @@ const RecursoTransfer: React.FC<ModalProps> = ({ onClose, transferenciaId }) => 
                           }}
                         />
                       </th>
-                      <tr className="bg-gray-100">
-                                <th className="p-2 border">Seleccionar</th>
+                      <tr className="bg-gray-100  text-gray-500  px-3 py-2 ">
                                 <th className="p-2 border">Codigo</th>
                                 <th className="p-2 border">Nombre</th>
                                 <th className="p-2 border">Unidad</th>
                                 <th className="p-2 border">Cantidad</th>
+                                <th className="p-2 border ">Fecha</th>
                                 <th className="p-2 border">Precio</th>
-                                <th className="p-2 border">Cantidad Transferida</th>
+                                <th className="p-2 border">Cant.Transferida</th>
+                                <th className="P-2 border">Bodega</th>
                                 <th className="p-2 border">Subtotal</th>
                             </tr>
                     </tr>
@@ -303,7 +303,7 @@ const RecursoTransfer: React.FC<ModalProps> = ({ onClose, transferenciaId }) => 
                         </tr>
                       ))
                     ) : (
-                      recursos.map((recurso: RecursoSolicitud) => {
+                      recursos.map((recurso: TransferenciaRecurso) => {
                         const isSelected = selectedRecursos.some(r => r.id === recurso.id);
                         const selectedRecurso = selectedRecursos.find(r => r.id === recurso.id);
                         const subtotal = (selectedRecurso?.cantidadSeleccionada || 0) * recurso.costo;
