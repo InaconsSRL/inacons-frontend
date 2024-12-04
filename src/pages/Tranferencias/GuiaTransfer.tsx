@@ -1,12 +1,43 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { fetchTransferenciaDetallesByTransferenciaId } from '../../slices/transferenciaDetalleSlice';
+
+interface Usuario {
+  id: string;
+  nombres: string;
+  apellidos: string;
+}
+
+interface Movimiento {
+  id: string;
+  nombre: string;
+  descripcion: string;
+  tipo: string;
+}
+
+interface Movilidad {
+  id: string;
+  denominacion: string;
+  descripcion: string;
+}
+
+interface Transferencia {
+  id: string;
+  usuario_id: Usuario;
+  fecha: string;
+  movimiento_id: Movimiento;
+  movilidad_id: Movilidad;
+}
 
 interface Item {
-  codigo: string;
-  nombre: string;
-  unidad: string;
+  id: string;
+  transferencia_id: Transferencia;
+  referencia_id: string;
+  fecha: string;
+  tipo: string;
+  referencia: string;
   cantidad: number;
   precio: number;
-  fecha: Date;
   total: number;
   bodega: string;
 }
@@ -18,32 +49,45 @@ interface Props {
   fEmision: Date;
   estado: string;
   obra: string;
-  items: Item[];
+  transferenciaId: string;
 }
 
-const TransferenciaObra: React.FC<Props> = ({
+interface GuiaTransferProps {
+  onSubmit: (data: any) => void;
+  onClose: () => void;
+}
+
+const GuiaTransferencia: React.FC<Props & GuiaTransferProps> = ({
   numero,
   solicita,
   recibe,
   fEmision,
   estado,
   obra,
-  items,
+  transferenciaId,
+  onSubmit,
+  onClose,
 }) => {
+  const dispatch = useDispatch();
+  const { transferenciaDetalles, loading, error } = useSelector((state: any) => state.transferenciaDetalle);
   const [showTable, setShowTable] = useState(false);
+
+  useEffect(() => {
+    dispatch(fetchTransferenciaDetallesByTransferenciaId(transferenciaId) as any);
+  }, [dispatch, transferenciaId]);
 
   const handleShowTable = () => {
     setShowTable(!showTable);
   };
 
   const calculateTotalItems = () => {
-    return items.reduce((total, item) => total + item.total, 0);
+    return transferenciaDetalles.reduce((total: number, item: Item) => total + item.total, 0);
   };
 
   return (
     <div className="container">
       <div className="header">
-        <h1>Guia de Transferencia de Obra</h1>
+        <h1>Guía de Transferencia de Obra</h1>
         <div className="info">
           <div className="field">
             <label htmlFor="numero">Número:</label>
@@ -76,6 +120,8 @@ const TransferenciaObra: React.FC<Props> = ({
         <button onClick={handleShowTable}>
           {showTable ? 'Ocultar Tabla' : 'Mostrar Tabla'}
         </button>
+        {loading && <p>Cargando...</p>}
+        {error && <p>Error al cargar los detalles: {error}</p>}
         {showTable && (
           <table className="items-table">
             <thead>
@@ -91,14 +137,14 @@ const TransferenciaObra: React.FC<Props> = ({
               </tr>
             </thead>
             <tbody>
-              {items.map((item, index) => (
+              {transferenciaDetalles.map((item: Item, index: number) => (
                 <tr key={index}>
-                  <td>{item.codigo}</td>
-                  <td>{item.nombre}</td>
-                  <td>{item.unidad}</td>
+                  <td>{item.referencia_id}</td>
+                  <td>{item.referencia}</td>
+                  <td>{item.tipo}</td>
                   <td>{item.cantidad}</td>
                   <td>${item.precio.toFixed(2)}</td>
-                  <td>{item.fecha.toLocaleDateString()}</td>
+                  <td>{new Date(item.fecha).toLocaleDateString()}</td>
                   <td>${item.total.toFixed(2)}</td>
                   <td>{item.bodega}</td>
                 </tr>
@@ -118,4 +164,4 @@ const TransferenciaObra: React.FC<Props> = ({
   );
 };
 
-export default TransferenciaObra;
+export default GuiaTransferencia;

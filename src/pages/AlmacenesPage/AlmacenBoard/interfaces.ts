@@ -47,7 +47,7 @@ export interface TransferItem {
   description: string;
   location: string;
   supplier: string;
-  status: 'Activo' | 'en camino' | 'completado' ;
+  status: 'enviado' | 'en camino' | 'completado' ;
   minStock: number;
   maxStock: number;
   currentStock: number;
@@ -58,6 +58,10 @@ export interface TransferItem {
   batchNumber: string;
   expirationDate: Date;
   dimensions: Dimensions;
+  user: string;
+  date: string;
+  reference: string;
+  transport: string;
 }
 
 export interface SortConfig {

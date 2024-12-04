@@ -1,4 +1,4 @@
-
+import { FiEye } from "react-icons/fi";
 interface Transfer {
   code: string;
   user: string;
@@ -36,21 +36,11 @@ const mockTransfers: Transfer[] = [
 ];
 
 export function TransferTable() {
-  return (
+    return (
     <div className="w-full">
-      <div className="flex justify-between items-center mb-4">
-        <h2 className="text-xl font-semibold">Transferencias</h2>
-      </div>
 
       <div className="w-full">
-        <div className="grid w-[250px] grid-cols-2">
-          <button className="bg-navy-800 data-[state=active]:bg-navy-900">
-            Solicitudes
-          </button>
-          <button className="bg-green-600 text-white">
-            Enviados
-          </button>
-        </div>
+        
 
         <table className="min-w-full mt-4 border">
           <thead>
@@ -62,32 +52,34 @@ export function TransferTable() {
               <th className="font-semibold p-2 text-left">Referencia</th>
               <th className="font-semibold p-2 text-left">Transporte</th>
               <th className="font-semibold p-2 text-left">Acciones</th>
-            </tr>
-          </thead>
+                    </tr>
+                </thead>
 
-          <tbody>
+                <tbody>
             {mockTransfers.map((transfer, index) => (
-              <tr key={index}>
+                        <tr key={index}>
                 <td className="p-2">{transfer.code}</td>
                 <td className="p-2">{transfer.user}</td>
                 <td className="p-2">{transfer.date}</td>
-                <td className="p-2">
+                            <td className="p-2">
                   <span className="px-2 py-1 bg-blue-100 text-blue-800 rounded-full text-xs">
                     {transfer.status}
-                  </span>
-                </td>
+                                </span>
+                            </td>
                 <td className="p-2">{transfer.reference}</td>
                 <td className="p-2">{transfer.transport}</td>
-                <td className="p-2">
-                  <button className="bg-transparent border-none text-blue-600">
-                    <span className="material-icons">visibility</span>
-                  </button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+                            <td className="p-2">
+                  <button className="bg-transparent border-none text-blue-800">
+                    
+                    <FiEye/>
+                                </button>
+                    
+                            </td>
+                        </tr>
+                    ))}
+                </tbody>
+            </table>
+        </div>
     </div>
-  );
+    );
 }

@@ -1,5 +1,3 @@
-// pages/AlmacenBoardPage.tsx
-
 import React, { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { AppDispatch, RootState } from '../../../store/store';
@@ -7,17 +5,17 @@ import { fetchAlmacenes } from '../../../slices/almacenSlice';
 import { fetchAlmacenRecursos } from '../../../slices/almacenRecursoSlice';
 import { FilterSection } from './FilterSection';
 import { InventoryTable } from './InventoryTable';
-import { TransferTable } from '../../Tranferencias/TransfersTable';
-//import { TransfersTable } from './TransfersTable';
+import { useNavigate } from 'react-router-dom';
 import { ItemDetailModal } from './ItemDetailModal';
 import { NewMovementModal } from './NewMovementModal';
 import { generateMockData } from './mockData';
-import type { 
-  InventoryItem, 
-  Movement, 
-  SortConfig, 
-  FilterOptions, 
+import type {
+  InventoryItem,
+  Movement,
+  SortConfig,
+  FilterOptions,
 } from './interfaces';
+import TransfersPage from '../../Tranferencias/TransfersPage';
 
 export const AlmacenBoardPage: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
@@ -25,7 +23,7 @@ export const AlmacenBoardPage: React.FC = () => {
   const almacenRecursos = useSelector((state: RootState) => state.almacenRecurso.almacenRecursos);
   const [selectedAlmacenId, setSelectedAlmacenId] = useState<string>('');
 
-  console.log(almacenRecursos)
+  const navigate = useNavigate();
 
   // Estados principales
   const [inventory, setInventory] = useState<InventoryItem[]>(generateMockData());
@@ -35,14 +33,14 @@ export const AlmacenBoardPage: React.FC = () => {
     category: 'all',
     dateRange: { start: null, end: null }
   });
-  const [sortConfig, setSortConfig] = useState<SortConfig>({ 
-    key: 'code', 
-    direction: 'asc' 
+  const [sortConfig, setSortConfig] = useState<SortConfig>({
+    key: 'code',
+    direction: 'asc'
   });
   const [selectedItem, setSelectedItem] = useState<InventoryItem | null>(null);
   const [showNewMovementModal, setShowNewMovementModal] = useState(false);
-  const [showTransfers, setShowTransfers] = useState(false);
   const [page, setPage] = useState(1);
+  const [mostrarTransfersPage, setMostrarTransfersPage] = useState(false)
   const itemsPerPage = 10;
 
   useEffect(() => {
@@ -93,11 +91,11 @@ export const AlmacenBoardPage: React.FC = () => {
   // Funciones de utilidad
   const filterAndSortItems = () => {
     let filtered = [...inventory];
-    
+
     // Aplicar filtros
     if (filters.searchTerm) {
       const searchLower = filters.searchTerm.toLowerCase();
-      filtered = filtered.filter(item => 
+      filtered = filtered.filter(item =>
         item.name.toLowerCase().includes(searchLower) ||
         item.code.toLowerCase().includes(searchLower)
       );
@@ -110,8 +108,8 @@ export const AlmacenBoardPage: React.FC = () => {
     if (filters.dateRange.start && filters.dateRange.end) {
       filtered = filtered.filter(item => {
         const itemDate = new Date(item.lastUpdated);
-        return itemDate >= filters.dateRange.start! && 
-               itemDate <= filters.dateRange.end!;
+        return itemDate >= filters.dateRange.start! &&
+          itemDate <= filters.dateRange.end!;
       });
     }
 
@@ -144,25 +142,11 @@ export const AlmacenBoardPage: React.FC = () => {
           ? item.currentStock + (movement.quantity || 0)
           : item.currentStock - (movement.quantity || 0);
 
-        const fullMovement: Movement = {
-          id: movement.id || '',
-          type: movement.type || 'entrada',
-          quantity: movement.quantity || 0,
-          date: new Date(),
-          document: movement.document || '',
-          user: movement.user || '',
-          notes: movement.notes || '',
-          almacen_id: selectedAlmacenId,
-          recurso_id: movement.recurso_id || ''
-        };
-
         return {
           ...item,
           currentStock: newQuantity,
-          movements: [...item.movements, fullMovement],
           lastUpdated: new Date()
         };
-        
       }
       return item;
     });
@@ -171,118 +155,117 @@ export const AlmacenBoardPage: React.FC = () => {
   };
 
   return (
-      <div className="container mx-auto px-6">
-        <div className="text-white pb-4">
-          <h1 className="text-2xl font-bold">Sistema de Kardex Empresarial</h1>
-        </div>
-
-        <div className="flex justify-between items-center mb-6">
-          <select
-            value={selectedAlmacenId}
-            onChange={(e) => setSelectedAlmacenId(e.target.value)}
-            className="w-64 p-2 rounded"
-          >
-            <option value="">Seleccione un Almacen</option>
-            {almacenes.map(almacen => (
-              <option key={almacen.id} value={almacen.id}>
-                {almacen.nombre}
-              </option>
-            ))}
-          </select>
-
-          <button className="bg-violet-600 text-white px-4 py-2 rounded">
-            Transferencias
-          </button>
-        </div>
-
-        <div className="flex justify-end gap-4 mb-6">
-          <button 
-            className="bg-blue-600 text-white px-4 py-2 rounded"
-            onClick={() => setShowNewMovementModal(true)}
-          >
-            Nuevo Movimiento
-          </button>
-          <button className="bg-green-600 text-white px-4 py-2 rounded">
-            Exportar
-          </button>
-        </div>
-            
-          <div className="bg-white rounded-lg shadow-lg p-6">
-              <div className="flex justify-between items-center mb-6">   
-          </div>
-          {/* Filtros - Altura fija */}
-            <div className="h-24">
-              <FilterSection
-                filters={filters}
-                selectedAlmacenId={selectedAlmacenId}
-                onAlmacenChange={setSelectedAlmacenId}
-                onFilterChange={(newFilters) => setFilters(prev => ({ ...prev, ...newFilters }))}
-              />
-            </div>
-            {/*tabla de trasnferencia */}
-
-
-            {/* Tabla - Altura flexible con scroll */}
-            <div className="flex-1 min-h-0 overflow-auto">
-              <InventoryTable
-                items={filteredItems.slice((page - 1) * itemsPerPage, page * itemsPerPage)}
-                sortConfig={sortConfig}
-                onSort={handleSort}
-                onItemSelect={setSelectedItem}
-                onMovement={(itemId, type, quantity) => handleMovement({
-                  id: String(itemId),
-                  type,
-                  quantity
-                })}
-              />
-            </div>
-            {/* Paginación - Altura fija */}
-            <div className="h-16 flex justify-between items-center px-4 border-t">
-              <div className="text-sm text-gray-700">
-                Mostrando {((page - 1) * itemsPerPage) + 1} a {Math.min(page * itemsPerPage, filteredItems.length)} de {filteredItems.length}
-              </div>
-              <div className="flex gap-2">
-                <button 
-                  className="px-3 py-1 border rounded-lg text-sm disabled:opacity-50"
-                  disabled={page === 1}
-                  onClick={() => setPage(page - 1)}
-                >
-                  Anterior
-                </button>
-                <button 
-                  className="px-3 py-1 border rounded-lg text-sm disabled:opacity-50"
-                  disabled={page >= Math.ceil(filteredItems.length / itemsPerPage)}
-                  onClick={() => setPage(page + 1)}
-                >
-                  Siguiente
-                </button>
-              </div>
-            </div>
-          </div>
-        : (
-          <div className="flex-1 flex items-center justify-center">
-            Por favor seleccione un almacén para ver su inventario
-          </div>
-        )
-  
-        {/* Modales */}
-        {selectedItem && (
-          <ItemDetailModal
-            item={selectedItem}
-            onClose={() => setSelectedItem(null)}
-          />
-        )}
-  
-        {showNewMovementModal && (
-          <NewMovementModal
-            inventory={inventory}
-            selectedAlmacenId={selectedAlmacenId}
-            onClose={() => setShowNewMovementModal(false)}
-            onSave={handleMovement}
-          />
-        )}
-  
+    <div className="container mx-auto px-6">
+      <div className="text-white pb-4">
+        <h1 className="text-2xl font-bold">Sistema de Kardex Empresarial</h1>
       </div>
+
+      <div className="flex justify-between items-center mb-6">
+        <select
+          value={selectedAlmacenId}
+          onChange={(e) => setSelectedAlmacenId(e.target.value)}
+          className="w-64 p-2 rounded"
+        >
+          <option value="">Seleccione un Almacen</option>
+          {almacenes.map(almacen => (
+            <option key={almacen.id} value={almacen.id}>
+              {almacen.nombre}
+            </option>
+          ))}
+        </select>
+
+        <button
+          className="bg-violet-600 text-white px-4 py-2 rounded"
+          onClick={() => setMostrarTransfersPage(!mostrarTransfersPage)}
+        >
+          {!mostrarTransfersPage? "Mostrar Transeferencias" : "Mostrar Inventario"}
+        </button>
+      </div>
+
+      <div className="flex justify-end gap-4 mb-6">
+        <button
+          className="bg-blue-600 text-white px-4 py-2 rounded"
+          onClick={() => setShowNewMovementModal(true)}
+        >
+          Nuevo Movimiento
+        </button>
+        <button className="bg-green-600 text-white px-4 py-2 rounded">
+          Exportar
+        </button>
+      </div>
+
+      {/* Todo esto es la tabla */}
+
+      {mostrarTransfersPage ? (<TransfersPage />) : 
+      (<div className="bg-white rounded-lg shadow-lg p-6">
+        {/* Filtros - Altura fija */}
+        <div className="h-24">
+          <FilterSection
+            filters={filters}
+            selectedAlmacenId={selectedAlmacenId}
+            onAlmacenChange={setSelectedAlmacenId}
+            onFilterChange={(newFilters) => setFilters(prev => ({ ...prev, ...newFilters }))}
+          />
+        </div>
+        {/*tabla de trasnferencia */}
+
+
+        {/* Tabla - Altura flexible con scroll */}
+        <div className="flex-1 min-h-0 overflow-auto">
+          <InventoryTable
+            items={filteredItems.slice((page - 1) * itemsPerPage, page * itemsPerPage)}
+            sortConfig={sortConfig}
+            onSort={handleSort}
+            onItemSelect={setSelectedItem}
+            onMovement={(itemId, type, quantity) => handleMovement({
+              id: String(itemId),
+              type,
+              quantity
+            })}
+          />
+        </div>
+        {/* Paginación - Altura fija */}
+        <div className="h-16 flex justify-between items-center px-4 border-t">
+          <div className="text-sm text-gray-700">
+            Mostrando {((page - 1) * itemsPerPage) + 1} a {Math.min(page * itemsPerPage, filteredItems.length)} de {filteredItems.length}
+          </div>
+          <div className="flex gap-2">
+            <button
+              className="px-3 py-1 border rounded-lg text-sm disabled:opacity-50"
+              disabled={page === 1}
+              onClick={() => setPage(page - 1)}
+            >
+              Anterior
+            </button>
+            <button
+              className="px-3 py-1 border rounded-lg text-sm disabled:opacity-50"
+              disabled={page >= Math.ceil(filteredItems.length / itemsPerPage)}
+              onClick={() => setPage(page + 1)}
+            >
+              Siguiente
+            </button>
+          </div>
+        </div>
+      </div>)
+      }
+
+      {/* Modales */}
+      {selectedItem && (
+        <ItemDetailModal
+          item={selectedItem}
+          onClose={() => setSelectedItem(null)}
+        />
+      )}
+
+      {showNewMovementModal && (
+        <NewMovementModal
+          inventory={inventory}
+          selectedAlmacenId={selectedAlmacenId}
+          onClose={() => setShowNewMovementModal(false)}
+          onSave={handleMovement}
+        />
+      )}
+    </div>
   );
 };
 

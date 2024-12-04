@@ -1,198 +1,281 @@
-import React, { useEffect, useState, useCallback, useMemo } from "react";
-import { useDispatch, useSelector } from "react-redux";
-import { fetchTransferencias, addTransferencia } from "../../slices/transferenciaSlice";
-import { fetchTransferenciaRecursos, addTransferenciaRecurso } from "../../slices/transferenciaRecursoSlice";
+import React, { useEffect, useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { fetchSolicitudAlmacenes } from '../../slices/solicitudAlmacenSlice';
+import { fetchTransferenciaRecursos } from '../../slices/transferenciaRecursoSlice';
 import { RootState, AppDispatch } from '../../store/store';
+import { addTransferenciaRecurso } from '../../slices/transferenciaRecursoSlice';
+import { updateTransferencia } from '../../slices/transferenciaSlice';
+import noImage from '../../assets/NoImage.webp';
+import IMG from '../../components/IMG/IMG';
+import { TransportForm } from "./TransporteForm";
+import { IoMdCloseCircle } from "react-icons/io";
 
-
-export interface Transferencia {
+interface solicitudAlmacen {
+  id: string;
+  requerimiento_id: {
     id: string;
-    usuario_id: string;
-    fecha: Date;
-    movimiento_id: string;
-  }
-  
-  export interface SolicitudTransferencia extends Transferencia {
-    requerimiento_id: {
-      codigo: string;
-      fecha_solicitud: string;
-      estado: string;
-    };
-  }
-  
-  export interface TransferenciaRecurso {
-    id: string;
-    cantidad: number;
-    recurso_id: string;
+    presupuesto_id: string | null;
+    fecha_solicitud: string;
+    estado_atencion: string;
+    sustento: string;
+    obra_id: string;
     codigo: string;
-    nombre: string;
-    unidad: string;
-    precio_actual: number;
-  }
-  
-  export interface RecursoTransferencia {
+  };
+  usuario_id: {
+    apellidos: string;
+    nombres: string;
+    id: string;
+  };
+  fecha: string;
+}
+
+interface TransferenciaRecurso {
     id: string;
     cantidad: number;
+    costo: number;
     cantidadSeleccionada?: number;
     recurso_id: {
-      id: string;
-      codigo: string;
-      nombre: string;
-      unidad: string;
-      precio_actual: number;
+        recurso:string;
+        id: string;
+        cantidad: number;
+        nombre: string;
+        codigo: string;
+        precio_actual: number;
+        imagenes:{ file: string}[];
+        unidad_id:string;
+        vigente: boolean;
     };
-  }
-  
-  export interface Obra {
-    id: string;
-    nombre: string;
-  }
-  
-  interface ModalProps {
-    onClose: () => void;
-    onSave: (recursos: RecursoTransferencia[]) => void;
 }
-
-
 interface ModalProps {
-    onClose: () => void;
-    onSave: (recursos: RecursoTransferencia[]) => void;
+  onClose: () => void;
+  transferenciaId: string | null;
 }
 
-const RecursoTransfer: React.FC<ModalProps> = ({ onClose, onSave }) => {
-    const dispatch = useDispatch<AppDispatch>();
-    const [selectedSolicitud, setSelectedSolicitud] = useState<string | null>(null);
-    const [selectedRecursos, setSelectedRecursos] = useState<RecursoTransferencia[]>([]);
-    const [selectedObra, setSelectedObra] = useState<string>('');
+const Skeleton: React.FC<{ className?: string }> = ({ className }) => (
+  <div className={`animate-pulse bg-gray-200 rounded ${className}`}></div>
+);
 
-    const solicitudes = useSelector((state: RootState) => state.transferencia.transferencias as SolicitudTransferencia[]);
-    const recursos = useSelector((state: RootState) => state.transferenciaRecurso.transferenciaRecursos as TransferenciaRecurso[]);
-    const obras = useSelector((state: RootState) => state.obra.obras as Obra[]);
-    
+const RecursoTransfer: React.FC<ModalProps> = ({ onClose, transferenciaId }) => {
+  const dispatch = useDispatch<AppDispatch>();
+  const [selectedSolicitud, setSelectedSolicitud] = React.useState<string | null>(null);
+  const [selectedRecursos, setSelectedRecursos] = React.useState<TransferenciaRecurso[]>([]);
+  const [selectedObra, setSelectedObra] = React.useState<string>('');
+  const [isLoadingSolicitudes, setIsLoadingSolicitudes] = React.useState(true);
+  const [isLoadingRecursos, setIsLoadingRecursos] = React.useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
-    const filteredTransferencias = useMemo(() => {
-        if (!selectedObra) return solicitudes;
-        return solicitudes.filter((solicitud) =>
-            solicitud.requerimiento_id.codigo === selectedObra
-        );
-    }, [solicitudes, selectedObra]);
+  //const currentUserId = useSelector((state: RootState) => state.user.id);
+  const solicitudes = useSelector((state: RootState) => state.solicitudAlmacen.solicitudes);
+  const recursos = useSelector((state: RootState) => state.transferenciaRecurso.transferenciaRecursos);
+  const { obras } = useSelector((state: RootState) => state.obra);
 
-    useEffect(() => {
-        if (solicitudes.length === 0) {
-            dispatch(fetchTransferencias());
-        }
-    }, [dispatch, solicitudes.length]);
+  const filteredSolicitudes = React.useMemo(() => {
+    if (!selectedObra) return solicitudes;
+    return solicitudes.filter((solicitud: solicitudAlmacen) =>
+        solicitud.requerimiento_id.obra_id === selectedObra
+    );
+  }, [solicitudes, selectedObra]);
 
-    useEffect(() => {
+  useEffect(() => {
+    const loadSolicitudes = async () => {
+      setIsLoadingSolicitudes(true);
+      await dispatch(fetchSolicitudAlmacenes());
+      setIsLoadingSolicitudes(false);
+    };
+    loadSolicitudes();
+  }, [dispatch]);
+
+  useEffect(() => {
+    const fetchRecursos = async () => {
         if (selectedSolicitud) {
-            dispatch(fetchTransferenciaRecursos());
-        }
-    }, [selectedSolicitud, dispatch]);
-
-    const handleCheckboxChange = useCallback((recurso: RecursoTransferencia, checked: boolean) => {
-        setSelectedRecursos(prev => checked
-            ? [...prev, { ...recurso, cantidadSeleccionada: recurso.cantidad }]
-            : prev.filter(r => r.id !== recurso.id)
-        );
-    }, []);
-
-    const handleCantidadChange = (recursoId: string, valor: number) => {
-        setSelectedRecursos(prevRecursos =>
-            prevRecursos.map(recurso =>
-                recurso.id === recursoId
-                    ? { ...recurso, cantidadSeleccionada: valor }
-                    : recurso
-            )
-        );
-    };
-
-    const total = useMemo(() => {
-        return selectedRecursos.reduce((total, recurso) =>
-            total + (recurso.recurso_id.precio_actual * (recurso.cantidadSeleccionada || 0)), 0);
-    }, [selectedRecursos]);
-
-    const handleSaveSelection = async () => {
-        try {
-            if (!selectedSolicitud) return;
-            const transferenciaData: Transferencia = {
-                id: `TRA-${Date.now()}`,
-                usuario_id: 'user123', // Replace with actual user ID
-                fecha: new Date(),
-                movimiento_id: selectedSolicitud,
-            };
-
-            const nuevaTransferencia = await dispatch(addTransferencia(transferenciaData)).unwrap();
-
-            for (const recurso of selectedRecursos) {
-                const transferenciaRecursoData = {
-                    transferencia_detalle_id: `DET-${Date.now()}`,
-                    recurso_id: recurso.recurso_id.id,
-                    cantidad: recurso.cantidadSeleccionada || 0,
-                };
-                
-                await dispatch(addTransferenciaRecurso(transferenciaRecursoData)).unwrap();
+            setLoading(true);
+            setError(null);
+            try {
+                await dispatch(fetchTransferenciaRecursos()).unwrap();
+            } catch (err) {
+                setError('Error al obtener los recursos de transferencia');
+            } finally {
+                setLoading(false);
             }
-
-            onSave(selectedRecursos);
-            onClose();
-        } catch (error) {
-            console.error('Error al guardar la transferencia', error);
         }
     };
+    fetchRecursos();
+}, [selectedSolicitud, dispatch]);
+  // Limpiar recursos seleccionados cuando se cambia de solicitud
+  useEffect(() => {
+    setSelectedRecursos([]);
+  }, [selectedSolicitud]);
 
-    return (
-        <div className="bg-white rounded-lg w-full max-h-[90vh] overflow-hidden">
-            <div className="p-4 border-b border-gray-200 flex justify-between items-center">
-                <h2 className="text-xl font-semibold text-gray-800">Solicitudes de Transferencias</h2>
-                <button onClick={onClose} className="text-gray-500 hover:text-gray-700">
-                    <i className="fas fa-times"></i>
-                </button>
-            </div>
+  // Efecto para limpiar la selección cuando cambia la obra
+  useEffect(() => {
+    setSelectedSolicitud(null);
+  }, [selectedObra]);
 
-            <div className="w-56">
-                <select
-                    value={selectedObra}
-                    onChange={(e) => setSelectedObra(e.target.value)}
-                    className="w-full px-2 py-1.5 text-sm text-gray-600 bg-white border border-gray-200 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent shadow-sm transition-all duration-200"
-                >
-                    <option value="">Todas las obras</option>
-                    {obras.map((obra) => (
-                        <option key={obra.id} value={obra.id}>
-                            {obra.nombre}
-                        </option>
-                    ))}
-                </select>
-            </div>
+  const handleCheckboxChange = React.useCallback((recurso: TransferenciaRecurso, checked: boolean) => {
+    setSelectedRecursos(prev => checked
+      ? [...prev, { ...recurso, cantidadSeleccionada: recurso.cantidad }]
+      : prev.filter(r => r.id !== recurso.id)
+    );
+  }, []);
 
-            <div className="flex h-[calc(90vh-12rem)]">
-                <div className="w-1/4 border-r border-gray-200 p-4 overflow-y-auto">
-                    <h3 className="text-lg font-medium mb-4 text-gray-700">Requerimientos</h3>
-                    {filteredTransferencias.map(req => (
-                        <div
-                            key={req.id}
-                            onClick={() => setSelectedSolicitud(req.id)}
-                            className={`p-3 rounded-lg mb-2 cursor-pointer transition-all ${selectedSolicitud === req.id
-                                ? 'bg-blue-50 border-blue-500 border'
-                                : 'hover:bg-gray-50 border border-gray-200'
-                                }`}
-                        >
-                            <div className="font-medium text-gray-800">{req.requerimiento_id.codigo}</div>
-                            <div className="text-sm text-gray-600">{req.requerimiento_id.estado}</div>
-                            <div className="text-xs text-gray-500 mt-1">{req.requerimiento_id.fecha_solicitud}</div>
-                        </div>
-                    ))}
+  const handleCantidadChange = (recursoId: string, valor: number) => {
+    setSelectedRecursos(selectedRecursos.map(recurso =>
+      recurso.id === recursoId
+        ? { ...recurso, cantidadSeleccionada: valor }
+        : recurso
+    ));
+  };
+
+  // Calcular el total general
+  const totalGeneral = React.useMemo(() => {
+    return selectedRecursos.reduce((total, recurso) =>
+      total + (recurso.costo * (recurso.cantidadSeleccionada || 0))
+      , 0);
+  }, [selectedRecursos]);
+
+  const handleSaveSelection = async () => {
+    try {
+      if (!transferenciaId) {
+        console.error('No hay transferencias disponible');
+        return;
+      }
+
+      // Agregar recursos a la cotización existente
+      for (const recurso of selectedRecursos) {
+        const transferenciaRecursoData = {
+          cantidad: recurso.cantidadSeleccionada || 0,
+          atencion: 'pendiente',
+          costo: recurso.costo,
+          total: (recurso.cantidadSeleccionada || 0) * recurso.costo,
+          cotizacion_id: transferenciaId,
+          recurso_id: recurso.recurso_id.id
+        };
+
+        await dispatch(addTransferenciaRecurso(transferenciaRecursoData)).unwrap();
+      }
+
+      // Actualizar el estado de la cotización a 'pendiente'
+      await dispatch(updateTransferencia({
+        id: transferenciaId,
+        estado: 'pendiente'
+      })).unwrap();
+ 
+      onClose();
+    } catch (error) {
+      console.error('Error al guardar los recursos:', error);
+    }
+  };
+  
+  const handleOpenModal = () => {
+    setIsModalOpen(true);
+  };
+
+  
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
+  };
+
+  return (
+    <div className="bg-gradient-to-br from-white to-gray-50 rounded-xl shadow-lg w-[120px] max-w-full min-w-full max-h-[90vh] overflow-hidden border border-gray-100">
+      {/* Header */}
+      <div className="p-3 border-b border-gray-100 flex items-center justify-between bg-white">
+        <h2 className="text-xl font-semibold text-blue-800">Solicitudes de transferencias</h2>
+        <div className="w-56 relative">
+  <button
+    onClick={onClose}
+    className="absolute top-0 right-0 text-2xl text-red-500 mt-2 mr-2"
+  >
+    <IoMdCloseCircle />
+  </button>
+  <div className="pt-9">
+    <select
+      value={selectedObra}
+      onChange={(e) => {
+        setSelectedObra(e.target.value);
+      }}
+      className="w-full px-2 py-1.5 text-sm text-gray-600 bg-white border border-gray-200 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent shadow-sm transition-all duration-200"
+    >
+      <option value="">Todas las obras</option>
+      {obras.map((obra) => (
+        <option key={obra.id} value={obra.id}>
+          {obra.nombre}
+        </option>
+      ))}
+    </select>
+  </div>
+</div>
+      </div>
+
+      <div className="flex h-[calc(90vh-12rem)]">
+        {/* Panel izquierdo - Lista de Solicitudes */}
+        <div className="w-1/4 border-r border-gray-100 p-3 overflow-y-auto  bg-gray-100">
+          {isLoadingSolicitudes ? (
+            // Skeleton para solicitudes
+            [...Array(5)].map((_, index) => (
+              <div key={index} className="p-3 mb-2 rounded-md border border-white">
+                <Skeleton className="h-4 w-3/4 mb-2" />
+                <Skeleton className="h-3 w-1/2 mb-1" />
+                <Skeleton className="h-3 w-1/3" />
+              </div>
+            ))
+          ) : (
+            filteredSolicitudes.map((solicitud: solicitudAlmacen) => (
+              <div
+                key={solicitud.id}
+                onClick={() => setSelectedSolicitud(solicitud.id)}
+                className={`p-3 mb-2  shadow-xl rounded-md cursor-pointer border transition-all duration-200 ${selectedSolicitud === solicitud.id
+                    ? 'bg-blue-50 border-blue-400 shadow-sm'
+                    : 'border-gray-100  bg-gray-50 hover:bg-white hover:shadow-sm'
+                  }`}
+              >
+                <div className="text-sm font-medium text-gray-700">{solicitud.requerimiento_id.codigo}</div>
+                <div className="text-xs text-gray-500 mt-1">
+                  Solicitante: {solicitud.usuario_id.nombres} {solicitud.usuario_id.apellidos}
                 </div>
+                <div className="text-xs text-gray-400 mt-0.5">
+                  Fecha: {new Date(solicitud.fecha).toLocaleDateString()}
+                </div>
+                <div className="text-xs mt-1">
+                  <span className={`px-2 py-0.5 rounded-full ${solicitud.requerimiento_id.estado_atencion === 'Pendiente'
+                      ? 'bg-yellow-100 text-yellow-700'
+                      : solicitud.requerimiento_id.estado_atencion === 'Enviado'
+                        ? 'bg-green-100 text-green-700'
+                        : 'bg-gray-100 text-gray-700'
+                    }`}>
+                    {solicitud.requerimiento_id.estado_atencion}
+                  </span>
+                </div>
+              </div>
+            ))
+          )}
+        </div>
 
-                <div className="w-3/4 p-4 overflow-y-auto">
-                    <div className="mb-4 flex justify-between items-center">
-                        <h3 className="text-lg font-medium text-gray-700">
-                            Recursos {selectedSolicitud ? `- ${selectedSolicitud}` : ''}
-                        </h3>
-                    </div>
+        {/* Panel derecho - Recursos de la solicitud */}
+        <div className="flex-1 flex flex-col h-full">
+          {selectedSolicitud ? (
+            <>
+              <div className="p-3 bg-white border-b border-gray-100">
+                <h3 className="text-sm font-medium text-gray-700">Recursos de la Solicitud</h3>
+              </div>
 
-                    <table className="w-full border-collapse">
-                        <thead>
-                            <tr className="bg-gray-100">
+              <div className="flex-1 overflow-auto overflow-x-auto p-3">
+                <table className="min-w-full divide-y divide-gray-200">
+                  <thead className="bg-gray-50 sticky -top-3">
+                    <tr className="bg-gray-50">
+                      <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        <input
+                          type="checkbox"
+                          className="rounded border-gray-300 text-blue-500 focus:ring-blue-400"
+                          onChange={(e) => {
+                            if (e.target.checked) {
+                              setSelectedRecursos(recursos.map(r => ({ ...r, cantidadSeleccionada: r.cantidad })));
+                            } else {
+                              setSelectedRecursos([]);
+                            }
+                          }}
+                        />
+                      </th>
+                      <tr className="bg-gray-100">
                                 <th className="p-2 border">Seleccionar</th>
                                 <th className="p-2 border">Codigo</th>
                                 <th className="p-2 border">Nombre</th>
@@ -202,83 +285,136 @@ const RecursoTransfer: React.FC<ModalProps> = ({ onClose, onSave }) => {
                                 <th className="p-2 border">Cantidad Transferida</th>
                                 <th className="p-2 border">Subtotal</th>
                             </tr>
-                        </thead>
-                        <tbody>
-                            {recursos.map((recurso) => {
-                                const recursoTransferencia: RecursoTransferencia = {
-                                    id: recurso.id,
-                                    cantidad: recurso.cantidad,
-                                    recurso_id: {
-                                        id: recurso.recurso_id,
-                                        codigo: recurso.codigo,
-                                        nombre: recurso.nombre,
-                                        unidad: recurso.unidad,
-                                        precio_actual: recurso.precio_actual
-                                    }
-                                };
-                                const isSelected = selectedRecursos.some(r => r.id === recursoTransferencia.id);
-                                const selectedRecurso = selectedRecursos.find(r => r.id === recursoTransferencia.id);
-                                const subtotal = (selectedRecurso?.cantidadSeleccionada || 0) * recursoTransferencia.recurso_id.precio_actual;
+                    </tr>
+                  </thead>
+                  <tbody className="bg-white divide-y divide-gray-100">
+                    {isLoadingRecursos ? (
+                      // Skeleton para recursos
+                      [...Array(5)].map((_, index) => (
+                        <tr key={index}>
+                          <td className="px-3 py-2"><Skeleton className="h-4 w-4" /></td>
+                          <td className="px-3 py-2"><Skeleton className="h-12 w-12 rounded-md" /></td>
+                          <td className="px-3 py-2"><Skeleton className="h-4 w-20" /></td>
+                          <td className="px-3 py-2"><Skeleton className="h-4 w-32" /></td>
+                          <td className="px-3 py-2"><Skeleton className="h-4 w-16" /></td>
+                          <td className="px-3 py-2"><Skeleton className="h-8 w-20" /></td>
+                          <td className="px-3 py-2"><Skeleton className="h-4 w-16" /></td>
+                          <td className="px-3 py-2"><Skeleton className="h-4 w-16" /></td>
+                        </tr>
+                      ))
+                    ) : (
+                      recursos.map((recurso: RecursoSolicitud) => {
+                        const isSelected = selectedRecursos.some(r => r.id === recurso.id);
+                        const selectedRecurso = selectedRecursos.find(r => r.id === recurso.id);
+                        const subtotal = (selectedRecurso?.cantidadSeleccionada || 0) * recurso.costo;
 
-                                return (
-                                    <tr key={recursoTransferencia.id} className="hover:bg-gray-50 transition-colors duration-150">
-                                        <td className="px-3 py-2">
-                                            <input
-                                                type="checkbox"
-                                                className="rounded border-gray-300 text-blue-500 focus:ring-blue-400"
-                                                checked={isSelected}
-                                                onChange={(e) => handleCheckboxChange(recursoTransferencia, e.target.checked)}
-                                            />
-                                        </td>
-                                        <td className="px-3 py-2 text-xs text-gray-600">{recursoTransferencia.recurso_id.codigo}</td>
-                                        <td className="px-3 py-2 text-xs text-gray-600">{recursoTransferencia.recurso_id.nombre}</td>
-                                        <td className="px-3 py-2 text-xs text-gray-600">{recursoTransferencia.recurso_id.unidad}</td>
-                                        <td className="px-3 py-2 text-xs text-gray-600">{recursoTransferencia.cantidad}</td>
-                                        <td className="px-3 py-2 text-xs text-gray-600">S/ {recursoTransferencia.recurso_id.precio_actual.toFixed(2)}</td>
-                                        <td className="px-3 py-2">
-                                            <input
-                                                type="number"
-                                                min="1"
-                                                max={recursoTransferencia.cantidad}
-                                                value={selectedRecurso?.cantidadSeleccionada || 0}
-                                                onChange={(e) => handleCantidadChange(recursoTransferencia.id, Math.min(parseInt(e.target.value), recursoTransferencia.cantidad))}
-                                                disabled={!isSelected}
-                                                className="w-20 px-2 py-1 text-xs border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent disabled:bg-gray-100"
-                                            />
-                                        </td>
-                                        <td className="px-3 py-2 text-xs text-gray-600">
-                                            S/ {subtotal.toFixed(2)}
-                                        </td>
-                                    </tr>
-                                );
-                            })}
-                        </tbody>
-                    </table>
-                </div>
-            </div>
+                        return (
+                          <tr key={recurso.id} className="hover:bg-gray-50 transition-colors duration-150">
+                            <td className="px-3 py-2">
+                              <input
+                                type="checkbox"
+                                className="rounded border-gray-300 text-blue-500 focus:ring-blue-400"
+                                checked={isSelected}
+                                onChange={(e) => handleCheckboxChange(recurso, e.target.checked)}
+                              />
+                            </td>
+                            <td className="px-3 py-2">
+                              {recurso.recurso_id.imagenes && recurso.recurso_id.imagenes.length > 0 ? (
+                                <IMG
+                                  key={recurso.recurso_id.imagenes[0].file}
+                                  src={recurso.recurso_id.imagenes[0].file}
+                                  alt={recurso.recurso_id.nombre}
+                                  className="h-12 w-12 object-cover rounded-md border border-gray-200"
+                                />
+                              ) : (
+                                <div className="h-12 w-12 bg-gray-100 rounded-md flex items-center justify-center">
+                                  <IMG
+                                    src={noImage}
+                                    alt="No image available"
+                                    className="h-12 w-12 object-cover rounded-md border border-gray-200"
+                                  />
+                                </div>
+                              )}
+                            </td>
+                            <td className="px-3 py-2 text-xs text-gray-600">{recurso.recurso_id.codigo}</td>
+                            <td className="px-3 py-2 text-xs text-gray-600">{recurso.recurso_id.nombre}</td>
+                            <td className="px-3 py-2 text-xs text-gray-600">{recurso.cantidad}</td>
+                            <td className="px-3 py-2">
+                              <input
+                                type="number"
+                                min="1"
+                                max={recurso.cantidad}
+                                value={selectedRecurso?.cantidadSeleccionada || 0}
+                                onChange={(e) => handleCantidadChange(recurso.id, parseInt(e.target.value))}
+                                disabled={!isSelected}
+                                className="w-20 px-2 py-1 text-xs border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent disabled:bg-gray-100"
+                              />
+                            </td>
+                            <td className="px-3 py-2 text-xs text-gray-600">S/ {recurso.costo.toFixed(2)}</td>
+                            <td className="px-3 py-2 text-xs text-gray-600">
+                              S/ {subtotal.toFixed(2)}
+                            </td>
+                          </tr>
+                        );
+                      })
+                    )}
+                  </tbody>
+                </table>
+              </div>
 
-            <div className="p-4 border-t border-gray-200 flex justify-between items-center">
-                <div className="text-lg font-semibold text-gray-800">
-                    Total: S/ {total.toFixed(2)}
+              <div className="p-3 bg-white border-t border-gray-100">
+                <div className="flex justify-end">
+                  <div className="text-sm font-medium text-gray-700 pr-10">
+                    Total: <span className="text-blue-600">S/ {totalGeneral.toFixed(2)}</span>
+                  </div>
                 </div>
-                <div className="flex gap-3">
-                    <button
-                        onClick={onClose}
-                        className="px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200"
-                    >
-                        Cancelar
-                    </button>
-                    <button
-                        onClick={handleSaveSelection}
-                        className="px-4 py-2 text-white bg-blue-600 rounded-lg hover:bg-blue-700"
-                    >
-                        Guardar Selección
-                    </button>
-                </div>
+              </div>
+            </>
+          ) : (
+            <div className="flex h-full items-center justify-center">
+              <div className="text-center text-gray-400">
+                
+                <h3 className="mt-2 text-sm font-medium text-gray-600">No hay solicitud seleccionada</h3>
+                
+              </div>
             </div>
+          )}
         </div>
-    );
+      </div>
+
+      <div className="p-5 border-t border-gray-100 flex justify-end space-x-2 bg-white">
+        <button
+          onClick={onClose}
+          className="px-3 py-1.5 text-sm text-gray-600 bg-gray-50 rounded-md hover:bg-gray-100 transition-colors duration-200"
+        >
+          Cancelar
+        </button>
+        <button
+          onClick={handleSaveSelection}
+          className="px-3 py-1.5 text-sm text-white bg-blue-500 rounded-md hover:bg-blue-600 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+          disabled={!selectedSolicitud || selectedRecursos.length === 0}
+        >
+          Guardar Selección
+        </button>
+
+        {/* boton de tipo de transporte */}
+        <button
+             onClick={handleOpenModal}
+             className=" bg-purple-800 px-3 py-1 text-sm text-gray-100 hover:text-gray-200 rounded-md "
+            >  
+            Tipo de transporte
+        </button>
+      </div>
+      {isModalOpen && (
+                <>
+                    <div className="fixed inset-0 bg-black opacity-50" onClick={handleCloseModal}></div>
+                    <div className="fixed inset-0 flex items-center justify-center z-50 rounded" >
+                        <TransportForm onSubmit={handleCloseModal} onClose={handleCloseModal} />
+                    </div>
+                </>
+            )}
+    </div>
+  );
 };
 
 export default RecursoTransfer;
-

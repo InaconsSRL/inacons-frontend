@@ -1,5 +1,6 @@
-import React from "react";
-
+import React, { useState } from "react";
+import { TransportForm } from "./TransporteForm";
+import { IoMdCloseCircle } from "react-icons/io";
 
 interface TRequerimiento {
     id: string;
@@ -36,8 +37,9 @@ interface ModalProps {
 }
 
 const TransfersForms: React.FC<ModalProps> = ({ onClose, onSave, requerimientos, recursos }) => {
-    const [requerimientoTSeleccionado, setRequerimientoTSeleccionado] = React.useState<TRequerimiento | null>(null);
-    const [recursosSeleccionados, setRecursosSeleccionados] = React.useState<TRecurso[]>([]);
+    const [requerimientoTSeleccionado, setRequerimientoTSeleccionado] = useState<TRequerimiento | null>(null);
+    const [recursosSeleccionados, setRecursosSeleccionados] = useState<TRecurso[]>([]);
+    const [isModalOpen, setIsModalOpen] = useState(false);
 
     // CANTIDAD DE RECURSOS
     const totalRecursos = React.useMemo(() => {
@@ -82,13 +84,21 @@ const TransfersForms: React.FC<ModalProps> = ({ onClose, onSave, requerimientos,
         }
     };
 
+    const handleOpenModal = () => {
+        setIsModalOpen(true);
+    };
+
+    const handleCloseModal = () => {
+        setIsModalOpen(false);
+    };
+
     return (
-        <div className="bg-white rounded-lg w-[2000px] max-w-full min-w-full max-h-[90vh] overflow-hidden">
+        <div className="bg-white rounded-lg w-[1400px] min-w-[60vh] max-h-[90vh] overflow-hidden">
             <div className="p-4 border-b border-gray-200 flex justify-between items-center">
-                <h2 className="text-xl font-semibold text-gray-800">Solicitudes de Transferencias</h2>
-                <button onClick={onClose} className="text-gray-500 hover:text-gray-700">
-                    <i className="fas fa-times"></i>
-                </button>
+                <h2 className="text-xl font-semibold text-blue-900">Solicitudes de Transferencias</h2>
+                 <button onClick={onClose} className=" text-2xl text-red-500 h-[15px] w-[25px]" >
+                 <IoMdCloseCircle />
+                 </button>                
             </div>
 
             <div className="flex h-[calc(90vh-12rem)]">
@@ -124,6 +134,7 @@ const TransfersForms: React.FC<ModalProps> = ({ onClose, onSave, requerimientos,
                             >
                                 Limpiar selección
                             </button>
+                            
                         </div>
                     </div>
 
@@ -187,11 +198,11 @@ const TransfersForms: React.FC<ModalProps> = ({ onClose, onSave, requerimientos,
             </div>
 
             <div className="p-4 border-t border-gray-200 flex justify-end gap-3">
-                <button
-                    onClick={onClose}
-                    className="px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200"
-                >
-                    Cancelar
+                  <button
+                      onClick={handleOpenModal}
+                      className=" bg-purple-800 px-3 py-1 text-sm text-gray-100 hover:text-gray-200 rounded-xl"
+                     >  
+                     Tipo de transporte
                 </button>
                 <button
                     onClick={() => {
@@ -206,7 +217,22 @@ const TransfersForms: React.FC<ModalProps> = ({ onClose, onSave, requerimientos,
                 >
                     Guardar Selección
                 </button>
+                <button
+                    onClick={onClose}
+                    className="px-4 py-2 text-gray-700 bg-gray-200 rounded-lg hover:bg-gray-300"
+                >
+                    Cancelar
+                </button>
             </div>
+            
+            {isModalOpen && (
+                <>
+                    <div className="fixed inset-0 bg-black opacity-50" onClick={handleCloseModal}></div>
+                    <div className="fixed inset-0 flex items-center justify-center z-50 rounded">
+                        <TransportForm onSubmit={handleCloseModal} onClose={handleCloseModal} />
+                    </div>
+                </>
+            )}
         </div>
     );
 };
