@@ -259,7 +259,7 @@ const RecursoTransfer: React.FC<ModalProps> = ({ onClose, transferenciaId }) => 
               </div>
 
               <div className="flex-1 overflow-auto overflow-x-auto p-3">
-                <table className="min-w-full divide-y divide-gray-200">
+                <table className="w-full border-collapse min-w-full divide-y divide-gray-200">
                   <thead className="bg-gray-50 sticky -top-3">
                     <tr className="bg-gray-50">
                       <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
