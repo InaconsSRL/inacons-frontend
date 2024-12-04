@@ -209,10 +209,10 @@ const AprobacionTransferenciaPageAlmacen: React.FC<AprobacionTransferenciaPagePr
         }
 
         const solicitudData = {
-          requerimientoId: selectedRequerimiento.id,
-          usuarioId: currentUserId,
-          almacenOrigenId: almacenId,
-          almacenDestinoId: 'id_del_almacen_destino', // Reemplazar con el ID correcto
+          requerimiento_id: selectedRequerimiento.id,
+          usuario_id: currentUserId,
+          almacen_origen_id: almacenId,
+          almacen_destino_id: 'id_del_almacen_destino', // Reemplazar con el ID correcto
           fecha: new Date(),
         };
 

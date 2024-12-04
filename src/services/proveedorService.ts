@@ -11,6 +11,9 @@ const LIST_PROVEEDOR_QUERY = gql`
       ruc
       rubro
       estado
+      actividad
+      correo
+      tipo
       contactos {
         nombres
         apellidos
@@ -29,8 +32,8 @@ const LIST_PROVEEDOR_QUERY = gql`
 `;
 
 const ADD_PROVEEDOR_MUTATION = gql`
- mutation AddProveedor($razon_social: String!, $ruc: String!, $direccion: String, $nombre_comercial: String, $rubro: String, $estado: String) {
-  addProveedor(razon_social: $razon_social, ruc: $ruc, direccion: $direccion, nombre_comercial: $nombre_comercial, rubro: $rubro, estado: $estado) {
+ mutation AddProveedor($razon_social: String!, $ruc: String!, $direccion: String, $nombre_comercial: String, $rubro: String, $estado: String, $tipo: String, $actividad: String, $correo: String) {
+  addProveedor(razon_social: $razon_social, ruc: $ruc, direccion: $direccion, nombre_comercial: $nombre_comercial, rubro: $rubro, estado: $estado, tipo: $tipo, actividad: $actividad, correo: $correo) {
     id
       razon_social
       direccion
@@ -38,13 +41,16 @@ const ADD_PROVEEDOR_MUTATION = gql`
       ruc
       rubro
       estado
+      actividad
+      correo
+      tipo
     }
   }
 `;
 
 const UPDATE_PROVEEDOR_MUTATION = gql`
-  mutation UpdateProveedor($updateProveedorId: ID!, $razon_social: String, $ruc: String, $direccion: String, $nombre_comercial: String, $rubro: String, $estado: String) {
-    updateProveedor(id: $updateProveedorId, razon_social: $razon_social, ruc: $ruc, direccion: $direccion, nombre_comercial: $nombre_comercial, rubro: $rubro, estado: $estado) {
+  mutation UpdateProveedor($updateProveedorId: ID!, $razon_social: String, $ruc: String, $direccion: String, $nombre_comercial: String, $rubro: String, $estado: String, $tipo: String, $actividad: String, $correo: String) {
+    updateProveedor(id: $updateProveedorId, razon_social: $razon_social, ruc: $ruc, direccion: $direccion, nombre_comercial: $nombre_comercial, rubro: $rubro, estado: $estado, tipo: $tipo, actividad: $actividad, correo: $correo) {
       id
       razon_social
       direccion
@@ -52,6 +58,9 @@ const UPDATE_PROVEEDOR_MUTATION = gql`
       ruc
       rubro
       estado
+      actividad
+      correo
+      tipo
     }
   }
 `;
@@ -78,6 +87,9 @@ const GET_PROVEEDOR_QUERY = gql`
       ruc
       rubro
       estado
+      actividad
+      correo
+      tipo
       contactos {
         nombres
         apellidos
@@ -119,6 +131,9 @@ export const addProveedorService = async (proveedorData: {
   nombre_comercial?: string;
   rubro?: string;
   estado?: string;
+  tipo?: string;
+  actividad?: string;
+  correo?: string;
 }) => {
   try {
     console.log('Datos a enviar:', proveedorData); // Para debug
@@ -145,6 +160,9 @@ export const updateProveedorService = async (proveedor: {
   nombre_comercial?: string;
   rubro?: string;
   estado?: string;
+  tipo?: string;
+  actividad?: string;
+  correo?: string;
 }) => {
   const { id, ...updateData } = proveedor;
   try {

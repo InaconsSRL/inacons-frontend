@@ -28,6 +28,9 @@ interface ProveedorFormData {
   nombre_comercial?: string;
   rubro?: string;
   estado?: string;
+  tipo?: string;
+  actividad?: string;
+  correo?: string;
   id?: string;
 }
 
@@ -49,20 +52,8 @@ interface MediosPagoData {
   yape: string;
 }
 
-// Actualizar las interfaces para coincidir con los datos del servidor
-interface Proveedor {
-  id: string;
-  razon_social: string;
-  direccion: string;
-  nombre_comercial: string;
-  ruc: string;
-  rubro: string;
-  estado: string;
-}
-
 interface ContactoProveedor {
   id: string;
-  proveedor_id: Proveedor;
   nombres: string;
   apellidos: string;
   cargo: string;
@@ -71,7 +62,6 @@ interface ContactoProveedor {
 
 interface MediosPagoProveedor {
   id: string;
-  proveedor_id: Proveedor;
   cuenta_bcp: string;
   cuenta_bbva: string;
   yape: string;

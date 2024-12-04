@@ -9,6 +9,9 @@ interface ProveedorFormData {
   nombre_comercial?: string;
   rubro?: string;
   estado?: string;
+  tipo?: string;
+  actividad?: string;
+  correo?: string;
 }
 
 interface FormErrors {
@@ -29,6 +32,9 @@ const ProveedorForm: React.FC<ProveedorFormProps> = ({ initialValues, onSubmit }
     nombre_comercial: initialValues?.nombre_comercial || '',
     rubro: initialValues?.rubro || '',
     estado: initialValues?.estado || '',
+    tipo: initialValues?.tipo || '',
+    actividad: initialValues?.actividad || '',
+    correo: initialValues?.correo || '',
   });
 
   const [errors, setErrors] = useState<FormErrors>({});
@@ -190,6 +196,48 @@ const ProveedorForm: React.FC<ProveedorFormProps> = ({ initialValues, onSubmit }
           <option value="activo">Activo</option>
           <option value="inactivo">Inactivo</option>
         </select>
+      </div>
+
+      <div className="mb-4">
+        <label htmlFor="rubro" className="block text-gray-700 text-sm font-bold mb-2">
+          Tipo (Bien / Servicio):
+        </label>
+        <input
+          id="tipo"
+          name="tipo"
+          placeholder="Tipo del Proveedor"
+          value={formData.tipo}
+          onChange={handleChange}
+          className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+        />
+      </div>
+
+      <div className="mb-4">
+        <label htmlFor="rubro" className="block text-gray-700 text-sm font-bold mb-2">
+          Actividad:
+        </label>
+        <input
+          id="actividad"
+          name="actividad"
+          placeholder="Actividad del Proveedor"
+          value={formData.actividad}
+          onChange={handleChange}
+          className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+        />
+      </div>
+
+      <div className="mb-4">
+        <label htmlFor="rubro" className="block text-gray-700 text-sm font-bold mb-2">
+          Correo:
+        </label>
+        <input
+          id="correo"
+          name="correo"
+          placeholder="Correo del Proveedor"
+          value={formData.correo}
+          onChange={handleChange}
+          className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+        />
       </div>
 
       <div className="flex items-center justify-center mt-6">

@@ -11,6 +11,12 @@ const LIST_VALORACION_PROVEEDORES = gql`
       puntuacion
       fecha_inicio
       fecha_fin
+      notas
+      usuario_id {
+        id
+        nombres
+        apellidos
+      }
     }
   }
 `;
@@ -25,13 +31,19 @@ const LIST_VALORACION_BY_PROVEEDOR = gql`
       puntuacion
       fecha_inicio
       fecha_fin
+      notas
+      usuario_id {
+        id
+        nombres
+        apellidos
+      }
     }
   }
 `;
 
 const ADD_VALORACION_PROVEEDOR = gql`
-  mutation AddValoracionProveedor($proveedor_id: ID!, $puntuacion: Int!, $fecha_inicio: Date!, $fecha_fin: Date!) {
-    addValoracionProveedor(proveedor_id: $proveedor_id, puntuacion: $puntuacion, fecha_inicio: $fecha_inicio, fecha_fin: $fecha_fin) {
+  mutation AddValoracionProveedor($proveedor_id: ID!, $puntuacion: Int!, $fecha_inicio: Date!, $fecha_fin: Date!, $usuario_id: ID!, $notas: String) {
+    addValoracionProveedor(proveedor_id: $proveedor_id, puntuacion: $puntuacion, fecha_inicio: $fecha_inicio, fecha_fin: $fecha_fin, usuario_id: $usuario_id, notas: $notas) {
       id
       proveedor_id {
         id
@@ -39,6 +51,12 @@ const ADD_VALORACION_PROVEEDOR = gql`
       puntuacion
       fecha_inicio
       fecha_fin
+      notas
+      usuario_id {
+        id
+        nombres
+        apellidos
+      }
     }
   }
 `;
@@ -53,6 +71,12 @@ const UPDATE_VALORACION_PROVEEDOR = gql`
       puntuacion
       fecha_inicio
       fecha_fin
+      notas
+      usuario_id {
+        id
+        nombres
+        apellidos
+      }
     }
   }
 `;
@@ -93,6 +117,8 @@ export const addValoracionProveedorService = async (valoracionData: {
   puntuacion: number; 
   fecha_inicio: Date; 
   fecha_fin: Date;
+  usuario_id: string;
+  notas?: string;
 }) => {
   try {
     const { data } = await client.mutate({
@@ -107,10 +133,12 @@ export const addValoracionProveedorService = async (valoracionData: {
 
 export const updateValoracionProveedorService = async (valoracionData: {
   id: string;
+  usuario_id: string;
   proveedor_id?: string;
   puntuacion?: number;
   fecha_inicio?: Date;
   fecha_fin?: Date;
+  notas?: string;
 }) => {
   try {
     const { data } = await client.mutate({
