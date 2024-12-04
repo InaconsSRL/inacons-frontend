@@ -23,7 +23,7 @@ import {
   ResponsiveContainer,
 } from 'recharts';
 // import SorteoPage from './Sorteo';
-import ShipmentTracker from './ShipmentTracker';
+import ShipmentTracker from '../Tranferencias/ShipmentTracker';
 
 const HomePage = () => {
   const [activeUsers, setActiveUsers] = useState(42);

@@ -21,6 +21,9 @@ interface Proveedor {
   nombre_comercial?: string;
   rubro?: string;
   estado?: string;
+  actividad?: string;
+  correo?: string;
+  tipo?: string
   contactos?: {
     id: string;
     nombres: string;
@@ -88,7 +91,7 @@ const ProveedorComponent: React.FC = () => {
 
   const tableData = {
     filter: [true, true, true, true, true, true, false],
-    headers: ["RazonSocial", "RUC", "Direccion", "NombreComercial", "Rubro", "Estado", "Opciones"],
+    headers: ["RazonSocial", "RUC", "Direccion", "NombreComercial", "Rubro", "Estado", "Correo", "Opciones"],
     rows: proveedores.map(proveedor => ({
       RazonSocial: proveedor.razon_social ? proveedor.razon_social : "no hay",
       RUC: proveedor.ruc? proveedor.ruc : "no hay",
@@ -96,6 +99,7 @@ const ProveedorComponent: React.FC = () => {
       NombreComercial: proveedor.nombre_comercial ? proveedor.nombre_comercial : "no hay",
       Rubro: proveedor.rubro ? proveedor.rubro : "no hay",
       Estado: proveedor.estado ? proveedor.estado : "no hay",
+      Correo: proveedor.correo ? proveedor.correo : "no hay",
       Opciones: (
         <Button text={<FiEdit size={18} className='text-blue-500'/>} color='transp' className='text-black' onClick={() => handleEdit(proveedor)}></Button>
       )

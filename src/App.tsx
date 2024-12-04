@@ -33,7 +33,7 @@ const App: React.FC = () => {
   const user = useSelector((state: RootState) => state.user);
 
   return (
-    <Routes>
+    <Routes >
       <Route path="/login" element={<Login />} />
       <Route path="/proveedor-registro" element={<HomologacionFormPage />} />
       <Route 
@@ -74,7 +74,10 @@ const App: React.FC = () => {
 };
 
 const AppWrapper: React.FC = () => (
-  <Router>
+  <Router 
+  future={{//salia error, este codigo prepara la app para la version 7 de react-router
+    v7_startTransition: true, v7_relativeSplatPath: true
+    }}>
     <App />
   </Router>
 );

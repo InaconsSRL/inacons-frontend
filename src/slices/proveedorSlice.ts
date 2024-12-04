@@ -9,6 +9,9 @@ export interface Proveedor {
   nombre_comercial?: string;
   rubro?: string;
   estado?: string;
+  actividad?: string;
+  correo?: string;
+  tipo?: string;
   contactos?: Contacto[];
   mediosPago?: MedioPago[];
 }
