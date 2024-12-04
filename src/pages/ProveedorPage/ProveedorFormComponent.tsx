@@ -16,10 +16,25 @@ import {
   updateMediosPagoProveedor 
 } from '../../slices/mediosPagoProveedorSlice';
 import { addProveedor, updateProveedor } from '../../slices/proveedorSlice';
+import { 
+  fetchValoracionesByProveedor,
+  addValoracionProveedor,
+  updateValoracionProveedor,
+  deleteValoracionProveedor
+} from '../../slices/valoracionProveedorSlice';
+import { 
+  //fetchDatosValoracionByProveedor,
+  // addDatosValoracionProveedor,
+  // deleteDatosValoracionProveedor
+} from '../../slices/datosValoracionProveedorSlice';
+import { fetchCuestionarios } from '../../slices/cuestionarioHomologacionSlice';
 import type { AppDispatch, RootState } from '../../store/store';
 import ContactoForm from './Forms/ContactoForm';
 import MediosPagoForm from './Forms/MediosPagoForm';
 import ProveedorForm from './Forms/ProveedorForm';
+import ValoracionForm from './Forms/ValoracionForm';
+//import CuestionarioForm from './Forms/CuestionarioForm';
+import { formatDate } from '../../components/Utils/dateUtils';
 
 interface ProveedorFormData {
   ruc: string;
@@ -67,14 +82,39 @@ interface MediosPagoProveedor {
   yape: string;
 }
 
+interface ValoracionData {
+  puntuacion: number;
+  fecha_inicio: string;
+  fecha_fin: string;
+  notas?: string;
+  usuario_id: string;
+}
+
+interface ValoracionProveedor {
+  id: string;
+  puntuacion: number;
+  fecha_inicio: string;
+  fecha_fin: string;
+  notas?: string;
+  usuario_id: {
+    id: string;
+    nombres: string;
+    apellidos: string;
+  };
+}
+
 const ProveedorFormComponent: React.FC<FormComponentProps> = ({ 
   initialValues,
   onSuccess 
 }) => {
   const dispatch = useDispatch<AppDispatch>();
 
+  const user_id = useSelector((state: RootState) => state.user.id);
+
   const [showContactForm, setShowContactForm] = useState(false);
   const [showMediosPagoForm, setShowMediosPagoForm] = useState(false);
+  const [showValoracionForm, setShowValoracionForm] = useState(false);
+  // const [showCuestionarioForm, setShowCuestionarioForm] = useState(false);
 
   const [editContactoId, setEditContactoId] = useState<string | null>(null);
   const [editContactoData, setEditContactoData] = useState<ContactoData>({
@@ -90,8 +130,23 @@ const ProveedorFormComponent: React.FC<FormComponentProps> = ({
     yape: ''
   });
 
+  const [editValoracionId, setEditValoracionId] = useState<string | null>(null);
+  const [editValoracionData, setEditValoracionData] = useState<ValoracionData>({
+    puntuacion: 0,
+    fecha_inicio: '',
+    fecha_fin: '',
+    notas: '',
+    usuario_id: user_id || ''
+  });
+
+  console.log(editContactoId, editMediosPagoId, editValoracionId);
+
+
   const contactos = useSelector((state: RootState) => state.contactoProveedor.contactos);
   const mediosPago = useSelector((state: RootState) => state.mediosPagoProveedor.mediosPago);
+  const valoraciones = useSelector((state: RootState) => state.valoracionProveedor.valoraciones);
+  // const datosValoraciones = useSelector((state: RootState) => state.datosValoracionProveedor.datosValoraciones);
+  // const cuestionarios = useSelector((state: RootState) => state.cuestionarioHomologacion.cuestionarios);
 
   console.log(contactos, mediosPago);
 
@@ -99,6 +154,9 @@ const ProveedorFormComponent: React.FC<FormComponentProps> = ({
     if (initialValues?.id) {
       dispatch(fetchContactosByProveedor(initialValues.id));
       dispatch(fetchMediosPagoByProveedor(initialValues.id));
+      dispatch(fetchValoracionesByProveedor(initialValues.id));
+      // dispatch(fetchDatosValoracionByProveedor(initialValues.id));
+      dispatch(fetchCuestionarios());
     }
   }, [dispatch, initialValues]);
 
@@ -178,6 +236,48 @@ const ProveedorFormComponent: React.FC<FormComponentProps> = ({
     }
   };
 
+  const handleValoracionSubmit = (valoracionData: ValoracionData) => {
+    if (initialValues?.id) {
+      if (editValoracionId) {
+        // Editar valoración existente
+        dispatch(updateValoracionProveedor({
+          id: editValoracionId,
+          proveedor_id: initialValues.id,
+          ...valoracionData
+        })).then(() => {
+          setEditValoracionId(null);
+          setEditValoracionData({
+            puntuacion: 0,
+            fecha_inicio: '',
+            fecha_fin: '',
+            notas: '',
+            usuario_id: user_id || ''
+          });
+          setShowValoracionForm(false);
+        });
+      } else {
+        // Crear nueva valoración
+        dispatch(addValoracionProveedor({
+          proveedor_id: initialValues.id,
+          ...valoracionData
+        })).then(() => {
+          setShowValoracionForm(false);
+        });
+      }
+    }
+  };
+
+  // const handleCuestionarioSubmit = (cuestionarioData: any) => {
+  //   if (initialValues?.id) {
+  //     dispatch(addDatosValoracionProveedor({
+  //       id_proveedor: initialValues.id,
+  //       ...cuestionarioData
+  //     })).then(() => {
+  //       setShowCuestionarioForm(false);
+  //     });
+  //   }
+  // };
+
   const handleEditContacto = (contacto: ContactoProveedor) => {
     setEditContactoId(contacto.id);
     setEditContactoData({
@@ -197,6 +297,18 @@ const ProveedorFormComponent: React.FC<FormComponentProps> = ({
       yape: medio.yape
     });
     setShowMediosPagoForm(true);
+  };
+
+  const handleEditValoracion = (valoracion: ValoracionProveedor) => {
+    setEditValoracionId(valoracion.id);
+    setEditValoracionData({
+      puntuacion: valoracion.puntuacion,
+      fecha_inicio: valoracion.fecha_inicio,
+      fecha_fin: valoracion.fecha_fin,
+      notas: valoracion.notas || '',
+      usuario_id: valoracion.usuario_id.id
+    });
+    setShowValoracionForm(true);
   };
 
   const handleDeleteContacto = (contactoId: string) => {
@@ -256,10 +368,52 @@ const ProveedorFormComponent: React.FC<FormComponentProps> = ({
     }))
   };
 
+  const valoracionesTableData = {
+    headers: ['Puntuación', 'Fecha Inicio', 'Fecha Fin', 'Notas', 'Usuario', 'Acciones'],
+    filter: [true, true, true, true, true, false],
+    rows: valoraciones.map((val: ValoracionProveedor) => ({
+      Puntuación: val.puntuacion,
+      'Fecha Inicio': formatDate(val.fecha_inicio, 'dd/mm/yyyy'),
+      'Fecha Fin': formatDate(val.fecha_fin, 'dd/mm/yyyy'),
+      Notas: val.notas || '-',
+      Usuario: `${val.usuario_id.nombres} ${val.usuario_id.apellidos}`,
+      Acciones: (
+        <div className="flex gap-2">
+          <FiEdit 
+            className="cursor-pointer text-blue-500 hover:text-blue-700"
+            onClick={() => handleEditValoracion(val)}
+          />
+          <FiTrash2 
+            className="cursor-pointer text-red-500 hover:text-red-700"
+            onClick={() => dispatch(deleteValoracionProveedor(val.id))}
+          />
+        </div>
+      )
+    }))
+  };
+
+  // const datosValoracionTableData = {
+  //   headers: ['Cuestionario', 'Respuesta', 'Fecha', 'Acciones'],
+  //   filter: [true, true, true, false],
+  //   rows: datosValoraciones.map((dato: any) => ({
+  //     Cuestionario: dato.cuestionario_id.denominacion,
+  //     Respuesta: dato.respuesta,
+  //     Fecha: new Date(dato.fecha_creacion).toLocaleDateString(),
+  //     Acciones: (
+  //       <div className="flex gap-2">
+  //         <FiTrash2 
+  //           className="cursor-pointer text-red-500 hover:text-red-700"
+  //           onClick={() => dispatch(deleteDatosValoracionProveedor(dato.id))}
+  //         />
+  //       </div>
+  //     )
+  //   }))
+  // };
+
   return (
     <div className="space-y-6">
       <div className='flex flex-row'>
-        <div className='mr-4 min-w-[400px] '>
+        <div className='mr-4 min-w-[400px]'>
           <ProveedorForm
             initialValues={initialValues}
             onSubmit={handleSubmit}
@@ -267,55 +421,109 @@ const ProveedorFormComponent: React.FC<FormComponentProps> = ({
         </div>
 
         {initialValues && (
-          <div className=''>
+          <div className='flex-1'>
             <div className='grid gap-4'>
-              <div>
-                <div className="bg-white shadow-md rounded px-8 p-2">
-                  <div className="flex justify-between items-center mb-2 mt-2 gap-20">
-                    <h3 className="text-lg font-semibold">Contactos</h3>
-                    <Button
-                      text="Nuevo Contacto"
-                      color="azul"
-                      className='w-auto px-6 py-2 text-sm font-medium'
-                      icon={<FiPlus />}
-                      onClick={() => setShowContactForm(true)}
-                    />
-                  </div>
-                  {showContactForm ? (
-                    <ContactoForm
-                      onSubmit={handleContactoSubmit}
-                      onCancel={() => setShowContactForm(false)}
-                      initialData={editContactoData}
-                    />
-                  ) : (
-                    <TableComponent tableData={contactosTableData} />
-                  )}
+              {/* Sección Contactos */}
+              <div className="bg-white shadow-md rounded px-8 p-2">
+                <div className="flex justify-between items-center mb-2 mt-2 gap-20">
+                  <h3 className="text-lg font-semibold">Contactos</h3>
+                  <Button
+                    text="Nuevo Contacto"
+                    color="azul"
+                    className='w-auto px-6 py-2 text-sm font-medium'
+                    icon={<FiPlus />}
+                    onClick={() => setShowContactForm(true)}
+                  />
                 </div>
+                {showContactForm ? (
+                  <ContactoForm
+                    onSubmit={handleContactoSubmit}
+                    onCancel={() => setShowContactForm(false)}
+                    initialData={editContactoData}
+                  />
+                ) : (
+                  <TableComponent tableData={contactosTableData} />
+                )}
               </div>
 
-              <div>
-                <div className="bg-white shadow-md rounded px-8 p-2">
-                  <div className="flex justify-between items-center mb-2 mt-2 gap-20">
-                    <h3 className="text-lg font-semibold">Medios de Pago</h3>
-                    <Button
-                      text="Nuevo Medio de Pago"
-                      className='w-auto px-6 py-2 text-sm font-medium'
-                      color="azul"
-                      icon={<FiPlus />}
-                      onClick={() => setShowMediosPagoForm(true)}
-                    />
-                  </div>
-                  {showMediosPagoForm ? (
-                    <MediosPagoForm
-                      onSubmit={handleMediosPagoSubmit}
-                      onCancel={() => setShowMediosPagoForm(false)}
-                      initialData={editMediosPagoData}
-                    />
-                  ) : (
-                    <TableComponent tableData={mediosPagoTableData} />
-                  )}
+              {/* Sección Medios de Pago */}
+              <div className="bg-white shadow-md rounded px-8 p-2">
+                <div className="flex justify-between items-center mb-2 mt-2 gap-20">
+                  <h3 className="text-lg font-semibold">Medios de Pago</h3>
+                  <Button
+                    text="Nuevo Medio de Pago"
+                    className='w-auto px-6 py-2 text-sm font-medium'
+                    color="azul"
+                    icon={<FiPlus />}
+                    onClick={() => setShowMediosPagoForm(true)}
+                  />
                 </div>
+                {showMediosPagoForm ? (
+                  <MediosPagoForm
+                    onSubmit={handleMediosPagoSubmit}
+                    onCancel={() => setShowMediosPagoForm(false)}
+                    initialData={editMediosPagoData}
+                  />
+                ) : (
+                  <TableComponent tableData={mediosPagoTableData} />
+                )}
               </div>
+
+              {/* Sección Valoraciones */}
+              <div className="bg-white shadow-md rounded px-8 p-2">
+                <div className="flex justify-between items-center mb-2 mt-2 gap-20">
+                  <h3 className="text-lg font-semibold">Valoraciones</h3>
+                  <Button
+                    text="Nueva Valoración"
+                    color="azul"
+                    className='w-auto px-6 py-2 text-sm font-medium'
+                    icon={<FiPlus />}
+                    onClick={() => setShowValoracionForm(true)}
+                  />
+                </div>
+                {showValoracionForm ? (
+                  <ValoracionForm
+                    onSubmit={handleValoracionSubmit}
+                    onCancel={() => {
+                      setShowValoracionForm(false);
+                      setEditValoracionId(null);
+                      setEditValoracionData({
+                        puntuacion: 0,
+                        fecha_inicio: '',
+                        fecha_fin: '',
+                        notas: '',
+                        usuario_id: user_id || ''
+                      });
+                    }}
+                    initialData={editValoracionId ? editValoracionData : undefined}
+                  />
+                ) : (
+                  <TableComponent tableData={valoracionesTableData} />
+                )}
+              </div>
+
+              {/* Sección Cuestionarios */}
+              {/* <div className="bg-white shadow-md rounded px-8 p-2">
+                <div className="flex justify-between items-center mb-2 mt-2 gap-20">
+                  <h3 className="text-lg font-semibold">Cuestionarios de Homologación</h3>
+                  <Button
+                    text="Nuevo Cuestionario"
+                    color="azul"
+                    className='w-auto px-6 py-2 text-sm font-medium'
+                    icon={<FiPlus />}
+                    onClick={() => setShowCuestionarioForm(true)}
+                  />
+                </div>
+                {showCuestionarioForm ? (
+                  <CuestionarioForm
+                    cuestionarios={cuestionarios}
+                    onSubmit={handleCuestionarioSubmit}
+                    onCancel={() => setShowCuestionarioForm(false)}
+                  />
+                ) : (
+                  <TableComponent tableData={datosValoracionTableData} />
+                )}
+              </div> */}
             </div>
           </div>
         )}

@@ -22,7 +22,6 @@ import {
   Tooltip,
   ResponsiveContainer,
 } from 'recharts';
-// import SorteoPage from './Sorteo';
 import ShipmentTracker from '../Tranferencias/ShipmentTracker';
 
 const HomePage = () => {

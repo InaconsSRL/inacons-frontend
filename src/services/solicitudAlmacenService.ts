@@ -41,14 +41,12 @@ const ADD_SOLICITUD_ALMACEN_MUTATION = gql`
     $usuario_id: ID!
     $requerimiento_id: ID!
     $almacen_origen_id: ID!
-    $almacen_destino_id: ID!
     $fecha: DateTime
   ) {
     addSolicitudAlmacen(
       usuario_id: $usuario_id
       requerimiento_id: $requerimiento_id
       almacen_origen_id: $almacen_origen_id
-      almacen_destino_id: $almacen_destino_id
       fecha: $fecha
     ) {
       id
@@ -89,7 +87,6 @@ const UPDATE_SOLICITUD_ALMACEN_MUTATION = gql`
     $usuario_id: ID!
     $requerimiento_id: ID
     $almacen_origen_id: ID
-    $almacen_destino_id: ID
     $fecha: DateTime
   ) {
     updateSolicitudAlmacen(
@@ -97,7 +94,6 @@ const UPDATE_SOLICITUD_ALMACEN_MUTATION = gql`
       usuario_id: $usuario_id
       requerimiento_id: $requerimiento_id
       almacen_origen_id: $almacen_origen_id
-      almacen_destino_id: $almacen_destino_id
       fecha: $fecha
     ) {
       id
@@ -159,7 +155,6 @@ export const addSolicitudAlmacenService = async (solicitudData: {
   usuario_id: string;
   requerimiento_id: string;
   almacen_origen_id: string;
-  almacen_destino_id: string;
   fecha: Date;
 }) => {
   try {
@@ -169,7 +164,6 @@ export const addSolicitudAlmacenService = async (solicitudData: {
         usuario_id: solicitudData.usuario_id,
         requerimiento_id: solicitudData.requerimiento_id,
         almacen_origen_id: solicitudData.almacen_origen_id,
-        almacen_destino_id: solicitudData.almacen_destino_id,
         fecha: solicitudData.fecha,
       },
     });
@@ -188,7 +182,6 @@ export const updateSolicitudAlmacenService = async (solicitudData: {
   usuario_id: string;
   requerimiento_id: string;
   almacen_origen_id: string;
-  almacen_destino_id: string;
   fecha: Date;
 }) => {
   try {
@@ -199,7 +192,6 @@ export const updateSolicitudAlmacenService = async (solicitudData: {
         usuario_id: solicitudData.usuario_id,
         requerimiento_id: solicitudData.requerimiento_id,
         almacen_origen_id: solicitudData.almacen_origen_id,
-        almacen_destino_id: solicitudData.almacen_destino_id,
         fecha: solicitudData.fecha,
       },
     });

@@ -42,7 +42,7 @@ const LIST_VALORACION_BY_PROVEEDOR = gql`
 `;
 
 const ADD_VALORACION_PROVEEDOR = gql`
-  mutation AddValoracionProveedor($proveedor_id: ID!, $puntuacion: Int!, $fecha_inicio: Date!, $fecha_fin: Date!, $usuario_id: ID!, $notas: String) {
+  mutation AddValoracionProveedor($proveedor_id: ID!, $puntuacion: Float!, $fecha_inicio: Date!, $fecha_fin: Date!, $usuario_id: ID!, $notas: String) {
     addValoracionProveedor(proveedor_id: $proveedor_id, puntuacion: $puntuacion, fecha_inicio: $fecha_inicio, fecha_fin: $fecha_fin, usuario_id: $usuario_id, notas: $notas) {
       id
       proveedor_id {
@@ -62,7 +62,7 @@ const ADD_VALORACION_PROVEEDOR = gql`
 `;
 
 const UPDATE_VALORACION_PROVEEDOR = gql`
-  mutation UpdateValoracionProveedor($updateValoracionProveedorId: ID!, $proveedor_id: ID, $puntuacion: Int, $fecha_inicio: Date, $fecha_fin: Date) {
+  mutation UpdateValoracionProveedor($updateValoracionProveedorId: ID!, $proveedor_id: ID, $puntuacion: Float, $fecha_inicio: Date, $fecha_fin: Date) {
     updateValoracionProveedor(id: $updateValoracionProveedorId, proveedor_id: $proveedor_id, puntuacion: $puntuacion, fecha_inicio: $fecha_inicio, fecha_fin: $fecha_fin) {
       id
       proveedor_id {
@@ -115,15 +115,19 @@ export const listValoracionByProveedorService = async (proveedorId: string) => {
 export const addValoracionProveedorService = async (valoracionData: { 
   proveedor_id: string; 
   puntuacion: number; 
-  fecha_inicio: Date; 
-  fecha_fin: Date;
+  fecha_inicio: string; 
+  fecha_fin: string;
   usuario_id: string;
   notas?: string;
 }) => {
+  console.log("enviando valoracion", valoracionData);
   try {
     const { data } = await client.mutate({
       mutation: ADD_VALORACION_PROVEEDOR,
-      variables: valoracionData,
+      variables: {
+        ...valoracionData,
+        puntuacion: +valoracionData.puntuacion,
+      },
     });
     return data.addValoracionProveedor;
   } catch (error) {
@@ -135,17 +139,19 @@ export const updateValoracionProveedorService = async (valoracionData: {
   id: string;
   usuario_id: string;
   proveedor_id?: string;
-  puntuacion?: number;
-  fecha_inicio?: Date;
-  fecha_fin?: Date;
+  puntuacion: number;
+  fecha_inicio?: string;
+  fecha_fin?: string;
   notas?: string;
 }) => {
+  console.log("enviando valoracion actualizada", valoracionData);
   try {
     const { data } = await client.mutate({
       mutation: UPDATE_VALORACION_PROVEEDOR,
       variables: {
-        updateValoracionProveedorId: valoracionData.id,
-        ...valoracionData,
+      updateValoracionProveedorId: valoracionData.id,
+      ...valoracionData,
+      puntuacion: +valoracionData.puntuacion,
       },
     });
     return data.updateValoracionProveedor;

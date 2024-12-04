@@ -199,17 +199,21 @@ const ProveedorForm: React.FC<ProveedorFormProps> = ({ initialValues, onSubmit }
       </div>
 
       <div className="mb-4">
-        <label htmlFor="rubro" className="block text-gray-700 text-sm font-bold mb-2">
+        <label htmlFor="tipo" className="block text-gray-700 text-sm font-bold mb-2">
           Tipo (Bien / Servicio):
         </label>
-        <input
+        <select
           id="tipo"
           name="tipo"
-          placeholder="Tipo del Proveedor"
           value={formData.tipo}
           onChange={handleChange}
-          className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-        />
+          className="shadow border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+        >
+          <option value="">Seleccione un tipo</option>
+          <option value="BIENES">BIENES</option>
+          <option value="SERVICIOS">SERVICIOS</option>
+          <option value="BIENES Y SERVICIOS">BIENES Y SERVICIOS</option>
+        </select>
       </div>
 
       <div className="mb-4">
