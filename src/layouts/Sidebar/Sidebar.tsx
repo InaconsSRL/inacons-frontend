@@ -8,6 +8,7 @@ import { GiConcreteBag } from 'react-icons/gi';
 import { MdViewKanban } from "react-icons/md";
 import DropdownMenu from './DropdownMenu';
 import { motion } from 'framer-motion';
+import { FaListCheck } from 'react-icons/fa6';
 
 interface SidebarProps {
   isSidebarOpen: boolean;
@@ -39,8 +40,9 @@ const Sidebar: React.FC<SidebarProps> = ({ isSidebarOpen, toggleSidebar }) => {
   ];
 
   const moduloCompras = [
-    { to: "/dashboard/compras", icon: FaShoppingCart, text: "ComprasPage" },
+    { to: "/dashboard/compras", icon: FaShoppingCart, text: "Cotizaciones" },
     { to: "/dashboard/proveedor", icon: FaHandshake, text: "Proveedores" },
+    { to: "/dashboard/ordenCompra", icon: FaListCheck, text: "OrdenesDeCompra" },
   ];
 
   const moduloProyectos = [

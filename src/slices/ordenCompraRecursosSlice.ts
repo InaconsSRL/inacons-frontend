@@ -1,29 +1,62 @@
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
-import { listOrdenCompraRecursosService, addOrdenCompraRecursoService, updateOrdenCompraRecursoService, deleteOrdenCompraRecursoService } from '../services/ordenCompraRecursosService';
+import { 
+  listOrdenCompraRecursosService, 
+  addOrdenCompraRecursoService, 
+  updateOrdenCompraRecursoService, 
+  deleteOrdenCompraRecursoService,
+  getOrdenCompraRecursosByOrdenIdService 
+} from '../services/ordenCompraRecursosService';
 
-export enum EstadoOrdenCompraRecurso {
-  PENDIENTE = 'PENDIENTE',
-  APROBADO = 'APROBADO',
-  RECHAZADO = 'RECHAZADO'
+// Interfaces base para las estructuras anidadas
+interface RecursoImagen {
+  file: string;
 }
 
-interface OrdenCompraRecurso {
+interface Recurso {
   id: string;
+  nombre: string;
+  codigo: string;
+  imagenes: RecursoImagen[];
+  precio_actual: number;
+  unidad_id: string;
+}
+
+interface OrdenCompraRef {
+  id: string;
+}
+
+// Interface para las respuestas de consultas (GET/LIST)
+interface OrdenCompraRecursoQuery {
+  id: string;
+  orden_compra_id: OrdenCompraRef;
+  id_recurso: Recurso;
+  costo_real: number;
+  costo_aproximado: number;
+  estado: string;
+  cantidad: number;
+}
+
+// Interface para las mutaciones (ADD/UPDATE)
+interface OrdenCompraRecursoMutation {
+  id?: string;
   orden_compra_id: string;
   id_recurso: string;
   costo_real: number;
   costo_aproximado: number;
-  estado: EstadoOrdenCompraRecurso;
+  estado: string;
+  cantidad: number;
 }
 
 interface OrdenCompraRecursoState {
-  ordenCompraRecursos: OrdenCompraRecurso[];
+  ordenCompraRecursos: OrdenCompraRecursoQuery[];
+  ordenCompraRecursosByOrdenId: OrdenCompraRecursoQuery[];
   loading: boolean;
   error: string | null;
 }
 
 const initialState: OrdenCompraRecursoState = {
   ordenCompraRecursos: [],
+  ordenCompraRecursosByOrdenId: [],
   loading: false,
   error: null,
 };
@@ -46,7 +79,7 @@ export const fetchOrdenCompraRecursos = createAsyncThunk(
 
 export const addOrdenCompraRecurso = createAsyncThunk(
   'ordenCompraRecursos/addOrdenCompraRecurso',
-  async (data: Omit<OrdenCompraRecurso, 'id'>, { rejectWithValue }) => {
+  async (data: OrdenCompraRecursoMutation, { rejectWithValue }) => {
     try {
       return await addOrdenCompraRecursoService(data);
     } catch (error) {
@@ -57,7 +90,7 @@ export const addOrdenCompraRecurso = createAsyncThunk(
 
 export const updateOrdenCompraRecurso = createAsyncThunk(
   'ordenCompraRecursos/updateOrdenCompraRecurso',
-  async (data: OrdenCompraRecurso, { rejectWithValue }) => {
+  async (data: OrdenCompraRecursoMutation & { id: string }, { rejectWithValue }) => {
     try {
       return await updateOrdenCompraRecursoService(data);
     } catch (error) {
@@ -77,6 +110,17 @@ export const deleteOrdenCompraRecurso = createAsyncThunk(
   }
 );
 
+export const fetchOrdenCompraRecursosByOrdenId = createAsyncThunk(
+  'ordenCompraRecursos/fetchByOrdenId',
+  async (ordenId: string, { rejectWithValue }) => {
+    try {
+      return await getOrdenCompraRecursosByOrdenIdService(ordenId);
+    } catch (error) {
+      return rejectWithValue(handleError(error));
+    }
+  }
+);
+
 const ordenCompraRecursosSlice = createSlice({
   name: 'ordenCompraRecursos',
   initialState,
@@ -87,7 +131,7 @@ const ordenCompraRecursosSlice = createSlice({
         state.loading = true;
         state.error = null;
       })
-      .addCase(fetchOrdenCompraRecursos.fulfilled, (state, action: PayloadAction<OrdenCompraRecurso[]>) => {
+      .addCase(fetchOrdenCompraRecursos.fulfilled, (state, action: PayloadAction<OrdenCompraRecursoQuery[]>) => {
         state.loading = false;
         state.ordenCompraRecursos = action.payload;
       })
@@ -95,10 +139,10 @@ const ordenCompraRecursosSlice = createSlice({
         state.loading = false;
         state.error = action.payload as string;
       })
-      .addCase(addOrdenCompraRecurso.fulfilled, (state, action: PayloadAction<OrdenCompraRecurso>) => {
+      .addCase(addOrdenCompraRecurso.fulfilled, (state, action: PayloadAction<OrdenCompraRecursoQuery>) => {
         state.ordenCompraRecursos.push(action.payload);
       })
-      .addCase(updateOrdenCompraRecurso.fulfilled, (state, action: PayloadAction<OrdenCompraRecurso>) => {
+      .addCase(updateOrdenCompraRecurso.fulfilled, (state, action: PayloadAction<OrdenCompraRecursoQuery>) => {
         const index = state.ordenCompraRecursos.findIndex(item => item.id === action.payload.id);
         if (index !== -1) {
           state.ordenCompraRecursos[index] = action.payload;
@@ -106,6 +150,18 @@ const ordenCompraRecursosSlice = createSlice({
       })
       .addCase(deleteOrdenCompraRecurso.fulfilled, (state, action: PayloadAction<{ id: string }>) => {
         state.ordenCompraRecursos = state.ordenCompraRecursos.filter(item => item.id !== action.payload.id);
+      })
+      .addCase(fetchOrdenCompraRecursosByOrdenId.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(fetchOrdenCompraRecursosByOrdenId.fulfilled, (state, action: PayloadAction<OrdenCompraRecursoQuery[]>) => {
+        state.loading = false;
+        state.ordenCompraRecursosByOrdenId = action.payload;
+      })
+      .addCase(fetchOrdenCompraRecursosByOrdenId.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
       });
   },
 });

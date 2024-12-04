@@ -45,6 +45,9 @@ import { userReducer } from '../slices/userSlice';
 import { usuarioReducer } from '../slices/usuarioSlice';
 import { mediosPagoProveedorReducer } from '../slices/mediosPagoProveedorSlice';
 import { cotizacionProveedoresRecursoReducer } from '../slices/cotizacionProveedoresRecursoSlice';
+import { valoracionProveedorReducer } from '../slices/valoracionProveedorSlice';
+import { datosValoracionProveedorReducer } from '../slices/datosValoracionProveedorSlice';
+import { cuestionarioHomologacionReducer } from '../slices/cuestionarioHomologacionSlice';
 
 export const store = configureStore({
   reducer: {
@@ -62,6 +65,8 @@ export const store = configureStore({
     cotizacionProveedoresRecurso: cotizacionProveedoresRecursoReducer,
     cotizacionRecurso: cotizacionRecursoReducer,
     cotizacion: cotizacionReducer,
+    cuestionarioHomologacion: cuestionarioHomologacionReducer,
+    datosValoracionProveedor: datosValoracionProveedorReducer,
     guiaTransferencia: guiaTransferenciaReducer,
     mediosPagoProveedor: mediosPagoProveedorReducer,
     menu: menuReducer,
@@ -93,8 +98,21 @@ export const store = configureStore({
     unidad: unidadReducer,
     user: userReducer,
     usuario: usuarioReducer,
-
+    valoracionProveedor: valoracionProveedorReducer,
   },
+
+  //Para que se tome mas tiempo en responder todas las solicitudes de la API
+  middleware: (getDefaultMiddleware) =>
+    getDefaultMiddleware({
+      serializableCheck: {
+        // Aumentar el tiempo de advertencia a 100ms
+        warnAfter: 100,
+        // Opcionalmente, puedes ignorar ciertas acciones
+        ignoredActions: ['some/action/type'],
+        // Opcionalmente, puedes ignorar ciertas rutas del estado
+        ignoredPaths: ['some.path.to.ignore'],
+      },
+    }),
 });
 
 export type RootState = ReturnType<typeof store.getState>;

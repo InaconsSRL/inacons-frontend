@@ -12,11 +12,25 @@ import { Column, Requerimiento } from './types/kanban'; // Añadir esta línea
 import Button from '../../components/Buttons/Button';
 import { FiRefreshCcw } from 'react-icons/fi';
 import KanbanCardAlmacen from './KanbanCardAlmacen';
+import KanbanCardOrdenCompra from './KanbanCardOrdenCompra';
+import KanbanColumnCotizacion, { 
+  ColumnCotizacion, 
+  Cotizacion 
+} from './KanbanColumnCotizacion';
 
 const KanbanBoard = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const dispatch = useDispatch<AppDispatch>();
   const requerimientos: Requerimiento[] = useSelector((state: RootState) => state.requerimiento.requerimientos);
+  const cotizaciones: Cotizacion[] = useSelector((state: RootState) => 
+    state.cotizacion.cotizaciones.map(cot => ({
+      ...cot,
+      fecha_solicitud: new Date().toISOString(),
+      title: `Cotización ${cot.codigo_cotizacion}`,
+      color: '#F7AA01'
+    }))
+  );
+  const cotizacionesAdjudicadas = cotizaciones.filter((cot: Cotizacion) => cot.estado === 'adjudicada');
   const [modalNuevoRequerimiento, setModalNuevoRequerimiento] = useState(false);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const [showButtons, setShowButtons] = useState(false);
@@ -93,18 +107,26 @@ const KanbanBoard = () => {
     requerimiento: filteredRequerimientos.filter(req => req.estado_atencion === "aprobado_logistica")
   };
 
-  const gestionLogisticaDos: Column = {
-    id: 'gestion_traslado',
-    title: 'Cotización y Compra',
-    color: "#693726",
-    requerimiento: filteredRequerimientos.filter(req => req.estado_atencion === "aprobado_almacen")
+  const gestionTransferencias: Column = {
+    id: 'gestion_trasnsferencias',
+    title: 'Despacho y Transferencias',
+    color: "#68AD22",
+    requerimiento: filteredRequerimientos.filter(req => req.estado_atencion === "estado de transferencia")
   };
+
+  const gestionOrdenDeCompra: ColumnCotizacion = {
+    id: 'gestion_orden_compra',
+    title: 'Aprobar Orden de Compra',
+    color: "#F7AA01",
+    cotizacion: cotizacionesAdjudicadas,
+  };
+  console.log(cotizaciones);
 
   const gestionatencionParcial: Column = {
     id: 'gestion_atencion_parcial',
-    title: 'Atencion Parcial',
+    title: 'Requerimiento en Atención',
     color: "#332e3c",
-    requerimiento: filteredRequerimientos.filter(req => req.estado_atencion === "atencion_parcial")
+    requerimiento: filteredRequerimientos.filter(req => req.estado_atencion === "aprobado_almacen")
   };
 
   const gestionCompletados: Column = {
@@ -183,7 +205,10 @@ const KanbanBoard = () => {
             <KanbanColumn key={gestionAlmacen.id} column={gestionAlmacen} CardComponent={KanbanCardAlmacen} />
           </div>
           <div className="snap-center min-w-[240px] min-h-[calc(100vh-15rem)] ">
-            <KanbanColumn key={gestionLogisticaDos.id} column={gestionLogisticaDos} CardComponent={KanbanCardAprobacion} />
+            <KanbanColumn key={gestionTransferencias.id} column={gestionTransferencias} CardComponent={KanbanCardAprobacion} />
+          </div>
+          <div className="snap-center min-w-[240px] min-h-[calc(100vh-15rem)] ">
+            <KanbanColumnCotizacion key={gestionOrdenDeCompra.id} columna={gestionOrdenDeCompra} CardComponentC={KanbanCardOrdenCompra} />
           </div>
           <div className="snap-center min-w-[240px] min-h-[calc(100vh-15rem)] ">
             <KanbanColumn key={gestionatencionParcial.id} column={gestionatencionParcial} CardComponent={KanbanCardAprobacion} />

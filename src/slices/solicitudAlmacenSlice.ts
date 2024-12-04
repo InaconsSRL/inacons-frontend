@@ -6,17 +6,53 @@ import {
   deleteSolicitudAlmacenService 
 } from '../services/solicitudAlmacenService';
 
-interface SolicitudAlmacen {
+// Interfaces para los datos completos
+interface AlmacenData {
   id: string;
+  nombre: string;
+  estado?: string;
+  direccion?: string;
+}
+
+interface UsuarioData {
+  id: string;
+  nombres: string;
+  apellidos: string;
+}
+
+interface RequerimientoData {
+  id: string;
+  codigo: string;
+  estado_atencion: string;
+  fecha_final: string;
+  fecha_solicitud: string;
+  obra_id: string;
+  presupuesto_id: string;
+  sustento: string;
+  usuario_id: string;
+}
+
+// Interface para la solicitud con datos completos (usado en queries)
+interface SolicitudAlmacenResponse {
+  id: string;
+  usuario_id: UsuarioData;
+  requerimiento_id: RequerimientoData;
+  almacen_origen_id: AlmacenData;
+  almacen_destino_id: AlmacenData;
+  fecha: string;
+}
+
+// Interface para las mutations (cuando enviamos datos)
+interface SolicitudAlmacenInput {
   usuario_id: string;
   requerimiento_id: string;
   almacen_origen_id: string;
   almacen_destino_id: string;
-  fecha: string;
+  fecha: Date;
 }
 
 interface SolicitudAlmacenState {
-  solicitudes: SolicitudAlmacen[];
+  solicitudes: SolicitudAlmacenResponse[];
   loading: boolean;
   error: string | null;
 }
@@ -45,7 +81,7 @@ export const fetchSolicitudAlmacenes = createAsyncThunk(
 
 export const addSolicitudAlmacen = createAsyncThunk(
   'solicitudAlmacen/addSolicitudAlmacen',
-  async (solicitudData: { requerimientoId: string; usuarioId: string; almacenOrigenId: string; almacenDestinoId: string; fecha: Date }, { rejectWithValue }) => {
+  async (solicitudData: SolicitudAlmacenInput, { rejectWithValue }) => {
     try {
       return await addSolicitudAlmacenService(solicitudData);
     } catch (error) {
@@ -56,7 +92,7 @@ export const addSolicitudAlmacen = createAsyncThunk(
 
 export const updateSolicitudAlmacen = createAsyncThunk(
   'solicitudAlmacen/updateSolicitudAlmacen',
-  async (solicitudData: { updateSolicitudAlmacenId: string; usuarioId: string; requerimientoId: string; almacenOrigenId: string; almacenDestinoId: string; fecha: Date }, { rejectWithValue }) => {
+  async (solicitudData: SolicitudAlmacenInput & { updateSolicitudAlmacenId: string }, { rejectWithValue }) => {
     try {
       return await updateSolicitudAlmacenService(solicitudData);
     } catch (error) {
@@ -86,7 +122,7 @@ const solicitudAlmacenSlice = createSlice({
         state.loading = true;
         state.error = null;
       })
-      .addCase(fetchSolicitudAlmacenes.fulfilled, (state, action: PayloadAction<SolicitudAlmacen[]>) => {
+      .addCase(fetchSolicitudAlmacenes.fulfilled, (state, action: PayloadAction<SolicitudAlmacenResponse[]>) => {
         state.loading = false;
         state.solicitudes = action.payload;
       })
@@ -94,10 +130,10 @@ const solicitudAlmacenSlice = createSlice({
         state.loading = false;
         state.error = action.payload as string;
       })
-      .addCase(addSolicitudAlmacen.fulfilled, (state, action: PayloadAction<SolicitudAlmacen>) => {
+      .addCase(addSolicitudAlmacen.fulfilled, (state, action: PayloadAction<SolicitudAlmacenResponse>) => {
         state.solicitudes.push(action.payload);
       })
-      .addCase(updateSolicitudAlmacen.fulfilled, (state, action: PayloadAction<SolicitudAlmacen>) => {
+      .addCase(updateSolicitudAlmacen.fulfilled, (state, action: PayloadAction<SolicitudAlmacenResponse>) => {
         const index = state.solicitudes.findIndex(sol => sol.id === action.payload.id);
         if (index !== -1) {
           state.solicitudes[index] = action.payload;

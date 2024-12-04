@@ -42,12 +42,28 @@ export interface Aprobacion {
   id_aprobacion: string;
 }
 
+export interface Cotizacion {
+  codigo_cotizacion: string;
+  estado: string;
+  fecha: number;
+  id: string;
+  solicitud_compra_id: string;
+  usuario_id: Usuario;
+}
+
+interface Usuario {
+  id: string;
+  nombres: string;
+  apellidos: string;
+}
+
 export interface Column {
   id: string;
   title: string;
   limit?: number;
   color: string;
   requerimiento: Requerimiento[];
+  cotizacion?: Cotizacion[];
 }
 
 export interface Board {

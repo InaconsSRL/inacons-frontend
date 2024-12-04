@@ -48,7 +48,7 @@ const LIST_COTIZACION_PROVEEDORES_BY_COTIZACION_ID = gql`
 `;
 
 const ADD_COTIZACION_PROVEEDOR = gql`
-  mutation AddCotizacionProveedor($cotizacionId: ID!, $proveedor_id: ID!, $estado: String, $fecha_inicio: DateTime, $fecha_fin: DateTime, $entrega: Int, $c_pago: String, $observaciones: String) {
+  mutation AddCotizacionProveedor($cotizacionId: ID!, $proveedor_id: ID!, $estado: String, $fecha_inicio: DateTime, $fecha_fin: DateTime, $entrega: DateTime, $c_pago: String, $observaciones: String) {
     addCotizacionProveedor(cotizacion_id: $cotizacionId, proveedor_id: $proveedor_id, estado: $estado, fecha_inicio: $fecha_inicio, fecha_fin: $fecha_fin, entrega: $entrega, c_pago: $c_pago, observaciones: $observaciones) {
       id
       cotizacion_id {
@@ -71,7 +71,7 @@ const ADD_COTIZACION_PROVEEDOR = gql`
 `;
 
 const UPDATE_COTIZACION_PROVEEDOR = gql`
-  mutation UpdateCotizacionProveedor($updateCotizacionProveedorId: ID!, $cotizacion_id: ID, $proveedor_id: ID, $estado: String, $fecha_inicio: DateTime, $fecha_fin: DateTime, $entrega: Int, $c_pago: String, $observaciones: String) {
+  mutation UpdateCotizacionProveedor($updateCotizacionProveedorId: ID!, $cotizacion_id: ID, $proveedor_id: ID, $estado: String, $fecha_inicio: DateTime, $fecha_fin: DateTime, $entrega: DateTime, $c_pago: String, $observaciones: String) {
     updateCotizacionProveedor(id: $updateCotizacionProveedorId, cotizacion_id: $cotizacion_id, proveedor_id: $proveedor_id, estado: $estado, fecha_inicio: $fecha_inicio, fecha_fin: $fecha_fin, entrega: $entrega, c_pago: $c_pago, observaciones: $observaciones) {
       id
       cotizacion_id {
@@ -130,7 +130,7 @@ interface CotizacionProveedorData {
   estado?: string;
   fecha_inicio?: string;
   fecha_fin?: string;
-  entrega?: number;
+  entrega?: string;
   c_pago?: string;
   observaciones?: string;
 }
@@ -154,7 +154,7 @@ interface UpdateCotizacionProveedorData {
   estado?: string;
   fecha_inicio?: string;
   fecha_fin?: string;
-  entrega?: number;
+  entrega?: string;
   c_pago?: string;
   observaciones?: string;
 }

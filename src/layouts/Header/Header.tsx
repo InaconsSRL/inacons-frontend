@@ -8,6 +8,7 @@ import { RootState, AppDispatch } from '../../store/store';
 import { fetchObras } from '../../slices/obrasSlice';
 import { fetchUnidades } from '../../slices/unidadSlice';
 import { fetchUsuariosAndCargos } from '../../slices/usuarioSlice';
+import { fetchCotizaciones } from '../../slices/cotizacionSlice';
 
 
 interface HeaderProps {
@@ -22,6 +23,7 @@ const Header: React.FC<HeaderProps> = ({ toggleSidebar, isSidebarOpen }) => {
     dispatch(fetchObras());
     dispatch(fetchUnidades());
     dispatch(fetchUsuariosAndCargos());
+    dispatch(fetchCotizaciones());
   }, []);
 
   const currentTime = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });

@@ -26,6 +26,8 @@ import { Presupuestos } from './pages/PresupuestosDemo/Presupuestos';
 import TipoAlmacenPage from './pages/TipoAlmacenPage/TipoAlmacenPage';
 import ObrasComponent from './pages/ObrasPage/ObrasPage';
 import ComprasBoard from './pages/ComprasPage/ComprasBoard';
+import OrdenCompraPage from './pages/OrdenCompraPage/OrdenCompraPage';
+import HomologacionFormPage from './pages/ProveedorPage/Forms/HomologacionForm';
 
 const App: React.FC = () => {
   const user = useSelector((state: RootState) => state.user);
@@ -33,6 +35,7 @@ const App: React.FC = () => {
   return (
     <Routes>
       <Route path="/login" element={<Login />} />
+      <Route path="/proveedor-registro" element={<HomologacionFormPage />} />
       <Route 
         path="/dashboard" 
         element={user.token ? <Dashboard /> : <Navigate to="/login" replace />}
@@ -58,9 +61,14 @@ const App: React.FC = () => {
         <Route path="compras" element={<ComprasBoard />}> </Route>
         <Route path="tipoAlmacen" element={<TipoAlmacenPage />}> </Route>
         <Route path="obras" element={<ObrasComponent />}> </Route>
+        <Route path="ordenCompra" element={<OrdenCompraPage />}> </Route>
 
       </Route>
-      <Route path="/" element={<Navigate to="/dashboard" replace />} />
+      <Route path="/" element={
+        user.token ? 
+        <Navigate to="/dashboard" replace /> : 
+        <Navigate to="/login" replace />
+      } />
     </Routes> 
   );
 };
