@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
+//import { obtenerUnidadConId } from '../../components/Utils/obtenerUnidadConId';
 import { fetchSolicitudAlmacenes } from '../../slices/solicitudAlmacenSlice';
 import { addSolicitudRecursoAlmacen, fetchSolicitudesRecursoAlmacen, updateSolicitudRecursoAlmacen } from '../../slices/solicitudRecursoAlmacenSlice';
 import { RootState, AppDispatch } from '../../store/store';
@@ -33,7 +34,9 @@ interface SolicitudRecursoAlmacen {
     id: string;
     cantidad: number;
     costo: number;
-    soliciud_almacen_id: string;
+    soliciud_almacen_id:{
+      id: string;
+    }
     cantidadSeleccionada?: number;
     recurso_id: {
         recurso: string;
@@ -129,7 +132,7 @@ const fetchRecursos = async () => {
 
   const totalGeneral = React.useMemo(() => {
     return selectedRecursos.reduce((total, recurso) =>
-      total + (recurso.costo * (recurso.cantidadSeleccionada || 0))
+      total + (recurso.recurso_id.precio_actual* (recurso.cantidadSeleccionada || 0))
       , 0);
   }, [selectedRecursos]);
 
@@ -260,8 +263,8 @@ const fetchRecursos = async () => {
                 <h3 className="text-sm font-medium text-gray-700">Recursos de la Solicitud</h3>
               </div>
 
-                <div className="flex-1 overflow-auto overflow-x-auto p-3 w-full">
-                  <table className="w-full border-collapse ">
+              <div className="flex-1 overflow-auto overflow-x-auto p-3 w-full">
+                <table className="w-full border-collapse">
                   <thead className="bg-gray-50 sticky -top-3">
                     <tr className="bg-gray-50">
                       <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -270,24 +273,23 @@ const fetchRecursos = async () => {
                           className="rounded border-gray-300 text-blue-500 focus:ring-blue-400"
                           onChange={(e) => {
                             if (e.target.checked) {
-                              setSelectedRecursos(recursos.map(r => ({ ...r, cantidadSeleccionada: r.cantidad })));
+                              setSelectedRecursos(recursos.filter(r => r?.recurso_id).map(r => ({ ...r, cantidadSeleccionada: r.cantidad })));
                             } else {
                               setSelectedRecursos([]);
                             }
                           }}
                         />
                       </th>
-                      <tr className="bg-gray-100  text-gray-500  px-3 py-2 ">
-                                <th className="p-2 border">Codigo</th>
-                                <th className="p-2 border">Nombre</th>
-                                <th className="p-2 border">Unidad</th>
-                                <th className="p-2 border">Cantidad</th>
-                                <th className="p-2 border ">Fecha</th>
-                                <th className="p-2 border">Precio</th>
-                                <th className="p-2 border">Cant.Transferida</th>
-                                <th className="P-2 border">Bodega</th>
-                                <th className="p-2 border">Subtotal</th>
-                            </tr>
+                      <th className="p-2 border">Imagen</th>
+                      <th className="p-2 border">Codigo</th>
+                      <th className="p-2 border">Nombre</th>
+                      <th className="p-2 border">Unidad</th>
+                      <th className="p-2 border">Cantidad</th>
+                      <th className="p-2 border">vigencia</th>
+                      <th className="p-2 border">Precio</th>
+                      <th className="p-2 border">Cant.Transferida</th>
+                      <th className="p-2 border">Subtotal</th>
+                      <th className="P-2 border">Bodega</th>
                     </tr>
                   </thead>
                   <tbody className="bg-white divide-y divide-gray-100">
@@ -307,9 +309,11 @@ const fetchRecursos = async () => {
                       ))
                     ) : (
                       recursos.map((recurso: SolicitudRecursoAlmacen) => {
+                        if (!recurso?.recurso_id) return null;
+                        
                         const isSelected = selectedRecursos.some(r => r.id === recurso.id);
                         const selectedRecurso = selectedRecursos.find(r => r.id === recurso.id);
-                        const subtotal = (selectedRecurso?.cantidadSeleccionada || 0) * recurso.costo;
+                        const subtotal = (selectedRecurso?.cantidadSeleccionada || 0) * recurso.recurso_id.precio_actual;
 
                         return (
                           <tr key={recurso.id} className="hover:bg-gray-50 transition-colors duration-150">
@@ -322,26 +326,26 @@ const fetchRecursos = async () => {
                               />
                             </td>
                             <td className="px-3 py-2">
-                               {recurso.recurso_id && recurso.recurso_id.imagenes && recurso.recurso_id.imagenes.length > 0 ? (
-                               <IMG
-                                key={recurso.recurso_id.imagenes[0].file}
-                               src={recurso.recurso_id.imagenes[0].file}
-                               alt={recurso.recurso_id.nombre}
-                              className="h-12 w-12 object-cover rounded-md border border-gray-200"
-                                 />
-                               ) : (
-                                <div className="h-12 w-12 bg-gray-100 rounded-md flex items-center justify-center">
-                               <IMG
-                                src={noImage}
-                                alt="No image available"
-                                className="h-12 w-12 object-cover rounded-md border border-gray-200"
-                                  />
-                                </div>
-                                  )}
-                           </td>
+                              {recurso.recurso_id.imagenes && recurso.recurso_id.imagenes.length > 0 ? (
+                                <IMG
+                                  src={recurso.recurso_id.imagenes[0].file}
+                                  alt={recurso.recurso_id.nombre}
+                                  className="h-12 w-12 object-cover rounded-md border border-gray-200"
+                                />
+                              ) : (
+                                <IMG
+                                  src={noImage}
+                                  alt="No image available"
+                                  className="h-12 w-12 object-cover rounded-md border border-gray-200"
+                                />
+                              )}
+                            </td>
                             <td className="px-3 py-2 text-xs text-gray-600">{recurso.recurso_id.codigo}</td>
                             <td className="px-3 py-2 text-xs text-gray-600">{recurso.recurso_id.nombre}</td>
+                            <td className="px-3 py-2 text-xs text-gray-600">{recurso.recurso_id.unidad_id}</td>
                             <td className="px-3 py-2 text-xs text-gray-600">{recurso.cantidad}</td>
+                            <td className="px-3 py-2 text-xs text-gray-600">{recurso.recurso_id.vigente} </td>
+                            <td className="px-3 py-2 text-xs text-gray-600">S/ {recurso.recurso_id.precio_actual}</td>
                             <td className="px-3 py-2">
                               <input
                                 type="number"
@@ -353,10 +357,9 @@ const fetchRecursos = async () => {
                                 className="w-20 px-2 py-1 text-xs border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent disabled:bg-gray-100"
                               />
                             </td>
-<td className="px-3 py-2 text-xs text-gray-600">S/ {(recurso.costo || 0).toFixed(2)}</td>
-                            <td className="px-3 py-2 text-xs text-gray-600">
-                              S/ {subtotal.toFixed(2)}
-                            </td>
+                            <td className="px-3 py-2 text-xs text-gray-600">S/ {subtotal.toFixed(2)}</td>
+                            <td className="px-3 py-2 text-xs text-gray-600">{recurso.recurso_id.unidad_id}</td>
+                            {/*<td className="px-3 py-2 text-xs text-gray-600">S/ {(recurso.recurso_id.precio_actual || 0).toFixed(2)}</td>*/}
                           </tr>
                         );
                       })
@@ -403,7 +406,8 @@ Total: <span className="text-blue-600">S/ {(totalGeneral || 0).toFixed(2)}</span
         {/* boton de tipo de transporte */}
         <button
              onClick={handleOpenModal}
-             className=" bg-purple-800 px-3 py-1 text-sm text-gray-100 hover:text-gray-200 rounded-md "
+             className="px-3 py-1.5 text-sm text-white bg-purple-500 rounded-md hover:bg-purple-600 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed "
+              disabled ={!selectedSolicitud || selectedRecursos.length === 0}
             >  
             Tipo de transporte
         </button>
