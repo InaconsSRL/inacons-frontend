@@ -4,21 +4,48 @@ import client from '../apolloClient';
 const LIST_SOLICITUD_RECURSO_ALMACENES_QUERY = gql`
   query ListSolicitudRecursoAlmacenes {
     listSolicitudRecursoAlmacenes {
-      id
-      recurso_id
-      cantidad
-      solicitud_almacen_id
+     id
+     recurso_id {
+        cantidad
+        codigo
+        descripcion
+        id
+        nombre
+        precio_actual
+        vigente
+        unidad_id
+     }
+     cantidad
+     solicitud_almacen_id {
+        id
+        fecha
+     }
     }
-  }
+}
 `;
 
 const ADD_SOLICITUD_RECURSO_ALMACEN_MUTATION = gql`
-  mutation AddSolicitudRecursoAlmacen($recursoId: ID!, $cantidad: Int!, $solicitudAlmacenId: ID!) {
-    addSolicitudRecursoAlmacen(recurso_id: $recursoId, cantidad: $cantidad, solicitud_almacen_id: $solicitudAlmacenId) {
+  mutation AddSolicitudRecursoAlmacen($recurso_id: ID!, $cantidad: Int!, $solicitud_almacen_id: ID!) {
+    addSolicitudRecursoAlmacen(recurso_id: $recurso_id, cantidad: $cantidad, solicitud_almacen_id: $solicitud_almacen_id) {
       id
-      recurso_id
+      recurso_id {
+        cantidad
+        codigo
+        descripcion
+        id
+        imagenes {
+          file
+        }
+        nombre
+        precio_actual
+        vigente
+        unidad_id
+      }
       cantidad
-      solicitud_almacen_id
+      solicitud_almacen_id {
+        id
+        fecha
+     }
     }
   }
 `;
@@ -27,9 +54,24 @@ const UPDATE_SOLICITUD_RECURSO_ALMACEN_MUTATION = gql`
   mutation UpdateSolicitudRecursoAlmacen($updateSolicitudRecursoAlmacenId: ID!, $recursoId: ID!, $cantidad: Int!, $solicitudAlmacenId: ID!) {
     updateSolicitudRecursoAlmacen(id: $updateSolicitudRecursoAlmacenId, recurso_id: $recursoId, cantidad: $cantidad, solicitud_almacen_id: $solicitudAlmacenId) {
       id
-      recurso_id
+      recurso_id {
+        cantidad
+        codigo
+        descripcion
+        id
+        imagenes {
+          file
+        }
+        nombre
+        precio_actual
+        vigente
+        unidad_id
+      }
       cantidad
-      solicitud_almacen_id
+      solicitud_almacen_id {
+        id
+        fecha
+     }
     }
   }
 `;

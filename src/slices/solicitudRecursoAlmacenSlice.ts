@@ -2,15 +2,47 @@ import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
 import { listSolicitudRecursoAlmacenesService, addSolicitudRecursoAlmacenService, updateSolicitudRecursoAlmacenService, deleteSolicitudRecursoAlmacenService } from '../services/solicitudRecursoAlmacenService';
 
 // Interfaces
-interface SolicitudRecursoAlmacen {
+interface Imagen {
+  file: string;
+}
+
+interface Recurso {
   id: string;
-  recurso_id: string;
   cantidad: number;
-  solicitud_almacen_id: string;
+  codigo: string;
+  descripcion: string;
+  imagenes: Imagen[];
+  nombre: string;
+  precio_actual: number;
+  vigente: boolean;
+  unidad_id: string;
+}
+
+interface SolicitudAlmacen {
+  id: string;
+  fecha: string;
+}
+
+// Interface para GET
+interface SolicitudRecursoAlmacenResponse {
+  id: string;
+  recurso_id: Recurso;
+  cantidad: number;
+  solicitud_almacen_id: SolicitudAlmacen;
+}
+
+// Interface para POST/PUT
+interface SolicitudRecursoAlmacenMutation {
+  id: string;
+  recurso_id: Recurso;
+  cantidad: number;
+  solicitud_almacen_id: {
+    id: string;
+  };
 }
 
 interface SolicitudRecursoAlmacenState {
-  solicitudesRecurso: SolicitudRecursoAlmacen[];
+  solicitudesRecurso: SolicitudRecursoAlmacenResponse[];
   loading: boolean;
   error: string | null;
 }
@@ -85,7 +117,7 @@ const solicitudRecursoAlmacenSlice = createSlice({
         state.loading = true;
         state.error = null;
       })
-      .addCase(fetchSolicitudesRecursoAlmacen.fulfilled, (state, action: PayloadAction<SolicitudRecursoAlmacen[]>) => {
+      .addCase(fetchSolicitudesRecursoAlmacen.fulfilled, (state, action: PayloadAction<SolicitudRecursoAlmacenResponse[]>) => {
         state.loading = false;
         state.solicitudesRecurso = action.payload;
       })
@@ -93,10 +125,18 @@ const solicitudRecursoAlmacenSlice = createSlice({
         state.loading = false;
         state.error = action.payload as string;
       })
-      .addCase(addSolicitudRecursoAlmacen.fulfilled, (state, action: PayloadAction<SolicitudRecursoAlmacen>) => {
-        state.solicitudesRecurso.push(action.payload);
+      .addCase(addSolicitudRecursoAlmacen.fulfilled, (state, action: PayloadAction<SolicitudRecursoAlmacenMutation>) => {
+        // Convert mutation response to full response format
+        const fullResponse: SolicitudRecursoAlmacenResponse = {
+          ...action.payload,
+          solicitud_almacen_id: {
+            id: action.payload.solicitud_almacen_id.id,
+            fecha: ''
+          }
+        };
+        state.solicitudesRecurso.push(fullResponse);
       })
-      .addCase(updateSolicitudRecursoAlmacen.fulfilled, (state, action: PayloadAction<SolicitudRecursoAlmacen>) => {
+      .addCase(updateSolicitudRecursoAlmacen.fulfilled, (state, action: PayloadAction<SolicitudRecursoAlmacenResponse>) => {
         const index = state.solicitudesRecurso.findIndex(sol => sol.id === action.payload.id);
         if (index !== -1) {
           state.solicitudesRecurso[index] = action.payload;

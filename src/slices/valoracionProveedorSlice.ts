@@ -13,8 +13,8 @@ interface ValoracionProveedor {
     id: string;
   };
   puntuacion: number;
-  fecha_inicio: Date;
-  fecha_fin: Date;
+  fecha_inicio: string;
+  fecha_fin: string;
   notas?: string;
   usuario_id: {
     id: string;
@@ -54,8 +54,8 @@ export const addValoracionProveedor = createAsyncThunk(
   async (valoracionData: {
     proveedor_id: string;
     puntuacion: number;
-    fecha_inicio: Date;
-    fecha_fin: Date;
+    fecha_inicio: string;
+    fecha_fin: string;
     usuario_id: string;
     notas?: string;
   }) => {
@@ -69,9 +69,9 @@ export const updateValoracionProveedor = createAsyncThunk(
     id: string;
     usuario_id: string;
     proveedor_id?: string;
-    puntuacion?: number;
-    fecha_inicio?: Date;
-    fecha_fin?: Date;
+    puntuacion: number;
+    fecha_inicio?: string;
+    fecha_fin?: string;
     notas?: string;
   }) => {
     return await updateValoracionProveedorService(valoracionData);

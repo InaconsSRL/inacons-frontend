@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchSolicitudAlmacenes } from '../../slices/solicitudAlmacenSlice';
-import { fetchTransferenciaRecursos } from '../../slices/transferenciaRecursoSlice';
+import { addSolicitudRecursoAlmacen, fetchSolicitudesRecursoAlmacen, updateSolicitudRecursoAlmacen } from '../../slices/solicitudRecursoAlmacenSlice';
 import { RootState, AppDispatch } from '../../store/store';
 import { addTransferenciaRecurso } from '../../slices/transferenciaRecursoSlice';
 import { updateTransferencia } from '../../slices/transferenciaSlice';
@@ -29,20 +29,21 @@ interface solicitudAlmacen {
   fecha: string;
 }
 
-interface TransferenciaRecurso {
+interface SolicitudRecursoAlmacen {
     id: string;
     cantidad: number;
     costo: number;
+    soliciud_almacen_id: string;
     cantidadSeleccionada?: number;
     recurso_id: {
-        recurso:string;
+        recurso: string;
         id: string;
         cantidad: number;
         nombre: string;
         codigo: string;
         precio_actual: number;
-        imagenes:{ file: string}[];
-        unidad_id:string;
+        imagenes: { file: string }[];
+        unidad_id: string;
         vigente: boolean;
     };
 }
@@ -58,7 +59,7 @@ const Skeleton: React.FC<{ className?: string }> = ({ className }) => (
 const RecursoTransfer: React.FC<ModalProps> = ({ onClose, transferenciaId }) => {
   const dispatch = useDispatch<AppDispatch>();
   const [selectedSolicitud, setSelectedSolicitud] = React.useState<string | null>(null);
-  const [selectedRecursos, setSelectedRecursos] = React.useState<TransferenciaRecurso[]>([]);
+  const [selectedRecursos, setSelectedRecursos] = React.useState<SolicitudRecursoAlmacen[]>([]);
   const [selectedObra, setSelectedObra] = React.useState<string>('');
   const [isLoadingSolicitudes, setIsLoadingSolicitudes] = React.useState(true);
   const [isLoadingRecursos, setIsLoadingRecursos] = React.useState(false);
@@ -66,7 +67,7 @@ const RecursoTransfer: React.FC<ModalProps> = ({ onClose, transferenciaId }) => 
 
   //const currentUserId = useSelector((state: RootState) => state.user.id);
   const solicitudes = useSelector((state: RootState) => state.solicitudAlmacen.solicitudes);
-  const recursos = useSelector((state: RootState) => state.transferenciaRecurso.transferenciaRecursos);
+  const recursos = useSelector((state: RootState) => state.solicitudRecursoAlmacen.solicitudesRecurso);
   const { obras } = useSelector((state: RootState) => state.obra);
 
   const filteredSolicitudes = React.useMemo(() => {
@@ -86,31 +87,31 @@ const RecursoTransfer: React.FC<ModalProps> = ({ onClose, transferenciaId }) => 
   }, [dispatch]);
 
   useEffect(() => {
-    const fetchRecursos = async () => {
-            if (selectedSolicitud) {
-                setIsLoadingRecursos(true); // Cambiar setLoading a setIsLoadingRecursos
-                try {
-                    await dispatch(fetchTransferenciaRecursos()).unwrap();
-                } catch (err) {
-                    console.error('Error al obtener los recursos de transferencia', err);
-                } finally {
-                    setIsLoadingRecursos(false); // Cambiar setLoading a setIsLoadingRecursos
-                }
+const fetchRecursos = async () => {
+        if (selectedSolicitud) {
+            setIsLoadingRecursos(true); 
+            try {
+                await dispatch(fetchSolicitudesRecursoAlmacen()).unwrap();
+            } catch (err) {
+                console.error('Error al obtener los recursos de transferencia', err);
+            } finally {
+                setIsLoadingRecursos(false); 
             }
-        };
-        fetchRecursos();
-    }, [selectedSolicitud, dispatch]);
-  // Limpiar recursos seleccionados cuando se cambia de solicitud
+        }
+    };
+    fetchRecursos();
+}, [selectedSolicitud, dispatch]);
+
   useEffect(() => {
     setSelectedRecursos([]);
   }, [selectedSolicitud]);
 
-  // Efecto para limpiar la selección cuando cambia la obra
+  
   useEffect(() => {
     setSelectedSolicitud(null);
   }, [selectedObra]);
 
-  const handleCheckboxChange = React.useCallback((recurso: TransferenciaRecurso, checked: boolean) => {
+  const handleCheckboxChange = React.useCallback((recurso: SolicitudRecursoAlmacen, checked: boolean) => {
     setSelectedRecursos(prev => checked
       ? [...prev, { ...recurso, cantidadSeleccionada: recurso.cantidad }]
       : prev.filter(r => r.id !== recurso.id)
@@ -125,7 +126,7 @@ const RecursoTransfer: React.FC<ModalProps> = ({ onClose, transferenciaId }) => 
     ));
   };
 
-  // Calcular el total general
+
   const totalGeneral = React.useMemo(() => {
     return selectedRecursos.reduce((total, recurso) =>
       total + (recurso.costo * (recurso.cantidadSeleccionada || 0))
@@ -139,25 +140,27 @@ const RecursoTransfer: React.FC<ModalProps> = ({ onClose, transferenciaId }) => 
         return;
       }
 
-      // Agregar recursos a la cotización existente
+      
       for (const recurso of selectedRecursos) {
-        const transferenciaRecursoData = {
-          cantidad: recurso.cantidadSeleccionada || 0,
-          atencion: 'pendiente',
-          costo: recurso.costo,
-          total: (recurso.cantidadSeleccionada || 0) * recurso.costo,
-          cotizacion_id: transferenciaId,
-          recurso_id: recurso.recurso_id.id
-        };
+          if (selectedSolicitud) {
+          const solicitudRecursoAlmacenData = {
+              recurso_id: recurso.recurso_id.id,
+              cantidad: recurso.cantidadSeleccionada || 0,
+              solicitud_almacen_id: selectedSolicitud
+            };
 
-        await dispatch(addTransferenciaRecurso(transferenciaRecursoData)).unwrap();
+            await dispatch(addSolicitudRecursoAlmacen(solicitudRecursoAlmacenData)).unwrap();
+          }
       }
 
-      // Actualizar el estado de la cotización a 'pendiente'
-      await dispatch(updateTransferencia({
-        id: transferenciaId,
-        estado: 'pendiente'
-      })).unwrap();
+      if (transferenciaId && selectedSolicitud) {
+        await dispatch(updateSolicitudRecursoAlmacen({
+          updateSolicitudRecursoAlmacenId: transferenciaId,
+          recursoId: selectedRecursos[0].recurso_id.id,
+          cantidad: selectedRecursos[0].cantidadSeleccionada || 0,
+          solicitudAlmacenId: selectedSolicitud
+        })).unwrap();
+      }
  
       onClose();
     } catch (error) {
@@ -206,7 +209,7 @@ const RecursoTransfer: React.FC<ModalProps> = ({ onClose, transferenciaId }) => 
       </div>
 
       <div className="flex h-[calc(90vh-12rem)]">
-        {/* Panel izquierdo - Lista de Solicitudes */}
+        {/*  Lista de Solicitudes */}
         <div className="w-1/4 border-r border-gray-100 p-3 overflow-y-auto  bg-gray-100">
           {isLoadingSolicitudes ? (
             // Skeleton para solicitudes
@@ -249,8 +252,8 @@ const RecursoTransfer: React.FC<ModalProps> = ({ onClose, transferenciaId }) => 
           )}
         </div>
 
-        {/* Panel derecho - Recursos de la solicitud */}
-        <div className="flex-1  w-full flex flex-col h-full">
+        {/* Recursos de la solicitud */}
+        <div className="flex-1 p-4 w-full flex flex-col h-full">
           {selectedSolicitud ? (
             <>
               <div className="p-3 bg-white border-b border-gray-100">
@@ -303,7 +306,7 @@ const RecursoTransfer: React.FC<ModalProps> = ({ onClose, transferenciaId }) => 
                         </tr>
                       ))
                     ) : (
-                      recursos.map((recurso: TransferenciaRecurso) => {
+                      recursos.map((recurso: SolicitudRecursoAlmacen) => {
                         const isSelected = selectedRecursos.some(r => r.id === recurso.id);
                         const selectedRecurso = selectedRecursos.find(r => r.id === recurso.id);
                         const subtotal = (selectedRecurso?.cantidadSeleccionada || 0) * recurso.costo;
@@ -319,23 +322,23 @@ const RecursoTransfer: React.FC<ModalProps> = ({ onClose, transferenciaId }) => 
                               />
                             </td>
                             <td className="px-3 py-2">
-                              {recurso.recurso_id.imagenes && recurso.recurso_id.imagenes.length > 0 ? (
-                                <IMG
-                                  key={recurso.recurso_id.imagenes[0].file}
-                                  src={recurso.recurso_id.imagenes[0].file}
-                                  alt={recurso.recurso_id.nombre}
-                                  className="h-12 w-12 object-cover rounded-md border border-gray-200"
-                                />
-                              ) : (
+                               {recurso.recurso_id && recurso.recurso_id.imagenes && recurso.recurso_id.imagenes.length > 0 ? (
+                               <IMG
+                                key={recurso.recurso_id.imagenes[0].file}
+                               src={recurso.recurso_id.imagenes[0].file}
+                               alt={recurso.recurso_id.nombre}
+                              className="h-12 w-12 object-cover rounded-md border border-gray-200"
+                                 />
+                               ) : (
                                 <div className="h-12 w-12 bg-gray-100 rounded-md flex items-center justify-center">
-                                  <IMG
-                                    src={noImage}
-                                    alt="No image available"
-                                    className="h-12 w-12 object-cover rounded-md border border-gray-200"
+                               <IMG
+                                src={noImage}
+                                alt="No image available"
+                                className="h-12 w-12 object-cover rounded-md border border-gray-200"
                                   />
                                 </div>
-                              )}
-                            </td>
+                                  )}
+                           </td>
                             <td className="px-3 py-2 text-xs text-gray-600">{recurso.recurso_id.codigo}</td>
                             <td className="px-3 py-2 text-xs text-gray-600">{recurso.recurso_id.nombre}</td>
                             <td className="px-3 py-2 text-xs text-gray-600">{recurso.cantidad}</td>
@@ -350,7 +353,7 @@ const RecursoTransfer: React.FC<ModalProps> = ({ onClose, transferenciaId }) => 
                                 className="w-20 px-2 py-1 text-xs border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent disabled:bg-gray-100"
                               />
                             </td>
-                            <td className="px-3 py-2 text-xs text-gray-600">S/ {recurso.costo.toFixed(2)}</td>
+<td className="px-3 py-2 text-xs text-gray-600">S/ {(recurso.costo || 0).toFixed(2)}</td>
                             <td className="px-3 py-2 text-xs text-gray-600">
                               S/ {subtotal.toFixed(2)}
                             </td>
@@ -365,7 +368,7 @@ const RecursoTransfer: React.FC<ModalProps> = ({ onClose, transferenciaId }) => 
               <div className="p-3 bg-white border-t border-gray-100">
                 <div className="flex justify-end">
                   <div className="text-sm font-medium text-gray-700 pr-10">
-                    Total: <span className="text-blue-600">S/ {totalGeneral.toFixed(2)}</span>
+Total: <span className="text-blue-600">S/ {(totalGeneral || 0).toFixed(2)}</span>
                   </div>
                 </div>
               </div>

@@ -47,7 +47,6 @@ interface SolicitudAlmacenInput {
   usuario_id: string;
   requerimiento_id: string;
   almacen_origen_id: string;
-  almacen_destino_id: string;
   fecha: Date;
 }
 
