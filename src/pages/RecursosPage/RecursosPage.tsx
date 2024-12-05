@@ -205,8 +205,9 @@ const RecursosPage: React.FC = () => {
 
     return {
       filter: [true, true, true, true, true, true, true, true, true, true, true, false, false],
-      headers: ["fecha", "vigente", "codigo", "nombre", "descripcion", "cantidad", "unidad_id", "precio_actual", "tipo_recurso_id", "tipo_costo_recurso_id", "clasificacion_recurso_id", "imagenes", "opcion"],
+      headers: ["id", "fecha", "vigente", "codigo", "nombre", "descripcion", "cantidad", "unidad_id", "precio_actual", "tipo_recurso_id", "tipo_costo_recurso_id", "clasificacion_recurso_id", "imagenes", "opcion"],
       rows: recursos.map((recurso) => ({
+      id: recurso.id,
       codigo: recurso.codigo,
       nombre: recurso.nombre,
       descripcion: recurso.descripcion,

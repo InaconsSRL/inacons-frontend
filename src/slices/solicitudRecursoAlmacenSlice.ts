@@ -1,5 +1,5 @@
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
-import { listSolicitudRecursoAlmacenesService, addSolicitudRecursoAlmacenService, updateSolicitudRecursoAlmacenService, deleteSolicitudRecursoAlmacenService } from '../services/solicitudRecursoAlmacenService';
+import { listSolicitudRecursoAlmacenesService, addSolicitudRecursoAlmacenService, updateSolicitudRecursoAlmacenService, deleteSolicitudRecursoAlmacenService, getOrdenSolicitudRecursoByIdService } from '../services/solicitudRecursoAlmacenService';
 
 // Interfaces
 interface Imagen {
@@ -106,6 +106,17 @@ export const deleteSolicitudRecursoAlmacen = createAsyncThunk(
   }
 );
 
+export const getOrdenSolicitudRecursoById = createAsyncThunk(
+  'solicitudRecursoAlmacen/getOrdenById',
+  async (id: string, { rejectWithValue }) => {
+    try {
+      return await getOrdenSolicitudRecursoByIdService(id);
+    } catch (error) {
+      return rejectWithValue(handleError(error));
+    }
+  }
+);
+
 // Slice
 const solicitudRecursoAlmacenSlice = createSlice({
   name: 'solicitudRecursoAlmacen',
@@ -144,6 +155,23 @@ const solicitudRecursoAlmacenSlice = createSlice({
       })
       .addCase(deleteSolicitudRecursoAlmacen.fulfilled, (state, action: PayloadAction<{ id: string }>) => {
         state.solicitudesRecurso = state.solicitudesRecurso.filter(sol => sol.id !== action.payload.id);
+      })
+      .addCase(getOrdenSolicitudRecursoById.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(getOrdenSolicitudRecursoById.fulfilled, (state, action: PayloadAction<SolicitudRecursoAlmacenResponse>) => {
+        state.loading = false;
+        const index = state.solicitudesRecurso.findIndex(sol => sol.id === action.payload.id);
+        if (index !== -1) {
+          state.solicitudesRecurso[index] = action.payload;
+        } else {
+          state.solicitudesRecurso.push(action.payload);
+        }
+      })
+      .addCase(getOrdenSolicitudRecursoById.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
       });
   },
 });

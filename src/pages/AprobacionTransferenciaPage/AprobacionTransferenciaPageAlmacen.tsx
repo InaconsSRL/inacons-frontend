@@ -154,7 +154,7 @@ const AprobacionTransferenciaPageAlmacen: React.FC<AprobacionTransferenciaPagePr
               recursosPorAlmacen[warehouse.almacen_id] = [];
             }
             recursosPorAlmacen[warehouse.almacen_id].push({
-              recurso_id: recurso.id,
+              recurso_id: recurso.recurso_id,
               cantidad: cantidadTransferencia,
             });
           }
@@ -224,7 +224,7 @@ const AprobacionTransferenciaPageAlmacen: React.FC<AprobacionTransferenciaPagePr
             currentResourceName: recurso.recurso_id, // Reemplazar si se necesita el nombre
             resourceProgress: Math.round(((recursos.indexOf(recurso) + 1) / recursos.length) * 100),
           }));
-
+          console.log("estos son los recursos", recurso)
           await dispatch(
             addSolicitudRecursoAlmacen({
               recurso_id: recurso.recurso_id,
