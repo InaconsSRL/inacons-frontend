@@ -1,10 +1,11 @@
 import React from 'react';
 import { FiChevronDown, FiChevronRight } from 'react-icons/fi';
-import { CostoUnitarioNode } from './types';
+import { CostoUnitarioNode, Composicion } from './types';
 import { getColorClass } from '../../components/Utils/colorUtils';
-import dataBase from './data.json';
+import { db } from "./utils"
+import { getAbreviaturaUnidad } from './utils';
 
-interface DataBase {
+export interface DataBase {
     unidad: { id_unidad: string; abreviatura_unidad: string }[];
     subtotal_costounitario: {
         id_subtotal: string;
@@ -28,19 +29,20 @@ interface RightTopPanelProps {
     data: CostoUnitarioNode[];
     expandedNodes: Set<string>;
     onNodeToggle: (nodeId: string, node: CostoUnitarioNode) => void;
-    setComposiciones: (composiciones: any[]) => void;
+    setComposiciones: React.Dispatch<React.SetStateAction<Composicion[]>>;
+    selectedNode: CostoUnitarioNode | null;
+    setSelectedNode: React.Dispatch<React.SetStateAction<CostoUnitarioNode | null>>;
 }
 
-const RightTopPanel: React.FC<RightTopPanelProps> = ({ data, expandedNodes, onNodeToggle, setComposiciones }) => {
-
-    const unidad = (dataBase as DataBase).unidad;
-    const getAbreviaturaUnidad = (id_unidad: string) => {
-        const unidadEncontrada = unidad.find(u => u.id_unidad === id_unidad);
-        return unidadEncontrada?.abreviatura_unidad || id_unidad;
-    };
+const RightTopPanel: React.FC<RightTopPanelProps> = ({ 
+    data, 
+    expandedNodes, 
+    onNodeToggle, 
+    selectedNode,
+    setComposiciones 
+}) => {
 
     const buscarComposicionesParaCostoUnitario = (idCostoUnitario: string) => {
-        const db = dataBase as DataBase;
         
         // Buscar subtotales relacionados con el id_costounitario
         const subtotalesRelacionados = db.subtotal_costounitario.filter(
@@ -52,7 +54,7 @@ const RightTopPanel: React.FC<RightTopPanelProps> = ({ data, expandedNodes, onNo
             return db.composicion_costounitario.filter(
                 composicion => composicion.id_subtotal === subtotal.id_subtotal
             );
-        });
+        }) as Composicion[]; // Aseguramos que el tipo sea el correcto
 
         setComposiciones(composicionesRelacionadas);
     };
@@ -66,7 +68,9 @@ const RightTopPanel: React.FC<RightTopPanelProps> = ({ data, expandedNodes, onNo
         return (
             <div key={node.id_costounitario}>
                 <div
-                    className="flex items-center w-full py-0 px-2 hover:bg-gray-50/70 cursor-pointer transition-colors"
+                    className={`flex items-center w-full py-0 px-2 hover:bg-gray-50/70 cursor-pointer transition-colors ${
+                        selectedNode?.id_costounitario === node.id_costounitario ? 'bg-blue-50/50' : ''
+                    }`}
                     style={{ paddingLeft: `${paddingLeftValue}rem` }}
                     onClick={() => {
                         if (hasChildren) {
@@ -115,7 +119,7 @@ const RightTopPanel: React.FC<RightTopPanelProps> = ({ data, expandedNodes, onNo
     };
 
     return (
-        <div className="h-[calc(50vh-65px)] border-b border-gray-200 overflow-y-auto overflow-x-auto bg-white">
+        <div className="h-[calc(40vh-65px)] border-b border-gray-200 overflow-y-auto overflow-x-auto bg-white">
             <div className="px-4 py-3 border-b border-gray-200 bg-gray-50/50 min-w-[600px]">
                 <h2 className="text-sm font-medium text-gray-700">Detalle de Costos</h2>
             </div>
