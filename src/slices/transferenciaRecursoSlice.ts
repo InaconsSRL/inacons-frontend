@@ -1,61 +1,35 @@
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
-import { listTransferenciaRecursosService, listTransferenciaRecursosByDetalleService, addTransferenciaRecursoService, updateTransferenciaRecursoService, deleteTransferenciaRecursoService, listTransferenciaRecursosByTransferenciaDetalleService } from '../services/transferenciaRecursoService';
-
-interface Movilidad {
-  id: string;
-  denominacion: string;
-  descripcion: string;
-}
-
-interface Movimiento {
-  id: string;
-  nombre: string;
-  descripcion: string;
-  tipo: string;
-}
-
-interface Usuario {
-  id: string;
-  apellidos: string;
-  nombres: string;
-}
-
-interface Transferencia {
-  fecha: string;
-  id: string;
-  movilidad_id: Movilidad;
-  movimiento_id: Movimiento;
-  usuario_id: Usuario;
-}
-
-interface TransferenciaDetalle {
-  id: string;
-  fecha: string;
-  referencia: string;
-  referencia_id: string;
-  tipo: string;
-  transferencia_id: Transferencia;
-}
-
-interface Imagen {
-  file: string;
-}
-
-interface Recurso {
-  cantidad: number;
-  codigo: string;
-  id: string;
-  imagenes: Imagen[];
-  nombre: string;
-  precio_actual: number;
-  vigente: boolean;
-}
+import {
+  listTransferenciaRecursosService,
+  listTransferenciaRecursosByIdService,
+  addTransferenciaRecursoService,
+  updateTransferenciaRecursoService,
+  deleteTransferenciaRecursoService,
+} from '../services/transferenciaRecursoService';
 
 interface TransferenciaRecurso {
-    transferencia_id: string; // Agregar esta línea
-  id: string;
-  transferencia_detalle_id: TransferenciaDetalle;
-  recurso_id: Recurso;
+  _id: string;
+  transferencia_detalle_id: {
+    id: string;
+    referencia_id: string;
+    fecha: string;
+    tipo: string;
+    referencia: string;
+  };
+  recurso_id: {
+    id: string;
+    codigo: string;
+    nombre: string;
+    descripcion: string;
+    fecha: string;
+    cantidad: number;
+    unidad_id: string;
+    precio_actual: number;
+    vigente: boolean;
+    tipo_recurso_id: string;
+    tipo_costo_recurso_id: string;
+    clasificacion_recurso_id: string;
+  };
   cantidad: number;
   costo: number;
 }
@@ -73,7 +47,7 @@ const initialState: TransferenciaRecursoState = {
 };
 
 export const fetchTransferenciaRecursos = createAsyncThunk(
-  'transferenciaRecurso/fetchTransferenciaRecursos',
+  'transferenciaRecurso/fetchAll',
   async (_, { rejectWithValue }) => {
     try {
       const data = await listTransferenciaRecursosService();
@@ -84,23 +58,11 @@ export const fetchTransferenciaRecursos = createAsyncThunk(
   }
 );
 
-export const fetchTransferenciaRecursosByDetalle = createAsyncThunk(
-  'transferenciaRecurso/fetchTransferenciaRecursosByDetalle',
+export const fetchTransferenciaRecursosById = createAsyncThunk(
+  'transferenciaRecurso/fetchById',
   async (id: string, { rejectWithValue }) => {
     try {
-      const data = await listTransferenciaRecursosByDetalleService(id);
-      return data;
-    } catch (error) {
-      return rejectWithValue((error as Error).message);
-    }
-  }
-);
-
-export const fetchTransferenciaRecursosByTransferenciaDetalle = createAsyncThunk(
-  'transferenciaRecurso/fetchByTransferenciaDetalle',
-  async (id: string, { rejectWithValue }) => {
-    try {
-      const data = await listTransferenciaRecursosByTransferenciaDetalleService(id);
+      const data = await listTransferenciaRecursosByIdService(id);
       return data;
     } catch (error) {
       return rejectWithValue((error as Error).message);
@@ -109,8 +71,16 @@ export const fetchTransferenciaRecursosByTransferenciaDetalle = createAsyncThunk
 );
 
 export const addTransferenciaRecurso = createAsyncThunk(
-  'transferenciaRecurso/addTransferenciaRecurso',
-  async (data: { transferencia_detalle_id: string; recurso_id: string; cantidad: number }, { rejectWithValue }) => {
+  'transferenciaRecurso/add',
+  async (
+    data: {
+      transferencia_detalle_id: string;
+      recurso_id: string;
+      cantidad: number;
+      costo?: number;
+    },
+    { rejectWithValue }
+  ) => {
     try {
       const response = await addTransferenciaRecursoService(data);
       return response;
@@ -121,8 +91,15 @@ export const addTransferenciaRecurso = createAsyncThunk(
 );
 
 export const updateTransferenciaRecurso = createAsyncThunk(
-  'transferenciaRecurso/updateTransferenciaRecurso',
-  async (data: { id: string; cantidad?: number; recurso_id?: string; transferencia_detalle_id?: string }, { rejectWithValue }) => {
+  'transferenciaRecurso/update',
+  async (
+    data: {
+      id: string;
+      cantidad?: number;
+      costo?: number;
+    },
+    { rejectWithValue }
+  ) => {
     try {
       const response = await updateTransferenciaRecursoService(data);
       return response;
@@ -169,41 +146,21 @@ const transferenciaRecursoSlice = createSlice({
         state.loading = false;
         state.error = action.payload as string;
       })
-      .addCase(fetchTransferenciaRecursosByDetalle.pending, (state) => {
-        state.loading = true;
-        state.error = null;
-      })
-      .addCase(fetchTransferenciaRecursosByDetalle.fulfilled, (state, action: PayloadAction<TransferenciaRecurso[]>) => {
+      .addCase(fetchTransferenciaRecursosById.fulfilled, (state, action: PayloadAction<TransferenciaRecurso[]>) => {
         state.loading = false;
         state.transferenciaRecursos = action.payload;
-      })
-      .addCase(fetchTransferenciaRecursosByDetalle.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.payload as string;
-      })
-      .addCase(fetchTransferenciaRecursosByTransferenciaDetalle.pending, (state) => {
-        state.loading = true;
-        state.error = null;
-      })
-      .addCase(fetchTransferenciaRecursosByTransferenciaDetalle.fulfilled, (state, action: PayloadAction<TransferenciaRecurso[]>) => {
-        state.loading = false;
-        state.transferenciaRecursos = action.payload;
-      })
-      .addCase(fetchTransferenciaRecursosByTransferenciaDetalle.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.payload as string;
       })
       .addCase(addTransferenciaRecurso.fulfilled, (state, action: PayloadAction<TransferenciaRecurso>) => {
         state.transferenciaRecursos.push(action.payload);
       })
       .addCase(updateTransferenciaRecurso.fulfilled, (state, action: PayloadAction<TransferenciaRecurso>) => {
-        const index = state.transferenciaRecursos.findIndex(item => item.id === action.payload.id);
+        const index = state.transferenciaRecursos.findIndex(item => item._id === action.payload._id);
         if (index !== -1) {
           state.transferenciaRecursos[index] = action.payload;
         }
       })
       .addCase(deleteTransferenciaRecurso.fulfilled, (state, action: PayloadAction<string>) => {
-        state.transferenciaRecursos = state.transferenciaRecursos.filter(item => item.id !== action.payload);
+        state.transferenciaRecursos = state.transferenciaRecursos.filter(item => item._id !== action.payload);
       });
   },
 });
