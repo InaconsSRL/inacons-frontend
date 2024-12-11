@@ -138,7 +138,13 @@ export const addTransferenciaDetalleService = async (transferenciaDetalle: {
   try {
     const { data } = await client.mutate({
       mutation: ADD_TRANSFERENCIA_DETALLE,
-      variables: transferenciaDetalle,
+      variables: {
+        transferenciaId: transferenciaDetalle.transferencia_id,
+        referenciaId: transferenciaDetalle.referencia_id,
+        tipo: transferenciaDetalle.tipo,
+        referencia: transferenciaDetalle.referencia,
+        fecha: transferenciaDetalle.fecha,
+      },
     });
     return data.addTransferenciaDetalle;
   } catch (error) {

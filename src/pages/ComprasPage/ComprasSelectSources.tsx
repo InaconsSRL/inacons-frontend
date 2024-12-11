@@ -182,7 +182,7 @@ function ComprasSelectSources({ cotizacion: initialCotizacion }: ComprasSelectSo
                 <div className="overflow-x-auto">
                     <TableComponentSimple
                         columns={columns}
-                        data={products}
+                        data={cotizacionFromStore.estado === "vacio" ? [] : products}
                         onDelete={(row) => handleDelete(row.id)}
                         cotizacionEstado={cotizacionFromStore.estado}
                     />
