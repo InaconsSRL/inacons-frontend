@@ -4,140 +4,58 @@ import client from '../apolloClient';
 const LIST_TRANSFERENCIA_RECURSOS_QUERY = gql`
   query ListTransferenciaRecursos {
     listTransferenciaRecursos {
-      id
+      _id
       transferencia_detalle_id {
         id
-        fecha
-        referencia
         referencia_id
+        fecha
         tipo
-        transferencia_id {
-          fecha
-          id
-          movilidad_id {
-            id
-            denominacion
-            descripcion
-          }
-          movimiento_id {
-            id
-            nombre
-            descripcion
-            tipo
-          }
-          usuario_id {
-            apellidos
-            nombres
-            id
-          }
-        }
+        referencia
       }
       recurso_id {
+        id
+        codigo
+        nombre
+        descripcion
+        fecha
         cantidad
-        codigo
-        id
-        imagenes {
-          file
-        }
-        nombre
-        precio_actual
-        vigente
-      }
-      cantidad
-      costo
-    }
-  }
-`;
-
-const LIST_TRANSFERENCIA_RECURSOS_BY_DETALLE_QUERY = gql`
-  query ListTransferenciaRecursosByTransferenciaDetalle($listTransferenciaRecursosByTransferenciaDetalleId: ID!) {
-    listTransferenciaRecursosByTransferenciaDetalle(id: $listTransferenciaRecursosByTransferenciaDetalleId) {
-      id
-      transferencia_detalle_id {
-        id
-        fecha
-        referencia
-        referencia_id
-        tipo
-        transferencia_id {
-          fecha
-          id
-          movilidad_id {
-            id
-            denominacion
-            descripcion
-          }
-          movimiento_id {
-            id
-            nombre
-            descripcion
-            tipo
-          }
-          usuario_id {
-            apellidos
-            nombres
-            id
-          }
-        }
-      }
-      recurso_id {
-        cantidad
-        codigo
-        id
-        imagenes {
-          file
-        }
-        nombre
-        precio_actual
-        vigente
-      }
-      cantidad
-      costo
-    }
-  }
-`;
-
-const LIST_TRANSFERENCIA_RECURSOS_BY_TRANSFERENCIA_DETALLE_QUERY = gql`
-  query ListTransferenciaRecursosByTransferenciaDetalle($listTransferenciaRecursosByTransferenciaDetalleId: ID!) {
-    listTransferenciaRecursosByTransferenciaDetalle(id: $listTransferenciaRecursosByTransferenciaDetalleId) {
-      id
-      transferencia_detalle_id {
-        id
-        transferencia_id {
-          id
-          usuario_id {
-            id
-            nombres
-            apellidos
-          }
-          fecha
-          movimiento_id {
-            id
-            nombre
-            descripcion
-            tipo
-          }
-          movilidad_id {
-            id
-            denominacion
-            descripcion
-          }
-        }
-        referencia_id
-        fecha
-        tipo
-        referencia
-      }
-      recurso_id {
-        id
-        codigo
-        nombre
-        precio_actual
         unidad_id
+        precio_actual
         vigente
-        imagenes {
-          file
-        }
+        tipo_recurso_id
+        tipo_costo_recurso_id
+        clasificacion_recurso_id
+      }
+      cantidad
+      costo
+    }
+  }
+`;
+
+const LIST_TRANSFERENCIA_RECURSOS_BY_ID_QUERY = gql`
+  query ListTransferenciaRecursosById($listTransferenciaRecursosById: ID!) {
+    listTransferenciaRecursosById(id: $listTransferenciaRecursosById) {
+      _id
+      transferencia_detalle_id {
+        id
+        referencia_id
+        fecha
+        tipo
+        referencia
+      }
+      recurso_id {
+        id
+        codigo
+        nombre
+        descripcion
+        fecha
+        cantidad
+        unidad_id
+        precio_actual
+        vigente
+        tipo_recurso_id
+        tipo_costo_recurso_id
+        clasificacion_recurso_id
       }
       cantidad
       costo
@@ -146,9 +64,27 @@ const LIST_TRANSFERENCIA_RECURSOS_BY_TRANSFERENCIA_DETALLE_QUERY = gql`
 `;
 
 const ADD_TRANSFERENCIA_RECURSO_MUTATION = gql`
-  mutation AddTransferenciaRecurso($transferenciaDetalleId: ID!, $recursoId: ID!, $cantidad: Int!) {
-    addTransferenciaRecurso(transferencia_detalle_id: $transferenciaDetalleId, recurso_id: $recursoId, cantidad: $cantidad) {
-      id
+  mutation AddTransferenciaRecurso($transferenciaDetalleId: ID!, $recursoId: ID!, $cantidad: Int!, $costo: Float) {
+    addTransferenciaRecurso(
+      transferencia_detalle_id: $transferenciaDetalleId,
+      recurso_id: $recursoId,
+      cantidad: $cantidad,
+      costo: $costo
+    ) {
+      _id
+      transferencia_detalle_id {
+        id
+      }
+      recurso_id {
+        codigo
+        id
+        nombre
+        imagenes {
+          file
+        }
+        precio_actual
+        unidad_id
+      }
       cantidad
       costo
     }
@@ -156,9 +92,9 @@ const ADD_TRANSFERENCIA_RECURSO_MUTATION = gql`
 `;
 
 const UPDATE_TRANSFERENCIA_RECURSO_MUTATION = gql`
-  mutation UpdateTransferenciaRecurso($updateTransferenciaRecursoId: ID!) {
-    updateTransferenciaRecurso(id: $updateTransferenciaRecursoId) {
-      id
+  mutation UpdateTransferenciaRecurso($updateTransferenciaRecursoId: ID!, $cantidad: Int, $costo: Float) {
+    updateTransferenciaRecurso(id: $updateTransferenciaRecursoId, cantidad: $cantidad, costo: $costo) {
+      _id
       cantidad
       costo
     }
@@ -168,7 +104,7 @@ const UPDATE_TRANSFERENCIA_RECURSO_MUTATION = gql`
 const DELETE_TRANSFERENCIA_RECURSO_MUTATION = gql`
   mutation DeleteTransferenciaRecurso($deleteTransferenciaRecursoId: ID!) {
     deleteTransferenciaRecurso(id: $deleteTransferenciaRecursoId) {
-      id
+      _id
     }
   }
 `;
@@ -184,31 +120,24 @@ export const listTransferenciaRecursosService = async () => {
   }
 };
 
-export const listTransferenciaRecursosByDetalleService = async (id: string) => {
+export const listTransferenciaRecursosByIdService = async (id: string) => {
   try {
     const response = await client.query({
-      query: LIST_TRANSFERENCIA_RECURSOS_BY_DETALLE_QUERY,
-      variables: { listTransferenciaRecursosByTransferenciaDetalleId: id },
+      query: LIST_TRANSFERENCIA_RECURSOS_BY_ID_QUERY,
+      variables: { listTransferenciaRecursosById: id },
     });
-    return response.data.listTransferenciaRecursosByTransferenciaDetalle;
+    return response.data.listTransferenciaRecursosById;
   } catch (error) {
-    throw new Error(`Error al listar transferencia recursos por detalle: ${error}`);
+    throw new Error(`Error al listar transferencia recursos por ID: ${error}`);
   }
 };
 
-export const listTransferenciaRecursosByTransferenciaDetalleService = async (id: string) => {
-  try {
-    const response = await client.query({
-      query: LIST_TRANSFERENCIA_RECURSOS_BY_TRANSFERENCIA_DETALLE_QUERY,
-      variables: { listTransferenciaRecursosByTransferenciaDetalleId: id },
-    });
-    return response.data.listTransferenciaRecursosByTransferenciaDetalle;
-  } catch (error) {
-    throw new Error(`Error al listar transferencia recursos por detalle: ${error}`);
-  }
-};
-
-export const addTransferenciaRecursoService = async (data: { transferencia_detalle_id: string; recurso_id: string; cantidad: number }) => {
+export const addTransferenciaRecursoService = async (data: {
+  transferencia_detalle_id: string;
+  recurso_id: string;
+  cantidad: number;
+  costo?: number;
+}) => {
   try {
     const response = await client.mutate({
       mutation: ADD_TRANSFERENCIA_RECURSO_MUTATION,
@@ -216,6 +145,7 @@ export const addTransferenciaRecursoService = async (data: { transferencia_detal
         transferenciaDetalleId: data.transferencia_detalle_id,
         recursoId: data.recurso_id,
         cantidad: data.cantidad,
+        costo: data.costo,
       },
     });
     return response.data.addTransferenciaRecurso;
@@ -224,15 +154,18 @@ export const addTransferenciaRecursoService = async (data: { transferencia_detal
   }
 };
 
-export const updateTransferenciaRecursoService = async (data: { id: string; cantidad?: number; recurso_id?: string; transferencia_detalle_id?: string }) => {
+export const updateTransferenciaRecursoService = async (data: {
+  id: string;
+  cantidad?: number;
+  costo?: number;
+}) => {
   try {
     const response = await client.mutate({
       mutation: UPDATE_TRANSFERENCIA_RECURSO_MUTATION,
       variables: {
         updateTransferenciaRecursoId: data.id,
         cantidad: data.cantidad,
-        recursoId: data.recurso_id,
-        transferenciaDetalleId: data.transferencia_detalle_id,
+        costo: data.costo,
       },
     });
     return response.data.updateTransferenciaRecurso;

@@ -39,9 +39,9 @@ export function TransferTable() {
     const recursos = useSelector((state: RootState) => state.transferenciaRecurso.transferenciaRecursos);
     
     const error = useSelector((state: RootState) => 
-        state.transferencia.error || 
-        state.transferenciaDetalle.error || 
-        state.transferenciaRecurso.error
+        state.transferencia.error 
+        // state.transferenciaDetalle.error || 
+        // state.transferenciaRecurso.error
     );
 
     useEffect(() => {

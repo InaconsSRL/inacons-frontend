@@ -150,7 +150,8 @@ const AddRecursoRequerimientoCompra: React.FC<ModalProps> = ({ onClose, cotizaci
       // Actualizar el estado de la cotización a 'pendiente'
       await dispatch(updateCotizacion({
         id: cotizacionId,
-        estado: 'pendiente'
+        estado: 'pendiente',
+        solicitud_compra_id: selectedSolicitud || undefined
       })).unwrap();
 
       onClose();

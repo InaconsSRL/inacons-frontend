@@ -22,12 +22,13 @@ import TipoCostoRecursoComponent from './pages/TipoCostoRecursoPage/TipoCostoRec
 import RequermientoRecursos from './pages/RequerimientosPage/CrearRequerimientoYRecursos/RequerimientoRecursos';
 import AlmacenesComponent from './pages/AlmacenesPage/AlmacenesComponent';
 import AlmacenBoardPage from './pages/AlmacenesPage/AlmacenBoard/AlmacenBoardPage';
-import { Presupuestos } from './pages/PresupuestosDemo/Presupuestos';
+import Presupuestos from './pages/PresupuestosDemo/Presupuestos';
 import TipoAlmacenPage from './pages/TipoAlmacenPage/TipoAlmacenPage';
 import ObrasComponent from './pages/ObrasPage/ObrasPage';
 import ComprasBoard from './pages/ComprasPage/ComprasBoard';
 import OrdenCompraPage from './pages/OrdenCompraPage/OrdenCompraPage';
 import HomologacionFormPage from './pages/ProveedorPage/Forms/HomologacionForm';
+import TableViewer from './pages/PresupuestosLocal/TableViewer';
 
 const App: React.FC = () => {
   const user = useSelector((state: RootState) => state.user);
@@ -62,6 +63,7 @@ const App: React.FC = () => {
         <Route path="tipoAlmacen" element={<TipoAlmacenPage />}> </Route>
         <Route path="obras" element={<ObrasComponent />}> </Route>
         <Route path="ordenCompra" element={<OrdenCompraPage />}> </Route>
+        <Route path="tableViewer" element={<TableViewer />} />
 
       </Route>
       <Route path="/" element={

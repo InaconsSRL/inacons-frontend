@@ -1,36 +1,57 @@
 import { gql } from '@apollo/client';
 import client from '../apolloClient';
 
+// const LIST_COTIZACIONES_QUERY = gql`
+//   query ListCotizaciones {
+//     listCotizaciones {
+//       id
+//       codigo_cotizacion
+//       usuario_id {
+//         apellidos
+//         nombres
+//         id
+//       }
+//       solicitud_compra_id {
+//         id
+//         usuario_id {
+//           nombres
+//           apellidos
+//           id
+//         }
+//         requerimiento_id {
+//           usuario
+//           estado_atencion
+//           codigo
+//           fecha_final
+//           fecha_solicitud
+//           id
+//           sustento
+//         }
+//       }
+//       aprobacion
+//       estado
+//       fecha
+//     }
+//   }
+// `;
 const LIST_COTIZACIONES_QUERY = gql`
   query ListCotizaciones {
     listCotizaciones {
       id
-      codigo_cotizacion
-      usuario_id {
-        apellidos
-        nombres
-        id
-      }
-      solicitud_compra_id {
-        id
-        usuario_id {
-          nombres
-          apellidos
-          id
-        }
-        requerimiento_id {
-          usuario
-          estado_atencion
-          codigo
-          fecha_final
-          fecha_solicitud
-          id
-          sustento
-        }
-      }
-      aprobacion
-      estado
-      fecha
+    codigo_cotizacion
+    usuario_id {
+     id
+     nombres
+     apellidos
+    }
+    solicitud_compra_id {
+     id
+    
+     fecha
+    }
+    aprobacion
+    estado
+    fecha
     }
   }
 `;
@@ -41,26 +62,14 @@ const GET_COTIZACION_QUERY = gql`
       id
     codigo_cotizacion
     usuario_id {
-      apellidos
-      nombres
-      id
+     id
+     nombres
+     apellidos
     }
     solicitud_compra_id {
-      id
-      usuario_id {
-        nombres
-        apellidos
-        id
-      }
-      requerimiento_id {
-        usuario
-        estado_atencion
-        codigo
-        fecha_final
-        fecha_solicitud
-        id
-        sustento
-      }
+     id
+    
+     fecha
     }
     aprobacion
     estado
@@ -73,32 +82,20 @@ const ADD_COTIZACION_MUTATION = gql`
   mutation AddCotizacion($usuario_id: ID!, $estado: String!, $fecha: DateTime!, $codigo_cotizacion: String!, $aprobacion: Boolean!) {
     addCotizacion(usuario_id: $usuario_id, codigo_cotizacion: $codigo_cotizacion, estado: $estado, aprobacion: $aprobacion, fecha: $fecha) {
       id
-      codigo_cotizacion
-      usuario_id {
-        apellidos
-        nombres
-        id
-      }
-      solicitud_compra_id {
-        id
-        usuario_id {
-          nombres
-          apellidos
-          id
-        }
-        requerimiento_id {
-          usuario
-          estado_atencion
-          codigo
-          fecha_final
-          fecha_solicitud
-          id
-          sustento
-        }
-      }
-      aprobacion
-      estado
-      fecha
+    codigo_cotizacion
+    usuario_id {
+     id
+     nombres
+     apellidos
+    }
+    solicitud_compra_id {
+     id
+    
+     fecha
+    }
+    aprobacion
+    estado
+    fecha
     }
   }
 `;
@@ -109,26 +106,15 @@ const UPDATE_COTIZACION_MUTATION = gql`
       id
     codigo_cotizacion
     usuario_id {
-      apellidos
-      nombres
-      id
+     id
+     nombres
+     apellidos
+     rol_id
     }
     solicitud_compra_id {
-      id
-      usuario_id {
-        nombres
-        apellidos
-        id
-      }
-      requerimiento_id {
-        usuario
-        estado_atencion
-        codigo
-        fecha_final
-        fecha_solicitud
-        id
-        sustento
-      }
+     id
+    
+     fecha
     }
     aprobacion
     estado
