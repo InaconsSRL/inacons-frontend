@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { IoMdCloseCircle } from "react-icons/io"; 
-import GuiaTransfer from './Recepcion de Transferencias/GuiaTransfer';
+import GuiaTransfer from './RecepcionTransferencias/GuiaTransfer';
 
 interface TransportFormProps {
   onSubmit: (data: any) => void;

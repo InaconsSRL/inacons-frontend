@@ -101,3 +101,16 @@ export interface TransferenciaData {
   recursos: RecursoSeleccionado[];
   total: number;
 }
+// Nuevas interfaces
+export interface Transferencia {
+  id: string; 
+  numeroOrden: string; 
+  almacenSalida: string; 
+  estado: 'En camino' | 'Completado'; 
+  observaciones?: string; 
+  tipoTransporte?: string; 
+}
+
+export interface RecepcionTransferenciasProps {
+  transferencias: Transferencia[]; 
+}
