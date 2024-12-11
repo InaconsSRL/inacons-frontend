@@ -52,6 +52,7 @@ interface Recurso {
 }
 
 interface TransferenciaRecurso {
+    transferencia_id: string; // Agregar esta línea
   id: string;
   transferencia_detalle_id: TransferenciaDetalle;
   recurso_id: Recurso;

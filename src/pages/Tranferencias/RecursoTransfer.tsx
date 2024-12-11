@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 //import { obtenerUnidadConId } from '../../components/Utils/obtenerUnidadConId';
 import { fetchSolicitudAlmacenes } from '../../slices/solicitudAlmacenSlice';
-import { addSolicitudRecursoAlmacen, fetchSolicitudesRecursoAlmacen, updateSolicitudRecursoAlmacen } from '../../slices/solicitudRecursoAlmacenSlice';
+import { addSolicitudRecursoAlmacen, getOrdenSolicitudRecursoById, updateSolicitudRecursoAlmacen } from '../../slices/solicitudRecursoAlmacenSlice';
 import { RootState, AppDispatch } from '../../store/store';
 import { addTransferenciaRecurso } from '../../slices/transferenciaRecursoSlice';
 import { updateTransferencia } from '../../slices/transferenciaSlice';
@@ -73,6 +73,8 @@ const RecursoTransfer: React.FC<ModalProps> = ({ onClose, transferenciaId }) => 
   const recursos = useSelector((state: RootState) => state.solicitudRecursoAlmacen.solicitudesRecurso);
   const { obras } = useSelector((state: RootState) => state.obra);
 
+  const newREcursos=recursos[0]
+
   const filteredSolicitudes = React.useMemo(() => {
     if (!selectedObra) return solicitudes;
     return solicitudes.filter((solicitud: solicitudAlmacen) =>
@@ -89,12 +91,23 @@ const RecursoTransfer: React.FC<ModalProps> = ({ onClose, transferenciaId }) => 
     loadSolicitudes();
   }, [dispatch]);
 
+ {/* useEffect(() => {
+    const loadRecursos = async () => {
+      if (selectedSolicitud) {
+        setIsLoadingRecursos(true);
+        await dispatch(getOrdenSolicitudRecursoById(selectedSolicitud));
+        setIsLoadingRecursos(false);
+      }
+    };
+    loadRecursos();
+  }, [selectedSolicitud, dispatch]);*/}
   useEffect(() => {
-const fetchRecursos = async () => {
+const loadRecursos = async () => {
         if (selectedSolicitud) {
             setIsLoadingRecursos(true); 
             try {
-                await dispatch(fetchSolicitudesRecursoAlmacen()).unwrap();
+              console.log (selectedSolicitud);
+                await dispatch(getOrdenSolicitudRecursoById(selectedSolicitud)).unwrap();
             } catch (err) {
                 console.error('Error al obtener los recursos de transferencia', err);
             } finally {
@@ -102,12 +115,12 @@ const fetchRecursos = async () => {
             }
         }
     };
-    fetchRecursos();
-}, [selectedSolicitud, dispatch]);
+    loadRecursos();
+}, [selectedSolicitud, dispatch]); 
 
-  useEffect(() => {
-    setSelectedRecursos([]);
-  }, [selectedSolicitud]);
+useEffect(() => {
+  setSelectedRecursos([]);
+}, [selectedSolicitud]);
 
   
   useEffect(() => {
@@ -146,19 +159,19 @@ const fetchRecursos = async () => {
       
       for (const recurso of selectedRecursos) {
           if (selectedSolicitud) {
-          const solicitudRecursoAlmacenData = {
+          const transferenciaRecursoData = {
               recurso_id: recurso.recurso_id.id,
               cantidad: recurso.cantidadSeleccionada || 0,
               solicitud_almacen_id: selectedSolicitud
             };
 
-            await dispatch(addSolicitudRecursoAlmacen(solicitudRecursoAlmacenData)).unwrap();
+            await dispatch(addTransferenciaRecurso(transferenciaRecursoData)).unwrap();
           }
       }
 
       if (transferenciaId && selectedSolicitud) {
-        await dispatch(updateSolicitudRecursoAlmacen({
-          updateSolicitudRecursoAlmacenId: transferenciaId,
+        await dispatch(updateTransferencia({
+          updateTransferenciaI: transferenciaId,
           recursoId: selectedRecursos[0].recurso_id.id,
           cantidad: selectedRecursos[0].cantidadSeleccionada || 0,
           solicitudAlmacenId: selectedSolicitud
@@ -179,6 +192,8 @@ const fetchRecursos = async () => {
   const handleCloseModal = () => {
     setIsModalOpen(false);
   };
+
+  console.log (filteredSolicitudes)
 
   return (
     <div className="bg-gradient-to-br from-white to-gray-50 rounded-xl shadow-lg w-[120px] max-w-full min-w-full max-h-[90vh] overflow-hidden border border-gray-100">
@@ -228,11 +243,13 @@ const fetchRecursos = async () => {
               <div
                 key={solicitud.id}
                 onClick={() => setSelectedSolicitud(solicitud.id)}
+              
                 className={`p-3 mb-2  shadow-xl rounded-md cursor-pointer border transition-all duration-200 ${selectedSolicitud === solicitud.id
                     ? 'bg-blue-50 border-blue-400 shadow-sm'
                     : 'border-gray-100  bg-gray-50 hover:bg-white hover:shadow-sm'
                   }`}
               >
+                
                 <div className="text-sm font-medium text-gray-700">{solicitud.requerimiento_id.codigo}</div>
                 <div className="text-xs text-gray-500 mt-1">
                   Solicitante: {solicitud.usuario_id.nombres} {solicitud.usuario_id.apellidos}
@@ -280,7 +297,7 @@ const fetchRecursos = async () => {
                           }}
                         />
                       </th>
-                      <th className="p-2 border">Imagen</th>
+                      {/*<th className="p-2 border">Imagen</th>*/}
                       <th className="p-2 border">Codigo</th>
                       <th className="p-2 border">Nombre</th>
                       <th className="p-2 border">Unidad</th>
@@ -308,7 +325,7 @@ const fetchRecursos = async () => {
                         </tr>
                       ))
                     ) : (
-                      recursos.map((recurso: SolicitudRecursoAlmacen) => {
+                      newREcursos.map((recurso: SolicitudRecursoAlmacen) => {
                         if (!recurso?.recurso_id) return null;
                         
                         const isSelected = selectedRecursos.some(r => r.id === recurso.id);
@@ -325,7 +342,7 @@ const fetchRecursos = async () => {
                                 onChange={(e) => handleCheckboxChange(recurso, e.target.checked)}
                               />
                             </td>
-                            <td className="px-3 py-2">
+                             {/*<td className="px-3 py-2">
                               {recurso.recurso_id.imagenes && recurso.recurso_id.imagenes.length > 0 ? (
                                 <IMG
                                   src={recurso.recurso_id.imagenes[0].file}
@@ -339,7 +356,7 @@ const fetchRecursos = async () => {
                                   className="h-12 w-12 object-cover rounded-md border border-gray-200"
                                 />
                               )}
-                            </td>
+                            </td>*/}
                             <td className="px-3 py-2 text-xs text-gray-600">{recurso.recurso_id.codigo}</td>
                             <td className="px-3 py-2 text-xs text-gray-600">{recurso.recurso_id.nombre}</td>
                             <td className="px-3 py-2 text-xs text-gray-600">{recurso.recurso_id.unidad_id}</td>
@@ -407,7 +424,7 @@ Total: <span className="text-blue-600">S/ {(totalGeneral || 0).toFixed(2)}</span
         <button
              onClick={handleOpenModal}
              className="px-3 py-1.5 text-sm text-white bg-purple-500 rounded-md hover:bg-purple-600 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed "
-              disabled ={!selectedSolicitud || selectedRecursos.length === 0}
+            
             >  
             Tipo de transporte
         </button>
