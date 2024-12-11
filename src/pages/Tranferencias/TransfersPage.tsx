@@ -2,10 +2,13 @@ import { useState } from "react";
 import { TransferTable } from "./TransfersTable";
 import TransfersForms from "./TransfersForms"; 
 import RecursoTransfer from "./RecursoTransfer";
+import FormularioSolicitud from "./FormularioSolicitud";
+import RecepcionTransferencia from "./recepcionTransferencia";
 
 export default function TransfersPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedOption, setSelectedOption] = useState("");
+
 
   const handleCloseModal = () => {
     setIsModalOpen(false);
@@ -45,7 +48,8 @@ export default function TransfersPage() {
             {selectedOption === "Ingreso" ? (
               <RecursoTransfer onClose={handleCloseModal} transferenciaId={('')} requerimientos={[]} recursos={[]} />
             ) : (
-              <TransfersForms onClose={handleCloseModal} onSave={() => {}} requerimientos={[]} recursos={[]} />
+              <FormularioSolicitud onClose={handleCloseModal} />
+            
             )}
           </div>
         </>
@@ -53,3 +57,5 @@ export default function TransfersPage() {
     </div>
   );
 }
+{/*<RecursoTransfer onClose={handleCloseModal} transferenciaId={('')} requerimientos={[]} recursos={[]} /> */}
+{/*<RecepcionTransferencia onClose={handleCloseModal}  */}

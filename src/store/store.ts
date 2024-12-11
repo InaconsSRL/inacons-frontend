@@ -16,6 +16,7 @@ import { cotizacionReducer } from '../slices/cotizacionSlice';
 import { guiaTransferenciaReducer } from '../slices/guiaTransferenciaSlice';
 import { menuReducer } from '../slices/menuSlice';
 import { movimientoReducer } from '../slices/movimientoSlice';
+import { movilidadReducer } from '../slices/movilidadSlice';
 import { obraReducer } from '../slices/obrasSlice';
 import { ordenCompraRecursosReducer } from '../slices/ordenCompraRecursosSlice';
 import { ordenCompraReducer } from '../slices/ordenCompraSlice';
@@ -70,7 +71,8 @@ export const store = configureStore({
     guiaTransferencia: guiaTransferenciaReducer,
     mediosPagoProveedor: mediosPagoProveedorReducer,
     menu: menuReducer,
-    movimiento: movimientoReducer,
+  movimiento: movimientoReducer,
+  movilidad: movilidadReducer,
     obra: obraReducer,
     ordenCompraRecursos: ordenCompraRecursosReducer,
     ordenCompra: ordenCompraReducer,
