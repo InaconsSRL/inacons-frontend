@@ -317,6 +317,7 @@ const handleConfirmarGenerarOC = async () => {
         >
           <BuscarProveedoresModal
             cotizacionId={cotizacion.id || ''}
+            cotizacionEstado={cotizacion.estado || ''}
             proveedoresActuales={cotizacionProveedores.map(cp => ({
               id: cp.proveedor_id.id || ''
             }))}

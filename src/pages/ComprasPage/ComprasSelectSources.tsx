@@ -9,39 +9,28 @@ import { fetchCotizacionRecursoForCotizacionId, deleteCotizacionRecurso } from '
 import noImage from '../../assets/NoImage.webp';
 import { CotizacionRecurso, updateCotizacion } from '../../slices/cotizacionSlice';
 import Button from '../../components/Buttons/Button';
-import { FiPlusCircle } from 'react-icons/fi';
-import { useModal } from './ContextoParaLosModales';
+import { FiEdit, FiPlusCircle } from 'react-icons/fi';
 
 //Todo Ok 
 
 export interface ComprasSelectSourcesProps {
     cotizacion: {
-        id?: string;
-        fecha?: string;
+        id: string;
+        fecha: string;
         monto?: number;
-        codigo_cotizacion?: string;
-        usuario_id?: {
+        codigo_cotizacion: string;
+        usuario_id: {
             id: string;
             nombres: string;
             apellidos: string;
         };
-        estado?: string;
-        aprobacion?: boolean;
+        solicitud_compra_id?: {  // Hacer opcional esta propiedad
+            id: string;
+        }
+        estado: string;
+        aprobacion: boolean;
     };
 }
-
-// interface FormattedProduct {
-//     id: string;
-//     imagen: string;
-//     codigo: string;
-//     nombre: string;
-//     unidad: string | undefined;
-//     cantidad: number;
-//     costo: number;
-//     subtotal: number;
-//     nota: string;
-//     [key: string]: string | number | undefined;
-// }
 
 interface Unidad {
     id: string;
@@ -50,15 +39,15 @@ interface Unidad {
 
 function ComprasSelectSources({ cotizacion: initialCotizacion }: ComprasSelectSourcesProps) {
     const dispatch = useDispatch<AppDispatch>();
-    const { modalStates, openModal, closeModal } = useModal();
-    
+    const [isModalProveedoresOpen, setIsModalProveedoresOpen] = useState(false);
+    const [isModalAddRecursosOpen, setIsModalAddRecursosOpen] = useState(false);
     // Reemplazar el estado local por el selector de Redux
     const cotizacionRecursos = useSelector((state: RootState) => state.cotizacionRecurso.cotizacionRecursos);
-    const cotizacionFromStore = useSelector((state: RootState) => 
+    const cotizacionFromStore = useSelector((state: RootState) =>
         state.cotizacion.cotizaciones.find(c => c.id === initialCotizacion.id)
     ) || initialCotizacion;
     const unidades = useSelector((state: RootState) => state.unidad.unidades);
-    
+
     // Formatear productos desde el estado de Redux
     const products = React.useMemo(() => {
         return cotizacionRecursos.map((recurso: CotizacionRecurso) => ({
@@ -83,6 +72,11 @@ function ComprasSelectSources({ cotizacion: initialCotizacion }: ComprasSelectSo
         }
     }, [cotizacionFromStore.estado, cotizacionFromStore.id, dispatch]);
 
+    const handleCloseModal = () => {
+        setIsModalAddRecursosOpen(false);
+        setIsModalProveedoresOpen(false);
+    };
+
     const [header] = useState({
         codigo: cotizacionFromStore.codigo_cotizacion,
         usuario: `${cotizacionFromStore.usuario_id?.nombres ?? ''} ${cotizacionFromStore.usuario_id?.apellidos ?? ''}`,
@@ -100,18 +94,11 @@ function ComprasSelectSources({ cotizacion: initialCotizacion }: ComprasSelectSo
         { key: 'subtotal', title: 'Subtotal', type: 'number' as CellType },
     ];
 
-    const handleOpenProveedoresModal = () => openModal('proveedores');
-    const handleCloseProveedoresModal = () => closeModal('proveedores');
-    const handleOpenRecursosModal = () => openModal('recursos');
-    const handleCloseRecursosModal = () => {
-        closeModal('recursos');
-    };
-
     const handleDelete = async (id: string) => {
         try {
             // Eliminar recurso
             await dispatch(deleteCotizacionRecurso(id)).unwrap();
-            
+
             // Si no quedan recursos, actualizar el estado de la cotización a "vacio"
             if (cotizacionRecursos.length === 1 && cotizacionFromStore.id) {
                 await dispatch(updateCotizacion({
@@ -125,99 +112,117 @@ function ComprasSelectSources({ cotizacion: initialCotizacion }: ComprasSelectSo
     };
 
     // Mostrar loader si cualquier operación está en progreso
-
+    console.log("co", cotizacionFromStore)
+    console.log("cr", cotizacionRecursos)
     return (
         <div className="min-h-[80vh] bg-gray-100 p-4">
-            {/* Header */}
-            <div className="bg-white rounded-lg shadow-lg px-4 mb-6">
-                <div className="grid grid-cols-2 gap-4">
-                    <div>
-                        <p className="text-gray-600">Código Cotización:</p>
-                        <p className="font-semibold">{header.codigo}</p>
-                    </div>
-                    <div>
-                        <p className="text-gray-600">Usuario:</p>
-                        <p className="font-semibold">{header.usuario}</p>
-                    </div>
-                    <div>
-                        <p className="text-gray-600">Estado:</p>
-                        <p className="font-semibold">{header.estado}</p>
-                    </div>
-                    <div>
-                        <p className="text-gray-600">Aprobación:</p>
-                        <p className="font-semibold">{header.aprobacion}</p>
-                    </div>
-                </div>
-            </div>
+            {isModalProveedoresOpen ?
+                (<Modal
+                    isOpen={isModalProveedoresOpen}
+                    onClose={handleCloseModal}
+                    title="Añadir Proveedores"
 
-            {/* Buttons */}
-            <div className="flex gap-4 mb-6">
-            {(cotizacionFromStore.estado !== "vacio") && (
-                <Button 
-                    onClick={handleOpenProveedoresModal}
-                    className="text-white px-4 py-2 rounded min-w-52"
-                    text="Gestionar Proveedores"
-                    color='azul'
-                    icon={<FiPlusCircle />}
-                />                
-            )}
-                {cotizacionFromStore.estado === "vacio" && (
-                    
-                    <Button 
-                    onClick={handleOpenRecursosModal}
-                    className="text-white px-4 py-2 rounded min-w-52"
-                    text="Añadir Recursos"
-                    color='verde'
-                    icon={<FiPlusCircle />}
-                />
-                )}
-
-            </div>
-
-            {/* Reemplazar la tabla existente por TableComponentSimple */}
-            <div className="bg-white rounded-lg shadow-lg overflow-hidden">
-                <h2 className="text-xl font-semibold p-4 bg-blue-500 text-white">
-                    Productos Seleccionados
-                </h2>
-                <div className="overflow-x-auto">
-                    <TableComponentSimple
-                        columns={columns}
-                        data={cotizacionFromStore.estado === "vacio" ? [] : products}
-                        onDelete={(row) => handleDelete(row.id)}
-                        cotizacionEstado={cotizacionFromStore.estado}
+                >
+                    <CompararProveedores
+                        onClose={handleCloseModal}
+                        recursos={cotizacionRecursos.map(recurso => ({
+                            ...recurso,
+                            cotizacion_id: {
+                                ...recurso.cotizacion_id,
+                                aprobacion: recurso.cotizacion_id.aprobacion === 'true'
+                            }
+                        }))}
+                        cotizacion={cotizacionFromStore}
                     />
-                </div>
-            </div>
+                </Modal>) :
+                (
+                    <>{/* Header */}
+                        <div className="bg-white rounded-lg shadow-lg px-4 mb-6">
+                            <div className="grid grid-cols-2 gap-4">
+                                <div>
+                                    <p className="text-gray-600">Código Cotización:</p>
+                                    <p className="font-semibold">{header.codigo}</p>
+                                </div>
+                                <div>
+                                    <p className="text-gray-600">Usuario:</p>
+                                    <p className="font-semibold">{header.usuario}</p>
+                                </div>
+                                <div>
+                                    <p className="text-gray-600">Estado:</p>
+                                    <p className="font-semibold">{header.estado}</p>
+                                </div>
+                                <div>
+                                    <p className="text-gray-600">Aprobación:</p>
+                                    <p className="font-semibold">{header.aprobacion}</p>
+                                </div>
+                            </div>
+                        </div>
 
-            {/* Modal con ComprasForm */}
-            <Modal
-                isOpen={modalStates['recursos'] || false}
-                onClose={handleCloseRecursosModal}
-                title="Seleccionar Recursos"
-            >
-                <AddRecursoRequerimientoCompra
-                    cotizacionId={cotizacionFromStore.id ? cotizacionFromStore.id.toString() : null}
-                    onClose={handleCloseRecursosModal}
-                />
-            </Modal>
-            <Modal
-                isOpen={modalStates['proveedores'] || false}
-                onClose={handleCloseProveedoresModal}
-                title="Añadir Proveedores"
+                        {/* Buttons */}
+                        <div className="flex gap-4 mb-6">
+                            {(cotizacionFromStore.estado !== "vacio") && (
+                                <Button
+                                    onClick={() => setIsModalProveedoresOpen(true)}
+                                    className="text-white px-4 py-2 rounded min-w-52"
+                                    text="Gestionar Proveedores"
+                                    color='azul'
+                                    icon={<FiPlusCircle />}
+                                />
+                            )}
+                            {cotizacionFromStore.estado === "vacio" && (
+                                <Button
+                                    onClick={() => setIsModalAddRecursosOpen(true)}
+                                    className="text-white px-4 py-2 rounded min-w-52"
+                                    text="Añadir Recursos"
+                                    color='verde'
+                                    icon={<FiPlusCircle />}
+                                />
+                            )}
+                            {(cotizacionFromStore.estado === "pendiente" || cotizacionFromStore.estado === "iniciada") && (
+                                <Button
+                                    onClick={() => setIsModalAddRecursosOpen(true)}
+                                    text="Editar Recursos"
+                                    className="text-white px-4 py-2 rounded min-w-52"
+                                    color='amarillo'
+                                    icon={<FiEdit />}
+                                />
+                            )}
 
-            >
-                <CompararProveedores
-                    onClose={handleCloseProveedoresModal}
-                    recursos={cotizacionRecursos.map(recurso => ({
-                        ...recurso,
-                        cotizacion_id: {
-                            ...recurso.cotizacion_id,
-                            aprobacion: recurso.cotizacion_id.aprobacion === 'true'
-                        }
-                    }))}
-                    cotizacion={cotizacionFromStore}
-                />
-            </Modal>
+                        </div>
+
+                        {/* Reemplazar la tabla existente por TableComponentSimple */}
+                        <div className="bg-white rounded-lg shadow-lg overflow-hidden">
+                            <h2 className="text-xl font-semibold p-4 bg-blue-500 text-white">
+                                Productos Seleccionados
+                            </h2>
+                            <div className="overflow-x-auto">
+                                <TableComponentSimple
+                                    columns={columns}
+                                    data={cotizacionFromStore.estado === "vacio" ? [] : products}
+                                    onDelete={(row) => handleDelete(row.id)}
+                                    cotizacionEstado={cotizacionFromStore.estado}
+                                />
+                            </div>
+                        </div>
+
+                        {/* Modal con ComprasForm */}
+                        <Modal
+                            isOpen={isModalAddRecursosOpen}
+                            onClose={handleCloseModal}
+                            title="Seleccionar Recursos"
+                        >
+                            <AddRecursoRequerimientoCompra
+                                cotizacionId={cotizacionFromStore.id ? cotizacionFromStore.id.toString() : null}
+                                estadoCotizacion={cotizacionFromStore.estado ? cotizacionFromStore.estado : null}
+                                solicitudCompraId={cotizacionFromStore.solicitud_compra_id?.id}
+                                recursosActuales={cotizacionRecursos}
+                                onClose={handleCloseModal}
+                            />
+                        </Modal>
+                    </>)}
+
+
+
         </div>
     );
 }

@@ -12,6 +12,7 @@ import ProveedorFormComponent from '../ProveedorPage/ProveedorFormComponent';
 interface BuscarProveedoresModalProps {
   cotizacionId: string; // Añadir esta prop
   proveedoresActuales: Array<{ id: string }>;  // Añadir esta prop
+  cotizacionEstado: string; // Añadir esta prop
 }
 
 const estadosProveedor=[
@@ -22,9 +23,8 @@ const estadosProveedor=[
   "noAdjudicada",
   ];
 
-const BuscarProveedoresModal: React.FC<BuscarProveedoresModalProps> = ({ cotizacionId, proveedoresActuales }) => {
-  console.log(proveedoresActuales);
-
+const BuscarProveedoresModal: React.FC<BuscarProveedoresModalProps> = ({ cotizacionId, proveedoresActuales, cotizacionEstado }) => {
+  console.log(cotizacionEstado);
   const dispatch = useDispatch<AppDispatch>();
   const proveedores = useSelector((state: RootState) => state.proveedor.proveedores);
   const [searchTerm, setSearchTerm] = useState('');
@@ -52,7 +52,9 @@ const BuscarProveedoresModal: React.FC<BuscarProveedoresModalProps> = ({ cotizac
   const handleConfirm = async () => {
     if (selectedProveedor) {
       try {
-        await dispatch(updateCotizacion({ id: cotizacionId, estado: 'iniciada' })).unwrap();
+        if (cotizacionEstado === 'pendiente') {
+          await dispatch(updateCotizacion({ id: cotizacionId, estado: 'iniciada' })).unwrap();
+        }
         await dispatch(addCotizacionProveedor({
           cotizacionId,
           proveedor_id: selectedProveedor.id,

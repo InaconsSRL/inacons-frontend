@@ -10,9 +10,10 @@ import LoaderPage from '../../components/Loader/LoaderPage';
 import { FiEdit, FiRefreshCw, FiTrash2 } from 'react-icons/fi';
 import ComprasSelectSources from './ComprasSelectSources';
 import Toast from '../../components/Toast/Toast';
-import { ModalProvider } from './ContextoParaLosModales';
 import { Provider } from 'react-redux';
 import {store} from '../../store/store';
+
+//Todo ok
 
 interface Cotizacion {
   id: string;
@@ -25,6 +26,10 @@ interface Cotizacion {
   fecha: string;
   estado: string;
   aprobacion: boolean;
+  solicitud_compra_id?: {  // Hacer opcional esta propiedad
+    id: string;
+    // ... otros campos si son necesarios
+  };
 }
 
 const pageVariants = {
@@ -41,8 +46,6 @@ const pageTransition = {
 
 const ComprasBoard: React.FC = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [isModalResumenOpen, setIsModalResumenOpen] = useState(false);
-  console.log(isModalResumenOpen)
   const [editingCompra, setEditingCompra] = useState<Cotizacion | null>(null);
   const [activeFilter, setActiveFilter] = useState('todos');
   const userId = useSelector((state: RootState) => state.user.id);
@@ -63,11 +66,6 @@ const ComprasBoard: React.FC = () => {
     setEditingCompra(cotizacion);
     setIsModalOpen(true);
   };
-
-  // const handleResumen = (cotizacion: Cotizacion) => {
-  //   setEditingCompra(cotizacion);
-  //   setIsModalResumenOpen(true);
-  // };
 
   const handleDelete = async (id: string) => {
     try {
@@ -108,11 +106,13 @@ const ComprasBoard: React.FC = () => {
         usuario_id: userId,
         estado: 'vacio',
         fecha: new Date().toISOString(),
-        codigo_cotizacion: `COT-${String(new Date().getHours()).padStart(2, '0') +
-          String(new Date().getMinutes()).padStart(2, '0') +
+        codigo_cotizacion: `COT-${
           String(new Date().getDate()).padStart(2, '0') +
           String(new Date().getMonth() + 1).padStart(2, '0') +
-          String(new Date().getFullYear()).slice(-2)
+          String(new Date().getFullYear()).slice(-2) +
+          String(new Date().getHours()).padStart(2, '0') +
+          String(new Date().getMinutes()).padStart(2, '0') +
+          String(new Date().getSeconds()).padStart(2, '0')
           }`,
         aprobacion: false,
       })).unwrap();
@@ -136,7 +136,6 @@ const ComprasBoard: React.FC = () => {
 
   const handleCloseModal = () => {
     setIsModalOpen(false);
-    setIsModalResumenOpen(false);
     setEditingCompra(null);
   };
 
@@ -155,12 +154,6 @@ const ComprasBoard: React.FC = () => {
 
   const renderOptions = (cot: Cotizacion) => (
     <div className='flex flex-row gap-2'>
-      {/* <button
-        className='text-yellow-500'
-        onClick={() => handleResumen(cot)}
-      >
-        <FiEye />
-      </button> */}
       <button
         className='text-blue-500'
         onClick={() => handleEdit(cot)}
@@ -192,7 +185,6 @@ const ComprasBoard: React.FC = () => {
 
   return (
     <Provider store={store} >
-      <ModalProvider>
         <motion.div
 
           exit="out"
@@ -210,7 +202,26 @@ const ComprasBoard: React.FC = () => {
           <Button text='+ Nueva Cotización' color='verde' onClick={handleButtonClick} className="rounded w-auto" />
         </motion.div>
 
-        <motion.div
+        {/* Modificar esta sección del modal */}
+        {(isModalOpen && editingCompra) ? (
+          <Modal title='Selecciona Recursos a Cotizar' isOpen={isModalOpen} onClose={handleCloseModal}>
+            <ComprasSelectSources
+              cotizacion={{
+                id: editingCompra.id,
+                codigo_cotizacion: editingCompra.codigo_cotizacion,
+                usuario_id: {
+                  id: editingCompra.usuario_id.id,
+                  nombres: editingCompra.usuario_id.nombres,
+                  apellidos: editingCompra.usuario_id.apellidos
+                },
+                estado: editingCompra.estado,
+                fecha: editingCompra.fecha,
+                aprobacion: editingCompra.aprobacion
+                
+              } as Cotizacion}  // Forzar el tipo
+            />
+          </Modal>
+        ) : (<motion.div
           className="flex flex-1 overflow-hidden rounded-xl"
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
@@ -254,27 +265,9 @@ const ComprasBoard: React.FC = () => {
               </div>
             </motion.div>
           </main>
-        </motion.div>
+        </motion.div>)}
 
-        {/* Modificar esta sección del modal */}
-        {isModalOpen && editingCompra && (
-          <Modal title='Selecciona Recursos a Cotizar' isOpen={isModalOpen} onClose={handleCloseModal}>
-            <ComprasSelectSources
-              cotizacion={{
-                id: editingCompra.id,
-                codigo_cotizacion: editingCompra.codigo_cotizacion,
-                usuario_id: {
-                  id: editingCompra.usuario_id.id,
-                  nombres: editingCompra.usuario_id.nombres,
-                  apellidos: editingCompra.usuario_id.apellidos
-                },
-                estado: editingCompra.estado,
-                fecha: editingCompra.fecha,
-                aprobacion: editingCompra.aprobacion
-              }}
-            />
-          </Modal>
-        )}
+        
 
         {toast.show && (
           <Toast
@@ -286,8 +279,6 @@ const ComprasBoard: React.FC = () => {
             index={0}
           />
         )}
-      
-    </ModalProvider>
   </Provider>
   );
 };

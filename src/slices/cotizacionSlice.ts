@@ -49,6 +49,7 @@ export interface CotizacionRecurso {
     codigo_cotizacion: string;
     aprobacion: string;
   };
+  
   recurso_id: {
     id: string;
     codigo: string;
