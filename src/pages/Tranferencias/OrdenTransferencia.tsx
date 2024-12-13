@@ -50,9 +50,9 @@ const OrdenTransferencia: React.FC<OrdenTransferenciaProps> = ({
   }, [dispatch]);
 
   // Obtener ID del movimiento de transferencia
-  const getMovimientoSalidaId = () => {
+const getMovimientoSalidaId = () => {
     const movimientoTransferencia = movimientos.find((m: { tipo: string; nombre: string }) => {
-      return m.nombre.toLowerCase().includes('transferencia');
+      return m.nombre.toLowerCase().includes('almacen');
     });
 
     if (!movimientoTransferencia) {
@@ -81,16 +81,21 @@ const OrdenTransferencia: React.FC<OrdenTransferenciaProps> = ({
         return;
       }
 
+      // Generar código único para la transferencia
+      const fecha = new Date();
+      const codigoTransferencia = `TRA-${fecha.getFullYear()}${(fecha.getMonth() + 1).toString().padStart(2, '0')}${fecha.getDate().toString().padStart(2, '0')}-${Math.floor(Math.random() * 1000).toString().padStart(3, '0')}`;
+
       // Crear la transferencia con los datos de la solicitud
       const transferencia = {
         usuario_id: solicitudData.usuario.id.toString(),
         movimiento_id: movimientoId.toString(),
         movilidad_id: movilidadId.toString(),
-        fecha: new Date(),
+        fecha: fecha,
         descripcion,
         observaciones,
         almacen_origen_id: solicitudData.almacenOrigen.id,
-        almacen_destino_id: solicitudData.almacenDestino?.id
+        almacen_destino_id: solicitudData.almacenDestino?.id,
+        codigo: codigoTransferencia
       };
 
       const result = await dispatch(addTransferencia(transferencia)).unwrap();
@@ -110,8 +115,8 @@ const OrdenTransferencia: React.FC<OrdenTransferenciaProps> = ({
         const detalleTransferencia = {
           transferencia_id: result.id,
           referencia_id: solicitudData.id,
-          tipo: 'TRANSFERENCIA',
-          referencia: descripcion || 'Transferencia de recursos',
+          tipo: 'origen',
+          referencia: 'almacen',
           fecha: new Date()
         };
         
@@ -119,14 +124,17 @@ const OrdenTransferencia: React.FC<OrdenTransferenciaProps> = ({
 
         // Guardar los recursos de transferencia
         if (detalleResult.id) {
-          for (const recurso of recursos) {
+          // Los recursos ya vienen filtrados desde FormularioSolicitud
+          const recursosPromises = recursos.map(recurso => {
             const recursoTransferencia = {
               transferencia_detalle_id: detalleResult.id,
               recurso_id: recurso.recurso_id.id,
-              cantidad: recurso.cantidadSeleccionada
+              cantidad: recurso.cantidadSeleccionada,
+              costo: recurso.recurso_id.precio_actual,
             };
-            await dispatch(addTransferenciaRecurso(recursoTransferencia)).unwrap();
-          }
+            return dispatch(addTransferenciaRecurso(recursoTransferencia)).unwrap();
+          });
+          await Promise.all(recursosPromises);
         }
       }
       

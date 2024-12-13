@@ -32,6 +32,7 @@ const LIST_SOLICITUD_ALMACENES_QUERY = gql`
         direccion
       }
       fecha
+      estado
     }
   }
 `;
@@ -42,12 +43,14 @@ const ADD_SOLICITUD_ALMACEN_MUTATION = gql`
     $requerimiento_id: ID!
     $almacen_origen_id: ID!
     $fecha: DateTime
+    $estado: string
   ) {
     addSolicitudAlmacen(
       usuario_id: $usuario_id
       requerimiento_id: $requerimiento_id
       almacen_origen_id: $almacen_origen_id
       fecha: $fecha
+      estado: $estado
     ) {
       id
       usuario_id {
@@ -77,6 +80,7 @@ const ADD_SOLICITUD_ALMACEN_MUTATION = gql`
         direccion
       }
       fecha
+      estado
     }
   }
 `;
@@ -88,6 +92,7 @@ const UPDATE_SOLICITUD_ALMACEN_MUTATION = gql`
     $requerimiento_id: ID
     $almacen_origen_id: ID
     $fecha: DateTime
+    $estado: String!
   ) {
     updateSolicitudAlmacen(
       id: $updateSolicitudAlmacenId
@@ -95,6 +100,7 @@ const UPDATE_SOLICITUD_ALMACEN_MUTATION = gql`
       requerimiento_id: $requerimiento_id
       almacen_origen_id: $almacen_origen_id
       fecha: $fecha
+      estado: $estado
     ) {
       id
       usuario_id {
@@ -124,6 +130,7 @@ const UPDATE_SOLICITUD_ALMACEN_MUTATION = gql`
         direccion
       }
       fecha
+      estado
     }
   }
 `;
@@ -156,6 +163,7 @@ export const addSolicitudAlmacenService = async (solicitudData: {
   requerimiento_id: string;
   almacen_origen_id: string;
   fecha: Date;
+  estado: string;
 }) => {
   try {
     const response = await client.mutate({
@@ -165,6 +173,7 @@ export const addSolicitudAlmacenService = async (solicitudData: {
         requerimiento_id: solicitudData.requerimiento_id,
         almacen_origen_id: solicitudData.almacen_origen_id,
         fecha: solicitudData.fecha,
+        estado: solicitudData.estado,
       },
     });
     if (response.errors) {
@@ -183,6 +192,7 @@ export const updateSolicitudAlmacenService = async (solicitudData: {
   requerimiento_id: string;
   almacen_origen_id: string;
   fecha: Date;
+  estado: string
 }) => {
   try {
     const response = await client.mutate({
@@ -193,6 +203,7 @@ export const updateSolicitudAlmacenService = async (solicitudData: {
         requerimiento_id: solicitudData.requerimiento_id,
         almacen_origen_id: solicitudData.almacen_origen_id,
         fecha: solicitudData.fecha,
+        estado: solicitudData.estado,
       },
     });
     if (response.errors) {

@@ -40,6 +40,7 @@ interface SolicitudAlmacenResponse {
   almacen_origen_id: AlmacenData;
   almacen_destino_id: AlmacenData;
   fecha: string;
+  estado: string;
 }
 
 // Interface para las mutations (cuando enviamos datos)
@@ -48,6 +49,7 @@ interface SolicitudAlmacenInput {
   requerimiento_id: string;
   almacen_origen_id: string;
   fecha: Date;
+  estado: string;
 }
 
 interface SolicitudAlmacenState {
