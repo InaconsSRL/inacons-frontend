@@ -113,20 +113,6 @@ const AprobacionTransferenciaPageAlmacen: React.FC<AprobacionTransferenciaPagePr
     return Math.max(0, item.cantidad - transferTotal);
   };
 
-  // const actualizarRequerimiento = async () => {
-  //   await dispatch(updateRequerimiento({
-  //     id: requerimientoId,
-  //     usuario_id: currentUserId || '',
-  //     obra_id: column?.requerimiento.obra_id || '',
-  //     fecha_final: new Date(column?.requerimiento?.fecha_final || new Date()),
-  //     sustento: column?.requerimiento?.sustento || '',
-  //     estado_atencion: "aprobado_logistica",
-  //   })).unwrap();
-  // }
-  // Handlers para los botones
-
-  console.log(requerimientoRecursos)
-
   const handleApprove = async (): Promise<void> => {
     try {
       setIsProcessing(true);
@@ -188,13 +174,9 @@ const AprobacionTransferenciaPageAlmacen: React.FC<AprobacionTransferenciaPagePr
       const warehouses = Object.keys(recursosPorAlmacen);
       setProgress(prev => ({ ...prev, totalWarehouses: warehouses.length }));
 
-      
-
       for (const almacenId of warehouses) {
         const recursos = recursosPorAlmacen[almacenId];
         const almacen = requerimientoRecursos[0]?.listAlmacenRecursos.find(w => w.almacen_id === almacenId);
-
-
 
         setProgress(prev => ({
           ...prev,
@@ -224,12 +206,17 @@ const AprobacionTransferenciaPageAlmacen: React.FC<AprobacionTransferenciaPagePr
             currentResourceName: recurso.recurso_id, // Reemplazar si se necesita el nombre
             resourceProgress: Math.round(((recursos.indexOf(recurso) + 1) / recursos.length) * 100),
           }));
-          console.log("estos son los recursos", recurso)
+
+          // Encontrar el recurso y el almacén específico para obtener el costo
+          const requerimientoRecurso = requerimientoRecursos.find(r => r.recurso_id === recurso.recurso_id);
+          const almacenRecurso = requerimientoRecurso?.listAlmacenRecursos.find(a => a.almacen_id === almacenId);
+          
           await dispatch(
             addSolicitudRecursoAlmacen({
               recurso_id: recurso.recurso_id,
               cantidad: recurso.cantidad,
               solicitud_almacen_id: solicitud.id,
+              costo: almacenRecurso?.costo || 0, // Incluimos el costo del almacén específico
             })
           ).unwrap();
 
@@ -263,7 +250,6 @@ const AprobacionTransferenciaPageAlmacen: React.FC<AprobacionTransferenciaPagePr
       setIsProcessing(false);
     }
   };
-
 
   const handleReject = (): void => {
     // Implementar lógica de rechazo

@@ -37,8 +37,13 @@ interface Unidad {
     nombre: string;
 }
 
+const Skeleton: React.FC<{ className?: string }> = ({ className }) => (
+    <div className={`animate-pulse bg-gray-200 rounded ${className}`}></div>
+);
+
 function ComprasSelectSources({ cotizacion: initialCotizacion }: ComprasSelectSourcesProps) {
     const dispatch = useDispatch<AppDispatch>();
+    const [isLoading, setIsLoading] = useState(true);
     const [isModalProveedoresOpen, setIsModalProveedoresOpen] = useState(false);
     const [isModalAddRecursosOpen, setIsModalAddRecursosOpen] = useState(false);
     // Reemplazar el estado local por el selector de Redux
@@ -68,7 +73,11 @@ function ComprasSelectSources({ cotizacion: initialCotizacion }: ComprasSelectSo
     // Cargar recursos solo una vez al inicio
     useEffect(() => {
         if (cotizacionFromStore.estado !== "vacio" && cotizacionFromStore.id) {
-            dispatch(fetchCotizacionRecursoForCotizacionId(cotizacionFromStore.id.toString()));
+            setIsLoading(true);
+            dispatch(fetchCotizacionRecursoForCotizacionId(cotizacionFromStore.id.toString()))
+                .finally(() => setIsLoading(false));
+        } else {
+            setIsLoading(false);
         }
     }, [cotizacionFromStore.estado, cotizacionFromStore.id, dispatch]);
 
@@ -114,6 +123,33 @@ function ComprasSelectSources({ cotizacion: initialCotizacion }: ComprasSelectSo
     // Mostrar loader si cualquier operación está en progreso
     console.log("co", cotizacionFromStore)
     console.log("cr", cotizacionRecursos)
+
+    if (isLoading) {
+        return (
+            <div className="min-h-[80vh] bg-gray-100 p-4">
+                <div className="bg-white rounded-lg shadow-lg px-4 mb-6 w-full min-w-[60vw]">
+                    <div className="grid grid-cols-2 gap-4 py-4">
+                        <Skeleton className="h-12 w-full" />
+                        <Skeleton className="h-12 w-full" />
+                        <Skeleton className="h-12 w-full" />
+                        <Skeleton className="h-12 w-full" />
+                    </div>
+                </div>
+                <div className="flex gap-4 mb-6">
+                    <Skeleton className="h-10 w-52" />
+                </div>
+                <div className="bg-white rounded-lg shadow-lg overflow-hidden">
+                    <Skeleton className="h-16 w-full" />
+                    <div className="p-4">
+                        {[...Array(5)].map((_, index) => (
+                            <Skeleton key={index} className="h-12 w-full mb-2" />
+                        ))}
+                    </div>
+                </div>
+            </div>
+        );
+    }
+
     return (
         <div className="min-h-[80vh] bg-gray-100 p-4">
             {isModalProveedoresOpen ?

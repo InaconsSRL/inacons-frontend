@@ -5,6 +5,7 @@ const LIST_SOLICITUD_RECURSO_ALMACENES_QUERY = gql`
   query ListSolicitudRecursoAlmacenes {
     listSolicitudRecursoAlmacenes {
      id
+     costo
      recurso_id {
         cantidad
         codigo
@@ -25,9 +26,10 @@ const LIST_SOLICITUD_RECURSO_ALMACENES_QUERY = gql`
 `;
 
 const ADD_SOLICITUD_RECURSO_ALMACEN_MUTATION = gql`
-  mutation AddSolicitudRecursoAlmacen($recurso_id: ID!, $cantidad: Int!, $solicitud_almacen_id: ID!) {
-    addSolicitudRecursoAlmacen(recurso_id: $recurso_id, cantidad: $cantidad, solicitud_almacen_id: $solicitud_almacen_id) {
+  mutation AddSolicitudRecursoAlmacen($recurso_id: ID!, $cantidad: Int!,$costo: Float!, $solicitud_almacen_id: ID!) {
+    addSolicitudRecursoAlmacen(recurso_id: $recurso_id, cantidad: $cantidad, costo: $costo, solicitud_almacen_id: $solicitud_almacen_id) {
       id
+      costo
       recurso_id {
         cantidad
         codigo
@@ -51,9 +53,10 @@ const ADD_SOLICITUD_RECURSO_ALMACEN_MUTATION = gql`
 `;
 
 const UPDATE_SOLICITUD_RECURSO_ALMACEN_MUTATION = gql`
-  mutation UpdateSolicitudRecursoAlmacen($updateSolicitudRecursoAlmacenId: ID!, $recursoId: ID!, $cantidad: Int!, $solicitudAlmacenId: ID!) {
-    updateSolicitudRecursoAlmacen(id: $updateSolicitudRecursoAlmacenId, recurso_id: $recursoId, cantidad: $cantidad, solicitud_almacen_id: $solicitudAlmacenId) {
+  mutation UpdateSolicitudRecursoAlmacen($updateSolicitudRecursoAlmacenId: ID!, $recursoId: ID!, $cantidad: Int!, $costo: Float, $solicitudAlmacenId: ID!) {
+    updateSolicitudRecursoAlmacen(id: $updateSolicitudRecursoAlmacenId, recurso_id: $recursoId, costo: $costo, cantidad: $cantidad, solicitud_almacen_id: $solicitudAlmacenId) {
       id
+      costo
       recurso_id {
         cantidad
         codigo
@@ -88,6 +91,7 @@ const GET_ORDEN_SOLICITUD_RECURSO_BY_ID = gql`
   query GetOrdenSolicitudRecursoforSolicitudId($getOrdenSolicitudRecursoforSolicitudIdId: ID!) {
     getOrdenSolicitudRecursoforSolicitudId(id: $getOrdenSolicitudRecursoforSolicitudIdId) {
       id
+      costo
       recurso_id {
         id
         codigo
@@ -126,6 +130,7 @@ export const addSolicitudRecursoAlmacenService = async (data: {
   recurso_id: string;
   cantidad: number;
   solicitud_almacen_id: string;
+  costo: number;
 }) => {
   try {
     const response = await client.mutate({

@@ -26,6 +26,7 @@ interface SolicitudAlmacen {
 // Interface para GET
 interface SolicitudRecursoAlmacenResponse {
   id: string;
+  costo: number;
   recurso_id: Recurso;
   cantidad: number;
   solicitud_almacen_id: SolicitudAlmacen;
@@ -36,6 +37,7 @@ interface SolicitudRecursoAlmacenMutation {
   id: string;
   recurso_id: Recurso;
   cantidad: number;
+  costo: number;
   solicitud_almacen_id: {
     id: string;
   };
@@ -73,7 +75,7 @@ export const fetchSolicitudesRecursoAlmacen = createAsyncThunk(
 export const addSolicitudRecursoAlmacen = createAsyncThunk(
   'solicitudRecursoAlmacen/addSolicitudRecursoAlmacen',
   async (
-    data: { recurso_id: string; cantidad: number; solicitud_almacen_id: string },
+    data: { recurso_id: string; cantidad: number; solicitud_almacen_id: string; costo: number },
     { rejectWithValue }
   ) => {
     try {
