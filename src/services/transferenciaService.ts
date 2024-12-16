@@ -6,6 +6,7 @@ const LIST_TRANSFERENCIAS_QUERY = gql`
     listTransferencias {
       id
       fecha
+      estado
       movimiento_id {
         id
         nombre
@@ -27,10 +28,17 @@ const LIST_TRANSFERENCIAS_QUERY = gql`
 `;
 
 const ADD_TRANSFERENCIA_MUTATION = gql`
-  mutation AddTransferencia($usuario_id: ID!, $movimiento_id: ID!, $movilidad_id: ID!, $fecha: DateTime) {
-    addTransferencia(usuario_id: $usuario_id, movimiento_id: $movimiento_id, movilidad_id: $movilidad_id, fecha: $fecha) {
+  mutation AddTransferencia($usuario_id: ID!, $movimiento_id: ID!, $movilidad_id: ID!, $fecha: DateTime, $estado: String) {
+    addTransferencia(
+      usuario_id: $usuario_id, 
+      movimiento_id: $movimiento_id, 
+      movilidad_id: $movilidad_id, 
+      fecha: $fecha,
+      estado: $estado
+    ) {
       id
       fecha
+      estado
       movimiento_id {
         id
         nombre
@@ -52,10 +60,25 @@ const ADD_TRANSFERENCIA_MUTATION = gql`
 `;
 
 const UPDATE_TRANSFERENCIA_MUTATION = gql`
-  mutation UpdateTransferencia($updateTransferenciaId: ID!, $usuario_id: ID, $fecha: DateTime, $movimiento_id: ID, $movilidad_id: ID) {
-    updateTransferencia(id: $updateTransferenciaId, usuario_id: $usuario_id, fecha: $fecha, movimiento_id: $movimiento_id, movilidad_id: $movilidad_id) {
+  mutation UpdateTransferencia(
+    $updateTransferenciaId: ID!, 
+    $usuario_id: ID, 
+    $fecha: DateTime, 
+    $movimiento_id: ID, 
+    $movilidad_id: ID,
+    $estado: String
+  ) {
+    updateTransferencia(
+      id: $updateTransferenciaId, 
+      usuario_id: $usuario_id, 
+      fecha: $fecha, 
+      movimiento_id: $movimiento_id, 
+      movilidad_id: $movilidad_id,
+      estado: $estado
+    ) {
       id
       fecha
+      estado
       movimiento_id {
         id
         nombre
@@ -96,6 +119,7 @@ export const addTransferenciaService = async (data: {
   fecha: Date; 
   movimiento_id: string;
   movilidad_id: string;
+  estado?: 'PARCIAL' | 'COMPLETO';
 }) => {
     const response = await client.mutate({
       mutation: ADD_TRANSFERENCIA_MUTATION,
@@ -104,6 +128,7 @@ export const addTransferenciaService = async (data: {
         fecha: data.fecha,
         movimiento_id: data.movimiento_id,
         movilidad_id: data.movilidad_id,
+        estado: data.estado,
       },
     });
     return response.data.addTransferencia;
@@ -115,6 +140,7 @@ export const updateTransferenciaService = async (data: {
   fecha?: Date; 
   movimiento_id?: string;
   movilidad_id?: string;
+  estado?: 'PARCIAL' | 'COMPLETO';
 }) => {
     const response = await client.mutate({
       mutation: UPDATE_TRANSFERENCIA_MUTATION,
@@ -124,6 +150,7 @@ export const updateTransferenciaService = async (data: {
         fecha: data.fecha,
         movimiento_id: data.movimiento_id,
         movilidad_id: data.movilidad_id,
+        estado: data.estado,
       },
     });
     return response.data.updateTransferencia;

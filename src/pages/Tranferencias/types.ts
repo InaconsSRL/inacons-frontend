@@ -1,58 +1,111 @@
-export interface AlmacenData {
-  id: string;
-  nombre: string;
-  estado?: string;
-  direccion?: string;
+export interface TransferenciaRecurso {
+  _id: string;
+  transferencia_detalle_id: {
+    id: string;
+    referencia_id: string;
+    fecha: string;
+    tipo: string;
+    referencia: string;
+  };
+  recurso_id: {
+    id: string;
+    codigo: string;
+    nombre: string;
+    descripcion: string;
+    fecha: string;
+    cantidad: number;
+    unidad_id: string;
+    precio_actual: number;
+    vigente: boolean;
+    tipo_recurso_id: string;
+    tipo_costo_recurso_id: string;
+    clasificacion_recurso_id: string;
+  };
+  cantidad: number;
+  costo: number;
 }
 
-export interface UsuarioData {
+export type EstadoTransferencia = 'PARCIAL' | 'COMPLETO';
+
+export interface TransferenciaCompleta {
   id: string;
-  nombres: string;
-  apellidos: string;
+  fecha: Date;
+  estado?: EstadoTransferencia; // Hacemos el estado opcional
+  usuario_id: {
+    nombres: string;
+    apellidos: string;
+  };
+  movimiento_id: {
+    id: string;
+    nombre: string;
+    descripcion: string;
+    tipo: string;
+  };
+  movilidad_id: {
+    id: string;
+    denominacion: string;
+    descripcion: string;
+  };
+  detalles: any[];
+  recursos: TransferenciaRecurso[];
 }
 
-export interface RecursoData {
-  id: string;
-  codigo: string;
-  nombre: string;
-  unidad_id: string;
-  precio_actual: number;
-}
+export type TipoFiltro = 'TODOS' | 'COMPRAS' | 'RECEPCIONES' | 'PRESTAMOS' | 'SALIDA';
 
 export interface RecursoSeleccionado {
-  recurso_id: RecursoData;
+  id?: string;
+  recurso_id: {
+    id: string;
+    codigo: string;
+    nombre: string;
+    unidad_id: string;
+    precio_actual: number;
+  };
   cantidad: number;
   cantidadSeleccionada: number;
-  isChecked: boolean;
+  bodega?: string;
+}
+
+export interface FormularioSolicitudProps {
+  onClose: () => void;
+  transferenciasId?: string;
 }
 
 export interface SolicitudAlmacen {
   id: string;
-  usuario_id: UsuarioData;
-  almacen_origen_id: AlmacenData;
-  almacen_destino_id?: AlmacenData;
-  fecha: string;
+  almacen_origen_id: {
+    id: string;
+    nombre: string;
+  };
+  almacen_destino_id: {
+    id: string;
+    nombre: string;
+  } | null;
+  usuario_id: {
+    id: string;
+    nombres: string;
+    apellidos: string;
+  };
   requerimiento_id: {
     id: string;
     codigo: string;
     obra_id: string;
   };
+  fecha: string;
+  estado: string;
 }
 
-export interface OrdenTransferenciaProps {
-  onClose: () => void;
-  transferenciasId?: string | null;
-  recursos: RecursoSeleccionado[];
-  solicitudData: {
+export interface RecursoSeleccionado {
+  id?: string;
+  recurso_id: {
     id: string;
-    almacenOrigen: AlmacenData;
-    almacenDestino?: AlmacenData;
-    usuario: UsuarioData;
+    codigo: string;
+    nombre: string;
+    unidad_id: string;
+    precio_actual: number;
   };
+  cantidad: number;
+  cantidadSeleccionada: number;
+  bodega?: string;
+  isChecked?: boolean;
 }
-
-// recursos de transferencia
-export interface TransferenciaRecurso {
-  id: string;
-  transferencia_id: string; 
-  cantidad: number; }

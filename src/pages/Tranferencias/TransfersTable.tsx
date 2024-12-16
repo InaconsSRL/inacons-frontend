@@ -4,7 +4,10 @@ import { useDispatch, useSelector } from 'react-redux';
 import { RootState, AppDispatch } from '../../store/store';
 import { fetchTransferencias } from '../../slices/transferenciaSlice';
 import { fetchTransferenciaDetalles } from '../../slices/transferenciaDetalleSlice';
-import { fetchTransferenciaRecursos } from '../../slices/transferenciaRecursoSlice';
+import { fetchTransferenciaRecursosById } from '../../slices/transferenciaRecursoSlice';
+import { TransferFilter } from "./TransferFilter";
+import { DetalleTransferencia } from "./DetalleTransferencia";
+import { TransferenciaCompleta, TipoFiltro } from "./types";
 
 const Skeleton = () => (
   <div className="animate-pulse">
@@ -12,47 +15,22 @@ const Skeleton = () => (
   </div>
 );
 
-interface TransferenciaCompleta {
-  id: string;
-  fecha: Date;
-  usuario_id: {
-    nombres: string;
-    apellidos: string;
-  };
-  movimiento_id: {
-    nombre: string;
-    tipo: string;
-  };
-  movilidad_id: {
-    denominacion: string;
-  };
-  detalles: any[];
-  recursos: any[];
-}
-
 export function TransferTable() {
     const dispatch = useDispatch<AppDispatch>();
     const [isLoading, setIsLoading] = useState(true);
+    const [tipoFiltro, setTipoFiltro] = useState<TipoFiltro>('TODOS');
+    const [selectedTransferencia, setSelectedTransferencia] = useState<TransferenciaCompleta | null>(null);
     
     const transferencias = useSelector((state: RootState) => state.transferencia.transferencias);
     const detalles = useSelector((state: RootState) => state.transferenciaDetalle.transferenciaDetalles);
     const recursos = useSelector((state: RootState) => state.transferenciaRecurso.transferenciaRecursos);
-    
-    const error = useSelector((state: RootState) => 
-        state.transferencia.error 
-        // state.transferenciaDetalle.error || 
-        // state.transferenciaRecurso.error
-    );
+    const error = useSelector((state: RootState) => state.transferencia.error);
 
     useEffect(() => {
         const loadData = async () => {
             setIsLoading(true);
             try {
-                await Promise.all([
-                    dispatch(fetchTransferencias()).unwrap(),
-                    dispatch(fetchTransferenciaDetalles()).unwrap(),
-                    dispatch(fetchTransferenciaRecursos()).unwrap()
-                ]);
+                await dispatch(fetchTransferencias()).unwrap();
             } catch (err) {
                 console.error('Error al cargar los datos:', err);
             } finally {
@@ -62,17 +40,71 @@ export function TransferTable() {
         loadData();
     }, [dispatch]);
 
-    const transferenciasCompletas = transferencias.map(transferencia => ({
-        ...transferencia,
-        detalles: detalles.filter(d => d.transferencia_id === transferencia.id),
-        recursos: recursos.filter(r => {
-            console.log('Transferencia ID:', transferencia.id, 'Recurso ID:', r.transferencia_id);
-            return r.transferencia_id === transferencia.id;
-        })
-    }));
+    useEffect(() => {
+        const loadDetallesYRecursos = async () => {
+            if (transferencias.length > 0) {
+                try {
+                    for (const transferencia of transferencias) {
+                        // Obtener detalles de la transferencia
+                        const detalles = await dispatch(fetchTransferenciaDetalles(transferencia.id)).unwrap();
+                        
+                        // Obtener recursos para cada detalle
+                        if (detalles && detalles.length > 0) {
+                            for (const detalle of detalles) {
+                                await dispatch(fetchTransferenciaRecursosById(detalle.id));
+                            }
+                        }
+                    }
+                } catch (err) {
+                    console.error('Error al cargar detalles y recursos:', err);
+                }
+            }
+        };
+        loadDetallesYRecursos();
+    }, [transferencias, dispatch]);
+
+    const transferenciasCompletas: TransferenciaCompleta[] = transferencias
+    .filter(transferencia => {
+        if (tipoFiltro === 'TODOS') return true;
+        
+        switch (tipoFiltro) {
+            case 'COMPRAS':
+                return transferencia.movimiento_id.tipo === 'entrada' && 
+                       transferencia.movimiento_id.nombre.toLowerCase().includes('compra');
+            case 'RECEPCIONES':
+                return transferencia.movimiento_id.tipo === 'entrada' && 
+                       transferencia.movimiento_id.nombre.toLowerCase().includes('transferencia');
+            case 'PRESTAMOS':
+                return transferencia.movimiento_id.tipo === 'salida' && 
+                       transferencia.movimiento_id.nombre.toLowerCase().includes('prestamo');
+            case 'SALIDA':
+                return transferencia.movimiento_id.tipo === 'salida' && 
+                       transferencia.movimiento_id.nombre.toLowerCase().includes('salida');
+            default:
+                return true;
+        }
+    })
+    .map(transferencia => {
+        // Obtener los detalles de esta transferencia
+        const detallesTransferencia = detalles.filter(d => 
+            d.transferencia_id && d.transferencia_id.id === transferencia.id
+        );
+        
+        // Obtener los recursos asociados a estos detalles
+        const recursosTransferencia = recursos.filter(r => 
+            detallesTransferencia.some(d => d.id === r.transferencia_detalle_id.id)
+        );
+
+        return {
+            ...transferencia,
+            detalles: detallesTransferencia,
+            recursos: recursosTransferencia
+        };
+    });
 
     return (
         <div className="w-full">
+            <TransferFilter tipoFiltro={tipoFiltro} onChange={setTipoFiltro} />
             <table className="min-w-full mt-4 border">
                 <thead>
                     <tr className="bg-gray-50">
@@ -131,6 +163,7 @@ export function TransferTable() {
                                     <button 
                                         className="bg-transparent border-none text-blue-800 hover:text-blue-600 transition-colors"
                                         title="Ver detalles"
+                                        onClick={() => setSelectedTransferencia(transferencia)}
                                     >
                                         <FiEye className="w-5 h-5"/>
                                     </button>
@@ -140,6 +173,12 @@ export function TransferTable() {
                     )}
                 </tbody>
             </table>
+            {selectedTransferencia && (
+                <DetalleTransferencia
+                    transferencia={selectedTransferencia}
+                    onClose={() => setSelectedTransferencia(null)}
+                />
+            )}
         </div>
     );
 }

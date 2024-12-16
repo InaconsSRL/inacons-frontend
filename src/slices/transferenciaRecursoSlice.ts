@@ -148,7 +148,13 @@ const transferenciaRecursoSlice = createSlice({
       })
       .addCase(fetchTransferenciaRecursosById.fulfilled, (state, action: PayloadAction<TransferenciaRecurso[]>) => {
         state.loading = false;
-        state.transferenciaRecursos = action.payload;
+        // Filtrar recursos existentes que no pertenezcan al detalle actual
+        const detalleId = action.payload[0]?.transferencia_detalle_id.id;
+        const recursosActualizados = state.transferenciaRecursos.filter(
+          recurso => recurso.transferencia_detalle_id.id !== detalleId
+        );
+        // Agregar los nuevos recursos
+        state.transferenciaRecursos = [...recursosActualizados, ...action.payload];
       })
       .addCase(addTransferenciaRecurso.fulfilled, (state, action: PayloadAction<TransferenciaRecurso>) => {
         state.transferenciaRecursos.push(action.payload);

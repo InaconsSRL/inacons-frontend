@@ -49,6 +49,7 @@ interface SolicitudAlmacenInput {
   requerimiento_id: string;
   almacen_origen_id: string;
   fecha: Date;
+  estado: string;
 }
 
 interface SolicitudAlmacenState {

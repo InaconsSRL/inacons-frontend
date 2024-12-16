@@ -121,10 +121,17 @@ export const listTransferenciaDetallesByTransferenciaIdService = async (transfer
     const { data } = await client.query({
       query: LIST_TRANSFERENCIA_DETALLES_BY_TRANSFERENCIA_ID,
       variables: { transferenciaId },
+      fetchPolicy: 'network-only'
     });
+    
+    if (!data || !data.listTransferenciaDetallesByTransferenciaId) {
+      throw new Error('No se encontraron detalles para esta transferencia');
+    }
+    
     return data.listTransferenciaDetallesByTransferenciaId;
   } catch (error) {
-    throw new Error(`Error fetching transferencia detalles by id: ${error}`);
+    console.error('Error en listTransferenciaDetallesByTransferenciaIdService:', error);
+    throw new Error(`Error al obtener detalles de transferencia: ${error instanceof Error ? error.message : 'Error desconocido'}`);
   }
 };
 

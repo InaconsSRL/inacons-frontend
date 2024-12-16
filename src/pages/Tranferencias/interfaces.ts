@@ -111,6 +111,37 @@ export interface Transferencia {
   tipoTransporte?: string; 
 }
 
+export interface TransferenciaRecurso {
+  id: string;
+  transferencia_id: string;
+  recurso_id: {
+    id: string;
+    codigo: string;
+    nombre: string;
+    unidad_id: string;
+    precio_actual: number;
+  };
+  cantidad: number;
+}
+
+export interface TransferenciaCompleta {
+  id: string;
+  fecha: Date;
+  usuario_id: {
+    nombres: string;
+    apellidos: string;
+  };
+  movimiento_id: {
+    nombre: string;
+    tipo: string;
+  };
+  movilidad_id: {
+    denominacion: string;
+  };
+  detalles: any[];
+  recursos: TransferenciaRecurso[];
+}
+
 export interface RecepcionTransferenciasProps {
   transferencias: Transferencia[]; 
 }
