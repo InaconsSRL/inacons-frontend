@@ -43,6 +43,7 @@ const ADD_SOLICITUD_ALMACEN_MUTATION = gql`
     $requerimiento_id: ID!
     $almacen_origen_id: ID!
     $fecha: DateTime
+    $estado: String
   ) {
     addSolicitudAlmacen(
       usuario_id: $usuario_id
@@ -176,11 +177,7 @@ export const addSolicitudAlmacenService = async (solicitudData: {
         requerimiento_id: solicitudData.requerimiento_id,
         almacen_origen_id: solicitudData.almacen_origen_id,
         fecha: solicitudData.fecha,
-<<<<<<< HEAD
         estado: 'pendiente',
-=======
-        estado: solicitudData.estado,
->>>>>>> 9982f0fbbe3ebf8eb8db4f9a784d2b5339355305
       },
     });
     if (response.errors) {
