@@ -43,7 +43,7 @@ const ADD_SOLICITUD_ALMACEN_MUTATION = gql`
     $requerimiento_id: ID!
     $almacen_origen_id: ID!
     $fecha: DateTime
-    $estado: String
+    $estado: String!
   ) {
     addSolicitudAlmacen(
       usuario_id: $usuario_id
@@ -92,7 +92,7 @@ const UPDATE_SOLICITUD_ALMACEN_MUTATION = gql`
     $requerimiento_id: ID
     $almacen_origen_id: ID
     $fecha: DateTime
-    $estado: String!
+    $estado: String
   ) {
     updateSolicitudAlmacen(
       id: $updateSolicitudAlmacenId
