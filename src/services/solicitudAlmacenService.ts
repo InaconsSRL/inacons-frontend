@@ -92,11 +92,7 @@ const UPDATE_SOLICITUD_ALMACEN_MUTATION = gql`
     $requerimiento_id: ID
     $almacen_origen_id: ID
     $fecha: DateTime
-<<<<<<< HEAD
-    $estado: String
-=======
     $estado: String!
->>>>>>> 9982f0fbbe3ebf8eb8db4f9a784d2b5339355305
   ) {
     updateSolicitudAlmacen(
       id: $updateSolicitudAlmacenId
