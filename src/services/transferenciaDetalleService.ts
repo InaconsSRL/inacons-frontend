@@ -143,19 +143,35 @@ export const addTransferenciaDetalleService = async (transferenciaDetalle: {
   referencia: string;
 }) => {
   try {
+    // Transformar los nombres de las variables para la mutación GraphQL
+    const variables = {
+      transferenciaId: transferenciaDetalle.transferencia_id,
+      referenciaId: transferenciaDetalle.referencia_id,
+      tipo: transferenciaDetalle.tipo,
+      referencia: transferenciaDetalle.referencia,
+      fecha: transferenciaDetalle.fecha,
+    };
+
+    console.log('Variables para la mutación:', variables);
+
     const { data } = await client.mutate({
       mutation: ADD_TRANSFERENCIA_DETALLE,
-      variables: {
-        transferenciaId: transferenciaDetalle.transferencia_id,
-        referenciaId: transferenciaDetalle.referencia_id,
-        tipo: transferenciaDetalle.tipo,
-        referencia: transferenciaDetalle.referencia,
-        fecha: transferenciaDetalle.fecha,
-      },
+      variables,
     });
-    return data.addTransferenciaDetalle;
+
+    if (!data || !data.addTransferenciaDetalle) {
+      throw new Error('No se recibió respuesta del servidor');
+    }
+
+    // Transformar la respuesta de vuelta a snake_case
+    return {
+      ...data.addTransferenciaDetalle,
+      transferencia_id: data.addTransferenciaDetalle.transferencia_id,
+      referencia_id: data.addTransferenciaDetalle.referencia_id,
+    };
   } catch (error) {
-    throw new Error(`Error adding transferencia detalle: ${error}`);
+    console.error('Error en addTransferenciaDetalleService:', error);
+    throw new Error(`Error al agregar detalle de transferencia: ${error instanceof Error ? error.message : 'Error desconocido'}`);
   }
 };
 

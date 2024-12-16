@@ -44,17 +44,18 @@ export function TransferTable() {
         const loadDetallesYRecursos = async () => {
             if (transferencias.length > 0) {
                 try {
-                    for (const transferencia of transferencias) {
-                        // Obtener detalles de la transferencia
-                        const detalles = await dispatch(fetchTransferenciaDetalles(transferencia.id)).unwrap();
-                        
-                        // Obtener recursos para cada detalle
-                        if (detalles && detalles.length > 0) {
-                            for (const detalle of detalles) {
-                                await dispatch(fetchTransferenciaRecursosById(detalle.id));
-                            }
-                        }
-                    }
+                    // Cargar todos los detalles en paralelo
+                    const detallesPromises = transferencias.map(transferencia =>
+                        dispatch(fetchTransferenciaDetalles(transferencia.id)).unwrap()
+                    );
+                    const todosDetalles = await Promise.all(detallesPromises);
+
+                    // Aplanar el array de detalles y cargar todos los recursos en paralelo
+                    const detallesAplanados = todosDetalles.flat();
+                    const recursosPromises = detallesAplanados.map(detalle =>
+                        dispatch(fetchTransferenciaRecursosById(detalle.id))
+                    );
+                    await Promise.all(recursosPromises);
                 } catch (err) {
                     console.error('Error al cargar detalles y recursos:', err);
                 }
@@ -118,61 +119,66 @@ export function TransferTable() {
                         <th className="font-semibold p-2 text-left">Acciones</th>
                     </tr>
                 </thead>
-                <tbody>
-                    {isLoading ? (
-                        [...Array(3)].map((_, index) => (
-                            <tr key={index}>
-                                <td colSpan={8} className="p-2">
-                                    <Skeleton />
-                                </td>
-                            </tr>
-                        ))
-                    ) : error ? (
-                        <tr>
-                            <td colSpan={8} className="p-4 text-center text-red-500">
-                                Error al cargar las transferencias: {error}
-                            </td>
-                        </tr>
-                    ) : transferenciasCompletas.length === 0 ? (
-                        <tr>
-                            <td colSpan={8} className="p-4 text-center text-gray-500">
-                                No hay transferencias disponibles
-                            </td>
-                        </tr>
-                    ) : (
-                        transferenciasCompletas.map((transferencia: TransferenciaCompleta) => (
-                            <tr key={transferencia.id} className="hover:bg-gray-50">
-                                <td className="p-2">{transferencia.id}</td>
-                                <td className="p-2">
-                                    {transferencia.usuario_id.nombres} {transferencia.usuario_id.apellidos}
-                                </td>
-                                <td className="p-2">{new Date(transferencia.fecha).toLocaleDateString()}</td>
-                                <td className="p-2">{transferencia.movimiento_id.nombre}</td>
-                                <td className="p-2">{transferencia.movilidad_id?.denominacion || '-'}</td>
-                                <td className="p-2">{transferencia.recursos.length} recursos</td>
-                                <td className="p-2">
-                                    <span className={`px-2 py-1 rounded-full text-xs ${
-                                        transferencia.movimiento_id.tipo === 'entrada' 
-                                            ? 'bg-green-100 text-green-800' 
-                                            : 'bg-blue-100 text-blue-800'
-                                    }`}>
-                                        {transferencia.movimiento_id.tipo}
-                                    </span>
-                                </td>
-                                <td className="p-2">
-                                    <button 
-                                        className="bg-transparent border-none text-blue-800 hover:text-blue-600 transition-colors"
-                                        title="Ver detalles"
-                                        onClick={() => setSelectedTransferencia(transferencia)}
-                                    >
-                                        <FiEye className="w-5 h-5"/>
-                                    </button>
-                                </td>
-                            </tr>
-                        ))
-                    )}
-                </tbody>
             </table>
+            {/* Contenedor con scroll */}
+            <div className="overflow-y-auto" style={{ maxHeight: '400px' }}>
+                <table className="min-w-full mt-4 border">
+                    <tbody>
+                        {isLoading ? (
+                            [...Array(3)].map((_, index) => (
+                                <tr key={index}>
+                                    <td colSpan={8} className="p-2">
+                                        <Skeleton />
+                                    </td>
+                                </tr>
+                            ))
+                        ) : error ? (
+                            <tr>
+                                <td colSpan={8} className="p-4 text-center text-red-500">
+                                    Error al cargar las transferencias: {error}
+                                </td>
+                            </tr>
+                        ) : transferenciasCompletas.length === 0 ? (
+                            <tr>
+                                <td colSpan={8} className="p-4 text-center text-gray-500">
+                                    No hay transferencias disponibles
+                                </td>
+                            </tr>
+                        ) : (
+                            transferenciasCompletas.map((transferencia: TransferenciaCompleta) => (
+                                <tr key={transferencia.id} className="hover:bg-gray-50">
+                                    <td className="p-2">{transferencia.id}</td>
+                                    <td className="p-2">
+                                        {transferencia.usuario_id.nombres} {transferencia.usuario_id.apellidos}
+                                    </td>
+                                    <td className="p-2">{new Date(transferencia.fecha).toLocaleDateString()}</td>
+                                    <td className="p-2">{transferencia.movimiento_id.nombre}</td>
+                                    <td className="p-2">{transferencia.movilidad_id?.denominacion || '-'}</td>
+                                    <td className="p-2">{transferencia.recursos.length} recursos</td>
+                                    <td className="p-2">
+                                        <span className={`px-2 py-1 rounded-full text-xs ${
+                                            transferencia.movimiento_id.tipo === 'entrada' 
+                                                ? 'bg-green-100 text-green-800' 
+                                                : 'bg-blue-100 text-blue-800'
+                                        }`}>
+                                            {transferencia.movimiento_id.tipo}
+                                        </span>
+                                    </td>
+                                    <td className="p-2">
+                                        <button 
+                                            className="bg-transparent border-none text-blue-800 hover:text-blue-600 transition-colors"
+                                            title="Ver detalles"
+                                            onClick={() => setSelectedTransferencia(transferencia)}
+                                        >
+                                            <FiEye className="w-5 h-5"/>
+                                        </button>
+                                    </td>
+                                </tr>
+                            ))
+                        )}
+                    </tbody>
+                </table>
+            </div>
             {selectedTransferencia && (
                 <DetalleTransferencia
                     transferencia={selectedTransferencia}

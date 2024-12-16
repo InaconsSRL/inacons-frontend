@@ -26,7 +26,15 @@ interface Usuario {
   nombres: string;
 }
 
-interface Transferencia {
+export interface TransferenciaData {
+  usuario_id: string;
+  fecha: Date;
+  movimiento_id: string;
+  movilidad_id: string;
+  estado?: EstadoTransferencia;
+}
+
+export interface Transferencia {
   id: string;
   fecha: Date;
   estado?: EstadoTransferencia;

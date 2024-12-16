@@ -41,28 +41,48 @@ const RecepcionComp: React.FC<RecepcionCompProps> = ({
 
     // Efectos
     useEffect(() => {
+        let mounted = true;
+        let controller = new AbortController();
+
         const cargarDatos = async () => {
-            if (ordenId) {
-                try {
-                    console.log('Iniciando carga de datos...');
-                    await Promise.all([
-                        dispatch(fetchOrdenCompraRecursosByOrdenId(ordenId)),
-                        dispatch(fetchMovilidades()),
-                        dispatch(fetchMovimientos())
-                    ]);
-                } catch (error) {
+            if (!ordenId) return;
+            
+            try {
+                const promises = [];
+                
+                // Cargar recursos siempre que cambie ordenId
+                promises.push(dispatch(fetchOrdenCompraRecursosByOrdenId(ordenId)));
+                
+                // Cargar datos maestros solo si no están cargados
+                if (!movilidades?.length) {
+                    promises.push(dispatch(fetchMovilidades()));
+                }
+                if (!movimientos?.length) {
+                    promises.push(dispatch(fetchMovimientos()));
+                }
+
+                if (promises.length > 0) {
+                    await Promise.all(promises);
+                }
+            } catch (error) {
+                if (mounted && error instanceof Error && error.name !== 'AbortError') {
                     console.error('Error al cargar datos:', error);
                     setValidationErrors([{
                         field: 'general',
-                        message: 'Error al cargar datos: ' + (error as Error).message,
+                        message: 'Error al cargar datos: ' + error.message,
                         type: 'error'
                     }]);
                 }
             }
         };
-    
+
         cargarDatos();
-    }, [dispatch, ordenId]);
+
+        return () => {
+            mounted = false;
+            controller.abort();
+        };
+    }, [dispatch, ordenId, movilidades?.length, movimientos?.length]); // Solo dependemos de las longitudes
 
     useEffect(() => {
         if (recursos) {
@@ -75,7 +95,7 @@ const RecepcionComp: React.FC<RecepcionCompProps> = ({
         }
     }, [recursos]);
 
-    // Handlers
+    // Manejo de la cantidad recibida
     const handleCantidadChange = (index: number, value: number) => {
         const newDetalles = [...detalles];
         const cantidadRecibida = Math.max(0, value);
@@ -105,6 +125,7 @@ const RecepcionComp: React.FC<RecepcionCompProps> = ({
         );
     };
 
+    // Obtener ID del movimiento de entrada
     const getMovimientoEntradaId = () => {
         const movimientoEntrada = movimientos.find(m => 
             m.tipo === 'entrada' || (
@@ -224,19 +245,12 @@ const RecepcionComp: React.FC<RecepcionCompProps> = ({
 
     // Render
     return (
-        <div className="bg-white rounded-lg shadow-lg p-8 max-w-[1200px] mx-auto">
-            <div className="flex justify-between items-center mb-8 border-b pb-4">
-                <h2 className="text-2xl font-bold text-[#0A3977]">Compra</h2>
-                <button onClick={onClose} className="text-gray-500 hover:text-gray-700 p-2">
-                    <FiX className="w-5 h-5" />
-                </button>
-            </div>
-
+        <div className="h-full flex flex-col">
             <ValidationErrors errors={validationErrors} />
 
-            <div className="grid grid-cols-[300px,1fr] gap-8">
-                {/* Left Panel */}
-                <div className="space-y-6 bg-gray-50 rounded-lg p-6">
+            <div className="flex-1 overflow-auto">
+                {/* Información de la compra */}
+                <div className="mb-4 bg-gray-50 rounded-lg p-4">
                     <div>
                         <p className="text-sm font-medium text-gray-700">N° de Orden de Compra</p>
                         <p className="mt-1 text-lg">{ordenCompra.codigo_orden}</p>
@@ -275,27 +289,27 @@ const RecepcionComp: React.FC<RecepcionCompProps> = ({
                     </div>
                 </div>
 
-                {/* Right Panel - Table */}
-                <div className="bg-white rounded-lg border">
+                {/* Tabla de recursos */}
+                <div className="flex-1 overflow-auto border rounded-lg bg-white">
                     <table className="w-full">
-                        <thead className="bg-gray-50">
+                        <thead className="bg-gray-50 sticky top-0 shadow-sm">
                             <tr>
-                                <th className="px-4 py-3 text-left text-sm font-medium text-gray-700">Código</th>
-                                <th className="px-4 py-3 text-left text-sm font-medium text-gray-700">Nombre</th>
-                                <th className="px-4 py-3 text-left text-sm font-medium text-gray-700">Unidad</th>
-                                <th className="px-4 py-3 text-left text-sm font-medium text-gray-700">Cantidad</th>
-                                <th className="px-4 py-3 text-left text-sm font-medium text-gray-700">Cant. Recibida</th>
-                                <th className="px-4 py-3 text-left text-sm font-medium text-gray-700">Diferencia</th>
+                                <th className="px-3 py-2 text-left text-xs font-medium text-gray-700">Código</th>
+                                <th className="px-3 py-2 text-left text-xs font-medium text-gray-700">Nombre</th>
+                                <th className="px-3 py-2 text-left text-xs font-medium text-gray-700">Unidad</th>
+                                <th className="px-3 py-2 text-left text-xs font-medium text-gray-700">Cantidad</th>
+                                <th className="px-3 py-2 text-left text-xs font-medium text-gray-700">Cant. Recibida</th>
+                                <th className="px-3 py-2 text-left text-xs font-medium text-gray-700">Diferencia</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-gray-200">
                             {detalles.map((detalle, index) => (
                                 <tr key={detalle.id} className="hover:bg-gray-50">
-                                    <td className="px-4 py-3 text-sm">{detalle.id_recurso.codigo}</td>
-                                    <td className="px-4 py-3 text-sm">{detalle.id_recurso.nombre}</td>
-                                    <td className="px-4 py-3 text-sm">{detalle.id_recurso.unidad_id}</td>
-                                    <td className="px-4 py-3 text-sm">{detalle.cantidad}</td>
-                                    <td className="px-4 py-3">
+                                    <td className="px-3 py-2 text-sm">{detalle.id_recurso.codigo}</td>
+                                    <td className="px-3 py-2 text-sm">{detalle.id_recurso.nombre}</td>
+                                    <td className="px-3 py-2 text-sm">{detalle.id_recurso.unidad_id}</td>
+                                    <td className="px-3 py-2 text-sm">{detalle.cantidad}</td>
+                                    <td className="px-3 py-2">
                                         <input
                                             type="number"
                                             min="0"
@@ -309,7 +323,7 @@ const RecepcionComp: React.FC<RecepcionCompProps> = ({
                                             }`}
                                         />
                                     </td>
-                                    <td className="px-4 py-3 text-sm">
+                                    <td className="px-3 py-2 text-sm">
                                         <span className={`${
                                             detalle.diferencia > 0 ? 'text-yellow-600' : 'text-green-600'
                                         }`}>
@@ -322,25 +336,27 @@ const RecepcionComp: React.FC<RecepcionCompProps> = ({
                     </table>
                 </div>
             </div>
-            <div className="mt-8 flex justify-end gap-4">
-                <button
-                    onClick={onClose}
-                    className="px-6 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-                >
-                    Cancelar
-                </button>
-                <button
-                    onClick={handleGuardarRecepcion}
-                    className="px-6 py-2 bg-[#4086F4] text-white rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 flex items-center gap-2"
-                    disabled={guardando || validationErrors.length > 0}
-                >
-                    {guardando ? (
-                        <div className="animate-spin rounded-full h-4 w-4 border-2 border-white/30 border-t-white"></div>
-                    ) : (
-                        <FiSave className="w-4 h-4" />
-                    )}
-                    {guardando ? 'Guardando...' : 'Guardar'}
-                </button>
+            <div className="p-4 border-t mt-auto bg-white">
+                <div className="flex justify-end gap-3">
+                    <button
+                        onClick={onClose}
+                        className="px-4 py-2 text-sm text-gray-600 hover:text-gray-800"
+                    >
+                        Cancelar
+                    </button>
+                    <button
+                        onClick={handleGuardarRecepcion}
+                        className="px-4 py-2 text-sm bg-blue-500 text-white rounded-md hover:bg-blue-600 flex items-center gap-2 disabled:opacity-50"
+                        disabled={guardando || validationErrors.length > 0}
+D                    >
+                        {guardando ? (
+                            <div className="animate-spin rounded-full h-4 w-4 border-2 border-white/30 border-t-white"></div>
+                        ) : (
+                            <FiSave className="w-4 h-4" />
+                        )}
+                        {guardando ? 'Guardando...' : 'Guardar Recepción'}
+                    </button>
+                </div>
             </div>
         </div>
     );

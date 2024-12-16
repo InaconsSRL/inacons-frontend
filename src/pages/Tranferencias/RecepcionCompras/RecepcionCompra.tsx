@@ -1,32 +1,58 @@
 import React, { useEffect, useState } from 'react';
-import RecepcionComp from './RecepcionComp';
-import { FiX } from 'react-icons/fi';
+import { FiX, FiSave } from 'react-icons/fi';
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchOrdenCompras } from '../../../slices/ordenCompraSlice';
+import { addTransferencia, TransferenciaData } from '../../../slices/transferenciaSlice';
+import { addTransferenciaDetalle, TransferenciaDetalleData } from '../../../slices/transferenciaDetalleSlice';
+import ValidationErrors from './components/ValidationErrors';
+import { validateAll, ValidationError } from './utils/validaciones';
 import { fetchOrdenCompraRecursosByOrdenId } from '../../../slices/ordenCompraRecursosSlice';
+import { fetchMovilidades } from '../../../slices/movilidadSlice';
+import { fetchMovimientos } from '../../../slices/movimientoSlice';
 import { RootState, AppDispatch } from '../../../store/store';
 import { OrdenCompra } from '../../../services/ordenCompraService';
+import { EstadoTransferencia } from '../types';
+interface RecursoDetalle {
+    id: string;
+    id_recurso: {
+        id: string;
+        codigo: string;
+        nombre: string;
+        unidad_id: string;
+    };
+    cantidad: number;
+    cantidadRecibida: number;
+    diferencia: number;
+}
 
 interface RecepcionesCompraProps {
     onClose: () => void;
+    onComplete: (orden: OrdenCompra, detalles: RecursoDetalle[]) => void;
 }
 
-const RecepcionCompra: React.FC<RecepcionesCompraProps> = ({ onClose }) => {
+const RecepcionCompra: React.FC<RecepcionesCompraProps> = ({ onClose, onComplete }) => {
     const dispatch = useDispatch<AppDispatch>();
     
     // Estados
     const [selectedOrdenId, setSelectedOrdenId] = useState<string | null>(null);
-    const [showRecepcionComp, setShowRecepcionComp] = useState(false);
     const [selectedOrden, setSelectedOrden] = useState<OrdenCompra | null>(null);
     const [ordenesCompletadas, setOrdenesCompletadas] = useState<OrdenCompra[]>([]);
+    const [fechaRecepcion, setFechaRecepcion] = useState(new Date().toISOString().split('T')[0]);
+    const [movilidadId, setMovilidadId] = useState('');
+
+    const [detalles, setDetalles] = useState<RecursoDetalle[]>([]);
 
     // Selectores
     const { ordenCompras, loading: ordenesLoading } = useSelector((state: RootState) => state.ordenCompra);
-    const { loading: recursosLoading } = useSelector((state: RootState) => state.ordenCompraRecursos);
+    const { ordenCompraRecursosByOrdenId: recursos, loading: recursosLoading } = useSelector((state: RootState) => state.ordenCompraRecursos);
+    const movilidades = useSelector((state: RootState) => state.movilidad.movilidades);
+    const movimientos = useSelector((state: RootState) => state.movimiento.movimientos);
 
     // Efectos
     useEffect(() => {
         dispatch(fetchOrdenCompras());
+        dispatch(fetchMovilidades());
+        dispatch(fetchMovimientos());
     }, [dispatch]);
 
     useEffect(() => {
@@ -35,21 +61,183 @@ const RecepcionCompra: React.FC<RecepcionesCompraProps> = ({ onClose }) => {
         }
     }, [dispatch, selectedOrdenId]);
 
+    useEffect(() => {
+        if (recursos) {
+            const nuevosDetalles: RecursoDetalle[] = recursos.map(recurso => ({
+                id: recurso.id,
+                id_recurso: {
+                    id: recurso.id_recurso.id,
+                    codigo: recurso.id_recurso.codigo,
+                    nombre: recurso.id_recurso.nombre,
+                    unidad_id: recurso.id_recurso.unidad_id
+                },
+                cantidad: recurso.cantidad,
+                cantidadRecibida: 0,
+                diferencia: recurso.cantidad
+            }));
+            setDetalles(nuevosDetalles);
+        }
+    }, [recursos]);
+
     // Handlers
     const handleOrdenClick = (orden: OrdenCompra) => {
         setSelectedOrdenId(orden.id);
         setSelectedOrden(orden);
-        setShowRecepcionComp(true);
     };
 
-    const handleRecepcionComplete = (orden: OrdenCompra) => {
-        setOrdenesCompletadas(prev => [...prev, orden]);
+    const [validationErrors, setValidationErrors] = useState<ValidationError[]>([]);
+
+    const validateForm = (): ValidationError[] => {
+        const errors: ValidationError[] = [];
+
+        if (!fechaRecepcion) {
+            errors.push({ field: 'fecha', message: 'La fecha de recepción es requerida' });
+        } else if (selectedOrden && new Date(fechaRecepcion) < new Date(selectedOrden.fecha_ini)) {
+            errors.push({ field: 'fecha', message: 'La fecha de recepción no puede ser anterior a la fecha inicial' });
+        }
+
+        if (!movilidadId) {
+            errors.push({ field: 'movilidad', message: 'El tipo de transporte es requerido' });
+        }
+
+        detalles.forEach((detalle, index) => {
+            if (!detalle.cantidadRecibida) {
+                errors.push({ 
+                    field: `detalle_${index}`, 
+                    message: `Debe ingresar la cantidad recibida para ${detalle.id_recurso.nombre}` 
+                });
+            }
+            if (detalle.cantidadRecibida > detalle.cantidad) {
+                errors.push({ 
+                    field: `detalle_${index}`, 
+                    message: `La cantidad recibida no puede ser mayor a la solicitada para ${detalle.id_recurso.nombre}` 
+                });
+            }
+        });
+
+        return errors;
+    };
+
+    const handleRecepcionComplete = async () => {
+        if (!selectedOrden) {
+            setValidationErrors([{ field: 'general', message: 'No se ha seleccionado una orden' }]);
+            return;
+        }
+
+        const errors = validateAll(detalles, fechaRecepcion, selectedOrden.fecha_ini, movilidadId);
+        if (errors.length > 0) {
+            setValidationErrors(errors);
+            return;
+        }
+
+        try {
+            // Validar que al menos un detalle tenga cantidad recibida
+            const hayRecepcion = detalles.some(d => d.cantidadRecibida > 0);
+            if (!hayRecepcion) {
+                setValidationErrors([{ field: 'general', message: 'Debe ingresar al menos una cantidad recibida' }]);
+                return;
+            }
+
+            // Obtener el ID del movimiento de entrada
+            const movimientoEntrada = movimientos.find(m => 
+                m.tipo === 'entrada' || (
+                    m.nombre.toLowerCase().includes('entrada') && 
+                    m.nombre.toLowerCase().includes('compra')
+                )
+            );
+
+            if (!movimientoEntrada) {
+                throw new Error('No se encontró el tipo de movimiento de entrada');
+            }
+
+            // Determinar el estado de la transferencia
+            const todosCompletos = detalles.every(detalle => 
+                detalle.cantidadRecibida === detalle.cantidad
+            );
+            const estado: EstadoTransferencia = todosCompletos ? 'COMPLETO' : 'PARCIAL';
+
+            // Crear la transferencia
+            const transferenciaData: TransferenciaData = {
+                usuario_id: "1", // TODO: Obtener el usuario actual
+                fecha: new Date(fechaRecepcion),
+                movimiento_id: movimientoEntrada.id,
+                movilidad_id: movilidadId,
+                estado
+            };
+
+            const transferencia = await dispatch(addTransferencia(transferenciaData)).unwrap();
+
+            // Guardar los detalles
+            const detallesAGuardar = detalles.filter(detalle => detalle.cantidadRecibida > 0);
+            
+            if (detallesAGuardar.length === 0) {
+                throw new Error('No hay detalles para guardar');
+            }
+
+            const detallesPromises = detallesAGuardar.map(detalle => {
+                const detalleData = {
+                    transferencia_id: transferencia.id,
+                    referencia_id: detalle.id_recurso.id,
+                    fecha: new Date(fechaRecepcion),
+                    tipo: 'RECEPCION_COMPRA',
+                    referencia: `Recepción de compra - Orden ${selectedOrden.id}`
+                };
+                return dispatch(addTransferenciaDetalle(detalleData)).unwrap();
+            });
+
+            try {
+                console.log('Guardando detalles...');
+                const resultados = await Promise.all(detallesPromises);
+                console.log('Detalles guardados:', resultados);
+            } catch (error) {
+                console.error('Error al guardar detalles:', error);
+                throw new Error('Error al guardar los detalles de la transferencia');
+            }
+
+            const resultados = await Promise.all(detallesPromises);
+            console.log('Detalles guardados:', resultados);
+
+            // Notificar al componente padre y actualizar estado local
+            onComplete(selectedOrden, detalles);
+            setOrdenesCompletadas(prev => [...prev, selectedOrden]);
+            
+            // Limpiar el formulario
+            handleCloseRecepcion();
+            setValidationErrors([]);
+        } catch (error) {
+            console.error('Error en la recepción:', error);
+            setValidationErrors([{ 
+                field: 'general', 
+                message: 'Error al guardar la recepción: ' + (error instanceof Error ? error.message : 'Error desconocido')
+            }]);
+        }
     };
 
     const handleCloseRecepcion = () => {
-        setShowRecepcionComp(false);
         setSelectedOrdenId(null);
         setSelectedOrden(null);
+        setDetalles([]);
+        setFechaRecepcion(new Date().toISOString().split('T')[0]);
+        setMovilidadId('');
+    };
+
+    const handleFechaChange = (fecha: string) => {
+        setFechaRecepcion(fecha);
+    };
+
+    const handleMovilidadChange = (id: string) => {
+        setMovilidadId(id);
+    };
+
+    const handleCantidadChange = (index: number, value: number) => {
+        const newDetalles = [...detalles];
+        const cantidadRecibida = Math.max(0, value);
+        newDetalles[index] = {
+            ...newDetalles[index],
+            cantidadRecibida,
+            diferencia: newDetalles[index].cantidad - cantidadRecibida
+        };
+        setDetalles(newDetalles);
     };
 
     // Loading
@@ -63,90 +251,189 @@ const RecepcionCompra: React.FC<RecepcionesCompraProps> = ({ onClose }) => {
     );
 
     return (
-        <div className="bg-white rounded-lg p-6">
-            {showRecepcionComp && selectedOrdenId && selectedOrden ? (
-                <RecepcionComp 
-                    ordenId={selectedOrdenId} 
-                    ordenCompra={selectedOrden}
-                    onClose={handleCloseRecepcion}
-                    onComplete={handleRecepcionComplete}
-                />
-            ) : (
-                <>
-                    <div className="flex justify-between items-center mb-6">
-                        <h2 className="text-2xl font-bold text-blue-900">Recepción de Compras</h2>
-                        <button onClick={onClose} className="text-gray-500 hover:text-gray-700">
-                            <FiX className="w-6 h-6" />
-                        </button>
+        <div className="bg-gradient-to-br from-white to-gray-50 rounded-xl shadow-lg w-full h-[90vh] flex flex-col overflow-hidden border border-gray-100">
+            {/* Header */}
+            <div className="border-b border-gray-100 bg-white">
+                <div className="p-4 flex items-center justify-between">
+                    <h2 className="text-xl font-semibold text-blue-800">Recepción de Compras</h2>
+                    <button onClick={onClose} className="text-2xl text-red-500 hover:text-red-600">
+                        <FiX />
+                    </button>
+                </div>
+            </div>
+
+            {/* Errores de validación */}
+            {validationErrors.length > 0 && (
+                <ValidationErrors errors={validationErrors} />
+            )}
+
+            {/* Main Content */}
+            <div className="flex flex-1 min-h-0">
+                {/* Panel izquierdo - Lista de órdenes */}
+                <div className="w-1/3 border-r border-gray-100 overflow-y-auto">
+                    <div className="p-4 bg-white border-b">
+                        <h3 className="text-sm font-medium text-gray-700">Órdenes de Compra Pendientes</h3>
                     </div>
-
-                    <div className="flex gap-4">
-                        {/* Sección de Pendientes */}
-                        <div className="w-1/3">
-                            <h3 className="text-xl font-bold text-blue-900 mb-4">Pendientes</h3>
-                            <div className="overflow-y-auto max-h-[calc(100vh-300px)] space-y-4">
-                                {ordenesPendientes.map((oc: OrdenCompra) => (
-                                    <div
-                                        key={oc.id}
-                                        className={`border rounded-lg p-4 cursor-pointer transition-all ${
-                                            selectedOrdenId === oc.id
-                                                ? 'border-blue-500 shadow-lg'
-                                                : 'border-gray-200 hover:border-blue-300'
-                                        }`}
-                                        onClick={() => handleOrdenClick(oc)}
-                                    >
-                                        <h4 className="font-semibold text-lg mb-2">N° Orden De Compra: {oc.codigo_orden}</h4>
-                                        <p className="text-gray-600">Destino: {oc.descripcion}</p>
-                                        <p className="text-gray-600">Estado: {oc.estado ? 'Activo' : 'Pendiente'}</p>
-                                        <p className="text-gray-600">
-                                            Fecha de Emisión: {new Date(oc.fecha_ini).toLocaleDateString()}
-                                        </p>
+                    <div className="bg-gray-50 p-4 space-y-3">
+                        {ordenesPendientes.map((oc: OrdenCompra) => (
+                            <div
+                                key={oc.id}
+                                onClick={() => handleOrdenClick(oc)}
+                                className={`bg-white rounded-lg shadow-sm border cursor-pointer transition-all duration-200 hover:shadow-md ${
+                                    selectedOrdenId === oc.id
+                                        ? 'border-blue-500 ring-2 ring-blue-200'
+                                        : 'border-gray-200 hover:border-blue-300'
+                                }`}
+                            >
+                                <div className="p-3">
+                                    <div className="text-sm font-medium text-gray-900">N° OC: {oc.codigo_orden}</div>
+                                    <div className="text-xs text-gray-500 mt-1">Descripción: {oc.descripcion}</div>
+                                    <div className="text-xs text-gray-400 mt-1">
+                                        Fecha: {new Date(oc.fecha_ini).toLocaleDateString()}
                                     </div>
-                                ))}
-                            </div>
-                        </div>
-
-                        {/* Sección de Recibido */}
-                        <div className="w-1/3">
-                            <h3 className="text-xl font-bold text-blue-900 mb-4">Recibido</h3>
-                            <div className="overflow-y-auto max-h-[calc(100vh-300px)] space-y-4">
-                                {ordenesCompletadas.map((oc: OrdenCompra) => (
-                                    <div
-                                        key={oc.id}
-                                        className="border rounded-lg p-4 bg-green-50 border-green-200"
-                                    >
-                                        <h4 className="font-semibold text-lg mb-2">N° Orden De Compra: {oc.codigo_orden}</h4>
-                                        <p className="text-gray-600">Destino: {oc.descripcion}</p>
-                                        <p className="text-green-600 font-medium">Estado: Completado</p>
-                                        <p className="text-gray-600">
-                                            Fecha de Emisión: {new Date(oc.fecha_ini).toLocaleDateString()}
-                                        </p>
+                                    <div className="flex items-center mt-2">
+                                        <span className={`text-xs px-2 py-1 rounded-full ${
+                                            oc.estado ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'
+                                        }`}>
+                                            {oc.estado ? 'Activo' : 'Pendiente'}
+                                        </span>
                                     </div>
-                                ))}
-                            </div>
-                        </div>
-
-                        {/* Sección de Reportes */}
-                        <div className="w-1/3">
-                            <h3 className="text-xl font-bold text-blue-900 mb-4">Reportes</h3>
-                            <div className="border rounded-lg p-4">
-                                <div>
-                                    <h4 className="font-semibold mb-2">Resumen</h4>
-                                    <p className="text-sm text-gray-600">
-                                        Total Órdenes: {ordenCompras.length}
-                                    </p>
-                                    <p className="text-sm text-gray-600">
-                                        Pendientes: {ordenesPendientes.length}
-                                    </p>
-                                    <p className="text-sm text-gray-600">
-                                        Completadas: {ordenesCompletadas.length}
-                                    </p>
                                 </div>
                             </div>
-                        </div>
+                        ))}
                     </div>
-                </>
-            )}
+                </div>
+
+                {/* Panel derecho - Recursos y Detalles */}
+                <div className="flex-1 bg-white overflow-y-auto">
+                    {selectedOrden ? (
+                        <>
+                            {/* Información de la orden */}
+                            <div className="p-4 bg-gray-50 border-b">
+                                <h3 className="text-lg font-semibold text-gray-800">
+                                    Orden de Compra #{selectedOrden.codigo_orden}
+                                </h3>
+                                <div className="mt-2 text-sm text-gray-600">
+                                    <p>Descripción: {selectedOrden.descripcion}</p>
+                                    <p>Fecha: {new Date(selectedOrden.fecha_ini).toLocaleDateString()}</p>
+                                </div>
+                            </div>
+
+                            {/* Formulario de recepción */}
+                            <div className="p-4 border-b">
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700">
+                                            Fecha de Recepción
+                                        </label>
+                                        <input
+                                            type="date"
+                                            value={fechaRecepcion}
+                                            onChange={e => handleFechaChange(e.target.value)}
+                                            min={new Date(selectedOrden.fecha_ini).toISOString().split('T')[0]}
+                                            max={new Date().toISOString().split('T')[0]}
+                                            className="mt-1 w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700">
+                                            Tipo de Transporte
+                                        </label>
+                                        <select
+                                            value={movilidadId}
+                                            onChange={e => handleMovilidadChange(e.target.value)}
+                                            className="mt-1 w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+                                        >
+                                            <option value="">Seleccione un tipo de transporte</option>
+                                            {movilidades?.map(m => (
+                                                <option key={m.id} value={m.id}>
+                                                    {m.denominacion}
+                                                </option>
+                                            ))}
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Tabla de recursos */}
+                            <div className="p-4">
+                                <table className="min-w-full divide-y divide-gray-200">
+                                    <thead className="bg-gray-50">
+                                        <tr>
+                                            <th className="px-3 py-2 text-left text-xs font-medium text-gray-500">Código</th>
+                                            <th className="px-3 py-2 text-left text-xs font-medium text-gray-500">Nombre</th>
+                                            <th className="px-3 py-2 text-left text-xs font-medium text-gray-500">Unidad</th>
+                                            <th className="px-3 py-2 text-left text-xs font-medium text-gray-500">Cantidad</th>
+                                            <th className="px-3 py-2 text-left text-xs font-medium text-gray-500">Cant. Recibida</th>
+                                            <th className="px-3 py-2 text-left text-xs font-medium text-gray-500">Diferencia</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody className="bg-white divide-y divide-gray-200">
+                                        {detalles.map((detalle, index) => (
+                                            <tr key={detalle.id}>
+                                                <td className="px-3 py-2 text-sm text-gray-900">{detalle.id_recurso.codigo}</td>
+                                                <td className="px-3 py-2 text-sm text-gray-900">{detalle.id_recurso.nombre}</td>
+                                                <td className="px-3 py-2 text-sm text-gray-500">{detalle.id_recurso.unidad_id}</td>
+                                                <td className="px-3 py-2 text-sm text-gray-900">{detalle.cantidad}</td>
+                                                <td className="px-3 py-2">
+                                                    <input
+                                                        type="number"
+                                                        min="0"
+                                                        max={detalle.cantidad}
+                                                        value={detalle.cantidadRecibida}
+                                                        onChange={(e) => handleCantidadChange(index, parseInt(e.target.value))}
+                                                        className="w-20 px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
+                                                    />
+                                                </td>
+                                                <td className="px-3 py-2 text-sm">
+                                                    <span className={detalle.diferencia > 0 ? 'text-yellow-600' : 'text-green-600'}>
+                                                        {detalle.diferencia}
+                                                    </span>
+                                                </td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            </div>
+
+                            
+                        </>
+                    ) : (
+                        <div className="flex items-center justify-center h-full">
+                            <div className="text-center text-gray-500">
+                                <p className="text-lg">Seleccione una orden de compra</p>
+                                <p className="text-sm mt-2">Para ver los recursos disponibles</p>
+                            </div>
+                        </div>
+                    )}
+                </div>
+            </div>
+
+            {/* Footer */}
+            <div className="p-5 border-t border-gray-100 bg-white">
+                <div className="text-sm text-gray-600">
+                    Total Órdenes: {ordenCompras.length} | 
+                    Pendientes: {ordenesPendientes.length} | 
+                    Completadas: {ordenesCompletadas.length}
+                </div>
+            </div>
+            {/* Footer con botones */}
+            <div className="p-4 border-t bg-white">
+                                <div className="flex justify-end space-x-3">
+                                    <button
+                                        onClick={handleCloseRecepcion}
+                                        className="px-4 py-2 text-sm text-gray-600 hover:text-gray-800"
+                                    >
+                                        Cancelar
+                                    </button>
+                                    <button
+                                        onClick={handleRecepcionComplete}
+                                        className="px-4 py-2 text-sm bg-blue-500 text-white rounded hover:bg-blue-600"
+                                    >
+                                        Guardar Recepción
+                                    </button>
+                                </div>
+                            </div>
         </div>
     );
 };

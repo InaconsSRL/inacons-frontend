@@ -69,15 +69,17 @@ export const fetchTransferenciaDetallesByTransferenciaId = createAsyncThunk(
   }
 );
 
+export interface TransferenciaDetalleData {
+  transferencia_id: string;
+  referencia_id: string;
+  fecha?: Date;
+  tipo: string;
+  referencia: string;
+}
+
 export const addTransferenciaDetalle = createAsyncThunk(
   'transferenciaDetalle/add',
-  async (data: {
-    transferencia_id: string;
-    referencia_id: string;
-    fecha?: Date;
-    tipo: string;
-    referencia: string;
-  }) => {
+  async (data: TransferenciaDetalleData) => {
     return await addTransferenciaDetalleService(data);
   }
 );

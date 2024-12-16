@@ -63,7 +63,7 @@ const RecepcionTransferencia = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {transferencias.map((transferencia) => (
                     <div key={transferencia.id} className="border rounded-lg overflow-hidden">
-                        {/* Cabecera azul */}
+                     
                         <div className="bg-blue-900 text-white p-4">
                             <h2 className="font-medium">N° de orden de Transferencia: {transferencia.id}</h2>
                         </div>
