@@ -1,61 +1,42 @@
-import React, { useState } from 'react';
-import { useSelector } from 'react-redux';
+import React, { useState, useEffect } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
 import { RootState } from '../../../store/store';
 import GuiaTransfer from './GuiaTransfer';
 import Recepciones from './Recepciones';
+import { fetchTransferencias } from '../../../slices/transferenciaSlice';
 
 interface Transferencia {
-    id: number;
-    almacenSalida: string;
-    estado: string;
-    observaciones: string;
-    tipoTransporte: string;
-    obra: string;
-    solicitante: string;
-    receptor: string;
-    fechaEmision: Date;
+    id: string;
+    fecha: Date;
+    movimiento_id: {
+        id: string;
+        nombre: string;
+        descripcion: string;
+        tipo: string;
+    };
+    movilidad_id: {
+        id: string;
+        denominacion: string;
+        descripcion: string;
+    };
+    usuario_id: {
+        id: string;
+        nombres: string;
+        apellidos: string;
+    };
 }
 
 const RecepcionTransferencia = () => {
+    const dispatch = useDispatch();
     const [showGuia, setShowGuia] = useState(false);
     const [showRecepcion, setShowRecepcion] = useState(false);
     const [selectedTransferencia, setSelectedTransferencia] = useState<Transferencia | null>(null);
     
-    const transferencias: Transferencia[] = [
-        {
-            id: 1,
-            almacenSalida: "Almacén Central",
-            estado: "En camino",
-            observaciones: "",
-            tipoTransporte: "Terrestre",
-            obra: "Obra Norte",
-            solicitante: "Juan Pérez",
-            receptor: "María García",
-            fechaEmision: new Date()
-        },
-        {
-            id: 2,
-            almacenSalida: "Almacén Sur",
-            estado: "Completado",
-            observaciones: "",
-            tipoTransporte: "Terrestre",
-            obra: "Obra Sur",
-            solicitante: "Pedro López",
-            receptor: "Ana Martínez",
-            fechaEmision: new Date()
-        },
-        {
-            id: 3,
-            almacenSalida: "Almacén Norte",
-            estado: "Completado",
-            observaciones: "",
-            tipoTransporte: "Terrestre",
-            obra: "Obra Este",
-            solicitante: "Carlos Ruiz",
-            receptor: "Laura Torres",
-            fechaEmision: new Date()
-        }
-    ];
+    const { transferencias, loading, error } = useSelector((state: RootState) => state.transferencia);
+
+    useEffect(() => {
+        dispatch(fetchTransferencias() as any);
+    }, [dispatch]);
 
     const handleVerDetalles = (transferencia: Transferencia) => {
         setSelectedTransferencia(transferencia);
@@ -66,6 +47,14 @@ const RecepcionTransferencia = () => {
         setSelectedTransferencia(transferencia);
         setShowRecepcion(true);
     };
+
+    if (loading) {
+        return <div className="p-6 text-center">Cargando transferencias...</div>;
+    }
+
+    if (error) {
+        return <div className="p-6 text-center text-red-600">Error: {error}</div>;
+    }
 
     return (
         <div className="p-6">
@@ -82,28 +71,28 @@ const RecepcionTransferencia = () => {
                         {/* Contenido */}
                         <div className="p-4 space-y-3">
                             <div className="border-b pb-2">
-                                <p className="text-sm">Almacen de Salida:</p>
-                                <p className="font-medium">{transferencia.almacenSalida}</p>
+                                <p className="text-sm">Fecha:</p>
+                                <p className="font-medium">{new Date(transferencia.fecha).toLocaleDateString()}</p>
                             </div>
                             
                             <div className="border-b pb-2">
-                                <p className="text-sm">Estado:</p>
-                                <p className="font-medium">{transferencia.estado}</p>
+                                <p className="text-sm">Tipo de Movimiento:</p>
+                                <p className="font-medium">{transferencia.movimiento_id.nombre}</p>
                             </div>
                             
                             <div className="border-b pb-2">
-                                <p className="text-sm">observaciones:</p>
-                                <p className="font-medium">{transferencia.observaciones}</p>
+                                <p className="text-sm">Movilidad:</p>
+                                <p className="font-medium">{transferencia.movilidad_id.denominacion}</p>
                             </div>
                             
                             <div className="border-b pb-2">
-                                <p className="text-sm">Tipo de transporte:</p>
-                                <p className="font-medium">{transferencia.tipoTransporte}</p>
+                                <p className="text-sm">Usuario:</p>
+                                <p className="font-medium">{`${transferencia.usuario_id.nombres} ${transferencia.usuario_id.apellidos}`}</p>
                             </div>
                             
                             {/* Botones */}
                             <div className="flex justify-center gap-4 pt-2">
-                                {transferencia.estado === "En camino" && (
+                                {transferencia.movimiento_id.tipo === "entrada" && (
                                     <button 
                                         className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
                                         onClick={() => handleRecepcionar(transferencia)}
@@ -128,13 +117,13 @@ const RecepcionTransferencia = () => {
                 <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-40">
                     <div className="bg-white p-6 rounded-lg w-11/12 max-w-4xl">
                         <GuiaTransfer 
-                            numero={selectedTransferencia.id}
-                            solicita={selectedTransferencia.solicitante}
-                            recibe={selectedTransferencia.receptor}
-                            fEmision={selectedTransferencia.fechaEmision}
-                            estado={selectedTransferencia.estado}
-                            obra={selectedTransferencia.obra}
-                            transferenciaId={selectedTransferencia.id.toString()}
+                            numero={parseInt(selectedTransferencia.id)}
+                            solicita={`${selectedTransferencia.usuario_id.nombres} ${selectedTransferencia.usuario_id.apellidos}`}
+                            recibe=""
+                            fEmision={new Date(selectedTransferencia.fecha)}
+                            estado={selectedTransferencia.movimiento_id.tipo}
+                            obra=""
+                            transferenciaId={selectedTransferencia.id}
                             onSubmit={() => {}}
                             onClose={() => setShowGuia(false)}
                         />
@@ -143,10 +132,12 @@ const RecepcionTransferencia = () => {
             )}
 
             {/* Modal para Recepciones */}
-            {showRecepcion && (
+            {showRecepcion && selectedTransferencia && (
                 <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
                     <div className="w-11/12 max-w-6xl max-h-[90vh] overflow-y-auto">
-                        <Recepciones onClose={() => setShowRecepcion(false)} />
+                        <Recepciones 
+                            onClose={() => setShowRecepcion(false)} 
+                        />
                     </div>
                 </div>
             )}

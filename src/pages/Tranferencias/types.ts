@@ -25,9 +25,12 @@ export interface TransferenciaRecurso {
   costo: number;
 }
 
+export type EstadoTransferencia = 'PARCIAL' | 'COMPLETO';
+
 export interface TransferenciaCompleta {
   id: string;
   fecha: Date;
+  estado?: EstadoTransferencia; // Hacemos el estado opcional
   usuario_id: {
     nombres: string;
     apellidos: string;
@@ -63,19 +66,46 @@ export interface RecursoSeleccionado {
   bodega?: string;
 }
 
+export interface FormularioSolicitudProps {
+  onClose: () => void;
+  transferenciasId?: string;
+}
+
 export interface SolicitudAlmacen {
   id: string;
-  almacenOrigen: {
+  almacen_origen_id: {
     id: string;
     nombre: string;
   };
-  almacenDestino: {
+  almacen_destino_id: {
     id: string;
     nombre: string;
   } | null;
-  usuario: {
+  usuario_id: {
     id: string;
     nombres: string;
     apellidos: string;
   };
+  requerimiento_id: {
+    id: string;
+    codigo: string;
+    obra_id: string;
+  };
+  fecha: string;
+  estado: string;
+}
+
+export interface RecursoSeleccionado {
+  id?: string;
+  recurso_id: {
+    id: string;
+    codigo: string;
+    nombre: string;
+    unidad_id: string;
+    precio_actual: number;
+  };
+  cantidad: number;
+  cantidadSeleccionada: number;
+  bodega?: string;
+  isChecked?: boolean;
 }

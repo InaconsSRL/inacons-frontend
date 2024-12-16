@@ -5,6 +5,7 @@ import {
   updateTransferenciaService, 
   deleteTransferenciaService 
 } from '../services/transferenciaService';
+import { EstadoTransferencia } from '../pages/Tranferencias/types';
 
 interface Movimiento {
   id: string;
@@ -28,6 +29,7 @@ interface Usuario {
 interface Transferencia {
   id: string;
   fecha: Date;
+  estado?: EstadoTransferencia;
   movimiento_id: Movimiento;
   movilidad_id: Movilidad;
   usuario_id: Usuario;
@@ -58,7 +60,13 @@ export const fetchTransferencias = createAsyncThunk(
 
 export const addTransferencia = createAsyncThunk(
   'transferencia/addTransferencia',
-  async (data: { usuario_id: string; fecha: Date; movimiento_id: string; movilidad_id: string }, { rejectWithValue }) => {
+  async (data: { 
+    usuario_id: string; 
+    fecha: Date; 
+    movimiento_id: string; 
+    movilidad_id: string;
+    estado?: EstadoTransferencia;
+  }, { rejectWithValue }) => {
     try {
       return await addTransferenciaService(data);
     } catch (error) {
@@ -69,7 +77,14 @@ export const addTransferencia = createAsyncThunk(
 
 export const updateTransferencia = createAsyncThunk(
   'transferencia/updateTransferencia',
-  async (data: { id: string; usuario_id?: string; fecha?: Date; movimiento_id?: string; movilidad_id?: string }, { rejectWithValue }) => {
+  async (data: { 
+    id: string; 
+    usuario_id?: string; 
+    fecha?: Date; 
+    movimiento_id?: string; 
+    movilidad_id?: string;
+    estado?: EstadoTransferencia;
+  }, { rejectWithValue }) => {
     try {
       return await updateTransferenciaService(data);
     } catch (error) {
