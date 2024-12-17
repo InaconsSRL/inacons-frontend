@@ -8,8 +8,9 @@ import { CotizacionRecurso, updateCotizacion } from '../../slices/cotizacionSlic
 import noImage from '../../assets/NoImage.webp';
 import IMG from '../../components/IMG/IMG';
 import LoaderProgress from '../../components/LoaderProgress/LoaderProgress';
+import { getCountRecursosInAllTables } from '../../slices/recursosAllTablesSlice';
 
-//Todo ok
+//Todo ok 17/12 
 
 interface SolicitudCompra {
   id: string;
@@ -51,9 +52,21 @@ interface RecursoSolicitud {
 interface ModalProps {
   onClose: () => void;
   cotizacionId: string | null;
-  estadoCotizacion: string| null;
+  estadoCotizacion: string | null;
   solicitudCompraId?: string;
   recursosActuales?: CotizacionRecurso[];
+}
+
+interface RecursoProveedor {
+  cantidad: number;
+}
+interface TablaProveedor {
+  id: string;
+  estado: string;
+  recursos_proveedor: RecursoProveedor[];
+}
+interface TransferenciaItem {
+  recursos_transferencia: { cantidad: number }[];
 }
 
 const Skeleton: React.FC<{ className?: string }> = ({ className }) => (
@@ -73,22 +86,26 @@ const AddRecursoRequerimientoCompra: React.FC<ModalProps> = ({ onClose, cotizaci
   //const currentUserId = useSelector((state: RootState) => state.user.id);
   const solicitudes = useSelector((state: RootState) => state.solicitudCompra.solicitudes);
   const recursos = useSelector((state: RootState) => state.solicitudCompraRecurso.solicitudCompraRecursos);
+  const { recursosData: recursosAllTables } = useSelector((state: RootState) => state.recursosAllTables);
   const { obras } = useSelector((state: RootState) => state.obra);
-  
+
   const filteredSolicitudes = React.useMemo(() => {
     // Si estamos editando (no es estado vacio), solo mostrar la solicitud específica
     if (estadoCotizacion !== 'vacio' && solicitudCompraId) {
-      return solicitudes.filter((solicitud: SolicitudCompra) => 
+      return solicitudes.filter((solicitud: SolicitudCompra) =>
         solicitud.id === solicitudCompraId
       );
     }
-    
+
     // Si es estado vacio, mantener el filtrado original por obra
     if (!selectedObra) return solicitudes;
     return solicitudes.filter((solicitud: SolicitudCompra) =>
       solicitud.requerimiento_id.obra_id === selectedObra
     );
   }, [solicitudes, selectedObra, estadoCotizacion, solicitudCompraId]);
+
+  console.log("todos los recursos", recursosAllTables);
+  console.log("recursos", recursos);
 
   useEffect(() => {
     const loadSolicitudes = async () => {
@@ -104,6 +121,7 @@ const AddRecursoRequerimientoCompra: React.FC<ModalProps> = ({ onClose, cotizaci
       if (selectedSolicitud) {
         setIsLoadingRecursos(true);
         await dispatch(fetchBySolicitudId(selectedSolicitud));
+        await dispatch(getCountRecursosInAllTables(selectedSolicitud));
         setIsLoadingRecursos(false);
       }
     };
@@ -129,7 +147,7 @@ const AddRecursoRequerimientoCompra: React.FC<ModalProps> = ({ onClose, cotizaci
   useEffect(() => {
     if (estadoCotizacion !== 'vacio' && recursosActuales && recursos.length > 0) {
       // Mapear los recursos actuales al formato necesario para selectedRecursos
-      const recursosPreseleccionados = recursos.filter(recurso => 
+      const recursosPreseleccionados = recursos.filter(recurso =>
         recursosActuales.some(actual => actual.recurso_id.id === recurso.recurso_id.id)
       ).map(recurso => {
         const recursoActual = recursosActuales.find(
@@ -140,7 +158,7 @@ const AddRecursoRequerimientoCompra: React.FC<ModalProps> = ({ onClose, cotizaci
           cantidadSeleccionada: recursoActual?.cantidad || 0
         };
       });
-      
+
       setSelectedRecursos(recursosPreseleccionados);
     }
   }, [estadoCotizacion, recursosActuales, recursos]);
@@ -175,7 +193,7 @@ const AddRecursoRequerimientoCompra: React.FC<ModalProps> = ({ onClose, cotizaci
       }
 
       setIsLoading(true);
-      
+
       // Si estamos editando, primero eliminamos los recursos actuales
       if (estadoCotizacion !== 'vacio' && recursosActuales) {
         for (const recurso of recursosActuales) {
@@ -225,6 +243,54 @@ const AddRecursoRequerimientoCompra: React.FC<ModalProps> = ({ onClose, cotizaci
     );
     const subtotal = (selectedRecurso?.cantidadSeleccionada || 0) * recurso.costo;
 
+    // Encontrar el recurso correspondiente y validar que sea el correcto
+    const recursoInfo = Array.isArray(recursosAllTables) ? 
+      recursosAllTables.find(r => {
+        const match = r.recurso_id === recurso.recurso_id.id;
+        console.log(`Comparando recurso_id: ${r.recurso_id} con ${recurso.recurso_id.id}, match: ${match}`);
+        return match;
+      }) : undefined;
+
+    console.log(`Datos para recurso ${recurso.recurso_id.codigo}:`, {
+      recursoId: recurso.recurso_id.id,
+      recursoInfo: recursoInfo
+    });
+
+    // Calcular las sumatorias con validaciones adicionales
+    const sumaCotizaciones = recursoInfo?.cotizaciones?.reduce((sum: number, item: { recursos_cotizacion: { cantidad: number } }) => {
+      const cantidad = item.recursos_cotizacion?.cantidad || 0;
+      console.log(`Cotización cantidad: ${cantidad} para recurso ${recurso.recurso_id.codigo}`);
+      return sum + cantidad;
+    }, 0) || 0;
+
+    const sumaOrdenesCompra = recursoInfo?.tabla_ordenes_compra?.reduce((sum: number, item: { recursos_orden: { cantidad: number }[] }) => {
+      const cantidad = item.recursos_orden[0]?.cantidad || 0;
+      console.log(`Orden compra cantidad: ${cantidad} para recurso ${recurso.recurso_id.codigo}`);
+      return sum + cantidad;
+    }, 0) || 0;
+
+    const sumaProveedores = recursoInfo?.tabla_proveedores?.reduce((sum: number, item: TablaProveedor) => {
+      if (item.estado === 'buenaProAdjudicada') {
+        const cantidad = item.recursos_proveedor[0]?.cantidad || 0;
+        console.log(`Proveedor cantidad: ${cantidad} para recurso ${recurso.recurso_id.codigo}`);
+        return sum + cantidad;
+      }
+      return sum;
+    }, 0) || 0;
+
+    const sumaTransferencias = recursoInfo?.tabla_transferencias?.reduce((sum: number, item: TransferenciaItem) => {
+      const cantidad = item.recursos_transferencia[0]?.cantidad || 0;
+      console.log(`Transferencia cantidad: ${cantidad} para recurso ${recurso.recurso_id.codigo}`);
+      return sum + cantidad;
+    }, 0) || 0;
+
+    console.log(`Totales para recurso ${recurso.recurso_id.codigo}:`, {
+      sumaCotizaciones,
+      sumaOrdenesCompra,
+      sumaProveedores,
+      sumaTransferencias
+    });
+
     return (
       <tr key={recurso.id} className="hover:bg-gray-50 transition-colors duration-150">
         <td className="px-3 py-2">
@@ -271,6 +337,10 @@ const AddRecursoRequerimientoCompra: React.FC<ModalProps> = ({ onClose, cotizaci
         <td className="px-3 py-2 text-xs text-gray-600">
           S/ {subtotal.toFixed(2)}
         </td>
+        <td className="px-3 py-2 text-xs text-gray-600">{sumaCotizaciones}</td>
+        <td className="px-3 py-2 text-xs text-gray-600">{sumaOrdenesCompra}</td>
+        <td className="px-3 py-2 text-xs text-gray-600">{sumaProveedores}</td>
+        <td className="px-3 py-2 text-xs text-gray-600">{sumaTransferencias}</td>
       </tr>
     );
   };
@@ -320,8 +390,8 @@ const AddRecursoRequerimientoCompra: React.FC<ModalProps> = ({ onClose, cotizaci
                   key={solicitud.id}
                   onClick={() => setSelectedSolicitud(solicitud.id)}
                   className={`p-3 mb-2  shadow-xl rounded-md cursor-pointer border transition-all duration-200 ${selectedSolicitud === solicitud.id
-                      ? 'bg-blue-50 border-blue-400 shadow-sm'
-                      : 'border-gray-100  bg-gray-50 hover:bg-white hover:shadow-sm'
+                    ? 'bg-blue-50 border-blue-400 shadow-sm'
+                    : 'border-gray-100  bg-gray-50 hover:bg-white hover:shadow-sm'
                     }`}
                 >
                   <div className="text-sm font-medium text-gray-700">{solicitud.requerimiento_id.codigo}</div>
@@ -333,10 +403,10 @@ const AddRecursoRequerimientoCompra: React.FC<ModalProps> = ({ onClose, cotizaci
                   </div>
                   <div className="text-xs mt-1">
                     <span className={`px-2 py-0.5 rounded-full ${solicitud.requerimiento_id.estado_atencion === 'Pendiente'
-                        ? 'bg-yellow-100 text-yellow-700'
-                        : solicitud.requerimiento_id.estado_atencion === 'Completado'
-                          ? 'bg-green-100 text-green-700'
-                          : 'bg-gray-100 text-gray-700'
+                      ? 'bg-yellow-100 text-yellow-700'
+                      : solicitud.requerimiento_id.estado_atencion === 'Completado'
+                        ? 'bg-green-100 text-green-700'
+                        : 'bg-gray-100 text-gray-700'
                       }`}>
                       {solicitud.requerimiento_id.estado_atencion}
                     </span>
@@ -378,6 +448,10 @@ const AddRecursoRequerimientoCompra: React.FC<ModalProps> = ({ onClose, cotizaci
                         <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Cantidad a Cotizar</th>
                         <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Costo</th>
                         <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Subtotal</th>
+                        <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total Cotizaciones</th>
+                        <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total Órdenes</th>
+                        <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total Proveedores</th>
+                        <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total Transferencias</th>
                       </tr>
                     </thead>
                     <tbody className="bg-white divide-y divide-gray-100">

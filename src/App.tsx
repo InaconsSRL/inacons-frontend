@@ -29,6 +29,7 @@ import ComprasBoard from './pages/ComprasPage/ComprasBoard';
 import OrdenCompraPage from './pages/OrdenCompraPage/OrdenCompraPage';
 import HomologacionFormPage from './pages/ProveedorPage/Forms/HomologacionForm';
 import TableViewer from './pages/PresupuestosLocal/TableViewer';
+import AlmacenBetha from './pages/AlmacenBetha/AlmacenBetha';
 
 const App: React.FC = () => {
   const user = useSelector((state: RootState) => state.user);
@@ -64,6 +65,7 @@ const App: React.FC = () => {
         <Route path="obras" element={<ObrasComponent />}> </Route>
         <Route path="ordenCompra" element={<OrdenCompraPage />}> </Route>
         <Route path="tableViewer" element={<TableViewer />} />
+        <Route path="almacenbetha" element={<AlmacenBetha />} />
 
       </Route>
       <Route path="/" element={

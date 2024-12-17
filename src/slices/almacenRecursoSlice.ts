@@ -6,17 +6,20 @@ import {
   addAlmacenRecursoService,
   updateAlmacenRecursoService,
   deleteAlmacenRecursoService,
-  AlmacenRecurso
+  AlmacenRecurso,
+  AlmacenRecursoDetallado
 } from '../services/almacenRecursoService';
 
 interface AlmacenRecursoState {
   almacenRecursos: AlmacenRecurso[];
+  almacenRecursosDetallados: AlmacenRecursoDetallado[];  // Cambiar a array
   loading: boolean;
   error: string | null;
 }
 
 const initialState: AlmacenRecursoState = {
   almacenRecursos: [],
+  almacenRecursosDetallados: [],  // Inicializar como array vacío
   loading: false,
   error: null,
 };
@@ -110,13 +113,31 @@ const almacenRecursoSlice = createSlice({
         state.loading = false;
         state.almacenRecursos = action.payload;
       })
-      .addCase(getAlmacenRecurso.fulfilled, (state, action: PayloadAction<AlmacenRecurso>) => {
-        const index = state.almacenRecursos.findIndex(item => item.id === action.payload.id);
-        if (index !== -1) {
-          state.almacenRecursos[index] = action.payload;
-        } else {
-          state.almacenRecursos.push(action.payload);
-        }
+      .addCase(getAlmacenRecurso.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(getAlmacenRecurso.fulfilled, (state, action: PayloadAction<AlmacenRecursoDetallado[]>) => {
+        state.loading = false;
+        state.almacenRecursosDetallados = action.payload;
+        
+        // Actualizar almacenRecursos con la información básica de cada recurso
+        const recursosBasicos = action.payload
+          .filter(item => item.recurso_id) // Filtrar elementos donde recurso_id no es null
+          .map(item => ({
+            id: item.id,
+            recurso_id: item.recurso_id.id,
+            cantidad: item.cantidad,
+            almacen_id: item.bodega_id?.id || '',
+            costo: item.costo || 0,
+            nombre_almacen: ''
+          }));
+
+        state.almacenRecursos = recursosBasicos;
+      })
+      .addCase(getAlmacenRecurso.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
       })
       .addCase(addAlmacenRecurso.fulfilled, (state, action: PayloadAction<AlmacenRecurso>) => {
         state.almacenRecursos.push(action.payload);

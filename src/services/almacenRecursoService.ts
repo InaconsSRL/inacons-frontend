@@ -10,6 +10,32 @@ export interface AlmacenRecurso {
   nombre_almacen: string;
 }
 
+interface Imagen {
+  file: string;
+}
+
+interface Recurso {
+  id: string;
+  nombre: string;
+  codigo: string;
+  descripcion: string;
+  imagenes: Imagen[];
+  unidad_id: string;
+}
+
+interface Bodega {
+  id: string;
+  codigo: string;
+}
+
+export interface AlmacenRecursoDetallado {
+  id: string;
+  recurso_id: Recurso;
+  cantidad: number;
+  costo: number;
+  bodega_id: Bodega;
+}
+
 const LIST_ALMACEN_RECURSOS_QUERY = gql`
   query ListAlmacenRecursos {
     listAlmacenRecursos {
@@ -40,11 +66,22 @@ const GET_ALMACEN_RECURSO_QUERY = gql`
   query GetAlmacenRecurso($getAlmacenRecursoId: ID!) {
     getAlmacenRecurso(id: $getAlmacenRecursoId) {
       id
-      recurso_id
+      recurso_id {
+        id
+        nombre
+        codigo
+        descripcion
+        imagenes {
+          file
+        }
+        unidad_id
+      }
       cantidad
-      almacen_id
       costo
-      nombre_almacen
+      bodega_id {
+        id
+        codigo
+      }
     }
   }
 `;
@@ -108,7 +145,7 @@ export const listAlmacenRecursosByRecursoIdService = async (recursoId: string) =
   }
 };
 
-export const getAlmacenRecursoService = async (id: string) => {
+export const getAlmacenRecursoService = async (id: string): Promise<AlmacenRecursoDetallado[]> => {
   try {
     const response = await client.query({
       query: GET_ALMACEN_RECURSO_QUERY,
