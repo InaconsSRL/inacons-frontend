@@ -41,6 +41,7 @@ const RecepcionCompra: React.FC<RecepcionesCompraProps> = ({ onClose, onComplete
     const [movilidadId, setMovilidadId] = useState('');
 
     const [detalles, setDetalles] = useState<RecursoDetalle[]>([]);
+    const userId = useSelector((state: RootState) => state.user.id);
 
     // Selectores
     const { ordenCompras, loading: ordenesLoading } = useSelector((state: RootState) => state.ordenCompra);
@@ -86,6 +87,8 @@ const RecepcionCompra: React.FC<RecepcionesCompraProps> = ({ onClose, onComplete
     };
 
     const [validationErrors, setValidationErrors] = useState<ValidationError[]>([]);
+    const [showConfirmDialog, setShowConfirmDialog] = useState(false);
+    const [advertencias, setAdvertencias] = useState<string[]>([]);
 
     const validateForm = (): ValidationError[] => {
         const errors: ValidationError[] = [];
@@ -124,12 +127,21 @@ const RecepcionCompra: React.FC<RecepcionesCompraProps> = ({ onClose, onComplete
             return;
         }
 
-        const errors = validateAll(detalles, fechaRecepcion, selectedOrden.fecha_ini, movilidadId);
-        if (errors.length > 0) {
-            setValidationErrors(errors);
+        // Generar advertencias para cantidades parciales
+        const warnings = detalles
+            .filter(d => d.cantidadRecibida > 0 && d.cantidadRecibida < d.cantidad)
+            .map(d => `Recepción parcial: Faltan ${d.cantidad - d.cantidadRecibida} unidades de ${d.id_recurso.nombre}`);
+
+        if (warnings.length > 0) {
+            setAdvertencias(warnings);
+            setShowConfirmDialog(true);
             return;
         }
 
+        await procesarRecepcion();
+    };
+
+    const procesarRecepcion = async () => {
         try {
             // Validar que al menos un detalle tenga cantidad recibida
             const hayRecepcion = detalles.some(d => d.cantidadRecibida > 0);
@@ -158,7 +170,7 @@ const RecepcionCompra: React.FC<RecepcionesCompraProps> = ({ onClose, onComplete
 
             // Crear la transferencia
             const transferenciaData: TransferenciaData = {
-                usuario_id: "1", // TODO: Obtener el usuario actual
+                usuario_id: userId? userId: '',
                 fecha: new Date(fechaRecepcion),
                 movimiento_id: movimientoEntrada.id,
                 movilidad_id: movilidadId,
@@ -434,6 +446,41 @@ const RecepcionCompra: React.FC<RecepcionesCompraProps> = ({ onClose, onComplete
                                     </button>
                                 </div>
                             </div>
+            {/* Diálogo de confirmación */}
+            {showConfirmDialog && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[9999]">
+                    <div className="bg-white rounded-lg p-6 max-w-2xl w-full mx-4 shadow-xl">
+                        <h3 className="text-lg font-semibold text-gray-900 mb-4">
+                            Confirmación de Recepción Parcial
+                        </h3>
+                        <div className="max-h-60 overflow-y-auto mb-4 bg-yellow-50 p-4 rounded-lg">
+                            <p className="text-gray-700 mb-3">Se han detectado las siguientes diferencias:</p>
+                            {advertencias.map((warning, index) => (
+                                <p key={index} className="text-yellow-700 mb-2 pl-4 border-l-4 border-yellow-400">
+                                    {warning}
+                                </p>
+                            ))}
+                        </div>
+                        <div className="flex justify-end space-x-3 pt-4 border-t">
+                            <button
+                                onClick={() => setShowConfirmDialog(false)}
+                                className="px-4 py-2 text-sm text-gray-600 hover:text-gray-800 border rounded"
+                            >
+                                Cancelar
+                            </button>
+                            <button
+                                onClick={async () => {
+                                    setShowConfirmDialog(false);
+                                    await procesarRecepcion();
+                                }}
+                                className="px-4 py-2 text-sm bg-blue-500 text-white rounded hover:bg-blue-600 font-medium"
+                            >
+                                Confirmar Recepción Parcial
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };
