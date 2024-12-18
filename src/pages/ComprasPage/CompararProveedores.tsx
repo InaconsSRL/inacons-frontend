@@ -226,9 +226,17 @@ const handleConfirmarGenerarOC = async () => {
       estado: 'OCGenerada'
     })).unwrap();
 
+    // Paso 5: Actualizando estado de proveedor
+    setLoadingStep(4);
+    setLoadingProgress(95);
+    await dispatch(updateCotizacionProveedor({
+      id: proveedorAdjudicado.id,
+      estado: "buenaProEnEjecucion"
+    }));
+
     // Finalizando
     setLoadingProgress(100);
-    await new Promise(resolve => setTimeout(resolve, 1000));
+    await new Promise(resolve => setTimeout(resolve, 500));
 
     setShowGenerarOCModal(false);
     setLoading(false);
