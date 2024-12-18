@@ -5,6 +5,7 @@ import Modal from '../../components/Modal/Modal';
 import TableComponent from '../../components/Table/TableComponent';
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchCotizaciones, addCotizacion, deleteCotizacion } from '../../slices/cotizacionSlice';
+import { clearCotizacionRecursos } from '../../slices/cotizacionRecursoSlice';
 import { RootState, AppDispatch } from '../../store/store';
 import LoaderPage from '../../components/Loader/LoaderPage';
 import { FiEdit, FiRefreshCw, FiTrash2 } from 'react-icons/fi';
@@ -98,6 +99,9 @@ const ComprasBoard: React.FC = () => {
 
   const handleButtonClick = async () => {
     try {
+      // Limpiar los recursos antes de crear una nueva cotización
+      dispatch(clearCotizacionRecursos());
+
       if (!userId) {
         throw new Error('No se encontró el ID del usuario');
       }

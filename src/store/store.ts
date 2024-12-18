@@ -52,6 +52,7 @@ import { cuestionarioHomologacionReducer } from '../slices/cuestionarioHomologac
 import prestamoReducer from '../slices/prestamoSlice';
 import prestamoRecursoReducer from '../slices/prestamoRecursoSlice';
 import { recursosAllTablesReducer } from '../slices/recursosAllTablesSlice';
+import { empleadoReducer } from '../slices/empleadoSlice';
 
 export const store = configureStore({
   reducer: {
@@ -71,11 +72,12 @@ export const store = configureStore({
     cotizacion: cotizacionReducer,
     cuestionarioHomologacion: cuestionarioHomologacionReducer,
     datosValoracionProveedor: datosValoracionProveedorReducer,
+    empleado: empleadoReducer,
     guiaTransferencia: guiaTransferenciaReducer,
     mediosPagoProveedor: mediosPagoProveedorReducer,
     menu: menuReducer,
-  movimiento: movimientoReducer,
-  movilidad: movilidadReducer,
+    movimiento: movimientoReducer,
+    movilidad: movilidadReducer,
     obra: obraReducer,
     ordenCompraRecursos: ordenCompraRecursosReducer,
     ordenCompra: ordenCompraReducer,

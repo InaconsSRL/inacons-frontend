@@ -9,8 +9,9 @@ import noImage from '../../assets/NoImage.webp';
 import IMG from '../../components/IMG/IMG';
 import LoaderProgress from '../../components/LoaderProgress/LoaderProgress';
 import { getCountRecursosInAllTables } from '../../slices/recursosAllTablesSlice';
+import { CalcularCantidades } from './CalcularCantidades';
 
-//Todo ok 17/12 
+//Todo ok 18/12
 
 interface SolicitudCompra {
   id: string;
@@ -57,23 +58,16 @@ interface ModalProps {
   recursosActuales?: CotizacionRecurso[];
 }
 
-interface RecursoProveedor {
-  cantidad: number;
-}
-interface TablaProveedor {
-  id: string;
-  estado: string;
-  recursos_proveedor: RecursoProveedor[];
-}
-interface TransferenciaItem {
-  recursos_transferencia: { cantidad: number }[];
-}
-
 const Skeleton: React.FC<{ className?: string }> = ({ className }) => (
   <div className={`animate-pulse bg-gray-200 rounded ${className}`}></div>
 );
 
 const AddRecursoRequerimientoCompra: React.FC<ModalProps> = ({ onClose, cotizacionId, estadoCotizacion, solicitudCompraId, recursosActuales }) => {
+
+  console.log (recursosActuales?.length === 0 ? "ciao": "hola")
+  console.log ("recursosActuales", recursosActuales)
+
+
   const dispatch = useDispatch<AppDispatch>();
   const [selectedSolicitud, setSelectedSolicitud] = React.useState<string | null>(null);
   const [selectedRecursos, setSelectedRecursos] = React.useState<RecursoSolicitud[]>([]);
@@ -103,9 +97,6 @@ const AddRecursoRequerimientoCompra: React.FC<ModalProps> = ({ onClose, cotizaci
       solicitud.requerimiento_id.obra_id === selectedObra
     );
   }, [solicitudes, selectedObra, estadoCotizacion, solicitudCompraId]);
-
-  console.log("todos los recursos", recursosAllTables);
-  console.log("recursos", recursos);
 
   useEffect(() => {
     const loadSolicitudes = async () => {
@@ -162,6 +153,9 @@ const AddRecursoRequerimientoCompra: React.FC<ModalProps> = ({ onClose, cotizaci
       setSelectedRecursos(recursosPreseleccionados);
     }
   }, [estadoCotizacion, recursosActuales, recursos]);
+
+
+  
 
   const handleCheckboxChange = React.useCallback((recurso: RecursoSolicitud, checked: boolean) => {
     setSelectedRecursos(prev => checked
@@ -242,55 +236,7 @@ const AddRecursoRequerimientoCompra: React.FC<ModalProps> = ({ onClose, cotizaci
       actual => actual.recurso_id.id === recurso.recurso_id.id
     );
     const subtotal = (selectedRecurso?.cantidadSeleccionada || 0) * recurso.costo;
-
-    // Encontrar el recurso correspondiente y validar que sea el correcto
-    const recursoInfo = Array.isArray(recursosAllTables) ? 
-      recursosAllTables.find(r => {
-        const match = r.recurso_id === recurso.recurso_id.id;
-        console.log(`Comparando recurso_id: ${r.recurso_id} con ${recurso.recurso_id.id}, match: ${match}`);
-        return match;
-      }) : undefined;
-
-    console.log(`Datos para recurso ${recurso.recurso_id.codigo}:`, {
-      recursoId: recurso.recurso_id.id,
-      recursoInfo: recursoInfo
-    });
-
-    // Calcular las sumatorias con validaciones adicionales
-    const sumaCotizaciones = recursoInfo?.cotizaciones?.reduce((sum: number, item: { recursos_cotizacion: { cantidad: number } }) => {
-      const cantidad = item.recursos_cotizacion?.cantidad || 0;
-      console.log(`Cotización cantidad: ${cantidad} para recurso ${recurso.recurso_id.codigo}`);
-      return sum + cantidad;
-    }, 0) || 0;
-
-    const sumaOrdenesCompra = recursoInfo?.tabla_ordenes_compra?.reduce((sum: number, item: { recursos_orden: { cantidad: number }[] }) => {
-      const cantidad = item.recursos_orden[0]?.cantidad || 0;
-      console.log(`Orden compra cantidad: ${cantidad} para recurso ${recurso.recurso_id.codigo}`);
-      return sum + cantidad;
-    }, 0) || 0;
-
-    const sumaProveedores = recursoInfo?.tabla_proveedores?.reduce((sum: number, item: TablaProveedor) => {
-      if (item.estado === 'buenaProAdjudicada') {
-        const cantidad = item.recursos_proveedor[0]?.cantidad || 0;
-        console.log(`Proveedor cantidad: ${cantidad} para recurso ${recurso.recurso_id.codigo}`);
-        return sum + cantidad;
-      }
-      return sum;
-    }, 0) || 0;
-
-    const sumaTransferencias = recursoInfo?.tabla_transferencias?.reduce((sum: number, item: TransferenciaItem) => {
-      const cantidad = item.recursos_transferencia[0]?.cantidad || 0;
-      console.log(`Transferencia cantidad: ${cantidad} para recurso ${recurso.recurso_id.codigo}`);
-      return sum + cantidad;
-    }, 0) || 0;
-
-    console.log(`Totales para recurso ${recurso.recurso_id.codigo}:`, {
-      sumaCotizaciones,
-      sumaOrdenesCompra,
-      sumaProveedores,
-      sumaTransferencias
-    });
-
+    
     return (
       <tr key={recurso.id} className="hover:bg-gray-50 transition-colors duration-150">
         <td className="px-3 py-2">
@@ -321,12 +267,17 @@ const AddRecursoRequerimientoCompra: React.FC<ModalProps> = ({ onClose, cotizaci
         </td>
         <td className="px-3 py-2 text-xs text-gray-600">{recurso.recurso_id.codigo}</td>
         <td className="px-3 py-2 text-xs text-gray-600">{recurso.recurso_id.nombre}</td>
-        <td className="px-3 py-2 text-xs text-gray-600">{recurso.cantidad}</td>
+        <td className="px-3 py-2 text-xs text-gray-600">
+          <span className='text-stone-900'>{recurso.cantidad - CalcularCantidades(recursosAllTables, recurso.recurso_id.id)}</span>
+          <span className='text-stone-600'>/ {recurso.cantidad}</span>
+          
+          </td>
+        
         <td className="px-3 py-2">
           <input
             type="number"
             min="1"
-            max={recurso.cantidad}
+            max={recursosActuales?.length === 0 ? (+recurso.cantidad - CalcularCantidades(recursosAllTables, recurso.recurso_id.id)) : ((recursoActual?.cantidad ?? 0) + recurso.cantidad - CalcularCantidades(recursosAllTables, recurso.recurso_id.id)) }
             value={selectedRecurso?.cantidadSeleccionada || recursoActual?.cantidad || 0}
             onChange={(e) => handleCantidadChange(recurso.id, parseInt(e.target.value))}
             disabled={!isSelected}
@@ -337,10 +288,6 @@ const AddRecursoRequerimientoCompra: React.FC<ModalProps> = ({ onClose, cotizaci
         <td className="px-3 py-2 text-xs text-gray-600">
           S/ {subtotal.toFixed(2)}
         </td>
-        <td className="px-3 py-2 text-xs text-gray-600">{sumaCotizaciones}</td>
-        <td className="px-3 py-2 text-xs text-gray-600">{sumaOrdenesCompra}</td>
-        <td className="px-3 py-2 text-xs text-gray-600">{sumaProveedores}</td>
-        <td className="px-3 py-2 text-xs text-gray-600">{sumaTransferencias}</td>
       </tr>
     );
   };
@@ -448,10 +395,6 @@ const AddRecursoRequerimientoCompra: React.FC<ModalProps> = ({ onClose, cotizaci
                         <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Cantidad a Cotizar</th>
                         <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Costo</th>
                         <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Subtotal</th>
-                        <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total Cotizaciones</th>
-                        <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total Órdenes</th>
-                        <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total Proveedores</th>
-                        <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total Transferencias</th>
                       </tr>
                     </thead>
                     <tbody className="bg-white divide-y divide-gray-100">

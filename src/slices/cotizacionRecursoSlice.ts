@@ -127,6 +127,8 @@ const cotizacionRecursoSlice = createSlice({
     },
     clearCotizacionRecursos: (state) => {
       state.cotizacionRecursos = [];
+      state.loading = false;
+      state.error = null;
     }
   },
   extraReducers: (builder) => {

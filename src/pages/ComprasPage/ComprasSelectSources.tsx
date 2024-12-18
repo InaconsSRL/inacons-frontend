@@ -53,8 +53,10 @@ function ComprasSelectSources({ cotizacion: initialCotizacion }: ComprasSelectSo
     ) || initialCotizacion;
     const unidades = useSelector((state: RootState) => state.unidad.unidades);
 
-    // Formatear productos desde el estado de Redux
+    // Formatear productos solo si el estado no es "vacio"
     const products = React.useMemo(() => {
+        if (cotizacionFromStore.estado === "vacio") return [];
+        
         return cotizacionRecursos.map((recurso: CotizacionRecurso) => ({
             id: recurso.id,
             imagen: recurso.recurso_id.imagenes && recurso.recurso_id.imagenes.length > 0
@@ -68,16 +70,19 @@ function ComprasSelectSources({ cotizacion: initialCotizacion }: ComprasSelectSo
             subtotal: recurso.cantidad * recurso.costo,
             nota: recurso.atencion
         }));
-    }, [cotizacionRecursos, unidades]);
+    }, [cotizacionRecursos, unidades, cotizacionFromStore.estado]);
 
-    // Cargar recursos solo una vez al inicio
+    // Cargar recursos solo si el estado no es "vacio"
     useEffect(() => {
-        if (cotizacionFromStore.estado !== "vacio" && cotizacionFromStore.id) {
+        if (cotizacionFromStore.estado === "vacio") {
+            setIsLoading(false);
+            return;
+        }
+
+        if (cotizacionFromStore.id) {
             setIsLoading(true);
             dispatch(fetchCotizacionRecursoForCotizacionId(cotizacionFromStore.id.toString()))
                 .finally(() => setIsLoading(false));
-        } else {
-            setIsLoading(false);
         }
     }, [cotizacionFromStore.estado, cotizacionFromStore.id, dispatch]);
 
@@ -249,9 +254,9 @@ function ComprasSelectSources({ cotizacion: initialCotizacion }: ComprasSelectSo
                         >
                             <AddRecursoRequerimientoCompra
                                 cotizacionId={cotizacionFromStore.id ? cotizacionFromStore.id.toString() : null}
-                                estadoCotizacion={cotizacionFromStore.estado ? cotizacionFromStore.estado : null}
+                                estadoCotizacion={cotizacionFromStore.estado}
                                 solicitudCompraId={cotizacionFromStore.solicitud_compra_id?.id}
-                                recursosActuales={cotizacionRecursos}
+                                recursosActuales={cotizacionFromStore.estado === "vacio" ? [] : cotizacionRecursos}
                                 onClose={handleCloseModal}
                             />
                         </Modal>

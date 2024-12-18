@@ -56,6 +56,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isSidebarOpen, toggleSidebar }) => {
     { to: "/dashboard/almacen", icon: FaWarehouse, text: "Almacen" },
     { to: "/dashboard/almacenBoard", icon: FaClipboardList, text: "AlmacenBoard" },
     { to: "/dashboard/tipoAlmacen", icon: IoIosArchive, text: "TipoDeAlmacen" },
+    { to: "/dashboard/empleados", icon: IoIosArchive, text: "PersonalObra" },
   ];
 
   const otroModuloItems = [
