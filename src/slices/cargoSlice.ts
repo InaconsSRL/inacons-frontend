@@ -2,7 +2,7 @@ import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
 import { listCargosService, addCargoService, updateCargoService } from '../services/cargoService';
 
 // Interfaces
-interface Cargo {
+export interface Cargo {
   id: string;
   nombre: string;
   descripcion: string;
