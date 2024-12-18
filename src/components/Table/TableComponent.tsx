@@ -11,6 +11,7 @@ import {
   ColumnResizeMode,
   SortingState,
   ColumnFiltersState,
+  Header,
 } from '@tanstack/react-table';
 import backImage from '../../assets/bgmedia.webp'
 
@@ -18,6 +19,7 @@ type TableRow = Record<string, string | number | boolean | ReactNode>;
 
 type TableData = {
   headers: string[];
+  filterSelect?: boolean[];
   filter?: boolean[];
   rows: TableRow[];
 };
@@ -70,11 +72,23 @@ const TableComponent: React.FC<TableComponentProps> = ({ tableData, maxCharacter
     return String(value);
   };
 
+  const getUniqueValues = (rows: TableRow[], accessor: string): (string | number | boolean)[] => {
+    const uniqueValues = new Set<string | number | boolean>();
+    rows.forEach(row => {
+      const value = row[accessor];
+      if (typeof value !== 'object' && value !== undefined) {
+        uniqueValues.add(value);
+      }
+    });
+    return Array.from(uniqueValues).sort((a, b) => String(a).localeCompare(String(b)));
+  };
+
   const columns = useMemo<ColumnDef<TableRow>[]>(() => 
     tableData.headers.map((header, index) => ({
       header: () => header.toUpperCase(),
       accessorKey: header,
-      enableColumnFilter: tableData.filter ? tableData.filter[index] : true,
+      enableColumnFilter: (tableData.filter ? tableData.filter[index] : true) || 
+                        (tableData.filterSelect ? tableData.filterSelect[index] : false),
       cell: info => {
         const value = info.getValue();
         const columnWidth = info.column.getSize();
@@ -84,7 +98,7 @@ const TableComponent: React.FC<TableComponentProps> = ({ tableData, maxCharacter
       },
       footer: props => props.column.id,
     })),
-  [tableData.headers, tableData.filter, maxCharacters]);
+  [tableData.headers, tableData.filter, tableData.filterSelect, maxCharacters]);
 
   const table = useReactTable({
     data: tableData.rows,
@@ -118,6 +132,48 @@ const TableComponent: React.FC<TableComponentProps> = ({ tableData, maxCharacter
     
     setCurrentPage(page);
     table.setPageIndex(page - 1);
+  };
+
+  const renderFilter = (header: Header<TableRow, unknown>, index: number) => {
+    if (!header.column.getCanFilter()) return null;
+
+    const isSelectFilter = tableData.filterSelect?.[index];
+    const isInputFilter = tableData.filter?.[index];
+
+    if (isSelectFilter) {
+      const uniqueValues = getUniqueValues(tableData.rows, header.column.id);
+      const filterValue = header.column.getFilterValue();
+      
+      return (
+        <select
+          value={(filterValue as string) ?? ''}
+          onChange={e => header.column.setFilterValue(e.target.value || undefined)}
+          className="w-full border border-slate-400 bg-slate-100 rounded-xl px-2 py-0.5 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500"
+        >
+          <option value="">Todos</option>
+          {uniqueValues.map((value) => (
+            <option key={String(value)} value={String(value)}>
+              {String(value)}
+            </option>
+          ))}
+        </select>
+      );
+    }
+
+    if (isInputFilter) {
+      const filterValue = header.column.getFilterValue();
+      
+      return (
+        <input
+          value={(filterValue as string) ?? ''}
+          onChange={e => header.column.setFilterValue(e.target.value || undefined)}
+          placeholder="✎"
+          className="w-full border border-slate-400 bg-slate-100 rounded-xl px-2 py-0.5 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500"
+        />
+      );
+    }
+
+    return null;
   };
 
   return (
@@ -177,21 +233,14 @@ const TableComponent: React.FC<TableComponentProps> = ({ tableData, maxCharacter
                                 }[header.column.getIsSorted() as string] ?? null}
                               </span>
                             </motion.div>
-                            {header.column.getCanFilter() && (tableData.filter ? tableData.filter[header.index] : true) ? (
+                            {header.column.getCanFilter() ? (
                               <motion.div 
                                 initial={{ opacity: 0, y: -10 }}
                                 animate={{ opacity: 1, y: 0 }}
                                 transition={{ duration: 0.3 }}
                                 className="mt-1"
                               >
-                                <input
-                                  value={(header.column.getFilterValue() ?? '') as string}
-                                  onChange={e =>
-                                    header.column.setFilterValue(e.target.value)
-                                  }
-                                  placeholder={`✎`}
-                                  className="w-full border border-slate-400 bg-slate-100 rounded-xl px-2 py-0.5 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                />
+                                {renderFilter(header, header.index)}
                               </motion.div>
                             ) : null}
                           </div>
@@ -256,16 +305,9 @@ const TableComponent: React.FC<TableComponentProps> = ({ tableData, maxCharacter
                                 }[header.column.getIsSorted() as string] ?? null}
                               </span>
                             </div>
-                            {header.column.getCanFilter() && (tableData.filter ? tableData.filter[header.index] : true) ? (
+                            {header.column.getCanFilter() ? (
                               <div className="mt-1">
-                                <input
-                                  value={(header.column.getFilterValue() ?? '') as string}
-                                  onChange={e =>
-                                    header.column.setFilterValue(e.target.value)
-                                  }
-                                  placeholder={`✎`}
-                                  className="w-full border border-slate-400 bg-slate-100 rounded-xl px-2 py-0.5 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                />
+                                {renderFilter(header, header.index)}
                               </div>
                             ) : null}
                           </div>
@@ -531,16 +573,9 @@ const TableComponent: React.FC<TableComponentProps> = ({ tableData, maxCharacter
                               }[header.column.getIsSorted() as string] ?? null}
                             </span>
                           </div>
-                          {header.column.getCanFilter() && (tableData.filter ? tableData.filter[header.index] : true) ? (
+                          {header.column.getCanFilter() ? (
                             <div className="mt-1">
-                              <input
-                                value={(header.column.getFilterValue() ?? '') as string}
-                                onChange={e =>
-                                  header.column.setFilterValue(e.target.value)
-                                }
-                                placeholder={`✎`}
-                                className="w-full border border-slate-400 bg-slate-100 rounded-xl px-2 py-0.5 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500"
-                              />
+                              {renderFilter(header, header.index)}
                             </div>
                           ) : null}
                         </div>

@@ -51,6 +51,7 @@ import { datosValoracionProveedorReducer } from '../slices/datosValoracionProvee
 import { cuestionarioHomologacionReducer } from '../slices/cuestionarioHomologacionSlice';
 import prestamoReducer from '../slices/prestamoSlice';
 import prestamoRecursoReducer from '../slices/prestamoRecursoSlice';
+import { recursosAllTablesReducer } from '../slices/recursosAllTablesSlice';
 
 export const store = configureStore({
   reducer: {
@@ -105,6 +106,7 @@ export const store = configureStore({
     valoracionProveedor: valoracionProveedorReducer,
     prestamo: prestamoReducer,
     prestamoRecurso: prestamoRecursoReducer,
+    recursosAllTables: recursosAllTablesReducer,
   },
 
   //Para que se tome mas tiempo en responder todas las solicitudes de la API
