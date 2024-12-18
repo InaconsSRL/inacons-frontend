@@ -5,8 +5,7 @@ import FormularioSolicitud from "./FormularioSolicitud";
 import RecepcionTransferencia from "./RecepcionTransferencias/RecepcionTransferencias";
 import { TipoMovimiento } from './types';
 import RecepcionCompra from "./RecepcionCompras/RecepcionCompra";
-
-
+import Recursos from "../CalendarPage/CalendarPage";
 
 export default function TransfersPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -29,7 +28,16 @@ export default function TransfersPage() {
             >
               ✕
             </button>
-            {selectedOption === 'COMPRAS' ? <RecepcionCompra onClose={handleCloseModal} ordenId={""} /> : <RecepcionTransferencia />}
+            {selectedOption === 'COMPRAS' ? (
+              <RecepcionCompra 
+                onClose={handleCloseModal} 
+                onComplete={(orden, detalles) => {
+                  console.log('Recepción completada:', { orden, detalles,Recursos });
+                }} 
+              />
+            ) : (
+              <RecepcionTransferencia onClose={handleCloseModal} />
+            )}
           </div>
         );
       case 'PRESTAMOS':
@@ -41,7 +49,7 @@ export default function TransfersPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-20">
+    <div className="min-h-screen bg-gray-200">
       <main className="container mx-auto py-6">
         <div className="bg-white rounded-lg shadow">
           <div className="p-4 flex justify-between items-auto">

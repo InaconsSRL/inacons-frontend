@@ -1,9 +1,10 @@
-import React, { useState, useEffect } from 'react';
+|import React, { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { AppDispatch } from '../../../store/store';
 import { fetchOrdenCompraRecursosByOrdenId } from '../../../slices/ordenCompraRecursosSlice';
 import { addTransferencia } from '../../../slices/transferenciaSlice';
 import { addTransferenciaDetalle } from '../../../slices/transferenciaDetalleSlice';
+import { addTransferenciaRecurso } from '../../../slices/transferenciaRecursoSlice';
 import { fetchMovilidades } from '../../../slices/movilidadSlice';
 import { fetchMovimientos } from '../../../slices/movimientoSlice';
 import { RootState } from '../../../store/store';
@@ -189,26 +190,33 @@ const RecepcionComp: React.FC<RecepcionCompProps> = ({
             const transferencia = await dispatch(addTransferencia(transferenciaData)).unwrap();
             console.log('Transferencia guardada:', transferencia);
 
-            // 5. Guardar los detalles
-            const detallesPromises = detalles
-                .filter(detalle => detalle.cantidadRecibida > 0)
-                .map(detalle => {
-                    const detalleData = {
-                        transferencia_id: transferencia.id,
-                        referencia_id: detalle.id_recurso.id,
-                        fecha: new Date(fechaRecepcion),
-                        tipo: 'RECEPCION_COMPRA',
-                        referencia: `Recepción de compra - Orden ${ordenId}`
-                    };
-                    console.log('Guardando detalle:', detalleData);
-                    return dispatch(addTransferenciaDetalle(detalleData)).unwrap();
-                });
+            // 5. Guardar los detalles y recursos
+            for (const detalle of detalles.filter(d => d.cantidadRecibida > 0)) {
+                // Crear el detalle de transferencia
+                const detalleData = {
+                    transferencia_id: transferencia.id,
+                    referencia_id: detalle.id_recurso.id,
+                    fecha: new Date(fechaRecepcion),
+                    tipo: 'RECEPCION_COMPRA',
+                    referencia: `Recepción de compra - Orden ${ordenId}`
+                };
+                console.log('Guardando detalle:', detalleData);
+                const detalleGuardado = await dispatch(addTransferenciaDetalle(detalleData)).unwrap();
 
-            await Promise.all(detallesPromises);
-            console.log('Detalles guardados');
+                // Guardar el recurso asociado al detalle
+                const recursoData = {
+                    transferencia_detalle_id: detalleGuardado.id,
+                    recurso_id: detalle.id_recurso.id,
+                    cantidad: detalle.cantidadRecibida,
+                    costo: detalle.precio_unitario || 0
+                };
+                console.log('Guardando recurso:', recursoData);
+                await dispatch(addTransferenciaRecurso(recursoData)).unwrap();
+            }
+            console.log('Detalles y recursos guardados');
 
-            // 6. Si la recepción está completa, notificar
-            if (estado === 'COMPLETO' && onComplete) {
+            // 6. Si la recepción está completa o parcial y existe onComplete, notificar
+            if ((estado === 'COMPLETO' || estado === 'PARCIAL') && onComplete) {
                 onComplete(ordenCompra);
             }
 
@@ -348,7 +356,7 @@ const RecepcionComp: React.FC<RecepcionCompProps> = ({
                         onClick={handleGuardarRecepcion}
                         className="px-4 py-2 text-sm bg-blue-500 text-white rounded-md hover:bg-blue-600 flex items-center gap-2 disabled:opacity-50"
                         disabled={guardando || validationErrors.length > 0}
-D                    >
+                    >
                         {guardando ? (
                             <div className="animate-spin rounded-full h-4 w-4 border-2 border-white/30 border-t-white"></div>
                         ) : (

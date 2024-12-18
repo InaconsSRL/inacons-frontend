@@ -41,8 +41,8 @@ export function TransferTable() {
     }, [dispatch]);
 
     useEffect(() => {
-        const loadDetallesYRecursos = async () => {
-            if (transferencias.length > 0) {
+        const loadDetalles = async () => {
+            if (transferencias.length > 0 && selectedTransferencia) {
                 try {
                     // Cargar todos los detalles en paralelo
                     const detallesPromises = transferencias.map(transferencia =>
@@ -61,9 +61,9 @@ export function TransferTable() {
                 }
             }
         };
-        loadDetallesYRecursos();
-    }, [transferencias, dispatch]);
-
+        loadDetalles();
+    }, [selectedTransferencia, transferencias, dispatch]);
+    
     const transferenciasCompletas: TransferenciaCompleta[] = transferencias
     .filter(transferencia => {
         if (tipoFiltro === 'TODOS') return true;
@@ -114,7 +114,6 @@ export function TransferTable() {
                         <th className="font-semibold p-2 text-left">Fecha</th>
                         <th className="font-semibold p-2 text-left">Movimiento</th>
                         <th className="font-semibold p-2 text-left">Transporte</th>
-                        <th className="font-semibold p-2 text-left">Recursos</th>
                         <th className="font-semibold p-2 text-left">Estado</th>
                         <th className="font-semibold p-2 text-left">Acciones</th>
                     </tr>
@@ -154,7 +153,6 @@ export function TransferTable() {
                                     <td className="p-2">{new Date(transferencia.fecha).toLocaleDateString()}</td>
                                     <td className="p-2">{transferencia.movimiento_id.nombre}</td>
                                     <td className="p-2">{transferencia.movilidad_id?.denominacion || '-'}</td>
-                                    <td className="p-2">{transferencia.recursos.length} recursos</td>
                                     <td className="p-2">
                                         <span className={`px-2 py-1 rounded-full text-xs ${
                                             transferencia.movimiento_id.tipo === 'entrada' 

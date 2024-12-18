@@ -116,7 +116,7 @@ const getMovimientoSalidaId = () => {
           transferencia_id: result.id,
           referencia_id: solicitudData.id,
           tipo: 'origen',
-          referencia: 'almacen',
+          referencia: `Salida de Almacen -  ${codigoTransferencia}`,
           fecha: new Date()
         };
         

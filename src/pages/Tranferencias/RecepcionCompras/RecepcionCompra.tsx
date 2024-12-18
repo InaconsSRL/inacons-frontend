@@ -3,7 +3,8 @@ import { FiX, FiSave } from 'react-icons/fi';
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchOrdenCompras } from '../../../slices/ordenCompraSlice';
 import { addTransferencia, TransferenciaData } from '../../../slices/transferenciaSlice';
-import { addTransferenciaDetalle, TransferenciaDetalleData } from '../../../slices/transferenciaDetalleSlice';
+import { addTransferenciaRecurso } from '../../../slices/transferenciaRecursoSlice';
+import { addTransferenciaDetalle } from '../../../slices/transferenciaDetalleSlice';
 import ValidationErrors from './components/ValidationErrors';
 import { validateAll, ValidationError } from './utils/validaciones';
 import { fetchOrdenCompraRecursosByOrdenId } from '../../../slices/ordenCompraRecursosSlice';
@@ -12,6 +13,7 @@ import { fetchMovimientos } from '../../../slices/movimientoSlice';
 import { RootState, AppDispatch } from '../../../store/store';
 import { OrdenCompra } from '../../../services/ordenCompraService';
 import { EstadoTransferencia } from '../types';
+
 interface RecursoDetalle {
     id: string;
     id_recurso: {
@@ -151,76 +153,63 @@ const RecepcionCompra: React.FC<RecepcionesCompraProps> = ({ onClose, onComplete
             }
 
             // Obtener el ID del movimiento de entrada
-            const movimientoEntrada = movimientos.find(m => 
-                m.tipo === 'entrada' || (
-                    m.nombre.toLowerCase().includes('entrada') && 
-                    m.nombre.toLowerCase().includes('compra')
-                )
-            );
-
+            const movimientoEntrada = movimientos.find(m => m.nombre === 'compra');
             if (!movimientoEntrada) {
                 throw new Error('No se encontró el tipo de movimiento de entrada');
             }
 
             // Determinar el estado de la transferencia
-            const todosCompletos = detalles.every(detalle => 
-                detalle.cantidadRecibida === detalle.cantidad
-            );
+            const todosCompletos = detalles.every(detalle => detalle.cantidadRecibida === detalle.cantidad);
             const estado: EstadoTransferencia = todosCompletos ? 'COMPLETO' : 'PARCIAL';
 
             // Crear la transferencia
             const transferenciaData: TransferenciaData = {
-                usuario_id: userId? userId: '',
-                fecha: new Date(fechaRecepcion),
+                usuario_id: userId || '',
+                fecha: new Date(), // Cambiar a la fecha actual
                 movimiento_id: movimientoEntrada.id,
                 movilidad_id: movilidadId,
                 estado
             };
 
+            console.log('Creando transferencia...', transferenciaData);
             const transferencia = await dispatch(addTransferencia(transferenciaData)).unwrap();
+            console.log('Transferencia creada:', transferencia);
 
-            // Guardar los detalles
-            const detallesAGuardar = detalles.filter(detalle => detalle.cantidadRecibida > 0);
-            
-            if (detallesAGuardar.length === 0) {
-                throw new Error('No hay detalles para guardar');
-            }
+            // Crear un solo detalle de transferencia
+            const detalleData = {
+                transferencia_id: transferencia.id,
+                referencia_id: selectedOrden.id, // Usar la orden como referencia
+                fecha: new Date(), // Cambiar a la fecha actual
+                tipo: 'RECEPCION_COMPRA',
+                referencia: `Recepción de compra - Orden ${selectedOrden.id}`,
+                recursos: detalles.filter(detalle => detalle.cantidadRecibida > 0).map(detalle => ({
+                    recurso_id: detalle.id_recurso.id,
+                    cantidad: detalle.cantidadRecibida
+                }))
+            };
 
-            const detallesPromises = detallesAGuardar.map(detalle => {
-                const detalleData = {
-                    transferencia_id: transferencia.id,
-                    referencia_id: detalle.id_recurso.id,
-                    fecha: new Date(fechaRecepcion),
-                    tipo: 'RECEPCION_COMPRA',
-                    referencia: `Recepción de compra - Orden ${selectedOrden.id}`
-                };
-                return dispatch(addTransferenciaDetalle(detalleData)).unwrap();
-            });
+            console.log('Creando detalle de transferencia...', detalleData);
+            await dispatch(addTransferenciaDetalle(detalleData)).unwrap();
 
-            try {
-                console.log('Guardando detalles...');
-                const resultados = await Promise.all(detallesPromises);
-                console.log('Detalles guardados:', resultados);
-            } catch (error) {
-                console.error('Error al guardar detalles:', error);
-                throw new Error('Error al guardar los detalles de la transferencia');
-            }
-
-            const resultados = await Promise.all(detallesPromises);
-            console.log('Detalles guardados:', resultados);
-
-            // Notificar al componente padre y actualizar estado local
+            // Notificar éxito y limpiar
             onComplete(selectedOrden, detalles);
-            setOrdenesCompletadas(prev => [...prev, selectedOrden]);
-            
-            // Limpiar el formulario
+            setOrdenesCompletadas(prev => [...prev, selectedOrden] as OrdenCompra[]);
             handleCloseRecepcion();
             setValidationErrors([]);
+            
         } catch (error) {
-            console.error('Error en la recepción:', error);
+            console.error('Error detallado:', error);
+            let errorMessage = 'Error desconocido';
+            
+            if (error instanceof Error) {
+                errorMessage = error.message;
+            } else if (typeof error === 'object' && error !== null) {
+                errorMessage = JSON.stringify(error);
+            }
+            
             setValidationErrors([{ 
                 field: 'general', 
-                message: 'Error al guardar la recepción: ' + (error instanceof Error ? error.message : 'Error desconocido')
+                message: 'Error al guardar la recepción: ' + errorMessage
             }]);
         }
     };
@@ -407,8 +396,6 @@ const RecepcionCompra: React.FC<RecepcionesCompraProps> = ({ onClose, onComplete
                                     </tbody>
                                 </table>
                             </div>
-
-                            
                         </>
                     ) : (
                         <div className="flex items-center justify-center h-full">
@@ -431,21 +418,21 @@ const RecepcionCompra: React.FC<RecepcionesCompraProps> = ({ onClose, onComplete
             </div>
             {/* Footer con botones */}
             <div className="p-4 border-t bg-white">
-                                <div className="flex justify-end space-x-3">
-                                    <button
-                                        onClick={handleCloseRecepcion}
-                                        className="px-4 py-2 text-sm text-gray-600 hover:text-gray-800"
-                                    >
-                                        Cancelar
-                                    </button>
-                                    <button
-                                        onClick={handleRecepcionComplete}
-                                        className="px-4 py-2 text-sm bg-blue-500 text-white rounded hover:bg-blue-600"
-                                    >
-                                        Guardar Recepción
-                                    </button>
-                                </div>
-                            </div>
+                <div className="flex justify-end space-x-3">
+                    <button
+                        onClick={handleCloseRecepcion}
+                        className="px-4 py-2 text-sm text-gray-600 hover:text-gray-800"
+                    >
+                        Cancelar
+                    </button>
+                    <button
+                        onClick={handleRecepcionComplete}
+                        className="px-4 py-2 text-sm bg-blue-500 text-white rounded hover:bg-blue-600"
+                    >
+                        Guardar Recepción
+                    </button>
+                </div>
+            </div>
             {/* Diálogo de confirmación */}
             {showConfirmDialog && (
                 <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[9999]">
