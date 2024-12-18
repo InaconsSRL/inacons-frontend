@@ -1,55 +1,65 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
+import { FiX } from 'react-icons/fi';
 import { useDispatch, useSelector } from 'react-redux';
-import { RootState } from '../../../store/store';
-import GuiaTransfer from './GuiaTransfer';
-import Recepciones from './Recepciones';
-import { fetchTransferencias } from '../../../slices/transferenciaSlice';
+import { fetchTransferencias, addTransferencia } from '../../../slices/transferenciaSlice';
+import { fetchTransferenciaRecursosById } from '../../../slices/transferenciaRecursoSlice';
+import ValidationErrors from '../RecepcionCompras/components/ValidationErrors';
+import { RootState, AppDispatch } from '../../../store/store';
 
 interface Transferencia {
-    id: string;
-    fecha: Date;
-    movimiento_id: {
-        id: string;
-        nombre: string;
-        descripcion: string;
-        tipo: string;
-    };
-    movilidad_id: {
-        id: string;
-        denominacion: string;
-        descripcion: string;
-    };
+    id: number;
     usuario_id: {
-        id: string;
+        id: number;
         nombres: string;
         apellidos: string;
     };
+    fecha: string;
+    movimiento_id: {
+        id: number;
+    };
+    movilidad_id: {
+        id: number;
+    };
+    estado: string;
 }
 
-const RecepcionTransferencia = () => {
-    const dispatch = useDispatch();
-    const [showGuia, setShowGuia] = useState(false);
-    const [showRecepcion, setShowRecepcion] = useState(false);
+const RecepcionTransferencia: React.FC = () => {
+    const dispatch = useDispatch<AppDispatch>();
+    const [showConfirmDialog, setShowConfirmDialog] = useState(false);
+    const [validationErrors, setValidationErrors] = useState([]);
     const [selectedTransferencia, setSelectedTransferencia] = useState<Transferencia | null>(null);
-    
+    const [cantidadRecibida, setCantidadRecibida] = useState(0);
     const { transferencias, loading, error } = useSelector((state: RootState) => state.transferencia);
+    const { recursos } = useSelector((state: RootState) => state.transferenciaRecurso);
 
     useEffect(() => {
-        dispatch(fetchTransferencias() as any);
+        dispatch(fetchTransferencias());
     }, [dispatch]);
 
-    const handleVerDetalles = (transferencia: Transferencia) => {
-        setSelectedTransferencia(transferencia);
-        setShowGuia(true);
-    };
+    useEffect(() => {
+        if (selectedTransferencia) {
+            dispatch(fetchTransferenciaRecursosById(selectedTransferencia.id)); // Cargar recursos de la transferencia seleccionada
+        }
+    }, [selectedTransferencia, dispatch]);
 
-    const handleRecepcionar = (transferencia: Transferencia) => {
-        setSelectedTransferencia(transferencia);
-        setShowRecepcion(true);
+    const handleConfirmarRecepcion = () => {
+        if (cantidadRecibida <= 0) {
+            return;
+        }
+        const transferenciaData = {
+            usuario_id: selectedTransferencia?.usuario_id.id,
+            fecha: new Date(),
+            movimiento_id: selectedTransferencia?.movimiento_id.id,
+            movilidad_id: selectedTransferencia?.movilidad_id.id,
+            estado: selectedTransferencia?.estado,
+        };
+        dispatch(addTransferencia(transferenciaData));
+        setShowConfirmDialog(false);
+        setSelectedTransferencia(null);
     };
 
     if (loading) {
-        return <div className="p-6 text-center">Cargando transferencias...</div>;
+        return <div className="flex justify-center items-center h-full">Cargando...</div>;
     }
 
     if (error) {
@@ -57,90 +67,53 @@ const RecepcionTransferencia = () => {
     }
 
     return (
-        <div className="p-6">
-            <h1 className="text-2xl font-bold text-center text-blue-900 mb-8">TRANSFERENCIAS A OTRAS OBRAS</h1>
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {transferencias.map((transferencia) => (
-                    <div key={transferencia.id} className="border rounded-lg overflow-hidden">
-                     
-                        <div className="bg-blue-900 text-white p-4">
-                            <h2 className="font-medium">N° de orden de Transferencia: {transferencia.id}</h2>
-                        </div>
-                        
-                        {/* Contenido */}
-                        <div className="p-4 space-y-3">
-                            <div className="border-b pb-2">
-                                <p className="text-sm">Fecha:</p>
-                                <p className="font-medium">{new Date(transferencia.fecha).toLocaleDateString()}</p>
-                            </div>
-                            
-                            <div className="border-b pb-2">
-                                <p className="text-sm">Tipo de Movimiento:</p>
-                                <p className="font-medium">{transferencia.movimiento_id.nombre}</p>
-                            </div>
-                            
-                            <div className="border-b pb-2">
-                                <p className="text-sm">Movilidad:</p>
-                                <p className="font-medium">{transferencia.movilidad_id.denominacion}</p>
-                            </div>
-                            
-                            <div className="border-b pb-2">
-                                <p className="text-sm">Usuario:</p>
-                                <p className="font-medium">{`${transferencia.usuario_id.nombres} ${transferencia.usuario_id.apellidos}`}</p>
-                            </div>
-                            
-                            {/* Botones */}
-                            <div className="flex justify-center gap-4 pt-2">
-                                {transferencia.movimiento_id.tipo === "entrada" && (
-                                    <button 
-                                        className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
-                                        onClick={() => handleRecepcionar(transferencia)}
-                                    >
-                                        Recepcionar
-                                    </button>
-                                )}
-                                <button 
-                                    className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600"
-                                    onClick={() => handleVerDetalles(transferencia)}
-                                >
-                                    Ver Detalles
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                ))}
+        <div className="bg-gradient-to-br from-white to-gray-50 rounded-xl shadow-lg w-full h-[90vh] flex flex-col overflow-hidden border border-gray-100">
+            <div className="border-b border-gray-100 bg-white">
+                <div className="p-4 flex items-center justify-between">
+                    <h2 className="text-xl font-semibold text-blue-800">Recepción de Transferencias</h2>
+                    <button onClick={() => setShowConfirmDialog(false)} className="text-2xl text-red-500 hover:text-red-600">
+                        <FiX />
+                    </button>
+                </div>
             </div>
-            
-            {/* Modal para GuiaTransfer */}
-            {showGuia && selectedTransferencia && (
-                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-40">
-                    <div className="bg-white p-6 rounded-lg w-11/12 max-w-4xl">
-                        <GuiaTransfer 
-                            numero={parseInt(selectedTransferencia.id)}
-                            solicita={`${selectedTransferencia.usuario_id.nombres} ${selectedTransferencia.usuario_id.apellidos}`}
-                            recibe=""
-                            fEmision={new Date(selectedTransferencia.fecha)}
-                            estado={selectedTransferencia.movimiento_id.tipo}
-                            obra=""
-                            transferenciaId={selectedTransferencia.id}
-                            onSubmit={() => {}}
-                            onClose={() => setShowGuia(false)}
-                        />
+            {validationErrors.length > 0 && <ValidationErrors errors={validationErrors} />}
+            <div className="flex flex-1 min-h-0">
+                <div className="w-1/3 border-r border-gray-100 overflow-y-auto">
+                    <div className="p-4 bg-white border-b">
+                        <h3 className="text-sm font-medium text-gray-700">Transferencias Pendientes</h3>
+                    </div>
+                    <div className="bg-gray-50 p-4 space-y-3">
+                        {transferencias.map((transferencia) => (
+                            <div key={transferencia.id} onClick={() => setSelectedTransferencia(transferencia)} className="bg-white rounded-lg shadow-sm border cursor-pointer transition-all duration-200 hover:shadow-md">
+                                <div className="p-3">
+                                    <div className="text-sm font-medium text-gray-900">N° Transferencia: {transferencia.id}</div>
+                                    <div className="text-xs text-gray-500 mt-1">Fecha: {new Date(transferencia.fecha).toLocaleDateString()}</div>
+                                </div>
+                            </div>
+                        ))}
                     </div>
                 </div>
-            )}
-
-            {/* Modal para Recepciones */}
-            {showRecepcion && selectedTransferencia && (
-                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-                    <div className="w-11/12 max-w-6xl max-h-[90vh] overflow-y-auto">
-                        <Recepciones 
-                            onClose={() => setShowRecepcion(false)} 
-                        />
-                    </div>
+                <div className="flex-1 bg-white overflow-y-auto">
+                    {selectedTransferencia && (
+                        <div className="p-4">
+                            <h3 className="text-lg font-semibold text-gray-800">Detalles de Transferencia</h3>
+                            <div className="mt-2 text-sm text-gray-600">
+                                <p>Usuario: {selectedTransferencia.usuario_id.nombres} {selectedTransferencia.usuario_id.apellidos}</p>
+                                <p>Fecha: {new Date(selectedTransferencia.fecha).toLocaleDateString()}</p>
+                            </div>
+                            <h4 className="mt-4 text-md font-semibold text-gray-700">Recursos:</h4>
+                            <ul className="list-disc pl-5">
+                                {recursos.map((recurso) => (
+                                    <li key={recurso.id} className="text-sm text-gray-600">{recurso.nombre}</li>
+                                ))}
+                            </ul>
+                            <div className="flex justify-end space-x-3 pt-4 border-t">
+                                <button onClick={() => setShowConfirmDialog(true)} className="px-4 py-2 text-sm bg-blue-500 text-white rounded hover:bg-blue-600">Confirmar Recepción</button>
+                            </div>
+                        </div>
+                    )}
                 </div>
-            )}
+            </div>
         </div>
     );
 };

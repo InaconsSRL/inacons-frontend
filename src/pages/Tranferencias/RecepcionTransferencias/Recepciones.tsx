@@ -5,7 +5,7 @@ import { fetchTransferenciaRecursos } from '../../../slices/transferenciaRecurso
 
 interface Props {
     onClose: () => void;
-}
+}x
 
 const Recepciones: React.FC<Props> = ({ onClose }) => {
     const dispatch = useDispatch();

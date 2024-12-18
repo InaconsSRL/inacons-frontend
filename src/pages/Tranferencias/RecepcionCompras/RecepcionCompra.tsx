@@ -1,12 +1,12 @@
 import React, { useEffect, useState } from 'react';
-import { FiX, FiSave } from 'react-icons/fi';
+import { FiX } from 'react-icons/fi';
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchOrdenCompras } from '../../../slices/ordenCompraSlice';
 import { addTransferencia, TransferenciaData } from '../../../slices/transferenciaSlice';
 import { addTransferenciaRecurso } from '../../../slices/transferenciaRecursoSlice';
 import { addTransferenciaDetalle } from '../../../slices/transferenciaDetalleSlice';
 import ValidationErrors from './components/ValidationErrors';
-import { validateAll, ValidationError } from './utils/validaciones';
+import { ValidationError } from './utils/validaciones';
 import { fetchOrdenCompraRecursosByOrdenId } from '../../../slices/ordenCompraRecursosSlice';
 import { fetchMovilidades } from '../../../slices/movilidadSlice';
 import { fetchMovimientos } from '../../../slices/movimientoSlice';
@@ -21,10 +21,12 @@ interface RecursoDetalle {
         codigo: string;
         nombre: string;
         unidad_id: string;
+        costo?: number;
     };
     cantidad: number;
     cantidadRecibida: number;
     diferencia: number;
+    costo: number;
 }
 
 interface RecepcionesCompraProps {
@@ -34,7 +36,7 @@ interface RecepcionesCompraProps {
 
 const RecepcionCompra: React.FC<RecepcionesCompraProps> = ({ onClose, onComplete }) => {
     const dispatch = useDispatch<AppDispatch>();
-    
+
     // Estados
     const [selectedOrdenId, setSelectedOrdenId] = useState<string | null>(null);
     const [selectedOrden, setSelectedOrden] = useState<OrdenCompra | null>(null);
@@ -72,11 +74,13 @@ const RecepcionCompra: React.FC<RecepcionesCompraProps> = ({ onClose, onComplete
                     id: recurso.id_recurso.id,
                     codigo: recurso.id_recurso.codigo,
                     nombre: recurso.id_recurso.nombre,
-                    unidad_id: recurso.id_recurso.unidad_id
+                    unidad_id: recurso.id_recurso.unidad_id,
+                    
                 },
                 cantidad: recurso.cantidad,
                 cantidadRecibida: 0,
-                diferencia: recurso.cantidad
+                diferencia: recurso.cantidad,
+                costo: recurso.costo_real
             }));
             setDetalles(nuevosDetalles);
         }
@@ -91,37 +95,6 @@ const RecepcionCompra: React.FC<RecepcionesCompraProps> = ({ onClose, onComplete
     const [validationErrors, setValidationErrors] = useState<ValidationError[]>([]);
     const [showConfirmDialog, setShowConfirmDialog] = useState(false);
     const [advertencias, setAdvertencias] = useState<string[]>([]);
-
-    const validateForm = (): ValidationError[] => {
-        const errors: ValidationError[] = [];
-
-        if (!fechaRecepcion) {
-            errors.push({ field: 'fecha', message: 'La fecha de recepción es requerida' });
-        } else if (selectedOrden && new Date(fechaRecepcion) < new Date(selectedOrden.fecha_ini)) {
-            errors.push({ field: 'fecha', message: 'La fecha de recepción no puede ser anterior a la fecha inicial' });
-        }
-
-        if (!movilidadId) {
-            errors.push({ field: 'movilidad', message: 'El tipo de transporte es requerido' });
-        }
-
-        detalles.forEach((detalle, index) => {
-            if (!detalle.cantidadRecibida) {
-                errors.push({ 
-                    field: `detalle_${index}`, 
-                    message: `Debe ingresar la cantidad recibida para ${detalle.id_recurso.nombre}` 
-                });
-            }
-            if (detalle.cantidadRecibida > detalle.cantidad) {
-                errors.push({ 
-                    field: `detalle_${index}`, 
-                    message: `La cantidad recibida no puede ser mayor a la solicitada para ${detalle.id_recurso.nombre}` 
-                });
-            }
-        });
-
-        return errors;
-    };
 
     const handleRecepcionComplete = async () => {
         if (!selectedOrden) {
@@ -145,70 +118,86 @@ const RecepcionCompra: React.FC<RecepcionesCompraProps> = ({ onClose, onComplete
 
     const procesarRecepcion = async () => {
         try {
-            // Validar que al menos un detalle tenga cantidad recibida
+            // Validaciones iniciales
             const hayRecepcion = detalles.some(d => d.cantidadRecibida > 0);
             if (!hayRecepcion) {
                 setValidationErrors([{ field: 'general', message: 'Debe ingresar al menos una cantidad recibida' }]);
                 return;
             }
 
-            // Obtener el ID del movimiento de entrada
             const movimientoEntrada = movimientos.find(m => m.nombre === 'compra');
             if (!movimientoEntrada) {
                 throw new Error('No se encontró el tipo de movimiento de entrada');
             }
 
-            // Determinar el estado de la transferencia
+            // Determinar el estado
             const todosCompletos = detalles.every(detalle => detalle.cantidadRecibida === detalle.cantidad);
             const estado: EstadoTransferencia = todosCompletos ? 'COMPLETO' : 'PARCIAL';
 
-            // Crear la transferencia
+            // 1. Crear la transferencia principal
             const transferenciaData: TransferenciaData = {
                 usuario_id: userId || '',
-                fecha: new Date(), // Cambiar a la fecha actual
+                fecha: new Date(),
                 movimiento_id: movimientoEntrada.id,
                 movilidad_id: movilidadId,
                 estado
             };
 
-            console.log('Creando transferencia...', transferenciaData);
             const transferencia = await dispatch(addTransferencia(transferenciaData)).unwrap();
-            console.log('Transferencia creada:', transferencia);
 
-            // Crear un solo detalle de transferencia
+            //  Crear el detalle de transferencia
             const detalleData = {
                 transferencia_id: transferencia.id,
-                referencia_id: selectedOrden.id, // Usar la orden como referencia
-                fecha: new Date(), // Cambiar a la fecha actual
+                referencia_id: selectedOrden!.id,
+                fecha: new Date(),
                 tipo: 'RECEPCION_COMPRA',
-                referencia: `Recepción de compra - Orden ${selectedOrden.id}`,
-                recursos: detalles.filter(detalle => detalle.cantidadRecibida > 0).map(detalle => ({
-                    recurso_id: detalle.id_recurso.id,
-                    cantidad: detalle.cantidadRecibida
-                }))
-            };
+                referencia: `Recepción de compra - Orden ${selectedOrden!.id}`,
+                recursos: detalles
+                    .filter(detalle => detalle.cantidadRecibida > 0)
+                    .map(detalle => ({
+                        recurso_id: detalle.id_recurso.id,
+                        cantidad: detalle.cantidadRecibida,
+                        
+                    }))
+                };
+                console.log(detalles);
 
-            console.log('Creando detalle de transferencia...', detalleData);
-            await dispatch(addTransferenciaDetalle(detalleData)).unwrap();
+            const detalleTransferencia = await dispatch(addTransferenciaDetalle(detalleData)).unwrap();
 
-            // Notificar éxito y limpiar
-            onComplete(selectedOrden, detalles);
-            setOrdenesCompletadas(prev => [...prev, selectedOrden] as OrdenCompra[]);
+            // 3. Crear los registros de recursos para la transferencia
+            const recursosPromises = detalles
+                .filter(detalle => detalle.cantidadRecibida > 0)
+                .map(detalle => {
+                    const transferenciaRecursoData = {
+                        transferencia_detalle_id: detalleTransferencia.id,
+                        recurso_id: detalle.id_recurso.id,
+                        cantidad: detalle.cantidadRecibida,
+                        costo: detalle.costo
+                    };
+                    return dispatch(addTransferenciaRecurso(transferenciaRecursoData)).unwrap();
+                });
+
+            // Esperar a que todos los recursos se guarden
+            await Promise.all(recursosPromises);
+
+            // Completar el proceso
+            onComplete(selectedOrden!, detalles);
+            setOrdenesCompletadas(prev => [...prev, selectedOrden!] as OrdenCompra[]);
             handleCloseRecepcion();
             setValidationErrors([]);
-            
+
         } catch (error) {
             console.error('Error detallado:', error);
             let errorMessage = 'Error desconocido';
-            
+
             if (error instanceof Error) {
                 errorMessage = error.message;
             } else if (typeof error === 'object' && error !== null) {
                 errorMessage = JSON.stringify(error);
             }
-            
-            setValidationErrors([{ 
-                field: 'general', 
+
+            setValidationErrors([{
+                field: 'general',
                 message: 'Error al guardar la recepción: ' + errorMessage
             }]);
         }
@@ -247,7 +236,7 @@ const RecepcionCompra: React.FC<RecepcionesCompraProps> = ({ onClose, onComplete
     }
 
     // Filtrar órdenes pendientes
-    const ordenesPendientes = ordenCompras.filter(oc => 
+    const ordenesPendientes = ordenCompras.filter(oc =>
         !ordenesCompletadas.some(completada => completada.id === oc.id)
     );
 
@@ -280,11 +269,10 @@ const RecepcionCompra: React.FC<RecepcionesCompraProps> = ({ onClose, onComplete
                             <div
                                 key={oc.id}
                                 onClick={() => handleOrdenClick(oc)}
-                                className={`bg-white rounded-lg shadow-sm border cursor-pointer transition-all duration-200 hover:shadow-md ${
-                                    selectedOrdenId === oc.id
+                                className={`bg-white rounded-lg shadow-sm border cursor-pointer transition-all duration-200 hover:shadow-md ${selectedOrdenId === oc.id
                                         ? 'border-blue-500 ring-2 ring-blue-200'
                                         : 'border-gray-200 hover:border-blue-300'
-                                }`}
+                                    }`}
                             >
                                 <div className="p-3">
                                     <div className="text-sm font-medium text-gray-900">N° OC: {oc.codigo_orden}</div>
@@ -293,9 +281,8 @@ const RecepcionCompra: React.FC<RecepcionesCompraProps> = ({ onClose, onComplete
                                         Fecha: {new Date(oc.fecha_ini).toLocaleDateString()}
                                     </div>
                                     <div className="flex items-center mt-2">
-                                        <span className={`text-xs px-2 py-1 rounded-full ${
-                                            oc.estado ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'
-                                        }`}>
+                                        <span className={`text-xs px-2 py-1 rounded-full ${oc.estado ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'
+                                            }`}>
                                             {oc.estado ? 'Activo' : 'Pendiente'}
                                         </span>
                                     </div>
@@ -411,8 +398,8 @@ const RecepcionCompra: React.FC<RecepcionesCompraProps> = ({ onClose, onComplete
             {/* Footer */}
             <div className="p-5 border-t border-gray-100 bg-white">
                 <div className="text-sm text-gray-600">
-                    Total Órdenes: {ordenCompras.length} | 
-                    Pendientes: {ordenesPendientes.length} | 
+                    Total Órdenes: {ordenCompras.length} |
+                    Pendientes: {ordenesPendientes.length} |
                     Completadas: {ordenesCompletadas.length}
                 </div>
             </div>
