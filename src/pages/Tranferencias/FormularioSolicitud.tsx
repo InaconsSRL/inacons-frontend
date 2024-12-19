@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { RootState, AppDispatch } from '../../store/store';
 import { fetchSolicitudAlmacenes } from '../../slices/solicitudAlmacenSlice';
-import { addSolicitudRecursoAlmacen, getOrdenSolicitudRecursoById } from '../../slices/solicitudRecursoAlmacenSlice';
+import { getOrdenSolicitudRecursoById } from '../../slices/solicitudRecursoAlmacenSlice';
 import { IoMdCloseCircle } from "react-icons/io";
 import OrdenTransferencia from './OrdenTransferencia';
 import { 
@@ -25,8 +25,8 @@ const FormularioSolicitud: React.FC<FormularioSolicitudProps> = ({ onClose, tran
   const [isLoadingRecursos, setIsLoadingRecursos] = useState(false);
 
   const solicitudes = useSelector((state: RootState) => state.solicitudAlmacen.solicitudes);
-  const recursos = useSelector((state: RootState) => state.solicitudRecursoAlmacen.solicitudesRecurso);
   const obras = useSelector((state: RootState) => state.obra.obras);
+  const unidades = useSelector((state: RootState) => state.unidad.unidades);
 
   useEffect(() => {
     const loadSolicitudes = async () => {
@@ -131,7 +131,7 @@ const FormularioSolicitud: React.FC<FormularioSolicitudProps> = ({ onClose, tran
           {/* Main Content */}
           <div className="flex h-[calc(80vh-16rem)]">
             {/* Left Panel - Solicitudes */}
-            <div className="w-1/3 border-r border-gray-100 p-3 overflow-y-auto bg-gray-100">
+            <div className="w-1/4 border-r border-gray-100 p-4 overflow-y-auto bg-gray-100">
               {isLoadingSolicitudes ? (
                 [...Array(5)].map((_, index) => (
                   <div key={index} className="p-3 mb-2 rounded-md border border-white">
@@ -223,7 +223,7 @@ const FormularioSolicitud: React.FC<FormularioSolicitudProps> = ({ onClose, tran
                                 </td>
                                 <td className="px-3 py-2 text-xs text-gray-600">{recurso.recurso_id.codigo}</td>
                                 <td className="px-3 py-2 text-xs text-gray-600">{recurso.recurso_id.nombre}</td>
-                                <td className="px-3 py-2 text-xs text-gray-600">{recurso.recurso_id.unidad_id}</td>
+                                <td className="px-3 py-2 text-xs text-gray-600">{unidades.find(u => u.id === recurso.recurso_id.unidad_id)?.nombre || 'N/A'}</td>
                                 <td className="px-3 py-2 text-xs text-gray-600">{recurso.cantidad}</td>
                                 <td className="px-3 py-2 text-xs text-gray-600">S/ {recurso.recurso_id.precio_actual}</td>
                                 <td className="px-3 py-2">

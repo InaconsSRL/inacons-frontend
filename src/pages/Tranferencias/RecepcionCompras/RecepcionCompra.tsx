@@ -47,13 +47,14 @@ const RecepcionCompra: React.FC<RecepcionesCompraProps> = ({ onClose, onComplete
     const [detalles, setDetalles] = useState<RecursoDetalle[]>([]);
     const userId = useSelector((state: RootState) => state.user.id);
 
-    // Selectores
+
     const { ordenCompras, loading: ordenesLoading } = useSelector((state: RootState) => state.ordenCompra);
     const { ordenCompraRecursosByOrdenId: recursos, loading: recursosLoading } = useSelector((state: RootState) => state.ordenCompraRecursos);
     const movilidades = useSelector((state: RootState) => state.movilidad.movilidades);
     const movimientos = useSelector((state: RootState) => state.movimiento.movimientos);
+    const unidades = useSelector((state: RootState) => state.unidad.unidades);
 
-    // Efectos
+    
     useEffect(() => {
         dispatch(fetchOrdenCompras());
         dispatch(fetchMovilidades());
@@ -86,7 +87,7 @@ const RecepcionCompra: React.FC<RecepcionesCompraProps> = ({ onClose, onComplete
         }
     }, [recursos]);
 
-    // Handlers
+    
     const handleOrdenClick = (orden: OrdenCompra) => {
         setSelectedOrdenId(orden.id);
         setSelectedOrden(orden);
@@ -134,7 +135,7 @@ const RecepcionCompra: React.FC<RecepcionesCompraProps> = ({ onClose, onComplete
             const todosCompletos = detalles.every(detalle => detalle.cantidadRecibida === detalle.cantidad);
             const estado: EstadoTransferencia = todosCompletos ? 'COMPLETO' : 'PARCIAL';
 
-            // 1. Crear la transferencia principal
+            // Crear la transferencia principal
             const transferenciaData: TransferenciaData = {
                 usuario_id: userId || '',
                 fecha: new Date(),
@@ -164,7 +165,7 @@ const RecepcionCompra: React.FC<RecepcionesCompraProps> = ({ onClose, onComplete
 
             const detalleTransferencia = await dispatch(addTransferenciaDetalle(detalleData)).unwrap();
 
-            // 3. Crear los registros de recursos para la transferencia
+            // Crear los registros de recursos para la transferencia
             const recursosPromises = detalles
                 .filter(detalle => detalle.cantidadRecibida > 0)
                 .map(detalle => {
@@ -230,7 +231,7 @@ const RecepcionCompra: React.FC<RecepcionesCompraProps> = ({ onClose, onComplete
         setDetalles(newDetalles);
     };
 
-    // Loading
+    
     if (ordenesLoading || recursosLoading) {
         return <div className="flex justify-center items-center h-full">Cargando...</div>;
     }
@@ -242,7 +243,7 @@ const RecepcionCompra: React.FC<RecepcionesCompraProps> = ({ onClose, onComplete
 
     return (
         <div className="bg-gradient-to-br from-white to-gray-50 rounded-xl shadow-lg w-full h-[90vh] flex flex-col overflow-hidden border border-gray-100">
-            {/* Header */}
+            
             <div className="border-b border-gray-100 bg-white">
                 <div className="p-4 flex items-center justify-between">
                     <h2 className="text-xl font-semibold text-blue-800">Recepción de Compras</h2>
@@ -257,7 +258,7 @@ const RecepcionCompra: React.FC<RecepcionesCompraProps> = ({ onClose, onComplete
                 <ValidationErrors errors={validationErrors} />
             )}
 
-            {/* Main Content */}
+            
             <div className="flex flex-1 min-h-0">
                 {/* Panel izquierdo - Lista de órdenes */}
                 <div className="w-1/3 border-r border-gray-100 overflow-y-auto">
@@ -361,7 +362,7 @@ const RecepcionCompra: React.FC<RecepcionesCompraProps> = ({ onClose, onComplete
                                             <tr key={detalle.id}>
                                                 <td className="px-3 py-2 text-sm text-gray-900">{detalle.id_recurso.codigo}</td>
                                                 <td className="px-3 py-2 text-sm text-gray-900">{detalle.id_recurso.nombre}</td>
-                                                <td className="px-3 py-2 text-sm text-gray-500">{detalle.id_recurso.unidad_id}</td>
+                                                <td className="px-3 py-2 text-sm text-gray-500">{unidades.find(u => u.id === detalle.id_recurso.unidad_id)?.nombre || 'N/A'}</td>
                                                 <td className="px-3 py-2 text-sm text-gray-900">{detalle.cantidad}</td>
                                                 <td className="px-3 py-2">
                                                     <input
