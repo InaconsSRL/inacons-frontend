@@ -1,50 +1,90 @@
-# React + TypeScript + Vite
+# Inacons Frontend
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+¡Bienvenido a Inacons Frontend!
 
-Currently, two official plugins are available:
+## 📦 Módulo de Recursos
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+### ¿Qué son los recursos?
+Imagina que tienes una caja de lápices, borradores y sacapuntas. En nuestra aplicación, los "recursos" son como esa caja, pero con materiales de construcción, herramientas y equipos que se usan en obras.
 
-## Expanding the ESLint configuration
+### ¿Qué puedes hacer con los recursos?
 
-If you are developing a production application, we recommend updating the configuration to enable type aware lint rules:
+1. **Ver todos los recursos** 📋
+   - Como mirar dentro de tu caja de útiles
+   - Puedes ver fotos, nombres y precios
+   - Todo ordenado en una tabla bonita
 
-- Configure the top-level `parserOptions` property like this:
+2. **Agregar nuevos recursos** ➕
+   - Como cuando compras un lápiz nuevo
+   - Puedes ponerle nombre
+   - Agregar fotos
+   - Escribir para qué sirve
+   - Decir cuánto cuesta
 
-```js
-export default tseslint.config({
-  languageOptions: {
-    // other options...
-    parserOptions: {
-      project: ['./tsconfig.node.json', './tsconfig.app.json'],
-      tsconfigRootDir: import.meta.dirname,
-    },
-  },
-})
+3. **Modificar recursos** ✏️
+   - Como cuando le sacas punta a tu lápiz
+   - Puedes cambiar el precio
+   - Actualizar las fotos
+   - Cambiar la descripción
+
+4. **Subir muchos recursos a la vez** 📤
+   - Como cuando llenas tu cartuchera con útiles nuevos
+   - Puedes usar un archivo Excel
+   - La aplicación los guarda todos juntos
+
+### Archivos importantes del módulo
+
+1. **RecursosPage.tsx**
+   - Es como la página principal de tu cuaderno
+   - Aquí ves todos los recursos
+   - Puedes buscar y ordenar
+
+2. **NewRecursosForm.tsx**
+   - Es como una hoja en blanco
+   - Aquí escribes los datos del nuevo recurso
+   - Puedes subir fotos
+
+3. **BulkUploadComponent.tsx**
+   - Es como una máquina mágica
+   - Le das un archivo Excel
+   - Ella crea todos los recursos por ti
+
+### ¿Cómo usar el módulo?
+
+1. Ve a la página de recursos
+2. Decide qué quieres hacer:
+   - Ver recursos: Solo mira la tabla
+   - Crear uno nuevo: Haz clic en "Nuevo Recurso"
+   - Subir varios: Haz clic en "Envío Masivo"
+   - Modificar uno: Haz clic en el lápiz azul
+
+### Consejos 💡
+
+- Siempre pon nombres claros a los recursos
+- Agrega fotos para reconocerlos fácilmente
+- Mantén los precios actualizados
+- Guarda copias de tus archivos Excel
+
+## ¿Qué es Inacons Frontend?
+
+Inacons Frontend es una aplicación que ayuda a las personas a realizar tareas geniales en sus computadoras de manera fácil y divertida.
+
+## ¿Cómo funciona?
+
+1. **Inicio**: Cuando abres la aplicación, ves una pantalla de bienvenida con opciones.
+2. **Exploración**: Navegas por menús para encontrar lo que necesitas.
+3. **Acción**: Haces clic en botones para que la aplicación haga cosas por ti.
+
+## Diagrama del Proyecto
+
+```
+[Inicio] --> [Exploración] --> [Acción] --> [Resultado]
 ```
 
-- Replace `tseslint.configs.recommended` to `tseslint.configs.recommendedTypeChecked` or `tseslint.configs.strictTypeChecked`
-- Optionally add `...tseslint.configs.stylisticTypeChecked`
-- Install [eslint-plugin-react](https://github.com/jsx-eslint/eslint-plugin-react) and update the config:
+## ¿Por qué usar Inacons Frontend?
 
-```js
-// eslint.config.js
-import react from 'eslint-plugin-react'
+- **Fácil de usar**: Diseñado para ser simple y amigable.
+- **Divertido**: Hace que las tareas sean entretenidas.
+- **Útil**: Ayuda a resolver problemas de manera eficiente.
 
-export default tseslint.config({
-  // Set the react version
-  settings: { react: { version: '18.3' } },
-  plugins: {
-    // Add the react plugin
-    react,
-  },
-  rules: {
-    // other rules...
-    // Enable its recommended rules
-    ...react.configs.recommended.rules,
-    ...react.configs['jsx-runtime'].rules,
-  },
-})
-```
+## ¡Comienza a explorar y diviértete!

@@ -8,28 +8,67 @@ const LIST_OBRA_QUERY = gql`
       titulo
       nombre
       descripcion
+      ubicacion
+      direccion
+      estado
+      tipo_id {
+        id
+        nombre
+      }
+    }
+  }
+`;
+
+const GET_OBRA_QUERY = gql`
+  query GetObra($getObraId: ID!) {
+    getObra(id: $getObraId) {
+      id
+      titulo
+      nombre
+      descripcion
+      ubicacion
+      direccion
+      estado
+      tipo_id {
+        id
+        nombre
+      }
     }
   }
 `;
 
 const ADD_OBRA_MUTATION = gql`
-  mutation AddObra($descripcion: String, $nombre: String, $titulo: String) {
-    addObra(descripcion: $descripcion, nombre: $nombre, titulo: $titulo) {
+  mutation AddObra($titulo: String, $nombre: String, $descripcion: String, $ubicacion: String, $direccion: String, $estado: String, $tipoId: ID) {
+    addObra(titulo: $titulo, nombre: $nombre, descripcion: $descripcion, ubicacion: $ubicacion, direccion: $direccion, estado: $estado, tipo_id: $tipoId) {
       id
       titulo
       nombre
       descripcion
+      ubicacion
+      direccion
+      estado
+      tipo_id {
+        id
+        nombre
+      }
     }
   }
 `;
 
 const UPDATE_OBRA_MUTATION = gql`
-  mutation UpdateObra($updateObraId: ID!, $descripcion: String, $nombre: String, $titulo: String) {
-    updateObra(id: $updateObraId, descripcion: $descripcion, nombre: $nombre, titulo: $titulo) {
+  mutation UpdateObra($updateObraId: ID!, $titulo: String, $nombre: String, $descripcion: String, $ubicacion: String, $direccion: String, $estado: String, $tipoId: ID) {
+    updateObra(id: $updateObraId, titulo: $titulo, nombre: $nombre, descripcion: $descripcion, ubicacion: $ubicacion, direccion: $direccion, estado: $estado, tipo_id: $tipoId) {
       id
       titulo
       nombre
       descripcion
+      ubicacion
+      direccion
+      estado
+      tipo_id {
+        id
+        nombre
+      }
     }
   }
 `;
@@ -50,7 +89,31 @@ export const listObrasService = async () => {
   }
 };
 
-export const addObraService = async (obraData: { titulo: string; nombre: string; descripcion: string }) => {
+export const getObraService = async (id: string) => {
+  try {
+    const response = await client.query({
+      query: GET_OBRA_QUERY,
+      variables: { getObraId: id },
+    });
+    if (response.errors) {
+      throw new Error(response.errors[0]?.message || 'Error desconocido');
+    }
+    return response.data.getObra;
+  } catch (error) {
+    console.error('Error al obtener la obra:', error);
+    throw error;
+  }
+};
+
+export const addObraService = async (obraData: {
+  titulo: string;
+  nombre: string;
+  descripcion: string;
+  ubicacion: string;
+  direccion: string;
+  estado: string;
+  tipoId: string;
+}) => {
   try {
     const response = await client.mutate({
       mutation: ADD_OBRA_MUTATION,
@@ -66,7 +129,16 @@ export const addObraService = async (obraData: { titulo: string; nombre: string;
   }
 };
 
-export const updateObraService = async (obra: { id: string; titulo: string; nombre: string; descripcion: string }) => {
+export const updateObraService = async (obra: {
+  id: string;
+  titulo: string;
+  nombre: string;
+  descripcion: string;
+  ubicacion: string;
+  direccion: string;
+  estado: string;
+  tipoId: string;
+}) => {
   try {
     const response = await client.mutate({
       mutation: UPDATE_OBRA_MUTATION,
