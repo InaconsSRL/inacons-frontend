@@ -176,10 +176,12 @@ const ComprasBoard: React.FC = () => {
   );
 
   const tableData = {
-    headers: ["ID", "Código Cotización", "Usuario", "Estado", "Fecha", "Opciones"],
+    filterSelect: [false, false, false, true, true, false],
+    filter: [true, true, true, true, false, false],
+    headers: ["ID", "Código", "Usuario", "Estado", "Fecha", "Opciones"],
     rows: getFilteredCotizaciones().map(cot => ({
       ID: cot.id,
-      "Código Cotización": cot.codigo_cotizacion,
+      "Código": cot.codigo_cotizacion,
       Usuario: `${cot.usuario_id.nombres} ${cot.usuario_id.apellidos}`,
       Fecha: formatDate(cot.fecha),
       Opciones: renderOptions(cot),

@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Convertidor Excel a JSON</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 20px auto;
+            padding: 20px;
+        }
+        .container {
+            text-align: center;
+        }
+        button {
+            padding: 10px 20px;
+            margin: 10px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Convertidor de Excel a JSON</h1>
+        <input type="file" id="excelFile" accept=".xlsx,.xls">
+        <button onclick="convertToJson()">Convertir y Descargar</button>
+    </div>
+
+    <script>
+        function convertToJson() {
+            const fileInput = document.getElementById('excelFile');
+            const file = fileInput.files[0];
+
+            if (!file) {
+                alert('Por favor seleccione un archivo Excel');
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const data = new Uint8Array(e.target.result);
+                const workbook = XLSX.read(data, { type: 'array' });
+                const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+                const jsonData = XLSX.utils.sheet_to_json(firstSheet);
+
+                // Formatear los datos según el formato requerido
+                const formattedData = jsonData.map(row => ({
+                    obra_bodega_id: row.obra_bodega_id || '',
+                    recurso_id: row.recurso_id || '',
+                    cantidad: Number(row.cantidad) || 0,
+                    costo: Number(row.costo) || 0,
+                    estado: row.estado || ''
+                }));
+
+                // Crear y descargar el archivo JSON
+                const jsonString = JSON.stringify(formattedData, null, 2);
+                const blob = new Blob([jsonString], { type: 'application/json' });
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'datos_convertidos.json';
+                document.body.appendChild(a);
+                a.click();
+                window.URL.revokeObjectURL(url);
+                document.body.removeChild(a);
+            };
+            reader.readAsArrayBuffer(file);
+        }
+    </script>
+</body>
+</html>

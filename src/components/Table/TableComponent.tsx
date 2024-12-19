@@ -43,6 +43,9 @@ const TableComponent: React.FC<TableComponentProps> = ({ tableData, maxCharacter
   const tableContainerRef = useRef<HTMLDivElement>(null);
   const [currentPage, setCurrentPage] = useState(1);
 
+  // Invertimos el orden de las filas
+  const reversedRows = useMemo(() => [...tableData.rows].reverse(), [tableData.rows]);
+
   useEffect(() => {
     return () => {
       document.removeEventListener("selectstart", preventDefault);
@@ -101,7 +104,7 @@ const TableComponent: React.FC<TableComponentProps> = ({ tableData, maxCharacter
   [tableData.headers, tableData.filter, tableData.filterSelect, maxCharacters]);
 
   const table = useReactTable({
-    data: tableData.rows,
+    data: reversedRows, // Usamos las filas invertidas aquí
     columns,
     state: {
       sorting,
