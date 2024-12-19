@@ -6,6 +6,7 @@ import RecepcionTransferencia from "./RecepcionTransferencias/RecepcionTransfere
 import { TipoMovimiento } from './types';
 import RecepcionCompra from "./RecepcionCompras/RecepcionCompra";
 import Recursos from "../CalendarPage/CalendarPage";
+import SalidasConsumosPrestamos from "./SalidasConsumosPrestamos/SalidasConsumosPrestamos";
 
 export default function TransfersPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -40,7 +41,8 @@ export default function TransfersPage() {
             )}
           </div>
         );
-      case 'PRESTAMOS':
+      case 'OBRA':
+        return <SalidasConsumosPrestamos />;
       case 'TRASLADOS':
         return <FormularioSolicitud onClose={handleCloseModal} />;
       default:
@@ -69,7 +71,7 @@ export default function TransfersPage() {
                   <option value="RECEPCIONES">Recepciones</option>
                 </optgroup>
                 <optgroup label="Salidas">
-                  <option value="PRESTAMOS">Préstamos</option>
+                  <option value="OBRA">Obra</option>
                   <option value="TRASLADOS">Traslados</option>
                 </optgroup>
               </select>
