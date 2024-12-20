@@ -35,13 +35,14 @@ const AlmacenBetha: React.FC = () => {
 
     // Preparar datos para la tabla
     const tableData = {
-        headers: ['Código', 'Nombre', 'Descripción', 'Cantidad', 'Costo', 'Unidad', 'Bodega', 'Imagen'],
+        headers: ['Código', 'Nombre', 'Descripción', 'Cantidad', 'Costo', 'Unidad', 'Bodega', 'Imagen', 'ID'],
         filterSelect: [false, false, false, false, false, true, true, false],
-        filter: [true, true, true, true, true, true, false],
+        filter: [true, true, true, true, true, true, false, false, true],
         rows: almacenRecursosDetallados
             .map(recurso => {
                 const unidad = recurso.recurso_id ? unidades.find(u => u.id === recurso.recurso_id.unidad_id) : null;
                 return {
+                    ID: recurso.id,
                     Código: recurso.recurso_id ? recurso.recurso_id.codigo : "no hay código",
                     Nombre: recurso.recurso_id ? recurso.recurso_id.nombre : 'Sin nombre',
                     Descripción: recurso.recurso_id ? recurso.recurso_id.descripcion : 'Sin descripción',
