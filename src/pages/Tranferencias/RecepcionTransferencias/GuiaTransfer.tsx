@@ -2,7 +2,12 @@ import React, { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchTransferenciaDetallesByTransferenciaId } from '../../../slices/transferenciaDetalleSlice';
 import { fetchTransferenciaRecursosById } from '../../../slices/transferenciaRecursoSlice';
+import { addTransferenciaDetalle } from '../../../slices/transferenciaDetalleSlice';
+import { addTransferenciaRecurso } from '../../../slices/transferenciaRecursoSlice';
+import { addTransferencia } from '../../../slices/transferenciaSlice';
 import GuiaTransfersPDF from './GuiaTransferPDF';
+
+type EstadoTransferencia = 'PARCIAL' | 'COMPLETO';
 
 interface Usuario {
   id: string;
@@ -67,7 +72,7 @@ interface Props {
   solicita: string;
   recibe: string;
   fEmision: Date;
-  estado: string;
+  estado: EstadoTransferencia; 
   obra: string;
   transferenciaId: string;
 }
@@ -77,7 +82,9 @@ interface GuiaTransferProps {
 }
 
 interface RecursoState {
+  id: string; 
   cantidad_recibida: number;
+  precio_actual: number; 
 }
 
 const GuiaTransferencia: React.FC<Props & GuiaTransferProps> = ({
@@ -91,11 +98,11 @@ const GuiaTransferencia: React.FC<Props & GuiaTransferProps> = ({
   onClose,
 }) => {
   const dispatch = useDispatch();
-  const [recursosState, setRecursosState] = useState<{ [key: string]: RecursoState }>({});
-  const [showPDF, setShowPDF] = useState(false); 
+const [recursosState, setRecursosState] = useState<{ [key: string]: RecursoState }>({});
+const { transferenciaRecursos, loading: recursosLoading } = useSelector((state: RootState) => state.transferenciaRecurso);
+const [showPDF, setShowPDF] = useState(false); 
 
-  const { transferenciaDetalles, loading: detallesLoading, error: detallesError } = useSelector((state: RootState) => state.transferenciaDetalle);
-  const { transferenciaRecursos, loading: recursosLoading } = useSelector((state: RootState) => state.transferenciaRecurso);
+const { transferenciaDetalles, loading: detallesLoading, error: detallesError } = useSelector((state: RootState) => state.transferenciaDetalle);
   const unidades = useSelector((state: RootState) => state.unidad.unidades);
   
   const loading = detallesLoading || recursosLoading;
@@ -113,25 +120,70 @@ const GuiaTransferencia: React.FC<Props & GuiaTransferProps> = ({
     fetchData();
   }, [dispatch, transferenciaId]);
 
-  // Limpiar recursos cuando cambia el detalle seleccionado
+
   useEffect(() => {
     if (selectedDetalleId) {
       dispatch(fetchTransferenciaRecursosById(selectedDetalleId) as any);
     }
   }, [selectedDetalleId, dispatch]);
 
+
   const handleDownload = () => {
-    // Lógica para descargar la guía de transferencia
+    
     const element = document.createElement("a");
     const file = new Blob([document.getElementById('guia-transferencia')?.innerHTML || ''], {type: 'text/html'});
     element.href = URL.createObjectURL(file);
     element.download = `Guia_Transferencia_${numero}.html`;
-    document.body.appendChild(element); // Required for this to work in FireFox
+    document.body.appendChild(element); 
     element.click();
   };
 
   const handleShowPDF = () => {
     setShowPDF(true); 
+  };
+
+  const handleClosePDF = () => {
+    setShowPDF(false);
+  };
+
+  const handleSave = async () => {
+    // Guardar la transferencia
+    const transferenciaData = {
+      usuario_id: 'user_id_placeholder', 
+      fecha: new Date(),
+      movimiento_id: 'movimiento_id_placeholder', 
+      movilidad_id: 'movilidad_id_placeholder', 
+      estado: 'COMPLETO' 
+    };
+
+    const transferencia = await dispatch(addTransferencia(transferenciaData) as any).unwrap();
+
+    // Guardar los recursos
+    const recursosGuardados = Object.values(recursosState).map(recurso => ({
+      transferencia_detalle_id: transferencia.id, 
+      recurso_id: recurso.id,
+      cantidad: recurso.cantidad_recibida,
+      costo: recurso.precio_actual 
+    }));
+
+    for (const recurso of recursosGuardados) {
+      await dispatch(addTransferenciaRecurso(recurso) as any);
+    }
+
+    // Guardar los detalles
+    const detallesGuardados = transferenciaDetalles.map(detalle => ({
+      transferencia_id: transferencia.id,
+      referencia_id: detalle.referencia_id,
+      fecha: detalle.fecha,
+      tipo: detalle.tipo,
+      referencia: detalle.referencia
+    }));
+
+    for (const detalle of detallesGuardados) {
+      await dispatch(addTransferenciaDetalle(detalle) as any);
+    }
+
+    console.log('Transferencia, recursos y detalles guardados exitosamente');
   };
 
   return (
@@ -161,7 +213,7 @@ const GuiaTransferencia: React.FC<Props & GuiaTransferProps> = ({
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Número de Solicitud</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Enviado por </label>
                 <input
                   type="text"
                   value={solicita}
@@ -298,15 +350,13 @@ const GuiaTransferencia: React.FC<Props & GuiaTransferProps> = ({
             </table>
           </div>
 
-          <div className="mt-6 flex justify-end">
+          <div className="mt-6 flex justify-end space-x-4">
             <button 
-              onClick={handleDownload}
+              onClick={handleSave} 
               className="bg-blue-600 text-white px-6 py-2.5 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 font-medium"
             >
-              Descargar Guía
+              Guardar
             </button>
-          </div>
-          <div className="mt-6 flex justify-end">
             <button 
               onClick={handleShowPDF}
               className="bg-blue-600 text-white px-6 py-2.5 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 font-medium"
@@ -314,10 +364,33 @@ const GuiaTransferencia: React.FC<Props & GuiaTransferProps> = ({
               Mostrar PDF
             </button>
           </div>
-          {showPDF && <GuiaTransfersPDF numero={0} solicita={''} recibe={''} fEmision={undefined} estado={''} obra={''} recursos={[]} transferenciaRecursos={[]} unidades={[]} tipoTransporte={''} usuarioTransferencia={{
-            nombres: '',
-            apellidos: ''
-          }} descripcionMovimiento={''} />} 
+
+          {/* Modal para mostrar el PDF */}
+          {showPDF && (
+            <div className="fixed inset-0 bg-black bg-opacity-75 z-60 flex justify-center items-center">
+              <div className="bg-white p-6 rounded-lg max-w-4xl w-full max-h-[80vh] overflow-y-auto">
+                <button 
+                  onClick={handleClosePDF}
+                  className="absolute top-2 right-2 text-white font-bold text-xl">
+                  X
+                </button>
+                <GuiaTransfersPDF
+                  numero={numero}
+                  solicita={solicita}
+                  recibe={recibe}
+                  fEmision={fEmision}
+                  estado={estado}
+                  obra={obra}
+                  recursos={Object.values(recursosState)}
+                  transferenciaRecursos={transferenciaRecursos}
+                  unidades={unidades}
+                  tipoTransporte={transferenciaDetalles[0]?.tipo || ''}
+                  usuarioTransferencia={{ nombres: '', apellidos: '' }}
+                  descripcionMovimiento={''}
+                />
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </div>
@@ -325,3 +398,4 @@ const GuiaTransferencia: React.FC<Props & GuiaTransferProps> = ({
 };
 
 export default GuiaTransferencia;
+

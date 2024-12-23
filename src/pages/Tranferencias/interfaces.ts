@@ -54,13 +54,6 @@ export interface GuiaTransferencia {
   fecha: Date;
 }
 
-// Props interface for OrdenTransferencia
-export interface OrdenTransferenciaProps {
-  onClose: () => void;
-  transferenciasId?: string | null;
-  recursos: RecursoSeleccionado[];
-}
-
 export interface OrdenTransferenciaProps {
   onClose: () => void;
   recursos: RecursoSeleccionado[];
@@ -144,4 +137,25 @@ export interface TransferenciaCompleta {
 
 export interface RecepcionTransferenciasProps {
   transferencias: Transferencia[]; 
+}
+
+export interface RecepcionOrdenProps {
+  onClose: () => void;
+  recursos: RecursoSeleccionado[];
+  solicitudData: {
+    id: string;
+    almacenOrigen: {
+      id: string;
+      nombre: string;
+    };
+    almacenDestino: {
+      id: string;
+      nombre: string;
+    } | null;
+    usuario: {
+      id: string;
+      nombres: string;
+      apellidos: string;
+    };
+  };
 }

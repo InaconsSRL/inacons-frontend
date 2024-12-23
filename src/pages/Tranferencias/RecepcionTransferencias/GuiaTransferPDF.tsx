@@ -146,6 +146,7 @@ interface Props {
   };
   descripcionMovimiento: string;
   observaciones?: string;
+  obraDestino: string;
 }
 
 const GuiaTransferPDF: React.FC<Props> = ({
@@ -161,7 +162,8 @@ const GuiaTransferPDF: React.FC<Props> = ({
   tipoTransporte,
   usuarioTransferencia,
   descripcionMovimiento,
-  observaciones
+  observaciones,
+  obraDestino
 }) => {
 
   const formatDate = (date: Date | null | undefined) => {
@@ -229,6 +231,10 @@ const GuiaTransferPDF: React.FC<Props> = ({
             <View style={styles.infoRow}>
               <Text style={styles.label}>Aprobac.</Text>
               <Text style={styles.value}>Aprobado</Text>
+            </View>
+            <View style={styles.infoRow}>
+              <Text style={styles.label}>Obra Destino</Text>
+              <Text style={styles.value}>{obraDestino}</Text>
             </View>
           </View>
 
