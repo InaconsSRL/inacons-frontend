@@ -242,7 +242,7 @@ const RecepcionCompra: React.FC<RecepcionesCompraProps> = ({ onClose, onComplete
     );
 
     return (
-        <div className="bg-gradient-to-br from-white to-gray-50 rounded-xl shadow-lg w-full h-[90vh] flex flex-col overflow-hidden border border-gray-100">
+        <div className="rounded-xl shadow-lg w-full h-[90vh] flex flex-col overflow-hidden border border-gray-100">
             
             <div className="border-b border-gray-100 bg-white">
                 <div className="p-4 flex items-center justify-between">

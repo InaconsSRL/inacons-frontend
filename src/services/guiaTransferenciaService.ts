@@ -20,9 +20,17 @@ const LIST_GUIA_TRANSFERENCIAS_BY_TRANSFERENCIA_ID = gql`
   query ListGuiaTransferenciasByTransferenciaId($transferenciaId: ID!) {
     listGuiaTransferenciasByTransferenciaId(transferencia_id: $transferenciaId) {
       id
-      transferencia_id
+      transferencia_id{
+      id
+      fecha 
+      estado
+      }
       cod_guia
-      usuario_id
+      usuario_id {
+      id 
+      nombres
+      apellidos
+      }
       tipo
       observacion
       fecha

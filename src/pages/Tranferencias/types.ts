@@ -7,7 +7,7 @@ export interface TransferenciaRecurso {
     tipo: string;
     referencia: string;
   };
-  recurso_id: {
+  recurso_id: { 
     id: string;
     codigo: string;
     nombre: string;
@@ -27,10 +27,32 @@ export interface TransferenciaRecurso {
 
 export type EstadoTransferencia = 'PARCIAL' | 'COMPLETO';
 
+export interface TransferenciaDetalle {
+  id: string;
+  transferencia_id: {
+    id: string;
+    usuario_id: {
+      nombres: string;
+      apellidos: string;
+    };
+    movilidad_id: {
+      denominacion: string;
+      descripcion: string;
+    };
+    movimiento_id: {
+      nombre: string;
+      descripcion: string;
+    };
+    observaciones?: string;
+  };
+  fecha: string;
+  tipo: string;
+}
+
 export interface TransferenciaCompleta {
   id: string;
   fecha: Date;
-  estado?: EstadoTransferencia; // Hacemos el estado opcional
+  estado?: EstadoTransferencia; 
   usuario_id: {
     nombres: string;
     apellidos: string;
@@ -46,8 +68,9 @@ export interface TransferenciaCompleta {
     denominacion: string;
     descripcion: string;
   };
-  detalles: any[];
+  detalles: TransferenciaDetalle[];
   recursos: TransferenciaRecurso[];
+  observaciones?: string;
 }
 
 export type TipoFiltro = 'TODOS' | 'COMPRAS' | 'RECEPCIONES' | 'PRESTAMOS' | 'SALIDA';

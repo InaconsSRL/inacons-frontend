@@ -93,7 +93,7 @@ export function TransferTable() {
         
         // Obtener los recursos asociados a estos detalles
         const recursosTransferencia = recursos.filter(r => 
-            detallesTransferencia.some(d => d.id === r.transferencia_detalle_id.id)
+            detallesTransferencia.some(d => d.id === r.transferencia_detalle_id?.id)
         );
 
         return {

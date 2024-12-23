@@ -153,7 +153,7 @@ const RecepcionComp: React.FC<RecepcionCompProps> = ({
 
     const handleGuardarRecepcion = async () => {
         try {
-            // 1. Validar los datos
+            //  Validar los datos
             const errors = validateAll(
                 detalles,
                 fechaRecepcion,
@@ -168,16 +168,16 @@ const RecepcionComp: React.FC<RecepcionCompProps> = ({
 
             setGuardando(true);
 
-            // 2. Obtener el ID del movimiento de entrada por compra
+            //  Obtener el ID del movimiento de entrada por compra
             const movimientoId = getMovimientoEntradaId();
             if (!movimientoId) {
                 throw new Error('No se encontró el tipo de movimiento de entrada. Verifica que exista un movimiento de tipo "entrada" para compras.');
             }
 
-            // 3. Determinar el estado de la transferencia
+            //  Determinar el estado de la transferencia
             const estado = determinarEstadoTransferencia();
 
-            // 4. Crear la transferencia
+            //  Crear la transferencia
             const transferenciaData = {
                 usuario_id: "1", // TODO: Obtener el usuario actual
                 fecha: new Date(fechaRecepcion),
@@ -190,7 +190,7 @@ const RecepcionComp: React.FC<RecepcionCompProps> = ({
             const transferencia = await dispatch(addTransferencia(transferenciaData)).unwrap();
             console.log('Transferencia guardada:', transferencia);
 
-            // 5. Guardar los detalles y recursos
+            //  Guardar los detalles y recursos
             for (const detalle of detalles.filter(d => d.cantidadRecibida > 0)) {
                 // Crear el detalle de transferencia
                 const detalleData = {

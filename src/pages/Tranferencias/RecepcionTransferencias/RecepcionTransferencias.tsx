@@ -1,160 +1,268 @@
 import React, { useEffect, useState } from 'react';
 import { FiX } from 'react-icons/fi';
 import { useDispatch, useSelector } from 'react-redux';
-import { fetchTransferencias, addTransferencia, TransferenciaData } from '../../../slices/transferenciaSlice';
 import { addTransferenciaRecurso, fetchTransferenciaRecursosById } from '../../../slices/transferenciaRecursoSlice';
-import { addTransferenciaDetalle } from '../../../slices/transferenciaDetalleSlice';
+import { 
+    addTransferenciaDetalle, 
+    fetchTransferenciaDetalles,
+    TransferenciaDetalleData 
+} from '../../../slices/transferenciaDetalleSlice';
 import ValidationErrors from '../RecepcionCompras/components/ValidationErrors';
 import { ValidationError } from '../RecepcionCompras/utils/validaciones';
-import { fetchMovimientos } from '../../../slices/movimientoSlice';
 import { RootState, AppDispatch } from '../../../store/store';
-import { EstadoTransferencia } from '../types';
-import { RecepcionTransferenciasProps } from '../interfaces';
+import GuiaTransferencia from './GuiaTransfer';
 
-interface RecursoDetalle {
-    id: string;
-    id_recurso: {
-        id: string;
-        codigo: string;
-        nombre: string;
-        unidad_id: string;
-        precio_actual: number;
-    };
-    cantidad: number;
+interface Props {
+    onClose: () => void;
+}
+
+interface RecursoState {
+    _id: string;
+    cantidad_original: number;
     cantidad_recibida: number;
     diferencia: number;
-    costo: number;
 }
 
-interface Transferencia {
-    id: number;
-    usuario_id: {
-        id: number;
-        nombres: string;
-        apellidos: string;
-    };
-    fecha: string;
-    movimiento_id: {
-        id: number;
-    };
-    movilidad_id: {
-        id: number;
-    };
-    estado: string;
-}
-
-const RecepcionTransferencia: React.FC<RecepcionTransferenciasProps> = ({ onClose, transferenciasId }) => {
+const RecepcionTransferencia: React.FC<Props> = ({ onClose }) => {
     const dispatch = useDispatch<AppDispatch>();
-    const [selectedTransferenciaId, setSelectedTransferenciaId] = useState<string | null>(null);
-    const [selectedTransferencia, setSelectedTransferencia] = useState<Transferencia | null>(null);
-    const [transferenciaData, setTransferenciaData] = useState<TransferenciaData[]>([]);
-    const [fechaRecepcion, setFechaRecepcion] = useState(new Date().toISOString().split('T')[0]);
-    const [movilidadId, setMovilidadId] = useState('');
-    const [detalles, setDetalles] = useState<RecursoDetalle[]>([]);
-    const userId = useSelector((state: RootState) => state.user?.id);
-    const { transferencias, loading, error } = useSelector((state: RootState) => state.transferencia);
-    const { TransferenciaRecursosById: recursos } = useSelector((state: RootState) => state.transferenciaRecurso);
-    const movimiento = useSelector((state: RootState) => state.movimiento.movimientos);
+    const [selectedDetalleId, setSelectedDetalleId] = useState<string | null>(null);
+    const [recursosState, setRecursosState] = useState<{ [key: string]: RecursoState }>({});
+    const [showGuiaTransfer, setShowGuiaTransfer] = useState(false);
+    const [transferenciaId, setTransferenciaId] = useState<string | null>(null);
+    const [isProcessing, setIsProcessing] = useState(false);
+
+    const { transferenciaDetalles, loading: detallesLoading, error: detallesError } = useSelector((state: RootState) => state.transferenciaDetalle);
+    const { transferenciaRecursos, loading: recursosLoading } = useSelector((state: RootState) => state.transferenciaRecurso);
     const unidades = useSelector((state: RootState) => state.unidad.unidades);
 
     useEffect(() => {
-        dispatch(fetchTransferencias());
-        dispatch(fetchMovimientos());
+        dispatch(fetchTransferenciaDetalles());
     }, [dispatch]);
 
-    useEffect(() => {
-        if (selectedTransferenciaId) {
-            dispatch(fetchTransferenciaRecursosById(selectedTransferenciaId));
+    const handleDetalleClick = async (detalleId: string) => {
+        setSelectedDetalleId(detalleId);
+        try {
+            const recursos = await dispatch(fetchTransferenciaRecursosById(detalleId)).unwrap();
+            const newRecursosState = recursos.reduce((acc: { [key: string]: RecursoState }, recurso: any) => {
+                acc[recurso._id] = {
+                    _id: recurso._id,
+                    cantidad_original: recurso.cantidad,
+                    cantidad_recibida: 0,
+                    diferencia: recurso.cantidad
+                };
+                return acc;
+            }, {});
+            setRecursosState(newRecursosState);
+        } catch (err) {
+            console.error('Error al cargar recursos:', err);
         }
-    }, [selectedTransferenciaId, dispatch]);
-
-    useEffect(() => {
-        console.log('Recursos:', recursos); // Agrega este log para verificar los recursos
-        if (recursos && recursos.length > 0) {
-            const nuevoDetalles: RecursoDetalle[] = recursos.map((recurso) => ({
-                id: recurso.id,
-                id_recurso: {
-                    id: recurso.recurso_id.id,
-                    codigo: recurso.recurso_id.codigo,
-                    nombre: recurso.recurso_id.nombre,
-                    unidad_id: recurso.recurso_id.unidad_id,
-                    precio_actual: recurso.recurso_id.precio_actual,
-                },
-                cantidad: recurso.cantidad,
-                cantidad_recibida: 0,
-                diferencia: recurso.cantidad,
-                costo: recurso.costo,
-            }));
-            setDetalles(nuevoDetalles);
-        }
-    }, [recursos]);
-
-    const handleOrdenClick = (transferencia: TransferenciaData) => {
-        setSelectedTransferenciaId(transferencia.id);
-        setSelectedTransferencia(transferencia);
     };
 
+    const handleCantidadChange = (recursoId: string, cantidad: number) => {
+        setRecursosState(prev => {
+            const recurso = prev[recursoId];
+            if (!recurso) return prev;
+
+            const cantidadValidada = Math.max(0, Math.min(cantidad, recurso.cantidad_original));
+            return {
+                ...prev,
+                [recursoId]: {
+                    ...recurso,
+                    cantidad_recibida: cantidadValidada,
+                    diferencia: recurso.cantidad_original - cantidadValidada
+                }
+            };
+        });
+    };
+
+    const handleRecepcionar = async () => {
+        if (selectedDetalleId) {
+            setIsProcessing(true);
+            // Procesar la recepción aquí
+            // ...
+            // Después de procesar la recepción, establecer el ID de la transferencia y mostrar la guía de transferencias
+            setTransferenciaId(selectedDetalleId);
+            setShowGuiaTransfer(true);
+            setIsProcessing(false);
+        }
+    };
+
+    const [validationErrors, setValidationErrors] = useState<ValidationError[]>([]);
+
+    if (detallesLoading || recursosLoading) {
+        return <div className="flex justify-center items-center h-full">Cargando...</div>;
+    }
+
+    if (detallesError) {
+        return <div className="p-6 text-center text-red-600">Error: {detallesError}</div>;
+    }
+
+    const detallesFiltrados = transferenciaDetalles?.filter(detalle => 
+        detalle.transferencia_id.movimiento_id.nombre.toLowerCase().includes('salida') &&
+        detalle.transferencia_id.movimiento_id.nombre.toLowerCase().includes('')
+    );
+
+    const selectedDetalle = transferenciaDetalles?.find(d => d.id === selectedDetalleId);
+
+    // Filtrar recursos por el detalle seleccionado
+    const recursosDelDetalle = selectedDetalleId 
+        ? transferenciaRecursos.filter(recurso => recurso.transferencia_detalle_id.id === selectedDetalleId)
+        : [];
+
+    if (showGuiaTransfer && selectedDetalle) {
+        return (
+            <GuiaTransferencia
+                numero={parseInt(selectedDetalle.transferencia_id.id)}
+                solicita={`${selectedDetalle.transferencia_id.usuario_id.nombres} ${selectedDetalle.transferencia_id.usuario_id.apellidos}`}
+                recibe={selectedDetalle.transferencia_id.movilidad_id?.denominacion || ''}
+                fEmision={new Date(selectedDetalle.fecha)}
+                estado={selectedDetalle.tipo}
+                obra={selectedDetalle.transferencia_id.movimiento_id.nombre}
+                transferenciaId={selectedDetalle.transferencia_id.id}
+                onClose={() => setShowGuiaTransfer(false)}
+            />
+        );
+    }
+
     return (
-        <div className="flex flex-1 min-h-0">
-            <div className="w-1/3 border-r border-gray-100 overflow-y-auto">
-                <div className="p-4 bg-white border-b">
-                    <h3 className="text-sm font-medium text-gray-700">Transferencias Pendientes</h3>
-                </div>
-                <div className="bg-gray-50 p-4 space-y-3">
-                    {transferencias.map((transferencia) => (
-                        <div
-                            key={transferencia.id}
-                            onClick={() => handleOrdenClick(transferencia)}
-                            className="bg-white rounded-lg shadow-sm border cursor-pointer transition-all duration-200 hover:shadow-md"
-                        >
-                            <div className="p-3">
-                                <div className="text-sm font-medium text-gray-900">
-                                    N° Transferencia: {transferencia.id}
-                                </div>
-                                <div className="text-xs text-gray-500 mt-1">
-                                    Fecha: {new Date(transferencia.fecha).toLocaleDateString()}
-                                </div>
-                            </div>
-                        </div>
-                    ))}
+        <div className="bg-gradient-to-br from-white to-gray-50 rounded-xl shadow-lg w-full h-[90vh] flex flex-col overflow-hidden border border-gray-100">
+            <div className="border-b border-gray-100 bg-white">
+                <div className="p-4 flex items-center justify-between">
+                    <h2 className="text-xl font-semibold text-blue-800">Recepción de Transferencia</h2>
+                    <button onClick={onClose} className="text-2xl text-red-500 hover:text-red-600">
+                        <FiX />
+                    </button>
                 </div>
             </div>
 
-            <div className="flex-1 bg-white overflow-y-auto">
-                {selectedTransferencia ? (
-                    <div className="p-4">
-                        <h3 className="text-lg font-semibold text-gray-800">Detalles de Transferencia</h3>
-                        <div className="mt-2 text-sm text-gray-600">
-                            <p>
-                                Usuario: {selectedTransferencia.usuario_id.nombres}{' '}
-                                {selectedTransferencia.usuario_id.apellidos}
-                            </p>
-                            <p>Fecha: {new Date(selectedTransferencia.fecha).toLocaleDateString()}</p>
-                        </div>
-                        <h4 className="mt-4 text-md font-semibold text-gray-700">Recursos:</h4>
-                        {recursos && recursos.length > 0 ? (
-                            <ul className="list-disc pl-5">
-                                {recursos.map((recurso: RecursoDetalle) => (
-                                    <li key={recurso.id} className="text-sm text-gray-600">
-                                        {recurso.id_recurso.nombre}
-                                    </li>
-                                ))}
-                            </ul>
-                        ) : (
-                            <div className="text-red-600 text-sm">No se encontraron recursos para esta transferencia.</div>
-                        )}
-                        <div className="flex justify-end space-x-3 pt-4 border-t">
-                            <button
-                                onClick={() => setShowConfirmDialog(true)}
-                                className="px-4 py-2 text-sm bg-blue-500 text-white rounded hover:bg-blue-600"
-                            >
-                                Confirmar Recepción
-                            </button>
-                        </div>
+            {validationErrors.length > 0 && <ValidationErrors errors={validationErrors} />}
+
+            <div className="flex flex-1 min-h-0">
+                {/* Panel izquierdo */}
+                <div className="w-1/3 border-r border-gray-100 overflow-y-auto">
+                    <div className="p-4 bg-white border-b">
+                        <h3 className="text-sm font-medium text-gray-700">Detalles de Transferencia</h3>
                     </div>
-                ) : (
-                    <div className="p-4 text-center text-gray-600">Selecciona una transferencia para ver los detalles.</div>
-                )}
+                    <div className="p-4 space-y-3">
+                        {detallesFiltrados?.map((detalle) => (
+                            <div
+                                key={detalle.id}
+                                onClick={() => handleDetalleClick(detalle.id)}
+                                className={`p-4 bg-white rounded-lg shadow-sm border cursor-pointer hover:shadow-md transition-all ${
+                                    selectedDetalleId === detalle.id ? 'border-blue-500 ring-2 ring-blue-200' : 'border-gray-200'
+                                }`}
+                            >
+                                <div className="text-sm font-medium text-gray-900">
+                                    Transferencia #{detalle.transferencia_id.id}
+                                </div>
+                                <div className="mt-1 text-xs text-gray-500">
+                                    Usuario: {detalle.transferencia_id.usuario_id.nombres} {detalle.transferencia_id.usuario_id.apellidos}
+                                </div>
+                                <div className="mt-1 text-xs text-gray-500">
+                                    Fecha: {new Date(detalle.fecha).toLocaleDateString()}
+                                </div>
+                                <div className="mt-1 text-xs text-gray-500">
+                                    Tipo: {detalle.tipo}
+                                </div>
+                                <div className="mt-1 text-xs text-gray-500">
+                                    Movimiento: {detalle.transferencia_id.movimiento_id.nombre}
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+
+                {/* Panel derecho */}
+                <div className="flex-1 bg-white overflow-y-auto">
+                    {selectedDetalle ? (
+                        <div className="p-4">
+                            <div className="bg-gray-50 p-4 rounded-lg mb-4">
+                                <h3 className="text-lg font-semibold text-gray-800">
+                                    Detalle de Transferencia #{selectedDetalle.transferencia_id.id}
+                                </h3>
+                                <div className="mt-2 text-sm text-gray-600">
+                                    <p>Usuario: {selectedDetalle.transferencia_id.usuario_id.nombres} {selectedDetalle.transferencia_id.usuario_id.apellidos}</p>
+                                    <p>Fecha: {new Date(selectedDetalle.fecha).toLocaleDateString()}</p>
+                                    <p>Tipo: {selectedDetalle.tipo}</p>
+                                    <p>Movimiento: {selectedDetalle.transferencia_id.movimiento_id.nombre}</p>
+                                </div>
+                            </div>
+
+                            <table className="min-w-full divide-y divide-gray-200">
+                                <thead className="bg-gray-50">
+                                    <tr>
+                                        <th className="px-3 py-2 text-left text-xs font-medium text-gray-500">
+                                            <input type="checkbox" className="rounded border-gray-300" />
+                                        </th>
+                                        <th className="px-3 py-2 text-left text-xs font-medium text-gray-500">Código</th>
+                                        <th className="px-3 py-2 text-left text-xs font-medium text-gray-500">Nombre</th>
+                                        <th className="px-3 py-2 text-left text-xs font-medium text-gray-500">Unidad</th>
+                                        <th className="px-3 py-2 text-left text-xs font-medium text-gray-500">Cant.Solicitada</th>
+                                        <th className="px-3 py-2 text-left text-xs font-medium text-gray-500">Cant.Disponible</th>
+                                        <th className="px-3 py-2 text-left text-xs font-medium text-gray-500">Cant.Recibida</th>
+                                        <th className="px-3 py-2 text-left text-xs font-medium text-gray-500">Diferencia</th>
+                                    </tr>
+                                </thead>
+                                <tbody className="bg-white divide-y divide-gray-200">
+                                    {recursosDelDetalle.map((recurso) => {
+                                        const estado = recursosState[recurso._id];
+                                        return (
+                                            <tr key={recurso._id}>
+                                                <td className="px-3 py-2">
+                                                    <input type="checkbox" className="rounded border-gray-300" />
+                                                </td>
+                                                <td className="px-3 py-2 text-sm text-gray-900">{recurso.recurso_id.codigo}</td>
+                                                <td className="px-3 py-2 text-sm text-gray-900">{recurso.recurso_id.nombre}</td>
+                                                <td className="px-3 py-2 text-sm text-gray-500">
+                                                    {unidades?.find(u => u.id === recurso.recurso_id.unidad_id)?.nombre || 'UND'}
+                                                </td>
+                                                <td className="px-3 py-2 text-sm text-gray-900">{recurso.cantidad}</td>
+                                                <td>0</td> {/* Aqui ira la Cantidad disponible dentro de la bodega  */}
+                                                <td className="px-3 py-2">
+                                                    <input
+                                                        type="number"
+                                                        min="0"
+                                                        max={recurso.cantidad}
+                                                        value={estado?.cantidad_recibida || 0}
+                                                        onChange={(e) => handleCantidadChange(recurso._id, parseInt(e.target.value))}
+                                                        className="w-20 px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
+                                                    />
+                                                </td>
+                                                <td className={`px-3 py-2 text-sm ${
+                                                    estado?.diferencia > 0 ? 'text-red-600' : 
+                                                    estado?.diferencia < 0 ? 'text-blue-600' : 
+                                                    'text-green-600'
+                                                }`}>
+                                                    {estado?.diferencia || 0}
+                                                </td>
+                                            </tr>
+                                        );
+                                    })}
+                                </tbody>
+                            </table>
+                        </div>
+                    ) : (
+                        <div className="flex items-center justify-center h-full">
+                            <div className="text-center text-gray-500">
+                                <p className="text-lg">Seleccione un detalle de transferencia</p>
+                                <p className="text-sm mt-2">Para ver los recursos disponibles</p>
+                            </div>
+                        </div>
+                    )}
+                </div>
+            </div>
+
+            {/* Footer */}
+            <div className="p-4 border-t bg-white">
+                <div className="flex justify-end space-x-3">
+                    <button 
+                        onClick={handleRecepcionar}
+                        className="px-4 py-2 text-sm bg-blue-500 text-white rounded hover:bg-blue-600"
+                        disabled={!selectedDetalleId || isProcessing}
+                    >
+                        {isProcessing ? 'Procesando...' : 'Recepcionar'}
+                    </button>
+                </div>
             </div>
         </div>
     );

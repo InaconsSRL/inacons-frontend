@@ -20,3 +20,4 @@ export interface RecepcionTransferencia {
     fechaEmision: string;
     detalles: TransferenciaDetalle[];
 }
+

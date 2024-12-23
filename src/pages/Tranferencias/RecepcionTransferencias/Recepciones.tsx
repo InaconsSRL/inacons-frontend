@@ -1,17 +1,43 @@
 import React, { useState, useEffect } from 'react';
-import { RecepcionTransferencia, TransferenciaDetalle } from '../interfaces/Recepciones';
 import { useDispatch, useSelector } from 'react-redux';
-import { fetchTransferenciaRecursos } from '../../../slices/transferenciaRecursoSlice';
+import { fetchTransferenciaRecursosById } from '../../../slices/transferenciaRecursoSlice';
+import { RootState } from '../../../store/store';
+import { TransferenciaDetalleData } from '../../../slices/transferenciaDetalleSlice';
 
 interface Props {
     onClose: () => void;
-}x
+    detalleId: string;
+    recursos: RecursoDetalle[];
+    detalle: TransferenciaDetalleData;
+    transferenciaId: string;
+    onComplete: () => void;
+}
 
-const Recepciones: React.FC<Props> = ({ onClose }) => {
+interface RecursoDetalle {
+    id: string;
+    codigo: string;
+    nombre: string;
+    unidad: string;
+    cantidadTransferida: number;
+    cantidadRecibida: number;
+    fechaLimite: string;
+}
+
+const Recepciones: React.FC<Props> = ({ onClose, detalleId, recursos, detalle, transferenciaId, onComplete }) => {
     const dispatch = useDispatch();
-    const { transferenciaRecursos } = useSelector((state: any) => state.transferenciaRecurso);
-    
-    const [recepcion, setRecepcion] = useState<RecepcionTransferencia>({
+    const unidades = useSelector((state: RootState) => state.unidad.unidades);
+
+    const [recepcion, setRecepcion] = useState<{
+        ordenTransferencia: string;
+        numeroSolicitud: string;
+        almacenSalida: string;
+        almacenDestino: string;
+        estado: string;
+        tipoTransporte: string;
+        observaciones: string;
+        fechaEmision: string;
+        detalles: RecursoDetalle[];
+    }>({
         ordenTransferencia: '',
         numeroSolicitud: '',
         almacenSalida: '',
@@ -24,20 +50,24 @@ const Recepciones: React.FC<Props> = ({ onClose }) => {
     });
 
     useEffect(() => {
-        const fetchData = async () => {
-            await dispatch(fetchTransferenciaRecursos()); // Obtener recursos de transferencia
+        if (recursos.length > 0) {
             setRecepcion(prev => ({
                 ...prev,
-                detalles: transferenciaRecursos.map(item => ({
-                    ...item,
-                    cantidadRecibida: 0,
-                    observaciones: 'ninguna',
+                ordenTransferencia: `TRA-${detalle.referencia_id}`,
+                numeroSolicitud: detalle.referencia,
+                tipoTransporte: detalle.tipo,
+                detalles: recursos.map(item => ({
+                    id: item.id,
+                    codigo: item.codigo,
+                    nombre: item.nombre,
+                    unidad: unidades?.find(u => u.id === item.unidad)?.nombre || 'UND',
+                    cantidadTransferida: item.cantidadTransferida,
+                    cantidadRecibida: item.cantidadRecibida,
+                    fechaLimite: item.fechaLimite,
                 })),
             }));
-        };
-
-        fetchData();
-    }, [dispatch, transferenciaRecursos]);
+        }
+    }, [recursos, unidades, detalle]);
 
     const handleCantidadChange = (index: number, e: React.ChangeEvent<HTMLInputElement>) => {
         const cantidadRecibida = parseInt(e.target.value);
@@ -45,6 +75,17 @@ const Recepciones: React.FC<Props> = ({ onClose }) => {
         updatedDetalles[index].cantidadRecibida = cantidadRecibida;
         setRecepcion({ ...recepcion, detalles: updatedDetalles });
     };
+
+    const handleCompleteRecepcion = () => {
+        // Completar la recepción y llamar a onComplete para mostrar la guía de transferencias
+        onComplete();
+    };
+
+    // Agregar logs de depuración
+    console.log('Detalle:', detalle);
+    console.log('Recursos:', recursos);
+    console.log('Unidades:', unidades);
+    console.log('Recepción:', recepcion);
 
     return (
         <div className="bg-white rounded-lg shadow-lg overflow-hidden w-full">
@@ -60,10 +101,72 @@ const Recepciones: React.FC<Props> = ({ onClose }) => {
                     {/* Panel izquierdo - Formulario */}
                     <div className="w-[30%] space-y-3">
                         <div>
-                            <label className="block text-sm text-gray-700 mb-1">N° de oden de Transferencia</label>
+                            <label className="block text-sm text-gray-700 mb-1">N° de orden de Transferencia</label>
                             <input
                                 type="text"
+                                value={recepcion.ordenTransferencia}
+                                readOnly
+                                className="w-full p-2 border border-gray-300 rounded bg-gray-50"
                             />
+                        </div>
+                        <div>
+                            <label className="block text-sm text-gray-700 mb-1">Número de Solicitud</label>
+                            <input
+                                type="text"
+                                value={recepcion.numeroSolicitud}
+                                readOnly
+                                className="w-full p-2 border border-gray-300 rounded bg-gray-50"
+                            />
+                        </div>
+                        <div>
+                            <label className="block text-sm text-gray-700 mb-1">Almacen de Salida</label>
+                            <input
+                                type="text"
+                                value={recepcion.almacenSalida}
+                                readOnly
+                                className="w-full p-2 border border-gray-300 rounded bg-gray-50"
+                            />
+                        </div>
+                        <div>
+                            <label className="block text-sm text-gray-700 mb-1">Almacen de Destino</label>
+                            <input
+                                type="text"
+                                value={recepcion.almacenDestino}
+                                readOnly
+                                className="w-full p-2 border border-gray-300 rounded bg-gray-50"
+                            />
+                        </div>
+                        <div>
+                            <label className="block text-sm text-gray-700 mb-1">Estado</label>
+                            <input
+                                type="text"
+                                value={recepcion.estado}
+                                readOnly
+                                className="w-full p-2 border border-gray-300 rounded bg-gray-50"
+                            />
+                        </div>
+                        <div>
+                            <label className="block text-sm text-gray-700 mb-1">Tipo de transporte</label>
+                            <input
+                                type="text"
+                                value={recepcion.tipoTransporte}
+                                readOnly
+                                className="w-full p-2 border border-gray-300 rounded bg-gray-50"
+                            />
+                        </div>
+                        <div>
+                            <label className="block text-sm text-gray-700 mb-1">Observaciones</label>
+                            <textarea
+                                value={recepcion.observaciones}
+                                onChange={(e) => setRecepcion({ ...recepcion, observaciones: e.target.value })}
+                                className="w-full p-2 border border-gray-300 rounded"
+                                rows={3}
+                            />
+                        </div>
+                        <div className="text-right">
+                            <span className="text-sm text-gray-600">
+                                Fecha de Emisión: {recepcion.fechaEmision}
+                            </span>
                         </div>
                     </div>
 

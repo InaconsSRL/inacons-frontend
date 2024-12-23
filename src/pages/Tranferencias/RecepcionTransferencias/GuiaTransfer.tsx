@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchTransferenciaDetallesByTransferenciaId } from '../../../slices/transferenciaDetalleSlice';
+import { fetchTransferenciaRecursosById } from '../../../slices/transferenciaRecursoSlice';
+import GuiaTransfersPDF from './GuiaTransferPDF';
 
 interface Usuario {
   id: string;
@@ -42,6 +44,24 @@ interface Item {
   bodega: string;
 }
 
+interface RootState {
+  transferenciaDetalle: {
+    transferenciaDetalles: any[];
+    loading: boolean;
+    error: string | null;
+  };
+  transferenciaRecurso: {
+    transferenciaRecursos: any[];
+    loading: boolean;
+  };
+  unidad: {
+    unidades: Array<{
+      id: string;
+      nombre: string;
+    }>;
+  };
+}
+
 interface Props {
   numero: number;
   solicita: string;
@@ -56,6 +76,10 @@ interface GuiaTransferProps {
   onClose: () => void;
 }
 
+interface RecursoState {
+  cantidad_recibida: number;
+}
+
 const GuiaTransferencia: React.FC<Props & GuiaTransferProps> = ({
   numero,
   solicita,
@@ -67,10 +91,48 @@ const GuiaTransferencia: React.FC<Props & GuiaTransferProps> = ({
   onClose,
 }) => {
   const dispatch = useDispatch();
-  const { transferenciaDetalles, loading, error } = useSelector((state: any) => state.transferenciaDetalle);
+  const [recursosState, setRecursosState] = useState<{ [key: string]: RecursoState }>({});
+  const [showPDF, setShowPDF] = useState(false); 
+
+  const { transferenciaDetalles, loading: detallesLoading, error: detallesError } = useSelector((state: RootState) => state.transferenciaDetalle);
+  const { transferenciaRecursos, loading: recursosLoading } = useSelector((state: RootState) => state.transferenciaRecurso);
+  const unidades = useSelector((state: RootState) => state.unidad.unidades);
+  
+  const loading = detallesLoading || recursosLoading;
+  const error = detallesError;
+  const [selectedDetalleId, setSelectedDetalleId] = useState<string | null>(null);
+
   useEffect(() => {
-    dispatch(fetchTransferenciaDetallesByTransferenciaId(transferenciaId) as any);
+    const fetchData = async () => {
+      const detalles = await dispatch(fetchTransferenciaDetallesByTransferenciaId(transferenciaId) as any).unwrap();
+      if (detalles && detalles.length > 0) {
+        setSelectedDetalleId(detalles[0].id);
+        await dispatch(fetchTransferenciaRecursosById(detalles[0].id) as any);
+      }
+    };
+    fetchData();
   }, [dispatch, transferenciaId]);
+
+  // Limpiar recursos cuando cambia el detalle seleccionado
+  useEffect(() => {
+    if (selectedDetalleId) {
+      dispatch(fetchTransferenciaRecursosById(selectedDetalleId) as any);
+    }
+  }, [selectedDetalleId, dispatch]);
+
+  const handleDownload = () => {
+    // Lógica para descargar la guía de transferencia
+    const element = document.createElement("a");
+    const file = new Blob([document.getElementById('guia-transferencia')?.innerHTML || ''], {type: 'text/html'});
+    element.href = URL.createObjectURL(file);
+    element.download = `Guia_Transferencia_${numero}.html`;
+    document.body.appendChild(element); // Required for this to work in FireFox
+    element.click();
+  };
+
+  const handleShowPDF = () => {
+    setShowPDF(true); 
+  };
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex justify-center items-center">
@@ -84,7 +146,7 @@ const GuiaTransferencia: React.FC<Props & GuiaTransferProps> = ({
           </button>
         </div>
 
-        <div className="p-6">
+        <div className="p-6" id="guia-transferencia">
           <div className="grid grid-cols-2 gap-4 mb-6">
             {/* Panel izquierdo */}
             <div className="space-y-4">
@@ -92,7 +154,7 @@ const GuiaTransferencia: React.FC<Props & GuiaTransferProps> = ({
                 <label className="block text-sm font-medium text-gray-700 mb-1">N° de oden de Transferencia</label>
                 <input
                   type="text"
-                  value={numero}
+                  value={`TRA-${transferenciaDetalles[0]?.referencia_id || ''}`}
                   className="w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
                   readOnly
                 />
@@ -145,6 +207,7 @@ const GuiaTransferencia: React.FC<Props & GuiaTransferProps> = ({
                 <label className="block text-sm font-medium text-gray-700 mb-1">Tipo de transporte</label>
                 <input
                   type="text"
+                  value={transferenciaDetalles[0]?.tipo || ''}
                   className="w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
                   readOnly
                 />
@@ -180,27 +243,45 @@ const GuiaTransferencia: React.FC<Props & GuiaTransferProps> = ({
                   </th>
                   <th className="px-4 py-3 text-left text-sm font-medium text-gray-700">Código</th>
                   <th className="px-4 py-3 text-left text-sm font-medium text-gray-700">Nombre</th>
+                  <th className="px-4 py-3 text-left text-sm font-medium text-gray-700">Descripción</th>
                   <th className="px-4 py-3 text-left text-sm font-medium text-gray-700">Unidad</th>
-                  <th className="px-4 py-3 text-left text-sm font-medium text-gray-700">Cant. Trasferida</th>
-                  <th className="px-4 py-3 text-left text-sm font-medium text-gray-700">F.limite</th>
+                  <th className="px-4 py-3 text-left text-sm font-medium text-gray-700">Cant. Solicitada</th>
+                  <th className="px-4 py-3 text-left text-sm font-medium text-gray-700">Precio Unit.</th>
+                  <th className="px-4 py-3 text-left text-sm font-medium text-gray-700">Total</th>
                   <th className="px-4 py-3 text-left text-sm font-medium text-gray-700">Cant. recibida</th>
                   <th className="px-4 py-3 text-left text-sm font-medium text-gray-700">Imagen</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200 bg-white">
-                {transferenciaDetalles.map((item: Item, index: number) => (
+                {transferenciaRecursos.map((recurso: any, index: number) => (
                   <tr key={index}>
                     <td className="px-4 py-3">
                       <input type="checkbox" className="rounded border-gray-300 text-blue-600 focus:ring-blue-500" />
                     </td>
-                    <td className="px-4 py-3">{item.referencia_id}</td>
-                    <td className="px-4 py-3">{item.referencia}</td>
-                    <td className="px-4 py-3">{item.tipo}</td>
-                    <td className="px-4 py-3">{item.cantidad}</td>
-                    <td className="px-4 py-3">{new Date(item.fecha).toLocaleDateString()}</td>
+                    <td className="px-4 py-3">{recurso.recurso_id.codigo}</td>
+                    <td className="px-4 py-3">{recurso.recurso_id.nombre}</td>
+                    <td className="px-4 py-3">{recurso.recurso_id.descripcion}</td>
+                    <td className="px-4 py-3">
+                      {unidades?.find((u: { id: string; nombre: string }) => u.id === recurso.recurso_id.unidad_id)?.nombre || 'UND'}
+                    </td>
+                    <td className="px-4 py-3">{recurso.cantidad}</td>
+                    <td className="px-4 py-3">{recurso.recurso_id.precio_actual}</td>
+                    <td className="px-4 py-3">{(recurso.cantidad * recurso.recurso_id.precio_actual).toFixed(2)}</td>
                     <td className="px-4 py-3">
                       <input
-                        type="text"
+                        type="number"
+                        min="0"
+                        max={recurso.cantidad}
+                        value={recursosState[recurso._id]?.cantidad_recibida || ''}
+                        onChange={(e) => {
+                          const cantidad = parseInt(e.target.value) || 0;
+                          setRecursosState(prev => ({
+                            ...prev,
+                            [recurso._id]: {
+                              cantidad_recibida: cantidad
+                            }
+                          }));
+                        }}
                         className="w-24 p-1.5 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
                       />
                     </td>
@@ -218,10 +299,25 @@ const GuiaTransferencia: React.FC<Props & GuiaTransferProps> = ({
           </div>
 
           <div className="mt-6 flex justify-end">
-            <button className="bg-blue-600 text-white px-6 py-2.5 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 font-medium">
-              Generar reportes
+            <button 
+              onClick={handleDownload}
+              className="bg-blue-600 text-white px-6 py-2.5 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 font-medium"
+            >
+              Descargar Guía
             </button>
           </div>
+          <div className="mt-6 flex justify-end">
+            <button 
+              onClick={handleShowPDF}
+              className="bg-blue-600 text-white px-6 py-2.5 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 font-medium"
+            >
+              Mostrar PDF
+            </button>
+          </div>
+          {showPDF && <GuiaTransfersPDF numero={0} solicita={''} recibe={''} fEmision={undefined} estado={''} obra={''} recursos={[]} transferenciaRecursos={[]} unidades={[]} tipoTransporte={''} usuarioTransferencia={{
+            nombres: '',
+            apellidos: ''
+          }} descripcionMovimiento={''} />} 
         </div>
       </div>
     </div>
