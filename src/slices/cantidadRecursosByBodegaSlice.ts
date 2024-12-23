@@ -12,6 +12,7 @@ export const fetchRecursosForObraAndRecursoId = createAsyncThunk(
 interface Recurso {
   cantidad: number;
   nombre: string;
+  costo: number;
 }
 
 const recursosSlice = createSlice({

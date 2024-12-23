@@ -1,60 +1,41 @@
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
-import {
-  listPrestamosService,
-  addPrestamoService,
-  updatePrestamoService,
-  deletePrestamoService,
+import { 
+  listPrestamosService, 
+  addPrestamoService, 
+  updatePrestamoService, 
+  deletePrestamoService 
 } from '../services/prestamoService';
 
-// Enums
-export enum EstadoPrestamo {
-  PENDIENTE = 'pendiente',
-  EN_USO = 'en_uso',
-  RETORNADO = 'retornado',
-  VENCIDO = 'vencido'
-}
-
 // Interfaces
-interface Cargo {
-  id: string;
-  nombre: string;
-}
-
-interface Personal {
-  id: string;
-  cargo: Cargo;
-  nombres: string;
-}
-
-interface Movimiento {
-  id: string;
-  tipo: string;
-}
-
 interface Usuario {
   id: string;
   nombres: string;
-  rol_id: string;
-  cargo_id: {
-    id: string;
-  };
+  apellidos: string;
 }
 
-interface Almacen {
+interface ObraBodega {
   id: string;
   nombre: string;
-  tipo_almacen_id: string;
+  estado: string;
 }
 
-export interface Prestamo {
+interface TransferenciaDetalle {
   id: string;
-  movimiento_id: Movimiento;
-  personal_id: Personal;
+  referencia_id?: string;
+  fecha?: Date;
+  tipo?: string;
+  referencia?: string;
+}
+
+interface Prestamo {
+  id: string;
+  fecha: Date;
   usuario_id: Usuario;
-  fecha: string;
-  f_retorno: string;
-  estado: EstadoPrestamo;
-  almacen_id: Almacen;
+  obra_id: ObraBodega;
+  f_retorno: Date;
+  estado: string;
+  transferencia_detalle_id: TransferenciaDetalle;
+  personal_id: string;
 }
 
 interface PrestamoState {
@@ -72,7 +53,7 @@ const initialState: PrestamoState = {
 
 // Thunks
 export const fetchPrestamos = createAsyncThunk(
-  'prestamos/fetchPrestamos',
+  'prestamo/fetchPrestamos',
   async (_, { rejectWithValue }) => {
     try {
       return await listPrestamosService();
@@ -83,15 +64,15 @@ export const fetchPrestamos = createAsyncThunk(
 );
 
 export const addPrestamo = createAsyncThunk(
-  'prestamos/addPrestamo',
+  'prestamo/addPrestamo',
   async (prestamoData: {
-    movimiento_id: string;
-    personal_id: string;
-    usuario_id: string;
     fecha: Date;
-    f_retorno: Date;
-    estado: EstadoPrestamo;
-    almacen_id: string;
+    usuarioId: string;
+    obraId: string;
+    fRetorno: Date;
+    estado: string;
+    transferenciaDetalleId: string;
+    personalId: string;
   }, { rejectWithValue }) => {
     try {
       return await addPrestamoService(prestamoData);
@@ -102,16 +83,16 @@ export const addPrestamo = createAsyncThunk(
 );
 
 export const updatePrestamo = createAsyncThunk(
-  'prestamos/updatePrestamo',
+  'prestamo/updatePrestamo',
   async (prestamoData: {
     id: string;
-    movimiento_id?: string;
-    personal_id?: string;
-    usuario_id?: string;
     fecha?: Date;
-    f_retorno?: Date;
-    estado?: EstadoPrestamo;
-    almacen_id?: string;
+    usuarioId?: string;
+    obraId?: string;
+    personalId?: string;
+    fRetorno?: Date;
+    estado?: string;
+    transferenciaDetalleId?: string;
   }, { rejectWithValue }) => {
     try {
       return await updatePrestamoService(prestamoData);
@@ -122,10 +103,11 @@ export const updatePrestamo = createAsyncThunk(
 );
 
 export const deletePrestamo = createAsyncThunk(
-  'prestamos/deletePrestamo',
+  'prestamo/deletePrestamo',
   async (id: string, { rejectWithValue }) => {
     try {
-      return await deletePrestamoService(id);
+      await deletePrestamoService(id);
+      return id;
     } catch (error) {
       return rejectWithValue(error instanceof Error ? error.message : 'Error desconocido');
     }
@@ -134,9 +116,13 @@ export const deletePrestamo = createAsyncThunk(
 
 // Slice
 const prestamoSlice = createSlice({
-  name: 'prestamos',
+  name: 'prestamo',
   initialState,
-  reducers: {},
+  reducers: {
+    clearError: (state) => {
+      state.error = null;
+    }
+  },
   extraReducers: (builder) => {
     builder
       // Fetch prestamos
@@ -153,21 +139,49 @@ const prestamoSlice = createSlice({
         state.error = action.payload as string;
       })
       // Add prestamo
+      .addCase(addPrestamo.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
       .addCase(addPrestamo.fulfilled, (state, action: PayloadAction<Prestamo>) => {
+        state.loading = false;
         state.prestamos.push(action.payload);
       })
+      .addCase(addPrestamo.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
+      })
       // Update prestamo
+      .addCase(updatePrestamo.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
       .addCase(updatePrestamo.fulfilled, (state, action: PayloadAction<Prestamo>) => {
+        state.loading = false;
         const index = state.prestamos.findIndex(p => p.id === action.payload.id);
         if (index !== -1) {
           state.prestamos[index] = action.payload;
         }
       })
+      .addCase(updatePrestamo.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
+      })
       // Delete prestamo
+      .addCase(deletePrestamo.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
       .addCase(deletePrestamo.fulfilled, (state, action: PayloadAction<string>) => {
+        state.loading = false;
         state.prestamos = state.prestamos.filter(p => p.id !== action.payload);
+      })
+      .addCase(deletePrestamo.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
       });
   },
 });
 
-export default prestamoSlice.reducer;
+export const { clearError } = prestamoSlice.actions;
+export const prestamoReducer = prestamoSlice.reducer;

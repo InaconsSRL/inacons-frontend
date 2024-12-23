@@ -5,6 +5,7 @@ const GET_RECURSOS_FOR_OBRA_AND_RECURSO_ID = gql`
   query GetRecursosForObraAndRecursoId($obraId: ID!, $recursoId: ID!) {
     getRecursosForObraAndRecursoId(obraId: $obraId, recursoId: $recursoId) {
       cantidad
+      costo
       nombre
     }
   }
@@ -14,6 +15,7 @@ interface GetRecursosForObraAndRecursoIdResponse {
   getRecursosForObraAndRecursoId: {
     cantidad: number;
     nombre: string;
+    costo: number;
   }[];
 }
 

@@ -7,9 +7,6 @@ import { fetchRecursosForObraAndRecursoId } from '../../../slices/cantidadRecurs
 import { addTransferencia } from '../../../slices/transferenciaSlice';
 import { addTransferenciaDetalle } from '../../../slices/transferenciaDetalleSlice';
 import { addTransferenciaRecurso } from '../../../slices/transferenciaRecursoSlice';
-import type { Requerimiento, RequerimientoRecurso } from './types';
-import FormularioPrestamo from './FormularioPrestamo';
-import { addPrestamo } from '../../../slices/prestamoSlice';
 
 const Skeleton: React.FC<{ className?: string }> = ({ className }) => (
   <div className={`animate-pulse bg-gray-200 rounded ${className}`} role="status" />
@@ -29,7 +26,6 @@ const EmptyState: React.FC<{ message: string }> = ({ message }) => (
 interface BodegaCantidad {
   nombre: string;
   cantidad: number;
-  costo: number;
 }
 
 const SalidasConsumosPrestamos: React.FC = () => {
@@ -42,15 +38,13 @@ const SalidasConsumosPrestamos: React.FC = () => {
   const [isProcessing, setIsProcessing] = useState(false);
   const [cantidadesPorBodega, setCantidadesPorBodega] = useState<Record<string, Record<string, number>>>({});
   const [recursosCantidades, setRecursosCantidades] = useState<Record<string, BodegaCantidad[]>>({});
-  const [showPrestamoForm, setShowPrestamoForm] = useState(false);
-  const [fechaRetorno, setFechaRetorno] = useState<string>('');
 
   // Selectores
   const { requerimientos } = useSelector((state: RootState) => state.requerimiento);
   const { requerimientoRecursos, loading: loadingRecursos } = useSelector((state: RootState) => state.requerimientoRecurso);
   const { obras } = useSelector((state: RootState) => state.obra);
   const userId = useSelector((state: RootState) => state.user?.id);
-  console.log(requerimientoRecursos);
+  console.log(requerimientoRecursos)
   // Validación consolidada
   const validateSalida = () => {
     if (!selectedRequerimiento || !userId) {
@@ -63,10 +57,6 @@ const SalidasConsumosPrestamos: React.FC = () => {
     
     if (!haySeleccion) {
       return 'Debe seleccionar al menos una cantidad para transferir';
-    }
-
-    if (hasRetornables && !fechaRetorno) {
-      return 'Debe seleccionar una fecha de retorno para los recursos retornables';
     }
     
     return null;
@@ -179,10 +169,6 @@ const SalidasConsumosPrestamos: React.FC = () => {
     setShowConfirmDialog(true);
   };
 
-  const hasRetornables = useMemo(() => {
-    return requerimientoRecursos.some(recurso => recurso.tipo === 'Retornable');
-  }, [requerimientoRecursos]);
-
   const procesarSalida = async () => {
     try {
       setIsProcessing(true);
@@ -208,47 +194,27 @@ const SalidasConsumosPrestamos: React.FC = () => {
       // 3. Crear el detalle de transferencia
       const detalleData = {
         transferencia_id: transferencia.id,
-        referencia_id: selectedRequerimiento || '',
+        referencia_id: selectedRequerimiento,
         fecha: new Date(),
         tipo: 'SALIDA_CONSUMO',
         referencia: `Salida por consumo - Req. ${requerimientoActual?.codigo}`
       };
-      
-      const detalleTransferencia = await dispatch(addTransferenciaDetalle(detalleData)).unwrap();
 
-      // Si hay retornables, crear el préstamo
-      if (hasRetornables) {
-        const prestamoData = {
-          fecha: new Date(),
-          usuarioId: userId,
-          obraId: selectedObra,
-          personalId: requerimientos.find(r => r.id === selectedRequerimiento)?.usuario_id || '',
-          fRetorno: new Date(fechaRetorno),
-          estado: 'pendiente',
-          transferenciaDetalleId: detalleTransferencia.id
-        };
-        
-        await dispatch(addPrestamo(prestamoData)).unwrap();
-        // Aquí se agregaría posteriormente la lógica para prestamoRecurso
-      }
+      const detalleTransferencia = await dispatch(addTransferenciaDetalle(detalleData)).unwrap();
 
       // 4. Crear los recursos de transferencia
       const promesasRecursos = [];
 
       for (const recurso of requerimientoRecursos) {
         const cantidadesBodega = cantidadesPorBodega[recurso.recurso_id] || {};
-        const bodegasInfo = recursosCantidades[recurso.recurso_id] || [];
         
         for (const [bodegaNombre, cantidad] of Object.entries(cantidadesBodega)) {
           if (cantidad > 0) {
-            // Encontrar la información de la bodega correspondiente
-            const bodegaInfo = bodegasInfo.find(b => b.nombre === bodegaNombre);
-            
             const recursoData = {
               transferencia_detalle_id: detalleTransferencia.id,
               recurso_id: recurso.recurso_id,
               cantidad: cantidad,
-              costo: bodegaInfo?.costo || 0,
+              costo: recurso.precio || 0,
               bodega: bodegaNombre
             };
 
@@ -300,14 +266,6 @@ const SalidasConsumosPrestamos: React.FC = () => {
         </div>
       )}
 
-      {selectedRequerimiento && hasRetornables && (
-        <div className="p-3 bg-yellow-50 border-b border-yellow-100">
-          <p className="text-sm text-yellow-700">
-            Este requerimiento contiene recursos retornables que requieren registro de préstamo.
-          </p>
-        </div>
-      )}
-
       <div className="flex h-[calc(90vh-12rem)]">
         {/* Panel izquierdo */}
         <div className="w-1/4 border-r border-gray-100 p-3 overflow-y-auto bg-gray-100">
@@ -353,24 +311,8 @@ const SalidasConsumosPrestamos: React.FC = () => {
         <div className="flex-1 flex flex-col h-full">
           {selectedRequerimiento ? (
             <>
-              <div className="p-3 bg-white border-b border-gray-100 flex justify-between items-center">
+              <div className="p-3 bg-white border-b border-gray-100">
                 <h2 className="text-sm font-medium text-gray-700">Recursos del Requerimiento</h2>
-                {hasRetornables && (
-                  <div className="flex items-center space-x-2">
-                    <label htmlFor="fechaRetorno" className="text-sm text-gray-600">
-                      Fecha de retorno:
-                    </label>
-                    <input
-                      type="date"
-                      id="fechaRetorno"
-                      value={fechaRetorno}
-                      onChange={(e) => setFechaRetorno(e.target.value)}
-                      min={new Date().toISOString().split('T')[0]}
-                      className="px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-400"
-                      required={hasRetornables}
-                    />
-                  </div>
-                )}
               </div>
 
               <div className="flex-1 overflow-auto p-3">
@@ -392,7 +334,6 @@ const SalidasConsumosPrestamos: React.FC = () => {
                         <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">En Bodega</th>
                         <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Estado</th>
                         <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Unidad</th>
-                        <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tipo</th>
                       </tr>
                     </thead>
                     <tbody className="bg-white divide-y divide-gray-100">
@@ -406,7 +347,7 @@ const SalidasConsumosPrestamos: React.FC = () => {
                               <div className="text-xs text-gray-400">Cargando...</div>
                             ) : recursosCantidades[recurso.recurso_id]?.length > 0 ? (
                               <div className="space-y-2">
-                                {recursosCantidades[recurso.recurso_id].map((item: BodegaCantidad, index: number) => (
+                                {recursosCantidades[recurso.recurso_id].map((item: any, index: number) => (
                                   <div key={index} className="flex items-center justify-between space-x-2">
                                     <span className="text-xs text-gray-600 min-w-[100px]">{item.nombre}:</span>
                                     <div className="flex items-center space-x-2">
@@ -415,7 +356,7 @@ const SalidasConsumosPrestamos: React.FC = () => {
                                         min="0"
                                         max={Math.min(
                                           item.cantidad,
-                                          (recurso.cantidad_aprobada ?? 0) - getTotalSeleccionado(recurso.recurso_id) + 
+                                          recurso.cantidad_aprobada - getTotalSeleccionado(recurso.recurso_id) + 
                                           (cantidadesPorBodega[recurso.recurso_id]?.[item.nombre] || 0)
                                         )}
                                         value={cantidadesPorBodega[recurso.recurso_id]?.[item.nombre] || ''}
@@ -423,7 +364,7 @@ const SalidasConsumosPrestamos: React.FC = () => {
                                           recurso.recurso_id,
                                           item.nombre,
                                           e.target.value,
-                                          (recurso.cantidad_aprobada ?? 0),
+                                          recurso.cantidad_aprobada,
                                           cantidadesPorBodega[recurso.recurso_id] || {}
                                         )}
                                         className="w-16 px-2 py-1 text-xs border border-gray-200 rounded focus:outline-none focus:ring-1 focus:ring-blue-400"
@@ -442,7 +383,6 @@ const SalidasConsumosPrestamos: React.FC = () => {
                           </td>
                           <td className="px-3 py-2 text-xs text-gray-600">{recurso.estado}</td>
                           <td className="px-3 py-2 text-xs text-gray-600">{recurso.unidad}</td>
-                          <td className="px-3 py-2 text-xs text-gray-600">{recurso.tipo}</td>
                         </tr>
                       ))}
                     </tbody>
@@ -462,7 +402,7 @@ const SalidasConsumosPrestamos: React.FC = () => {
           <div className="flex justify-end">
             <button
               onClick={handleGuardarSalida}
-              disabled={isProcessing || (hasRetornables && !fechaRetorno)}
+              disabled={isProcessing}
               className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50"
             >
               {isProcessing ? 'Procesando...' : 'Procesar Salida'}
@@ -528,14 +468,6 @@ const SalidasConsumosPrestamos: React.FC = () => {
         </div>
     </div>
 )}
-      {showPrestamoForm && (
-        <FormularioPrestamo
-          isOpen={showPrestamoForm}
-          onClose={() => setShowPrestamoForm(false)}
-          onSetFechaRetorno={setFechaRetorno}
-          hasError={hasRetornables && !fechaRetorno}
-        />
-      )}
     </div>
   );
 };

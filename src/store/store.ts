@@ -49,7 +49,7 @@ import { cotizacionProveedoresRecursoReducer } from '../slices/cotizacionProveed
 import { valoracionProveedorReducer } from '../slices/valoracionProveedorSlice';
 import { datosValoracionProveedorReducer } from '../slices/datosValoracionProveedorSlice';
 import { cuestionarioHomologacionReducer } from '../slices/cuestionarioHomologacionSlice';
-import prestamoReducer from '../slices/prestamoSlice';
+import { prestamoReducer } from '../slices/prestamoSlice';
 import prestamoRecursoReducer from '../slices/prestamoRecursoSlice';
 import { recursosAllTablesReducer } from '../slices/recursosAllTablesSlice';
 import { empleadoReducer } from '../slices/empleadoSlice';
@@ -113,7 +113,7 @@ export const store = configureStore({
     prestamoRecurso: prestamoRecursoReducer,
     recursosAllTables: recursosAllTablesReducer,
     obraBodega: obraBodegaReducer,
-    obraBodegaRecurso: obraBodegaRecursoReducer, 
+    obraBodegaRecurso: obraBodegaRecursoReducer,
     cantidadRecursosByBodega: cantidadRecursosByBodegaReducer,
 
   },
