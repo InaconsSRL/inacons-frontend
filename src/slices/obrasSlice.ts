@@ -1,16 +1,33 @@
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
-import { listObrasService, addObraService, updateObraService } from '../services/obraService';
+import { listObrasService, addObraService, updateObraService, getObraService } from '../services/obraService';
 
 // Interfaces
-interface Obra {
+interface TipoObra {
   id: string;
+  nombre: string;
+}
+
+interface ObraBase {
   titulo: string;
   nombre: string;
   descripcion: string;
+  ubicacion: string;
+  direccion: string;
+  estado: string;
+}
+
+interface ObraInput extends ObraBase {
+  tipoId: string;
+}
+
+interface Obra extends ObraBase {
+  id: string;
+  tipo_id: TipoObra;
 }
 
 interface ObraState {
   obras: Obra[];
+  selectedObra: Obra | null;
   loading: boolean;
   error: string | null;
 }
@@ -18,6 +35,7 @@ interface ObraState {
 // Estado inicial
 const initialState: ObraState = {
   obras: [],
+  selectedObra: null,
   loading: false,
   error: null,
 };
@@ -42,7 +60,7 @@ export const fetchObras = createAsyncThunk(
 
 export const addObra = createAsyncThunk(
   'obra/addObra',
-  async (obraData: { titulo: string; nombre: string; descripcion: string }, { rejectWithValue }) => {
+  async (obraData: ObraInput, { rejectWithValue }) => {
     try {
       return await addObraService(obraData);
     } catch (error) {
@@ -53,9 +71,20 @@ export const addObra = createAsyncThunk(
 
 export const updateObra = createAsyncThunk(
   'obra/updateObra',
-  async (obra: Obra, { rejectWithValue }) => {
+  async (obra: ObraInput & { id: string }, { rejectWithValue }) => {
     try {
       return await updateObraService(obra);
+    } catch (error) {
+      return rejectWithValue(handleError(error));
+    }
+  }
+);
+
+export const getObra = createAsyncThunk(
+  'obra/getObra',
+  async (id: string, { rejectWithValue }) => {
+    try {
+      return await getObraService(id);
     } catch (error) {
       return rejectWithValue(handleError(error));
     }
@@ -89,6 +118,18 @@ const obraSlice = createSlice({
         if (index !== -1) {
           state.obras[index] = action.payload;
         }
+      })
+      .addCase(getObra.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(getObra.fulfilled, (state, action: PayloadAction<Obra>) => {
+        state.loading = false;
+        state.selectedObra = action.payload;
+      })
+      .addCase(getObra.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
       });
   },
 });

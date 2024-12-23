@@ -24,6 +24,7 @@ interface RequerimientoRecurso {
   presupuestado: boolean;
   unidad: string;
   estado: string;
+  tipo: string;
   listAlmacenRecursos: AlmacenRecurso[];
 }
 

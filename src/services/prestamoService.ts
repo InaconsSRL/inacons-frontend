@@ -1,222 +1,190 @@
 import { gql } from '@apollo/client';
 import client from '../apolloClient';
 
-// Queries
-const LIST_PRESTAMOS = gql`
+const LIST_PRESTAMOS_QUERY = gql`
   query ListPrestamos {
     listPrestamos {
       id
-      movimiento_id {
-        id
-        tipo
-      }
-      personal_id {
-        id
-        cargo {
-          id
-          nombre
-        }
-        nombres
-      }
+      fecha
       usuario_id {
         id
         nombres
-        rol_id
-        cargo_id {
-          id
-        }
+        apellidos
       }
-      fecha
-      f_retorno
-      estado
-      almacen_id {
+      obra_id {
         id
         nombre
-        tipo_almacen_id
+        estado
       }
+      f_retorno
+      estado
+      transferencia_detalle_id {
+        id
+        referencia_id
+        fecha
+        tipo
+        referencia
+      }
+      personal_id
     }
   }
 `;
 
-const ADD_PRESTAMO = gql`
+const ADD_PRESTAMO_MUTATION = gql`
   mutation AddPrestamo(
-    $movimiento_id: ID!
-    $personal_id: ID!
-    $usuario_id: ID!
-    $fecha: DateTime!
-    $f_retorno: DateTime!
-    $estado: String!
-    $almacen_id: ID!
+    $fecha: Date!, 
+    $usuarioId: ID!, 
+    $obraId: ID!, 
+    $fRetorno: Date!, 
+    $estado: String!, 
+    $transferenciaDetalleId: ID!, 
+    $personalId: String!
   ) {
     addPrestamo(
-      movimiento_id: $movimiento_id
-      personal_id: $personal_id
-      usuario_id: $usuario_id
-      fecha: $fecha
-      f_retorno: $f_retorno
-      estado: $estado
-      almacen_id: $almacen_id
+      fecha: $fecha, 
+      usuario_id: $usuarioId, 
+      obra_id: $obraId, 
+      f_retorno: $fRetorno, 
+      estado: $estado, 
+      transferencia_detalle_id: $transferenciaDetalleId, 
+      personal_id: $personalId
     ) {
       id
-      movimiento_id {
-        id
-        tipo
-      }
-      personal_id {
-        id
-        cargo {
-          id
-          nombre
-        }
-        nombres
-      }
+      fecha
       usuario_id {
         id
         nombres
-        rol_id
-        cargo_id {
-          id
-        }
+        apellidos
       }
-      fecha
-      f_retorno
-      estado
-      almacen_id {
+      obra_id {
         id
         nombre
-        tipo_almacen_id
+        estado
       }
+      f_retorno
+      estado
+      transferencia_detalle_id {
+        id
+      }
+      personal_id
     }
   }
 `;
 
-const UPDATE_PRESTAMO = gql`
+const UPDATE_PRESTAMO_MUTATION = gql`
   mutation UpdatePrestamo(
-    $id: ID!
-    $movimiento_id: ID
-    $personal_id: ID
-    $usuario_id: ID
-    $fecha: DateTime
-    $f_retorno: DateTime
-    $estado: String
-    $almacen_id: ID
+    $updatePrestamoId: ID!, 
+    $fecha: Date, 
+    $usuarioId: String, 
+    $obraId: ID, 
+    $personalId: ID, 
+    $fRetorno: Date, 
+    $estado: String, 
+    $transferenciaDetalleId: ID
   ) {
     updatePrestamo(
-      id: $id
-      movimiento_id: $movimiento_id
-      personal_id: $personal_id
-      usuario_id: $usuario_id
-      fecha: $fecha
-      f_retorno: $f_retorno
-      estado: $estado
-      almacen_id: $almacen_id
+      id: $updatePrestamoId, 
+      fecha: $fecha, 
+      usuario_id: $usuarioId, 
+      obra_id: $obraId, 
+      personal_id: $personalId, 
+      f_retorno: $fRetorno, 
+      estado: $estado, 
+      transferencia_detalle_id: $transferenciaDetalleId
     ) {
       id
-      movimiento_id {
-        id
-        tipo
-      }
-      personal_id {
-        id
-        cargo {
-          id
-          nombre
-        }
-        nombres
-      }
+      fecha
       usuario_id {
         id
         nombres
-        rol_id
-        cargo_id {
-          id
-        }
+        apellidos
       }
-      fecha
-      f_retorno
-      estado
-      almacen_id {
+      obra_id {
         id
         nombre
-        tipo_almacen_id
+        estado
       }
+      f_retorno
+      estado
+      transferencia_detalle_id {
+        id
+      }
+      personal_id
     }
   }
 `;
 
-const DELETE_PRESTAMO = gql`
-  mutation DeletePrestamo($id: ID!) {
-    deletePrestamo(id: $id) {
+const DELETE_PRESTAMO_MUTATION = gql`
+  mutation DeletePrestamo($deletePrestamoId: ID!) {
+    deletePrestamo(id: $deletePrestamoId) {
       id
     }
   }
 `;
 
-// Service functions
 export const listPrestamosService = async () => {
   try {
     const { data } = await client.query({
-      query: LIST_PRESTAMOS,
+      query: LIST_PRESTAMOS_QUERY,
     });
     return data.listPrestamos;
   } catch (error) {
-    console.error('Error fetching prestamos:', error);
-    throw error;
+    throw new Error(`Error fetching prestamos: ${error}`);
   }
 };
 
 export const addPrestamoService = async (prestamoData: {
-  movimiento_id: string;
-  personal_id: string;
-  usuario_id: string;
   fecha: Date;
-  f_retorno: Date;
+  usuarioId: string;
+  obraId: string;
+  fRetorno: Date;
   estado: string;
-  almacen_id: string;
+  transferenciaDetalleId: string;
+  personalId: string;
 }) => {
   try {
     const { data } = await client.mutate({
-      mutation: ADD_PRESTAMO,
+      mutation: ADD_PRESTAMO_MUTATION,
       variables: prestamoData,
     });
     return data.addPrestamo;
   } catch (error) {
-    console.error('Error adding prestamo:', error);
-    throw error;
+    throw new Error(`Error adding prestamo: ${error}`);
   }
 };
 
 export const updatePrestamoService = async (prestamoData: {
   id: string;
-  movimiento_id?: string;
-  personal_id?: string;
-  usuario_id?: string;
   fecha?: Date;
-  f_retorno?: Date;
+  usuarioId?: string;
+  obraId?: string;
+  personalId?: string;
+  fRetorno?: Date;
   estado?: string;
-  almacen_id?: string;
+  transferenciaDetalleId?: string;
 }) => {
   try {
     const { data } = await client.mutate({
-      mutation: UPDATE_PRESTAMO,
-      variables: prestamoData,
+      mutation: UPDATE_PRESTAMO_MUTATION,
+      variables: {
+        updatePrestamoId: prestamoData.id,
+        ...prestamoData
+      },
     });
     return data.updatePrestamo;
   } catch (error) {
-    console.error('Error updating prestamo:', error);
-    throw error;
+    throw new Error(`Error updating prestamo: ${error}`);
   }
 };
 
 export const deletePrestamoService = async (id: string) => {
   try {
     const { data } = await client.mutate({
-      mutation: DELETE_PRESTAMO,
-      variables: { id },
+      mutation: DELETE_PRESTAMO_MUTATION,
+      variables: { deletePrestamoId: id },
     });
-    return data.deletePrestamo.id;
+    return data.deletePrestamo;
   } catch (error) {
-    console.error('Error deleting prestamo:', error);
-    throw error;
+    throw new Error(`Error deleting prestamo: ${error}`);
   }
 };

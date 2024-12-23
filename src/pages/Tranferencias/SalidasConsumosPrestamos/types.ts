@@ -24,6 +24,7 @@ export interface RequerimientoRecurso {
   estado_atencion: string;
   notas?: string; // Cambiamos a opcional para que coincida con el slice
   unidad: string;
+  tipo: string;
 }
 
 // Para operaciones de creación/actualización

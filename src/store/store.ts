@@ -49,10 +49,13 @@ import { cotizacionProveedoresRecursoReducer } from '../slices/cotizacionProveed
 import { valoracionProveedorReducer } from '../slices/valoracionProveedorSlice';
 import { datosValoracionProveedorReducer } from '../slices/datosValoracionProveedorSlice';
 import { cuestionarioHomologacionReducer } from '../slices/cuestionarioHomologacionSlice';
-import prestamoReducer from '../slices/prestamoSlice';
+import { prestamoReducer } from '../slices/prestamoSlice';
 import prestamoRecursoReducer from '../slices/prestamoRecursoSlice';
 import { recursosAllTablesReducer } from '../slices/recursosAllTablesSlice';
 import { empleadoReducer } from '../slices/empleadoSlice';
+import { obraBodegaReducer } from '../slices/obraBodegaSlice';
+import { obraBodegaRecursoReducer } from '../slices/obraBodegaRecursoSlice';
+import { cantidadRecursosByBodegaReducer } from '../slices/cantidadRecursosByBodegaSlice';
 
 export const store = configureStore({
   reducer: {
@@ -109,6 +112,10 @@ export const store = configureStore({
     prestamo: prestamoReducer,
     prestamoRecurso: prestamoRecursoReducer,
     recursosAllTables: recursosAllTablesReducer,
+    obraBodega: obraBodegaReducer,
+    obraBodegaRecurso: obraBodegaRecursoReducer,
+    cantidadRecursosByBodega: cantidadRecursosByBodegaReducer,
+
   },
 
   //Para que se tome mas tiempo en responder todas las solicitudes de la API

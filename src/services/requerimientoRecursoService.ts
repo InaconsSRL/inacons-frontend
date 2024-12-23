@@ -5,6 +5,7 @@ const GET_REQUERIMIENTO_RECURSO_BY_REQUERIMIENTO_ID = gql`
   query GetRequerimientoRecursoByRequerimientoId($requerimientoId: ID!) {
   getRequerimientoRecursoByRequerimientoId(requerimiento_id: $requerimientoId) {
     id
+    tipo
     requerimiento_id
     recurso_id
     nombre
