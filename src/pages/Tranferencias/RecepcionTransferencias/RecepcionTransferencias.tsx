@@ -79,9 +79,14 @@ const RecepcionTransferencia: React.FC<Props> = ({ onClose }) => {
     const handleRecepcionar = async () => {
         if (selectedDetalleId) {
             setIsProcessing(true);
-            // Procesar la recepción aquí
-            // ...
-            // Después de procesar la recepción, establecer el ID de la transferencia y mostrar la guía de transferencias
+            // Filtrar solo los recursos que tienen cantidad recibida mayor a 0
+            const recursosRecepcionados = Object.entries(recursosState)
+                .filter(([_, estado]) => estado.cantidad_recibida > 0)
+                .map(([id, estado]) => ({
+                    ...estado,
+                    recurso: transferenciaRecursos.find(r => r._id === id)
+                }));
+            
             setTransferenciaId(selectedDetalleId);
             setShowGuiaTransfer(true);
             setIsProcessing(false);
@@ -121,7 +126,7 @@ const RecepcionTransferencia: React.FC<Props> = ({ onClose }) => {
                 obra={selectedDetalle.transferencia_id.movimiento_id.nombre}
                 transferenciaId={selectedDetalle.transferencia_id.id}
                 //obraDestino={selectedDetalle.transferencia_id.movilidad_id?.denominacion || ''}
-                onClose={() => setShowGuiaTransfer(false)} estado={'PARCIAL'}            />
+                onClose={() => setShowGuiaTransfer(false)} estado={'PARCIAL'} recursosSeleccionados={recursosState} transferenciaRecursos={transferenciaRecursos}            />
         );
     }
 

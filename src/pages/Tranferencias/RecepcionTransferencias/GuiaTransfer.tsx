@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchTransferenciaDetallesByTransferenciaId } from '../../../slices/transferenciaDetalleSlice';
-import { fetchTransferenciaRecursosById } from '../../../slices/transferenciaRecursoSlice';
 import { addTransferenciaDetalle } from '../../../slices/transferenciaDetalleSlice';
 import { addTransferenciaRecurso } from '../../../slices/transferenciaRecursoSlice';
 import { addTransferencia } from '../../../slices/transferenciaSlice';
 import GuiaTransfersPDF from './GuiaTransferPDF';
+import { RootState } from '../../../store/store';
+import { TransferenciaRecurso } from '../types';
 
 type EstadoTransferencia = 'PARCIAL' | 'COMPLETO';
 
@@ -75,6 +76,8 @@ interface Props {
   estado: EstadoTransferencia; 
   obra: string;
   transferenciaId: string;
+  recursosSeleccionados: { [key: string]: RecursoState };
+  transferenciaRecursos: TransferenciaRecurso[];
 }
 
 interface GuiaTransferProps {
@@ -82,9 +85,10 @@ interface GuiaTransferProps {
 }
 
 interface RecursoState {
-  id: string; 
+  _id: string;
   cantidad_recibida: number;
-  precio_actual: number; 
+  cantidad_original: number;
+  diferencia: number;
 }
 
 const GuiaTransferencia: React.FC<Props & GuiaTransferProps> = ({
@@ -96,37 +100,29 @@ const GuiaTransferencia: React.FC<Props & GuiaTransferProps> = ({
   obra,
   transferenciaId,
   onClose,
+  recursosSeleccionados,
+  transferenciaRecursos
 }) => {
   const dispatch = useDispatch();
-const [recursosState, setRecursosState] = useState<{ [key: string]: RecursoState }>({});
-const { transferenciaRecursos, loading: recursosLoading } = useSelector((state: RootState) => state.transferenciaRecurso);
-const [showPDF, setShowPDF] = useState(false); 
+  const [showPDF, setShowPDF] = useState(false);
+  const [recursosState] = useState(recursosSeleccionados);
 
-const { transferenciaDetalles, loading: detallesLoading, error: detallesError } = useSelector((state: RootState) => state.transferenciaDetalle);
+  const { transferenciaDetalles, loading: detallesLoading, error: detallesError } = 
+    useSelector((state: RootState) => state.transferenciaDetalle);
+  const { loading: recursosLoading } = useSelector((state: RootState) => state.transferenciaRecurso);
   const unidades = useSelector((state: RootState) => state.unidad.unidades);
-  
-  const loading = detallesLoading || recursosLoading;
-  const error = detallesError;
-  const [selectedDetalleId, setSelectedDetalleId] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchData = async () => {
-      const detalles = await dispatch(fetchTransferenciaDetallesByTransferenciaId(transferenciaId) as any).unwrap();
-      if (detalles && detalles.length > 0) {
-        setSelectedDetalleId(detalles[0].id);
-        await dispatch(fetchTransferenciaRecursosById(detalles[0].id) as any);
+      try {
+        await dispatch(fetchTransferenciaDetallesByTransferenciaId(transferenciaId)).unwrap();
+      } catch (error) {
+        console.error('Error al cargar datos:', error);
       }
     };
+
     fetchData();
   }, [dispatch, transferenciaId]);
-
-
-  useEffect(() => {
-    if (selectedDetalleId) {
-      dispatch(fetchTransferenciaRecursosById(selectedDetalleId) as any);
-    }
-  }, [selectedDetalleId, dispatch]);
-
 
   const handleDownload = () => {
     
@@ -147,43 +143,47 @@ const { transferenciaDetalles, loading: detallesLoading, error: detallesError } 
   };
 
   const handleSave = async () => {
-    // Guardar la transferencia
-    const transferenciaData = {
-      usuario_id: 'user_id_placeholder', 
-      fecha: new Date(),
-      movimiento_id: 'movimiento_id_placeholder', 
-      movilidad_id: 'movilidad_id_placeholder', 
-      estado: 'COMPLETO' as EstadoTransferencia
-    };
+    try {
+      const transferenciaData = {
+        usuario_id: "usuario_actual_id",
+        fecha: new Date(),
+        movimiento_id: transferenciaDetalles[0]?.transferencia_id.movimiento_id.id,
+        movilidad_id: transferenciaDetalles[0]?.transferencia_id.movilidad_id.id,
+        estado: estado
+      };
 
-    const transferencia = await dispatch(addTransferencia(transferenciaData) as any).unwrap();
+      const transferencia = await dispatch(addTransferencia(transferenciaData)).unwrap();
 
-    // Guardar los recursos
-    const recursosGuardados = Object.values(recursosState).map(recurso => ({
-      transferencia_detalle_id: transferencia.id, 
-      recurso_id: recurso.id,
-      cantidad: recurso.cantidad_recibida,
-      costo: recurso.precio_actual 
-    }));
+      for (const detalle of transferenciaDetalles) {
+        const detalleData = {
+          transferencia_id: transferencia.id,
+          referencia_id: detalle.referencia_id,
+          fecha: new Date(),
+          tipo: detalle.tipo,
+          referencia: detalle.referencia
+        };
 
-    for (const recurso of recursosGuardados) {
-      await dispatch(addTransferenciaRecurso(recurso) as any);
+        const nuevoDetalle = await dispatch(addTransferenciaDetalle(detalleData)).unwrap();
+
+        const recursosPromises = transferenciaRecursos
+          .filter(recurso => recursosState[recurso._id]?.cantidad_recibida > 0)
+          .map(recurso => {
+            const recursoData = {
+              transferencia_detalle_id: nuevoDetalle.id,
+              recurso_id: recurso.recurso_id.id,
+              cantidad: recursosState[recurso._id].cantidad_recibida,
+              costo: recurso.recurso_id.precio_actual
+            };
+            return dispatch(addTransferenciaRecurso(recursoData)).unwrap();
+          });
+
+        await Promise.all(recursosPromises);
+      }
+
+      onClose();
+    } catch (error) {
+      console.error('Error al guardar:', error);
     }
-
-    // Guardar los detalles
-    const detallesGuardados = transferenciaDetalles.map(detalle => ({
-      transferencia_id: transferencia.id,
-      referencia_id: detalle.referencia_id,
-      fecha: detalle.fecha,
-      tipo: detalle.tipo,
-      referencia: detalle.referencia
-    }));
-
-    for (const detalle of detallesGuardados) {
-      await dispatch(addTransferenciaDetalle(detalle) as any);
-    }
-
-    console.log('Transferencia, recursos y detalles guardados exitosamente');
   };
 
   return (
@@ -200,7 +200,6 @@ const { transferenciaDetalles, loading: detallesLoading, error: detallesError } 
 
         <div className="p-6" id="guia-transferencia">
           <div className="grid grid-cols-2 gap-4 mb-6">
-            {/* Panel izquierdo */}
             <div className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">N° de oden de Transferencia</label>
@@ -243,7 +242,6 @@ const { transferenciaDetalles, loading: detallesLoading, error: detallesError } 
               </div>
             </div>
 
-            {/* Panel derecho */}
             <div className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Estado</label>
@@ -282,10 +280,9 @@ const { transferenciaDetalles, loading: detallesLoading, error: detallesError } 
             </div>
           </div>
 
-          {loading && <p className="text-center">Cargando...</p>}
-          {error && <p className="text-red-500">Error al cargar los detalles: {error}</p>}
+          {(detallesLoading || recursosLoading) && <p className="text-center">Cargando...</p>}
+          {detallesError && <p className="text-red-500">Error al cargar los detalles: {detallesError}</p>}
 
-          {/* Tabla con scroll vertical y ancho fijo */}
           <div className="overflow-x-auto" style={{ maxHeight: '350px' }}>
             <table className="min-w-[900px] divide-y divide-gray-200 border-b">
               <thead className="bg-gray-100">
@@ -305,47 +302,42 @@ const { transferenciaDetalles, loading: detallesLoading, error: detallesError } 
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200 bg-white">
-                {transferenciaRecursos.map((recurso: any, index: number) => (
-                  <tr key={index}>
-                    <td className="px-4 py-3">
-                      <input type="checkbox" className="rounded border-gray-300 text-blue-600 focus:ring-blue-500" />
-                    </td>
-                    <td className="px-4 py-3">{recurso.recurso_id.codigo}</td>
-                    <td className="px-4 py-3">{recurso.recurso_id.nombre}</td>
-                    <td className="px-4 py-3">{recurso.recurso_id.descripcion}</td>
-                    <td className="px-4 py-3">
-                      {unidades?.find((u: { id: string; nombre: string }) => u.id === recurso.recurso_id.unidad_id)?.nombre || 'UND'}
-                    </td>
-                    <td className="px-4 py-3">{recurso.cantidad}</td>
-                    <td className="px-4 py-3">{recurso.recurso_id.precio_actual}</td>
-                    <td className="px-4 py-3">{(recurso.cantidad * recurso.recurso_id.precio_actual).toFixed(2)}</td>
-                    <td className="px-4 py-3">
-                      <input
-                        type="number"
-                        min="0"
-                        max={recurso.cantidad}
-                        value={recursosState[recurso._id]?.cantidad_recibida || ''}
-                        onChange={(e) => {
-                          const cantidad = parseInt(e.target.value) || 0;
-                          setRecursosState(prev => ({
-                            ...prev,
-                            [recurso._id]: {
-                              cantidad_recibida: cantidad
-                            }
-                          }));
-                        }}
-                        className="w-24 p-1.5 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
-                      />
-                    </td>
-                    <td className="px-4 py-3">
-                      <button className="p-1.5 bg-blue-500 text-white rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
-                        </svg>
-                      </button>
-                    </td>
-                  </tr>
-                ))}
+                {transferenciaRecursos.map((recurso: any, index: number) => {
+                  const estadoRecurso = recursosState[recurso._id];
+                  if (!estadoRecurso || estadoRecurso.cantidad_recibida === 0) return null;
+
+                  return (
+                    <tr key={index}>
+                      <td className="px-4 py-3">
+                        <input type="checkbox" className="rounded border-gray-300 text-blue-600 focus:ring-blue-500" />
+                      </td>
+                      <td className="px-4 py-3">{recurso.recurso_id.codigo}</td>
+                      <td className="px-4 py-3">{recurso.recurso_id.nombre}</td>
+                      <td className="px-4 py-3">{recurso.recurso_id.descripcion}</td>
+                      <td className="px-4 py-3">
+                        {unidades?.find((u: { id: string; nombre: string }) => u.id === recurso.recurso_id.unidad_id)?.nombre || 'UND'}
+                      </td>
+                      <td className="px-4 py-3">{recurso.cantidad}</td>
+                      <td className="px-4 py-3">{recurso.recurso_id.precio_actual}</td>
+                      <td className="px-4 py-3">{(recurso.cantidad * recurso.recurso_id.precio_actual).toFixed(2)}</td>
+                      <td className="px-4 py-3">
+                        <input
+                          type="number"
+                          value={estadoRecurso.cantidad_recibida}
+                          readOnly
+                          className="w-24 p-1.5 border border-gray-300 rounded-md bg-gray-100"
+                        />
+                      </td>
+                      <td className="px-4 py-3">
+                        <button className="p-1.5 bg-blue-500 text-white rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+                          </svg>
+                        </button>
+                      </td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>
@@ -365,7 +357,6 @@ const { transferenciaDetalles, loading: detallesLoading, error: detallesError } 
             </button>
           </div>
 
-          {/* Modal para mostrar el PDF */}
           {showPDF && (
             <div className="fixed inset-0 bg-black bg-opacity-75 z-60 flex justify-center items-center">
               <div className="bg-white p-6 rounded-lg max-w-4xl w-full max-h-[80vh] overflow-y-auto">
