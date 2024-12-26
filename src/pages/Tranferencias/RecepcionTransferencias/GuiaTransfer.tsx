@@ -246,7 +246,7 @@ const { transferenciaDetalles, loading: detallesLoading, error: detallesError } 
             {/* Panel derecho */}
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Estado: En recepcion</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Estado</label>
                 <input
                   type="text"
                   value={estado}
@@ -256,7 +256,7 @@ const { transferenciaDetalles, loading: detallesLoading, error: detallesError } 
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Tipo de transporte</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Tipo de movimiento</label>
                 <input
                   type="text"
                   value={transferenciaDetalles[0]?.tipo || ''}
