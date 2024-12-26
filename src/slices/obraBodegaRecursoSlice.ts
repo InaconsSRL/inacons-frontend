@@ -16,8 +16,6 @@ interface Recurso {
   nombre: string;
   codigo: string;
   unidad_id: string;
-  cantidad: number;
-  descripcion: string;
   precio_actual: number;
   imagenes: Imagen[];
 }

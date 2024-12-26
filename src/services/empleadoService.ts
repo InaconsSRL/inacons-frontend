@@ -1,6 +1,24 @@
 import { gql } from '@apollo/client';
 import client from '../apolloClient';
 
+interface Cargo {
+  id: string;
+  nombre: string;
+  descripcion: string;
+  gerarquia: number;
+}
+
+interface EmpleadoResponse {
+  id: string;
+  dni: string;
+  nombres: string;
+  apellidos: string;
+  telefono: string;
+  telefono_secundario?: string;
+  cargo_id: Cargo;
+}
+
+// Actualizar el query para reflejar el cambio de nombre de campo
 const LIST_EMPLEADOS = gql`
   query ListEmpleados {
     listEmpleados {
@@ -10,7 +28,7 @@ const LIST_EMPLEADOS = gql`
       apellidos
       telefono
       telefono_secundario
-      cargo {
+      cargo_id {
         id
         nombre
         descripcion
@@ -20,35 +38,35 @@ const LIST_EMPLEADOS = gql`
   }
 `;
 
-// const GET_EMPLEADO = gql`
-//   query GetEmpleado ($getEmpleadoDni: ID!) {
-//     getEmpleado(id: $getEmpleadoId) {
-//       id
-//       dni
-//       nombres
-//       apellidos
-//       telefono
-//       telefono_secundario
-//       cargo {
-//         id
-//         nombre
-//         descripcion
-//         gerarquia
-//       }
-//     }
-//   }
-// `;
-
-const ADD_EMPLEADO = gql`
-  mutation AddEmpleado($nombres: String!, $apellidos: String!, $telefono: String!, $dni: String!, $cargoId: ID!) {
-    addEmpleado(nombres: $nombres, apellidos: $apellidos, telefono: $telefono, dni: $dni, cargo_id: $cargoId) {
+const GET_EMPLEADO_BY_DNI = gql`
+  query GetEmpleadoByDni($getEmpleadoByDniId: ID!) {
+    getEmpleadoByDni(id: $getEmpleadoByDniId) {
       id
       nombres
-      dni
       apellidos
       telefono
       telefono_secundario
-      cargo {
+      dni
+      cargo_id {
+        id
+        nombre
+        descripcion
+        gerarquia
+      }
+    }
+  }
+`;
+
+const ADD_EMPLEADO = gql`
+  mutation AddEmpleado($nombres: String!, $apellidos: String!, $telefono: String!, $dni: String!, $cargo_id: ID!, $telefono_secundario: String) {
+    addEmpleado(nombres: $nombres, apellidos: $apellidos, telefono: $telefono, dni: $dni, cargo_id: $cargo_id, telefono_secundario: $telefono_secundario) {
+      id
+      nombres
+      apellidos
+      telefono
+      telefono_secundario
+      dni
+      cargo_id {
         id
         nombre
         descripcion
@@ -59,19 +77,19 @@ const ADD_EMPLEADO = gql`
 `;
 
 const UPDATE_EMPLEADO = gql`
-  mutation UpdateEmpleado($updateEmpleadoId: ID!, $telefonoSecundario: String, $telefono: String, $dni: String!, $apellidos: String, $nombres: String) {
-    updateEmpleado(id: $updateEmpleadoId, telefono_secundario: $telefonoSecundario, telefono: $telefono, dni: $dni, apellidos: $apellidos, nombres: $nombres) {
+  mutation UpdateEmpleado($updateEmpleadoId: ID!, $nombres: String, $apellidos: String, $telefono: String, $telefono_secundario: String, $dni: String, $cargo_id: ID) {
+    updateEmpleado(id: $updateEmpleadoId, nombres: $nombres, apellidos: $apellidos, telefono: $telefono, telefono_secundario: $telefono_secundario, dni: $dni, cargo_id: $cargo_id) {
       id
       nombres
-      dni
       apellidos
       telefono
       telefono_secundario
-      cargo {
+      dni
+      cargo_id {
         id
-        gerarquia
-        descripcion
         nombre
+        descripcion
+        gerarquia
       }
     }
   }
@@ -85,7 +103,7 @@ const DELETE_EMPLEADO = gql`
   }
 `;
 
-export const listEmpleadosService = async () => {
+export const listEmpleadosService = async (): Promise<EmpleadoResponse[]> => {
   try {
     const { data } = await client.query({
       query: LIST_EMPLEADOS,
@@ -96,17 +114,30 @@ export const listEmpleadosService = async () => {
   }
 };
 
-export const addEmpleadoService = async (empleado: { nombres: string; apellidos: string; telefono: string; cargo_id: string; dni: string }) => {
+export const getEmpleadoByDniService = async (id: string): Promise<EmpleadoResponse> => {
+  try {
+    const { data } = await client.query({
+      query: GET_EMPLEADO_BY_DNI,
+      variables: { getEmpleadoByDniId: id },
+    });
+    return data.getEmpleadoByDni;
+  } catch (error) {
+    throw new Error(`Error fetching empleado: ${error}`);
+  }
+};
+
+export const addEmpleadoService = async (empleado: {
+  nombres: string;
+  apellidos: string;
+  telefono: string;
+  cargo_id: string;
+  dni: string;
+  telefono_secundario?: string;
+}) => {
   try {
     const { data } = await client.mutate({
       mutation: ADD_EMPLEADO,
-      variables: {
-        dni: empleado.dni,
-        nombres: empleado.nombres,
-        apellidos: empleado.apellidos,
-        telefono: empleado.telefono,
-        cargoId: empleado.cargo_id
-      },
+      variables: empleado,
     });
     return data.addEmpleado;
   } catch (error) {
@@ -114,17 +145,21 @@ export const addEmpleadoService = async (empleado: { nombres: string; apellidos:
   }
 };
 
-export const updateEmpleadoService = async (empleado: { id: string; dni?: string; nombres?: string; apellidos?: string; telefono?: string; telefono_secundario?: string }) => {
+export const updateEmpleadoService = async (empleado: {
+  id: string;
+  nombres?: string;
+  apellidos?: string;
+  telefono?: string;
+  telefono_secundario?: string;
+  dni?: string;
+  cargo_id?: string;
+}) => {
   try {
     const { data } = await client.mutate({
       mutation: UPDATE_EMPLEADO,
       variables: {
         updateEmpleadoId: empleado.id,
-        dni: empleado.dni,
-        nombres: empleado.nombres,
-        apellidos: empleado.apellidos,
-        telefono: empleado.telefono,
-        telefonoSecundario: empleado.telefono_secundario
+        ...empleado
       },
     });
     return data.updateEmpleado;

@@ -16,8 +16,7 @@ const LIST_OBRA_BODEGA_RECURSOS = gql`
         nombre
         codigo
         unidad_id
-        cantidad
-        descripcion
+        tipo_recurso_id
         precio_actual
         imagenes {
           file
@@ -45,8 +44,7 @@ const LIST_OBRA_BODEGA_RECURSOS_BY_BODEGA = gql`
         nombre
         codigo
         unidad_id
-        cantidad
-        descripcion
+        tipo_recurso_id
         precio_actual
         imagenes {
           file
@@ -74,8 +72,7 @@ const ADD_OBRA_BODEGA_RECURSO = gql`
         nombre
         codigo
         unidad_id
-        cantidad
-        descripcion
+        tipo_recurso_id
         precio_actual
         imagenes {
           file
@@ -103,8 +100,6 @@ const UPDATE_OBRA_BODEGA_RECURSO = gql`
         nombre
         codigo
         unidad_id
-        cantidad
-        descripcion
         precio_actual
         imagenes {
           file
