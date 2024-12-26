@@ -6,7 +6,7 @@ import {
   deletePrestamoService 
 } from '../services/prestamoService';
 
-// Interfaces
+// Interfaces para datos de salida (respuesta del servidor)
 interface Usuario {
   id: string;
   nombres: string;
@@ -16,30 +16,53 @@ interface Usuario {
 interface ObraBodega {
   id: string;
   nombre: string;
-  estado: string;
+}
+
+interface Personal {
+  nombres: string;
 }
 
 interface TransferenciaDetalle {
   id: string;
-  referencia_id?: string;
-  fecha?: Date;
-  tipo?: string;
-  referencia?: string;
 }
 
-interface Prestamo {
+// Interface para el prestamo como lo devuelve el servidor
+export interface PrestamoOutput {
   id: string;
   fecha: Date;
   usuario_id: Usuario;
   obra_id: ObraBodega;
+  personal_id: Personal;
   f_retorno: Date;
   estado: string;
   transferencia_detalle_id: TransferenciaDetalle;
-  personal_id: string;
+}
+
+// Interfaces para datos de entrada (envío al servidor)
+export interface PrestamoInput {
+  fecha: Date;
+  usuarioId: string;
+  obraId: string;
+  personalId: string;
+  fRetorno: Date;
+  estado: string;
+  observaciones?: string;
+  transferenciaDetalleId: string;
+}
+
+export interface PrestamoUpdateInput {
+  id: string;
+  fecha?: Date;
+  usuarioId?: string;
+  obraId?: string;
+  personalId?: string;
+  fRetorno?: Date;
+  estado?: string;
+  transferenciaDetalleId?: string;
 }
 
 interface PrestamoState {
-  prestamos: Prestamo[];
+  prestamos: PrestamoOutput[];
   loading: boolean;
   error: string | null;
 }
@@ -65,15 +88,7 @@ export const fetchPrestamos = createAsyncThunk(
 
 export const addPrestamo = createAsyncThunk(
   'prestamo/addPrestamo',
-  async (prestamoData: {
-    fecha: Date;
-    usuarioId: string;
-    obraId: string;
-    fRetorno: Date;
-    estado: string;
-    transferenciaDetalleId: string;
-    personalId: string;
-  }, { rejectWithValue }) => {
+  async (prestamoData: PrestamoInput, { rejectWithValue }) => {
     try {
       return await addPrestamoService(prestamoData);
     } catch (error) {
@@ -84,16 +99,7 @@ export const addPrestamo = createAsyncThunk(
 
 export const updatePrestamo = createAsyncThunk(
   'prestamo/updatePrestamo',
-  async (prestamoData: {
-    id: string;
-    fecha?: Date;
-    usuarioId?: string;
-    obraId?: string;
-    personalId?: string;
-    fRetorno?: Date;
-    estado?: string;
-    transferenciaDetalleId?: string;
-  }, { rejectWithValue }) => {
+  async (prestamoData: PrestamoUpdateInput, { rejectWithValue }) => {
     try {
       return await updatePrestamoService(prestamoData);
     } catch (error) {
@@ -130,7 +136,7 @@ const prestamoSlice = createSlice({
         state.loading = true;
         state.error = null;
       })
-      .addCase(fetchPrestamos.fulfilled, (state, action: PayloadAction<Prestamo[]>) => {
+      .addCase(fetchPrestamos.fulfilled, (state, action: PayloadAction<PrestamoOutput[]>) => {
         state.loading = false;
         state.prestamos = action.payload;
       })
@@ -143,7 +149,7 @@ const prestamoSlice = createSlice({
         state.loading = true;
         state.error = null;
       })
-      .addCase(addPrestamo.fulfilled, (state, action: PayloadAction<Prestamo>) => {
+      .addCase(addPrestamo.fulfilled, (state, action: PayloadAction<PrestamoOutput>) => {
         state.loading = false;
         state.prestamos.push(action.payload);
       })
@@ -156,7 +162,7 @@ const prestamoSlice = createSlice({
         state.loading = true;
         state.error = null;
       })
-      .addCase(updatePrestamo.fulfilled, (state, action: PayloadAction<Prestamo>) => {
+      .addCase(updatePrestamo.fulfilled, (state, action: PayloadAction<PrestamoOutput>) => {
         state.loading = false;
         const index = state.prestamos.findIndex(p => p.id === action.payload.id);
         if (index !== -1) {

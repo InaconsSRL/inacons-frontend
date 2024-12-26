@@ -1,6 +1,13 @@
-import React from 'react';
-import { FiTrash2 } from 'react-icons/fi';
+import React, { useState } from 'react';
+import { FiTrash2, FiMessageSquare, FiChevronDown, FiChevronUp } from 'react-icons/fi';
 import { SelectedRecursosProps } from './bodega.types';
+
+import { useSelector } from 'react-redux';
+import { RootState } from '../../../../store/store';
+
+interface RecursoObservaciones {
+  [key: string]: string;
+}
 
 export const SelectedRecursos: React.FC<SelectedRecursosProps> = ({
   selectedRecursos,
@@ -10,8 +17,31 @@ export const SelectedRecursos: React.FC<SelectedRecursosProps> = ({
   isProcessing,
   error
 }) => {
+  const [observaciones, setObservaciones] = useState<RecursoObservaciones>({});
+  const [showObservaciones, setShowObservaciones] = useState<{[key: string]: boolean}>({});
+
+  const tiposRecurso = useSelector((state: RootState) => state.tipoRecurso.tiposRecurso);
+
+  const obtenerTipoConId = (id: string) => {
+    return tiposRecurso.find((tipo) => tipo.id === id);
+  }
+
+  const toggleObservaciones = (id: string) => {
+    setShowObservaciones(prev => ({
+      ...prev,
+      [id]: !prev[id]
+    }));
+  };
+
+  const handleObservacionChange = (id: string, value: string) => {
+    setObservaciones(prev => ({
+      ...prev,
+      [id]: value
+    }));
+  };
+
   return (
-    <div className="bg-white shadow-md rounded-lg p-4 ">
+    <div className="bg-white shadow-md rounded-lg p-4 w-full">
       <div className="flex items-center gap-3 mb-4">
         <h2 className="text-lg font-semibold">Recursos Seleccionados</h2>
         <span className="px-3 py-1 text-sm font-medium bg-blue-100 text-blue-800 rounded-full">
@@ -33,12 +63,21 @@ export const SelectedRecursos: React.FC<SelectedRecursosProps> = ({
                 <span className="flex items-center justify-center w-6 h-6 bg-indigo-100 text-indigo-700 rounded-full text-[0.5rem] font-medium">
                   {index + 1}
                 </span>
-                <div className="flex-1">
-                  <p className="text-sm font-medium w-96">{recurso.recurso_id.nombre}</p>
+                <div className="flex flex-col">
+                  <p className="text-sm font-medium w-full min-w-56">{recurso.recurso_id.nombre}</p>
                   <p className="text-xs text-gray-500">{recurso.obra_bodega_id.nombre}</p>
+                  <p className="text-xs text-gray-500">{obtenerTipoConId(recurso.recurso_id.tipo_recurso_id?? '')?.nombre ?? 'No especificado'}</p>
+                  <button
+                    onClick={() => toggleObservaciones(id)}
+                    className="flex items-center gap-1 text-xs text-blue-600 hover:text-blue-800 mt-1"
+                  >
+                    <FiMessageSquare size={12} />
+                    {showObservaciones[id] ? 'Ocultar observaciones' : 'Agregar observaciones'}
+                    {showObservaciones[id] ? <FiChevronUp size={12} /> : <FiChevronDown size={12} />}
+                  </button>
                 </div>
               </div>
-              <div className="flex items-center gap-2">
+              <div className="flex items-start gap-2">
                 <input
                   type="number"
                   min="1"
@@ -47,6 +86,13 @@ export const SelectedRecursos: React.FC<SelectedRecursosProps> = ({
                   onChange={(e) => onUpdateCantidad(id, Number(e.target.value))}
                   className="w-18 p-1 text-xs border rounded-xl pl-3 "
                 />
+                <select className="w-24 p-1 text-xs border rounded-xl">
+                  <option value="partida1">Partida 1</option>
+                  <option value="partida2">Partida 2</option>
+                  <option value="partida3">Partida 3</option>
+                  <option value="partida4">Partida 4</option>
+                  <option value="partida5">Partida 5</option>
+                </select>
                 <button
                   onClick={() => onRemoveRecurso(id)}
                   className="p-1 text-red-600 hover:text-red-800"
@@ -55,6 +101,16 @@ export const SelectedRecursos: React.FC<SelectedRecursosProps> = ({
                 </button>
               </div>
             </div>
+            {showObservaciones[id] && (
+              <div className="mt-2 pl-9">
+                <textarea
+                  value={observaciones[id] || ''}
+                  onChange={(e) => handleObservacionChange(id, e.target.value)}
+                  placeholder="Agregar observaciones..."
+                  className="w-full text-xs p-2 border rounded-lg resize-none h-20 bg-gray-50 focus:bg-white transition-colors"
+                />
+              </div>
+            )}
           </div>
         ))}
       </div>

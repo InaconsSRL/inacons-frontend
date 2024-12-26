@@ -6,71 +6,40 @@ const LIST_PRESTAMO_RECURSOS = gql`
   query ListPrestamoRecursos {
     listPrestamoRecursos {
       id
-      cantidad
-      bodega_id {
-        id
-        codigo
-        descripcion
-      }
-      observaciones
       prestamo_id {
         id
       }
-      recurso_id {
+      obrabodega_recurso_id {
         id
-        imagenes {
-          file
-          id
-          recurso_id
-        }
-        cantidad
-        clasificacion_recurso_id
-        codigo
-        descripcion
-        fecha
-        nombre
-        precio_actual
-        tipo_costo_recurso_id
-        tipo_recurso_id
-        unidad_id
-        vigente
       }
+      cantidad
+      observaciones
     }
   }
 `;
 
 const ADD_PRESTAMO_RECURSO = gql`
   mutation AddPrestamoRecurso(
-    $cantidad: Float!
-    $bodega_id: ID!
+    $prestamoId: ID!
+    $obrabodegaRecursoId: ID!
+    $cantidad: Int!
     $observaciones: String
-    $prestamo_id: ID!
-    $recurso_id: ID!
   ) {
     addPrestamoRecurso(
+      prestamo_id: $prestamoId
+      obrabodega_recurso_id: $obrabodegaRecursoId
       cantidad: $cantidad
-      bodega_id: $bodega_id
       observaciones: $observaciones
-      prestamo_id: $prestamo_id
-      recurso_id: $recurso_id
     ) {
       id
-      cantidad
-      bodega_id {
-        id
-        codigo
-        descripcion
-      }
-      observaciones
       prestamo_id {
         id
       }
-      recurso_id {
+      obrabodega_recurso_id {
         id
-        codigo
-        nombre
-        precio_actual
       }
+      cantidad
+      observaciones
     }
   }
 `;
@@ -78,37 +47,27 @@ const ADD_PRESTAMO_RECURSO = gql`
 const UPDATE_PRESTAMO_RECURSO = gql`
   mutation UpdatePrestamoRecurso(
     $id: ID!
-    $cantidad: Float
-    $bodega_id: ID
+    $prestamoId: ID!
+    $obrabodegaRecursoId: ID!
+    $cantidad: Int!
     $observaciones: String
-    $prestamo_id: ID
-    $recurso_id: ID
   ) {
     updatePrestamoRecurso(
       id: $id
+      prestamo_id: $prestamoId
+      obrabodega_recurso_id: $obrabodegaRecursoId
       cantidad: $cantidad
-      bodega_id: $bodega_id
       observaciones: $observaciones
-      prestamo_id: $prestamo_id
-      recurso_id: $recurso_id
     ) {
       id
-      cantidad
-      bodega_id {
-        id
-        codigo
-        descripcion
-      }
-      observaciones
       prestamo_id {
         id
       }
-      recurso_id {
+      obrabodega_recurso_id {
         id
-        codigo
-        nombre
-        precio_actual
       }
+      cantidad
+      observaciones
     }
   }
 `;
@@ -136,10 +95,9 @@ export const listPrestamoRecursosService = async () => {
 
 export const addPrestamoRecursoService = async (prestamoRecursoData: {
   cantidad: number;
-  bodega_id: string;
+  prestamoId: string;
+  obrabodegaRecursoId: string;
   observaciones?: string;
-  prestamo_id: string;
-  recurso_id: string;
 }) => {
   try {
     const { data } = await client.mutate({
@@ -155,11 +113,10 @@ export const addPrestamoRecursoService = async (prestamoRecursoData: {
 
 export const updatePrestamoRecursoService = async (prestamoRecursoData: {
   id: string;
-  cantidad?: number;
-  bodega_id?: string;
+  prestamoId: string;
+  obrabodegaRecursoId: string;
+  cantidad: number;
   observaciones?: string;
-  prestamo_id?: string;
-  recurso_id?: string;
 }) => {
   try {
     const { data } = await client.mutate({

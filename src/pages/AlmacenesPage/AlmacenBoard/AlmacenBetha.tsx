@@ -78,7 +78,7 @@ const AlmacenBetha: React.FC = () => {
                         <option value="">Seleccione una obra</option>
                         {obras.map(obra => (
                             <option key={obra.id} value={obra.id}>
-                                {obra.nombre}
+                                {obra.titulo}
                             </option>
                         ))}
                     </select>

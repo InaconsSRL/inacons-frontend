@@ -11,12 +11,28 @@ import { RootState, AppDispatch } from '../../store/store';
 import LoaderPage from '../../components/Loader/LoaderPage';
 import { FiEdit } from 'react-icons/fi';
 
-// Definimos la interfaz Obra
-interface Obra {
+// Definimos las interfaces
+interface TipoObra {
   id: string;
+  nombre: string;
+}
+
+interface ObraBase {
   titulo: string;
   nombre: string;
   descripcion: string;
+  ubicacion: string;
+  direccion: string;
+  estado: string;
+}
+
+interface ObraInput extends ObraBase {
+  tipoId: string;
+}
+
+interface Obra extends ObraBase {
+  id: string;
+  tipo_id: TipoObra;
 }
 
 const pageVariants = {
@@ -38,9 +54,20 @@ const ObrasComponent: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
   const { obras, loading, error } = useSelector((state: RootState) => state.obra);
 
-  const handleSubmit = (data: { titulo: string; nombre: string; descripcion: string }) => {
+  const handleSubmit = (data: ObraInput) => {
     if (editingObra) {
-      dispatch(updateObra({ id: editingObra.id, ...data }));
+      // Asegurarse de que todos los campos necesarios estén presentes
+      const updateData = {
+        id: editingObra.id,
+        titulo: data.titulo,
+        nombre: data.nombre,
+        descripcion: data.descripcion,
+        ubicacion: data.ubicacion,
+        direccion: data.direccion,
+        estado: data.estado,
+        tipoId: data.tipoId
+      };
+      dispatch(updateObra(updateData));
     } else {
       dispatch(addObra(data));
     }
@@ -49,7 +76,7 @@ const ObrasComponent: React.FC = () => {
   };
 
   const handleEdit = (obra: Obra) => {
-    setEditingObra(obra);
+    setEditingObra({ ...obra });
     setIsModalOpen(true);
   };
 
@@ -67,12 +94,23 @@ const ObrasComponent: React.FC = () => {
   };
 
   const tableData = {
-    filter: [true, true, true, false],
-    headers: ["titulo", "nombre", "descripcion", "opciones"],
+
+    filter: [true, true, true, true, true, true, false],
+    headers: ["titulo", "nombre", "descripcion", "ubicacion", "direccion", "estado", "opciones"],
     rows: obras.map(obra => ({
-      ...obra,
+      titulo: obra.titulo || '',
+      nombre: obra.nombre || '',
+      descripcion: obra.descripcion || '',
+      ubicacion: obra.ubicacion || '',
+      direccion: obra.direccion || '',
+      estado: obra.estado || '',
       opciones: (
-        <Button text={<FiEdit size={18} className='text-blue-500'/>} color='transp' className='text-black' onClick={() => handleEdit(obra)}></Button>
+        <Button 
+          text={<FiEdit size={18} className='text-blue-500'/>} 
+          color='transp' 
+          className='text-black' 
+          onClick={() => handleEdit(obra)}
+        />
       )
     }))
   };
@@ -129,7 +167,15 @@ const ObrasComponent: React.FC = () => {
               transition={{ duration: 0.3 }}
             >
               <FormComponent
-                initialValues={editingObra || undefined}
+                initialValues={editingObra ? {
+                  titulo: editingObra.titulo || '',
+                  nombre: editingObra.nombre || '',
+                  descripcion: editingObra.descripcion || '',
+                  ubicacion: editingObra.ubicacion || '',
+                  direccion: editingObra.direccion || '',
+                  estado: editingObra.estado || '',
+                  tipoId: editingObra.tipo_id?.id || ''
+                } : undefined}
                 onSubmit={handleSubmit}
               />
             </motion.div>

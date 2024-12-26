@@ -115,7 +115,7 @@ const EmpleadosPage: React.FC = () => {
       apellidos: empleado.apellidos,
       telefono: empleado.telefono,
       telefono_secundario: empleado.telefono_secundario,
-      cargo_id: empleado.cargo_id.id  // Ahora accedemos a cargo.id
+      cargo_id: empleado.cargo_id?.id || ''  // Agregamos optional chaining
     };
     setEditingEmpleado(empleadoForm);
     setIsModalOpenNewEmpleado(true);
@@ -143,7 +143,7 @@ const EmpleadosPage: React.FC = () => {
         apellidos: empleado.apellidos,
         telefono: empleado.telefono,
         telefono_secundario: empleado.telefono_secundario || 'No registrado',
-        cargo: empleado.cargo_id.nombre,  // Ahora accedemos directamente al nombre del cargo
+        cargo: empleado.cargo_id?.nombre || 'Sin cargo',  // Agregamos optional chaining y valor por defecto
         opciones: (
           <Button 
             icon={<FiEdit />} 
