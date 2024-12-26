@@ -41,12 +41,14 @@ interface ObraBodegaRecursoState {
   obraBodegaRecursos: ObraBodegaRecurso[];
   loading: boolean;
   error: string | null;
+  obraBodegaRecursosMap: Record<string, ObraBodegaRecurso[]>;
 }
 
 const initialState: ObraBodegaRecursoState = {
   obraBodegaRecursos: [],
   loading: false,
   error: null,
+  obraBodegaRecursosMap: {},
 };
 
 export const fetchObraBodegaRecursos = createAsyncThunk(
@@ -170,9 +172,10 @@ const obraBodegaRecursoSlice = createSlice({
         state.loading = true;
         state.error = null;
       })
-      .addCase(fetchRecursosBodegaByObra.fulfilled, (state, action: PayloadAction<ObraBodegaRecurso[]>) => {
+      .addCase(fetchRecursosBodegaByObra.fulfilled, (state, action: PayloadAction<ObraBodegaRecurso[]> & { meta: { arg: string } }) => {
         state.loading = false;
         state.obraBodegaRecursos = action.payload;
+        state.obraBodegaRecursosMap[action.meta.arg] = action.payload;
       })
       .addCase(fetchRecursosBodegaByObra.rejected, (state, action) => {
         state.loading = false;

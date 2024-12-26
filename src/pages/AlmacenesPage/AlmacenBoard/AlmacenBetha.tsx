@@ -1,12 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { AppDispatch, RootState } from '../../store/store';
-import TableComponent from '../../components/Table/TableComponent';
-import LoaderPage from '../../components/Loader/LoaderPage';
-import { fetchRecursosBodegaByObra } from '../../slices/obraBodegaRecursoSlice';
-import { fetchObras } from '../../slices/obrasSlice';
-import SalidasConsumosPrestamos from '../Tranferencias/SalidasConsumosPrestamos/SalidasConsumosPrestamos';
-import Modal from '../../components/Modal/Modal';
+import { AppDispatch, RootState } from '../../../store/store';
+import TableComponent from '../../../components/Table/TableComponent';
+import LoaderPage from '../../../components/Loader/LoaderPage';
+import { fetchRecursosBodegaByObra } from '../../../slices/obraBodegaRecursoSlice';
+import { fetchObras } from '../../../slices/obrasSlice';
+import SalidasConsumosPrestamos from '../../Tranferencias/SalidasConsumosPrestamos/SalidasConsumosPrestamos';
+import Modal from '../../../components/Modal/Modal';
 
 const AlmacenBetha: React.FC = () => {
     const dispatch = useDispatch<AppDispatch>();
@@ -16,7 +16,7 @@ const AlmacenBetha: React.FC = () => {
 
     // Selectors
     const obras = useSelector((state: RootState) => state.obra.obras);
-    const obraBodegaRecursos = useSelector((state: RootState) => state.obraBodegaRecurso.obraBodegaRecursos);
+    const obraBodegaRecursosMap = useSelector((state: RootState) => state.obraBodegaRecurso.obraBodegaRecursosMap);
     const unidades = useSelector((state: RootState) => state.unidad.unidades);
 
     useEffect(() => {
@@ -29,6 +29,10 @@ const AlmacenBetha: React.FC = () => {
         const obraId = e.target.value;
         setSelectedObraId(obraId);
         if (obraId) {
+            // Verificar si ya tenemos datos en Redux
+            if (obraBodegaRecursosMap[obraId]?.length) {
+                return; // Evitamos nueva consulta
+            }
             setIsLoading(true);
             await dispatch(fetchRecursosBodegaByObra(obraId));
             setIsLoading(false);
@@ -36,6 +40,7 @@ const AlmacenBetha: React.FC = () => {
     };
 
     // Preparar datos para la tabla
+    const obraBodegaRecursos = obraBodegaRecursosMap[selectedObraId] || [];
     const tableData = {
         headers: ['Código', 'Nombre', 'Cantidad', 'Costo', 'Unidad', 'Bodega', 'Estado', 'Imagen', 'ID'],
         filterSelect: [false, false, false, false, true, true, true, false, false],
@@ -59,7 +64,7 @@ const AlmacenBetha: React.FC = () => {
 
     return (
         <div className="w-full p-4 flex flex-col flex-grow bg-white/60 overflow-hidden rounded-xl">
-            <div className="mb-6 flex justify-between items-center">
+            <div className="mb-6 flex justify-between items-end">
                 <div className="flex-1">
                     <label htmlFor="obra" className="block text-sm font-medium text-white mb-2">
                         Seleccionar Obra
@@ -78,7 +83,7 @@ const AlmacenBetha: React.FC = () => {
                         ))}
                     </select>
                 </div>
-                {selectedObraId && (
+                {selectedObraId && !isLoading && obraBodegaRecursos.length > 0 && (
                     <button
                         onClick={() => setShowSalidas(true)}
                         className="ml-4 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"

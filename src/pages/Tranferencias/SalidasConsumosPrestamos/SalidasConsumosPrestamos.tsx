@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { RootState, AppDispatch } from '../../../store/store';
 import { RecursoObra, SelectedRecurso } from './components/bodega.types';
@@ -7,6 +7,7 @@ import { addTransferenciaDetalle } from '../../../slices/transferenciaDetalleSli
 import { addTransferenciaRecurso } from '../../../slices/transferenciaRecursoSlice';
 import { RecursosList } from './components/RecursosList';
 import { SelectedRecursos } from './components/SelectedRecursos';
+import { FiSearch } from 'react-icons/fi';
 
 interface Props {
   obraId: string;
@@ -17,12 +18,33 @@ interface Props {
 
 const SalidasConsumosPrestamos: React.FC<Props> = ({ obraId, recursos, onClose, loading }) => {
   const dispatch = useDispatch<AppDispatch>();
+  const [searchTerm, setSearchTerm] = useState('');
   const [selectedRecursos, setSelectedRecursos] = useState<Record<string, SelectedRecurso>>({});
   const [error, setError] = useState<string | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
   const PER_PAGE = 30;
   const [currentPage, setCurrentPage] = useState(0);
-  const totalPages = Math.ceil(recursos.length / PER_PAGE);
+
+  // Filtrar todos los recursos primero
+  const filteredRecursos = useMemo(() => {
+    return recursos.filter(recurso =>
+      recurso.recurso_id.nombre.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      recurso.recurso_id.codigo.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+  }, [recursos, searchTerm]);
+
+  const totalPages = Math.ceil(filteredRecursos.length / PER_PAGE);
+
+  // Obtener solo los recursos de la página actual
+  const displayedRecursos = filteredRecursos.slice(
+    currentPage * PER_PAGE,
+    (currentPage + 1) * PER_PAGE
+  );
+
+  // Reset página cuando cambia la búsqueda
+  React.useEffect(() => {
+    setCurrentPage(0);
+  }, [searchTerm]);
 
   const userId = useSelector((state: RootState) => state.user?.id);
 
@@ -92,11 +114,6 @@ const SalidasConsumosPrestamos: React.FC<Props> = ({ obraId, recursos, onClose, 
     }
   };
 
-  const displayedRecursos = recursos.slice(
-    currentPage * PER_PAGE,
-    (currentPage + 1) * PER_PAGE
-  );
-
   if (loading) {
     return (
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 p-4 bg-white rounded-lg">
@@ -109,43 +126,55 @@ const SalidasConsumosPrestamos: React.FC<Props> = ({ obraId, recursos, onClose, 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 p-4 bg-neutral-200 rounded-lg">
       <div>
-      <RecursosList 
-        recursos={displayedRecursos}
-        selectedRecursos={selectedRecursos}
-        onAddRecurso={handleAddRecurso}
-      />
-      {recursos.length > PER_PAGE && (
-        <div className="flex items-center justify-start gap-4 mt-4 p-2">
-          <button 
-        onClick={() => setCurrentPage(prev => Math.max(prev - 1, 0))}
-        className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50"
-        disabled={currentPage === 0}
-          >
-        ← Anterior
-          </button>
-          <span className="text-sm text-gray-700">
-        Página <span className="font-medium">{currentPage + 1}</span> de{" "}
-        <span className="font-medium">{totalPages}</span>
-          </span>
-          <button
-        onClick={() => setCurrentPage(prev => (prev < totalPages - 1 ? prev + 1 : prev))}
-        className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50"
-        disabled={currentPage === totalPages - 1}
-          >
-        Siguiente →
-          </button>
+        <div className="mb-4 sticky top-0 bg-white/80 p-4 shadow-md rounded-lg">
+          <div className="relative">
+            <input
+              type="text"
+              placeholder="Buscar por código o nombre..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full px-4 py-2 border rounded-lg"
+            />
+            <FiSearch className="absolute right-3 top-2.5 text-gray-400" />
+          </div>
         </div>
-      )}
+        <RecursosList 
+          recursos={displayedRecursos}
+          selectedRecursos={selectedRecursos}
+          onAddRecurso={handleAddRecurso}
+        />
+        {filteredRecursos.length > PER_PAGE && (
+          <div className="flex items-center justify-start gap-4 mt-4 p-2">
+            <button 
+              onClick={() => setCurrentPage(prev => Math.max(prev - 1, 0))}
+              className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50"
+              disabled={currentPage === 0}
+            >
+              ← Anterior
+            </button>
+            <span className="text-sm text-gray-700">
+              Página <span className="font-medium">{currentPage + 1}</span> de{" "}
+              <span className="font-medium">{totalPages}</span>
+            </span>
+            <button
+              onClick={() => setCurrentPage(prev => (prev < totalPages - 1 ? prev + 1 : prev))}
+              className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50"
+              disabled={currentPage === totalPages - 1}
+            >
+              Siguiente →
+            </button>
+          </div>
+        )}
       </div>
       <div className="lg:sticky lg:top-8">
-      <SelectedRecursos
-        selectedRecursos={selectedRecursos}
-        onUpdateCantidad={handleUpdateCantidad}
-        onRemoveRecurso={handleRemoveRecurso}
-        onProcesar={procesarSalida}
-        isProcessing={isProcessing}
-        error={error}
-      />
+        <SelectedRecursos
+          selectedRecursos={selectedRecursos}
+          onUpdateCantidad={handleUpdateCantidad}
+          onRemoveRecurso={handleRemoveRecurso}
+          onProcesar={procesarSalida}
+          isProcessing={isProcessing}
+          error={error}
+        />
       </div>
     </div>
   );
