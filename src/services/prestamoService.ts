@@ -1,5 +1,6 @@
 import { gql } from '@apollo/client';
 import client from '../apolloClient';
+import { PrestamoOutput, PrestamoInput, PrestamoUpdateInput } from '../slices/prestamoSlice';
 
 const LIST_PRESTAMOS_QUERY = gql`
   query ListPrestamos {
@@ -14,18 +15,15 @@ const LIST_PRESTAMOS_QUERY = gql`
       obra_id {
         id
         nombre
-        estado
+      }
+      personal_id {
+        nombres
       }
       f_retorno
       estado
       transferencia_detalle_id {
         id
-        referencia_id
-        fecha
-        tipo
-        referencia
       }
-      personal_id
     }
   }
 `;
@@ -35,55 +33,12 @@ const ADD_PRESTAMO_MUTATION = gql`
     $fecha: Date!, 
     $usuarioId: ID!, 
     $obraId: ID!, 
+    $personalId: String!, 
     $fRetorno: Date!, 
     $estado: String!, 
-    $transferenciaDetalleId: ID!, 
-    $personalId: String!
+    $transferenciaDetalleId: ID!
   ) {
     addPrestamo(
-      fecha: $fecha, 
-      usuario_id: $usuarioId, 
-      obra_id: $obraId, 
-      f_retorno: $fRetorno, 
-      estado: $estado, 
-      transferencia_detalle_id: $transferenciaDetalleId, 
-      personal_id: $personalId
-    ) {
-      id
-      fecha
-      usuario_id {
-        id
-        nombres
-        apellidos
-      }
-      obra_id {
-        id
-        nombre
-        estado
-      }
-      f_retorno
-      estado
-      transferencia_detalle_id {
-        id
-      }
-      personal_id
-    }
-  }
-`;
-
-const UPDATE_PRESTAMO_MUTATION = gql`
-  mutation UpdatePrestamo(
-    $updatePrestamoId: ID!, 
-    $fecha: Date, 
-    $usuarioId: String, 
-    $obraId: ID, 
-    $personalId: ID, 
-    $fRetorno: Date, 
-    $estado: String, 
-    $transferenciaDetalleId: ID
-  ) {
-    updatePrestamo(
-      id: $updatePrestamoId, 
       fecha: $fecha, 
       usuario_id: $usuarioId, 
       obra_id: $obraId, 
@@ -102,14 +57,57 @@ const UPDATE_PRESTAMO_MUTATION = gql`
       obra_id {
         id
         nombre
-        estado
+      }
+      personal_id {
+        nombres
       }
       f_retorno
       estado
       transferencia_detalle_id {
         id
       }
-      personal_id
+    }
+  }
+`;
+
+const UPDATE_PRESTAMO_MUTATION = gql`
+  mutation UpdatePrestamo(
+    $updatePrestamoId: ID!, 
+    $fecha: Date, 
+    $usuarioId: String, 
+    $personalId: ID, 
+    $fRetorno: Date, 
+    $estado: String, 
+    $transferenciaDetalleId: ID
+  ) {
+    updatePrestamo(
+      id: $updatePrestamoId, 
+      fecha: $fecha, 
+      usuario_id: $usuarioId, 
+      personal_id: $personalId, 
+      f_retorno: $fRetorno, 
+      estado: $estado, 
+      transferencia_detalle_id: $transferenciaDetalleId
+    ) {
+      id
+      fecha
+      usuario_id {
+        id
+        nombres
+        apellidos
+      }
+      obra_id {
+        id
+        nombre
+      }
+      personal_id {
+        nombres
+      }
+      f_retorno
+      estado
+      transferencia_detalle_id {
+        id
+      }
     }
   }
 `;
@@ -127,21 +125,13 @@ export const listPrestamosService = async () => {
     const { data } = await client.query({
       query: LIST_PRESTAMOS_QUERY,
     });
-    return data.listPrestamos;
+    return data.listPrestamos as PrestamoOutput[];
   } catch (error) {
     throw new Error(`Error fetching prestamos: ${error}`);
   }
 };
 
-export const addPrestamoService = async (prestamoData: {
-  fecha: Date;
-  usuarioId: string;
-  obraId: string;
-  fRetorno: Date;
-  estado: string;
-  transferenciaDetalleId: string;
-  personalId: string;
-}) => {
+export const addPrestamoService = async (prestamoData: PrestamoInput): Promise<PrestamoOutput> => {
   try {
     const { data } = await client.mutate({
       mutation: ADD_PRESTAMO_MUTATION,
@@ -153,16 +143,7 @@ export const addPrestamoService = async (prestamoData: {
   }
 };
 
-export const updatePrestamoService = async (prestamoData: {
-  id: string;
-  fecha?: Date;
-  usuarioId?: string;
-  obraId?: string;
-  personalId?: string;
-  fRetorno?: Date;
-  estado?: string;
-  transferenciaDetalleId?: string;
-}) => {
+export const updatePrestamoService = async (prestamoData: PrestamoUpdateInput): Promise<PrestamoOutput> => {
   try {
     const { data } = await client.mutate({
       mutation: UPDATE_PRESTAMO_MUTATION,

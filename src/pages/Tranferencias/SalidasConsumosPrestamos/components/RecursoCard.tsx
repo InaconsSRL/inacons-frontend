@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { FiPlusCircle } from 'react-icons/fi';
 import { RecursoCardProps } from './bodega.types';
+import { useObtenerTipoConId } from '../../../../components/Utils/obtenerTipoConId';
 
 const RecursoCard: React.FC<RecursoCardProps> = ({
     recurso,
@@ -8,6 +9,7 @@ const RecursoCard: React.FC<RecursoCardProps> = ({
     onAdd
 }) => {
     const [cantidad, setCantidad] = useState(1);
+    const tipoRecurso = useObtenerTipoConId(recurso.recurso_id.tipo_recurso_id ?? '')?.nombre ?? 'No especificado';
 
     const handleAdd = () => {
         if (cantidad > 0 && cantidad <= recurso.cantidad) {
@@ -22,8 +24,10 @@ const RecursoCard: React.FC<RecursoCardProps> = ({
                 <div className="overflow-hidden"> {/* Added overflow-hidden */}
                     <p className="text-sm font-semibold truncate">{recurso.recurso_id.codigo}</p>
                     <p className="text-xs text-gray-600 ">{recurso.recurso_id.nombre}</p>
+                    <p className="text-xs text-gray-500">Tipo: {tipoRecurso}</p>
                     <p className="text-xs text-gray-500 truncate">Bodega: {recurso.obra_bodega_id.nombre}</p>
                     <p className="text-xs text-gray-500">Disponible: {recurso.cantidad}</p>
+
                 </div>
                 {!isSelected && (
                     <div className="flex items-center gap-2 ml-2"> {/* Added ml-2 for spacing */}

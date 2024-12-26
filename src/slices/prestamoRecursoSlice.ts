@@ -7,45 +7,21 @@ import {
 } from '../services/prestamoRecursoService';
 
 // Interfaces
-interface Imagen {
-  file: string;
-  id: string;
-  recurso_id: string;
-}
-
-interface Recurso {
-  id: string;
-  imagenes: Imagen[];
-  cantidad: number;
-  clasificacion_recurso_id: string;
-  codigo: string;
-  descripcion: string;
-  fecha: string;
-  nombre: string;
-  precio_actual: number;
-  tipo_costo_recurso_id: string;
-  tipo_recurso_id: string;
-  unidad_id: string;
-  vigente: boolean;
-}
-
-interface Bodega {
-  id: string;
-  codigo: string;
-  descripcion: string;
-}
 
 interface Prestamo {
+  id: string;
+}
+
+interface ObraBodegaRecurso {
   id: string;
 }
 
 export interface PrestamoRecurso {
   id: string;
   cantidad: number;
-  bodega_id: Bodega;
   observaciones?: string;
   prestamo_id: Prestamo;
-  recurso_id: Recurso;
+  obrabodega_recurso_id: ObraBodegaRecurso;
 }
 
 interface PrestamoRecursoState {
@@ -77,10 +53,9 @@ export const addPrestamoRecurso = createAsyncThunk(
   'prestamoRecursos/addPrestamoRecurso',
   async (prestamoRecursoData: {
     cantidad: number;
-    bodega_id: string;
+    prestamoId: string;
+    obrabodegaRecursoId: string;
     observaciones?: string;
-    prestamo_id: string;
-    recurso_id: string;
   }, { rejectWithValue }) => {
     try {
       return await addPrestamoRecursoService(prestamoRecursoData);
@@ -94,11 +69,10 @@ export const updatePrestamoRecurso = createAsyncThunk(
   'prestamoRecursos/updatePrestamoRecurso',
   async (prestamoRecursoData: {
     id: string;
-    cantidad?: number;
-    bodega_id?: string;
+    prestamoId: string;
+    obrabodegaRecursoId: string;
+    cantidad: number;
     observaciones?: string;
-    prestamo_id?: string;
-    recurso_id?: string;
   }, { rejectWithValue }) => {
     try {
       return await updatePrestamoRecursoService(prestamoRecursoData);

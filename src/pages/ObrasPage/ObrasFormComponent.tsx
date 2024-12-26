@@ -1,25 +1,60 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useForm, FieldApi } from '@tanstack/react-form';
 import { z } from 'zod';
 import Button from '../../components/Buttons/Button';
+import { useDispatch, useSelector } from 'react-redux';
+import { RootState, AppDispatch } from '../../store/store';
+import { fetchTipoAlmacenes } from '../../slices/tipoAlmacenSlice';
+
+interface ObraInput {
+  titulo: string;
+  nombre: string;
+  descripcion: string;
+  ubicacion: string;
+  direccion: string;
+  estado: string;
+  tipoId: string;
+}
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 const obraSchema = z.object({
   titulo: z.string().min(1, 'El título es requerido'),
   nombre: z.string().min(1, 'El nombre es requerido'),
   descripcion: z.string().min(1, 'La descripción es requerida'),
+  ubicacion: z.string().min(1, 'La ubicación es requerida'),
+  direccion: z.string().min(1, 'La dirección es requerida'),
+  estado: z.string().min(1, 'El estado es requerido'),
+  tipoId: z.string().min(1, 'El tipo de obra es requerido'),
 });
 
 type ObraFormData = z.infer<typeof obraSchema>;
 
 interface FormComponentProps {
-  initialValues?: ObraFormData;
-  onSubmit: (data: ObraFormData) => void;
+  initialValues?: ObraInput;
+  onSubmit: (data: ObraInput) => void;
 }
 
 const ObraFormComponent: React.FC<FormComponentProps> = ({ initialValues, onSubmit }) => {
+  const dispatch = useDispatch<AppDispatch>();
+  const { tipoAlmacenes } = useSelector((state: RootState) => state.tipoAlmacen);
+
+  useEffect(() => {
+    // Solo realizar la consulta si no hay tipos de almacén en el estado
+    if (tipoAlmacenes.length === 0) {
+      dispatch(fetchTipoAlmacenes());
+    }
+  }, [dispatch, tipoAlmacenes.length]);
+
   const form = useForm<ObraFormData>({
-    defaultValues: initialValues || { titulo: '', nombre: '', descripcion: '' },
+    defaultValues: {
+      titulo: initialValues?.titulo || '',
+      nombre: initialValues?.nombre || '',
+      descripcion: initialValues?.descripcion || '',
+      ubicacion: initialValues?.ubicacion || '',
+      direccion: initialValues?.direccion || '',
+      estado: initialValues?.estado || '',
+      tipoId: initialValues?.tipoId || ''
+    },
     onSubmit: async (values) => {
       onSubmit(values.value);
     },
@@ -37,6 +72,7 @@ const ObraFormComponent: React.FC<FormComponentProps> = ({ initialValues, onSubm
       <div className="mb-6">
         <label htmlFor="titulo" className="block text-blue-700 text-sm font-semibold mb-2">
           Título:
+          <span className='text-neutral-300 text-xs '>(Ejm: "CU_PLAN3")</span>
         </label>
         <form.Field
           name="titulo"
@@ -60,6 +96,7 @@ const ObraFormComponent: React.FC<FormComponentProps> = ({ initialValues, onSubm
       <div className="mb-6">
         <label htmlFor="nombre" className="block text-blue-700 text-sm font-semibold mb-2">
           Nombre:
+          <span className='text-neutral-300 text-xs '>(Ejm: "CU PLAN3")</span>
         </label>
         <form.Field
           name="nombre"
@@ -99,6 +136,113 @@ const ObraFormComponent: React.FC<FormComponentProps> = ({ initialValues, onSubm
               {field.state.meta.errors ? (
                 <p className="text-red-500 text-xs italic mt-1">{field.state.meta.errors[0]}</p>
               ) : null}
+            </>
+          )}
+        />
+      </div>
+      <div className="mb-6">
+        <label htmlFor="ubicacion" className="block text-blue-700 text-sm font-semibold mb-2">
+          Ubicación:
+          <span className='text-neutral-300 text-xs '>(Ejm: "-12.456789, -75.654987")</span>
+        </label>
+        <form.Field
+          name="ubicacion"
+          children={(field: FieldApi<ObraFormData, 'ubicacion'>) => (
+            <>
+              <input
+                id="ubicacion"
+                placeholder="Ubicación de la obra"
+                value={field.state.value}
+                onBlur={field.handleBlur}
+                onChange={(e) => field.handleChange(e.target.value)}
+                className="shadow-sm appearance-none border border-gray-300 rounded-md w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              />
+              {field.state.meta.errors && (
+                <p className="text-red-500 text-xs italic mt-1">{field.state.meta.errors[0]}</p>
+              )}
+            </>
+          )}
+        />
+      </div>
+
+      <div className="mb-6">
+        <label htmlFor="direccion" className="block text-blue-700 text-sm font-semibold mb-2">
+          Dirección:
+        </label>
+        <form.Field
+          name="direccion"
+          children={(field: FieldApi<ObraFormData, 'direccion'>) => (
+            <>
+              <input
+                id="direccion"
+                placeholder="Dirección de la obra"
+                value={field.state.value}
+                onBlur={field.handleBlur}
+                onChange={(e) => field.handleChange(e.target.value)}
+                className="shadow-sm appearance-none border border-gray-300 rounded-md w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              />
+              {field.state.meta.errors && (
+                <p className="text-red-500 text-xs italic mt-1">{field.state.meta.errors[0]}</p>
+              )}
+            </>
+          )}
+        />
+      </div>
+
+      <div className="mb-6">
+        <label htmlFor="estado" className="block text-blue-700 text-sm font-semibold mb-2">
+          Estado:
+        </label>
+        <form.Field
+          name="estado"
+          children={(field: FieldApi<ObraFormData, 'estado'>) => (
+            <>
+              <select
+                id="estado"
+                value={field.state.value}
+                onBlur={field.handleBlur}
+                onChange={(e) => field.handleChange(e.target.value)}
+                className="shadow-sm appearance-none border border-gray-300 rounded-md w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              >
+                <option value="">Seleccione un estado</option>
+                <option value="ACTIVO">Activo</option>
+                <option value="INACTIVO">Inactivo</option>
+                <option value="EN_PROCESO">En Proceso</option>
+                <option value="COMPLETADO">Completado</option>
+              </select>
+              {field.state.meta.errors && (
+                <p className="text-red-500 text-xs italic mt-1">{field.state.meta.errors[0]}</p>
+              )}
+            </>
+          )}
+        />
+      </div>
+
+      <div className="mb-6">
+        <label htmlFor="tipoId" className="block text-blue-700 text-sm font-semibold mb-2">
+          Tipo de Obra:
+        </label>
+        <form.Field
+          name="tipoId"
+          children={(field: FieldApi<ObraFormData, 'tipoId'>) => (
+            <>
+              <select
+                id="tipoId"
+                value={field.state.value}
+                onBlur={field.handleBlur}
+                onChange={(e) => field.handleChange(e.target.value)}
+                className="shadow-sm appearance-none border border-gray-300 rounded-md w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              >
+                <option value="">Seleccione un tipo</option>
+                {tipoAlmacenes.map((tipo) => (
+                  <option key={tipo.id} value={tipo.id}>
+                    {tipo.nombre}
+                  </option>
+                ))}
+              </select>
+              {field.state.meta.errors && (
+                <p className="text-red-500 text-xs italic mt-1">{field.state.meta.errors[0]}</p>
+              )}
             </>
           )}
         />
