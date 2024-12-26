@@ -1,5 +1,5 @@
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
-import { listEmpleadosService, addEmpleadoService, updateEmpleadoService, deleteEmpleadoService } from '../services/empleadoService';
+import { listEmpleadosService, addEmpleadoService, updateEmpleadoService, deleteEmpleadoService, getEmpleadoByDniService } from '../services/empleadoService';
 
 interface Cargo {
   id: string;
@@ -15,7 +15,7 @@ export interface Empleado {
   apellidos: string;
   telefono: string;
   telefono_secundario?: string;
-  cargo: Cargo;
+  cargo_id: Cargo;  // Cambiado de cargo_id a cargo
 }
 
 interface EmpleadoState {
@@ -43,7 +43,14 @@ export const fetchEmpleados = createAsyncThunk(
 
 export const addEmpleado = createAsyncThunk(
   'empleado/addEmpleado',
-  async (empleado: { dni:string; nombres: string; apellidos: string; telefono: string; cargo_id: string }, { rejectWithValue }) => {
+  async (empleado: { 
+    dni: string; 
+    nombres: string; 
+    apellidos: string; 
+    telefono: string; 
+    cargo_id: string;
+    telefono_secundario?: string;
+  }, { rejectWithValue }) => {
     try {
       return await addEmpleadoService(empleado);
     } catch (error) {
@@ -54,7 +61,15 @@ export const addEmpleado = createAsyncThunk(
 
 export const updateEmpleado = createAsyncThunk(
   'empleado/updateEmpleado',
-  async (empleado: { id: string; nombres?: string; apellidos?: string; telefono?: string; telefono_secundario?: string }, { rejectWithValue }) => {
+  async (empleado: { 
+    id: string; 
+    nombres?: string; 
+    apellidos?: string; 
+    telefono?: string; 
+    telefono_secundario?: string;
+    dni?: string;
+    cargo_id?: string;
+  }, { rejectWithValue }) => {
     try {
       return await updateEmpleadoService(empleado);
     } catch (error) {
@@ -69,6 +84,17 @@ export const deleteEmpleado = createAsyncThunk(
     try {
       await deleteEmpleadoService(id);
       return { id };
+    } catch (error) {
+      return rejectWithValue((error as Error).message);
+    }
+  }
+);
+
+export const getEmpleadoByDni = createAsyncThunk(
+  'empleado/getEmpleadoByDni',
+  async (id: string, { rejectWithValue }) => {
+    try {
+      return await getEmpleadoByDniService(id);
     } catch (error) {
       return rejectWithValue((error as Error).message);
     }
@@ -104,6 +130,23 @@ const empleadoSlice = createSlice({
       })
       .addCase(deleteEmpleado.fulfilled, (state, action: PayloadAction<{ id: string }>) => {
         state.empleados = state.empleados.filter(emp => emp.id !== action.payload.id);
+      })
+      .addCase(getEmpleadoByDni.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(getEmpleadoByDni.fulfilled, (state, action: PayloadAction<Empleado>) => {
+        state.loading = false;
+        const index = state.empleados.findIndex(emp => emp.id === action.payload.id);
+        if (index !== -1) {
+          state.empleados[index] = action.payload;
+        } else {
+          state.empleados.push(action.payload);
+        }
+      })
+      .addCase(getEmpleadoByDni.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
       });
   },
 });

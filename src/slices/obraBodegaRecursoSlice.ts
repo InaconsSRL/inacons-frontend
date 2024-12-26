@@ -2,6 +2,7 @@ import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
 import {
   listObraBodegaRecursosService,
   listObraBodegaRecursosByBodegaService,
+  listRecursosBodegaByObraService,
   addObraBodegaRecursoService,
   updateObraBodegaRecursoService,
   deleteObraBodegaRecursoService,
@@ -16,8 +17,6 @@ interface Recurso {
   nombre: string;
   codigo: string;
   unidad_id: string;
-  cantidad: number;
-  descripcion: string;
   precio_actual: number;
   imagenes: Imagen[];
 }
@@ -42,12 +41,14 @@ interface ObraBodegaRecursoState {
   obraBodegaRecursos: ObraBodegaRecurso[];
   loading: boolean;
   error: string | null;
+  obraBodegaRecursosMap: Record<string, ObraBodegaRecurso[]>;
 }
 
 const initialState: ObraBodegaRecursoState = {
   obraBodegaRecursos: [],
   loading: false,
   error: null,
+  obraBodegaRecursosMap: {},
 };
 
 export const fetchObraBodegaRecursos = createAsyncThunk(
@@ -66,6 +67,17 @@ export const fetchObraBodegaRecursosByBodega = createAsyncThunk(
   async (obraBodegaId: string, { rejectWithValue }) => {
     try {
       return await listObraBodegaRecursosByBodegaService(obraBodegaId);
+    } catch (error) {
+      return rejectWithValue((error as Error).message);
+    }
+  }
+);
+
+export const fetchRecursosBodegaByObra = createAsyncThunk(
+  'obraBodegaRecurso/fetchByObra',
+  async (obraId: string, { rejectWithValue }) => {
+    try {
+      return await listRecursosBodegaByObraService(obraId);
     } catch (error) {
       return rejectWithValue((error as Error).message);
     }
@@ -152,6 +164,20 @@ const obraBodegaRecursoSlice = createSlice({
         state.obraBodegaRecursos = action.payload;
       })
       .addCase(fetchObraBodegaRecursosByBodega.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
+      })
+      // Fetch by obra cases
+      .addCase(fetchRecursosBodegaByObra.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(fetchRecursosBodegaByObra.fulfilled, (state, action: PayloadAction<ObraBodegaRecurso[]> & { meta: { arg: string } }) => {
+        state.loading = false;
+        state.obraBodegaRecursos = action.payload;
+        state.obraBodegaRecursosMap[action.meta.arg] = action.payload;
+      })
+      .addCase(fetchRecursosBodegaByObra.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload as string;
       })

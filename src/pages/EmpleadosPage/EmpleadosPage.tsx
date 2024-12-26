@@ -33,6 +33,7 @@ interface UpdateEmpleadoParams {
   apellidos?: string;
   telefono?: string;
   telefono_secundario?: string;
+  cargo_id?: string;
 }
 
 interface AddEmpleadoParams {
@@ -80,10 +81,12 @@ const EmpleadosPage: React.FC = () => {
       if (formData.id) {
         const updateParams: UpdateEmpleadoParams = {
           id: formData.id,
+          dni: formData.dni,
           nombres: formData.nombres,
           apellidos: formData.apellidos,
           telefono: formData.telefono,
-          telefono_secundario: formData.telefono_secundario
+          telefono_secundario: formData.telefono_secundario,
+          cargo_id: formData.cargo_id
         };
         result = await dispatch(updateEmpleado(updateParams)).unwrap();
       } else {
@@ -112,7 +115,7 @@ const EmpleadosPage: React.FC = () => {
       apellidos: empleado.apellidos,
       telefono: empleado.telefono,
       telefono_secundario: empleado.telefono_secundario,
-      cargo_id: empleado.cargo.id
+      cargo_id: empleado.cargo_id.id  // Ahora accedemos a cargo.id
     };
     setEditingEmpleado(empleadoForm);
     setIsModalOpenNewEmpleado(true);
@@ -131,11 +134,6 @@ const EmpleadosPage: React.FC = () => {
   const tableData = useMemo(() => {
     if (!empleados) return { headers: [], rows: [] };
 
-    const getCargoNombre = (cargoId: string) => {
-      const cargo = cargos.find(c => c.id === cargoId);
-      return cargo ? cargo.nombre : 'N/A';
-    };
-
     return {
       filter: [true, true, true, true, true, true, false],
       headers: ["id", "nombres", "apellidos", "telefono", "telefono_secundario", "cargo", "opciones"],
@@ -145,7 +143,7 @@ const EmpleadosPage: React.FC = () => {
         apellidos: empleado.apellidos,
         telefono: empleado.telefono,
         telefono_secundario: empleado.telefono_secundario || 'No registrado',
-        cargo: getCargoNombre(empleado.cargo.id),
+        cargo: empleado.cargo_id.nombre,  // Ahora accedemos directamente al nombre del cargo
         opciones: (
           <Button 
             icon={<FiEdit />} 
@@ -157,7 +155,7 @@ const EmpleadosPage: React.FC = () => {
         )
       }))
     };
-  }, [empleados, cargos]);
+  }, [empleados]);
 
   if (loading) return <LoaderPage />;
   if (error) return <div>Error: {error}</div>;

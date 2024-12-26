@@ -8,7 +8,7 @@ import { addTransferenciaRecurso } from '../../../slices/transferenciaRecursoSli
 import { fetchMovilidades } from '../../../slices/movilidadSlice';
 import { fetchMovimientos } from '../../../slices/movimientoSlice';
 import { RootState } from '../../../store/store';
-import { FiX, FiSave } from 'react-icons/fi';
+import { FiSave } from 'react-icons/fi';
 import { EstadoTransferencia } from '../types';
 import { validateAll, ValidationError } from './utils/validaciones';
 import ValidationErrors from './components/ValidationErrors';

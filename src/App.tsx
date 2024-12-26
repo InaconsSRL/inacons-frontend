@@ -29,7 +29,7 @@ import ComprasBoard from './pages/ComprasPage/ComprasBoard';
 import OrdenCompraPage from './pages/OrdenCompraPage/OrdenCompraPage';
 import HomologacionFormPage from './pages/ProveedorPage/Forms/HomologacionForm';
 import TableViewer from './pages/PresupuestosLocal/TableViewer';
-import AlmacenBetha from './pages/AlmacenBetha/AlmacenBetha';
+import AlmacenBetha from './pages/AlmacenesPage/AlmacenBoard/AlmacenBetha';
 import EmpleadosPage from './pages/EmpleadosPage/EmpleadosPage';
 
 const App: React.FC = () => {

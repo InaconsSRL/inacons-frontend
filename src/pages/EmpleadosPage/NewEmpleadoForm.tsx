@@ -35,18 +35,17 @@ const Select: React.FC<React.SelectHTMLAttributes<HTMLSelectElement>> = (props) 
   </select>
 );
 
-const Button: React.FC<React.ButtonHTMLAttributes<HTMLButtonElement> & { variant?: 'outline' | 'primary' }> = ({ 
+const Button: React.FC<React.ButtonHTMLAttributes<HTMLButtonElement> & { variant?: 'outline' | 'primary' }> = ({
   variant = 'outline',
   children,
-  ...props 
+  ...props
 }) => (
   <button
     {...props}
-    className={`px-4 py-2 rounded-md ${
-      variant === 'primary' 
-        ? 'bg-blue-500 text-white hover:bg-blue-600' 
+    className={`px-4 py-2 rounded-md ${variant === 'primary'
+        ? 'bg-blue-500 text-white hover:bg-blue-600'
         : 'border border-gray-300 bg-white hover:bg-gray-50'
-    }`}
+      }`}
   >
     {children}
   </button>
@@ -88,13 +87,7 @@ const NewEmpleadoForm: React.FC<EmpleadoFormProps> = ({ initialValues, onSubmit,
   return (
     <form onSubmit={handleSubmit} className="rounded-lg max-w-4xl mx-auto text-xs">
       <div className="bg-gray-200 shadow-md rounded-lg px-4 py-2">
-        <div className="flex justify-end p-2">
-          <Button type="submit" variant="primary">
-            {isEditing ? 'Actualizar Empleado' : 'Crear Empleado'}
-          </Button>
-        </div>
 
-        <div className="w-full h-0.5 bg-blue-800/20 rounded-full my-4"></div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div className="mb-2">
@@ -168,6 +161,13 @@ const NewEmpleadoForm: React.FC<EmpleadoFormProps> = ({ initialValues, onSubmit,
               ))}
             </Select>
           </div>
+          <div className="w-full h-0.5 bg-blue-800/20 rounded-full my-4"></div>
+          <div className="flex justify-end p-2">
+            <Button type="submit" variant="primary">
+              {isEditing ? 'Actualizar Empleado' : 'Crear Empleado'}
+            </Button>
+          </div>
+
         </div>
       </div>
     </form>

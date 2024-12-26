@@ -7,7 +7,6 @@ import Modal from '../../components/Modal/Modal';
 import ComparacionTable from './ComparacionTable';
 import BuscarProveedoresModal from './BuscarProveedoresModal';
 import { AppDispatch, RootState } from '../../store/store';
-import { ComprasSelectSourcesProps } from './ComprasSelectSources';
 import { fetchCotizacionProveedoresByCotizacionId, updateCotizacionProveedor } from '../../slices/cotizacionProveedorSlice';
 import { updateCotizacion } from '../../slices/cotizacionSlice';
 import { addOrdenCompra } from '../../slices/ordenCompraSlice';
@@ -20,7 +19,16 @@ import GeneracionOCLoader from '../../components/Loaders/GeneracionOCLoader';
 export interface CompararProveedoresProps {
   onClose: () => void;
   recursos: RecursoItem[];
-  cotizacion: ComprasSelectSourcesProps['cotizacion'];
+  cotizacion: {
+    id?: string;
+    codigo_cotizacion?: string;
+    estado?: string;
+    fecha?: string;
+    usuario_id?: {
+      nombres: string;
+      apellidos: string;
+    };
+  };
 }
 
 export interface RecursoItem {

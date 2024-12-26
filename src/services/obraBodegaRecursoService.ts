@@ -16,8 +16,7 @@ const LIST_OBRA_BODEGA_RECURSOS = gql`
         nombre
         codigo
         unidad_id
-        cantidad
-        descripcion
+        tipo_recurso_id
         precio_actual
         imagenes {
           file
@@ -45,8 +44,35 @@ const LIST_OBRA_BODEGA_RECURSOS_BY_BODEGA = gql`
         nombre
         codigo
         unidad_id
-        cantidad
-        descripcion
+        tipo_recurso_id
+        precio_actual
+        imagenes {
+          file
+        }
+      }
+      cantidad
+      costo
+      estado
+    }
+  }
+`;
+
+const LIST_RECURSOS_BODEGA_BY_OBRA = gql`
+  query ListRecursosBodegaByObraId($obraId: ID!) {
+    listRecursosBodegaByObraId(obraId: $obraId) {
+      id
+      obra_bodega_id {
+        id
+        nombre
+        codigo
+        estado
+      }
+      recurso_id {
+        id
+        nombre
+        codigo
+        unidad_id
+        tipo_recurso_id
         precio_actual
         imagenes {
           file
@@ -74,8 +100,7 @@ const ADD_OBRA_BODEGA_RECURSO = gql`
         nombre
         codigo
         unidad_id
-        cantidad
-        descripcion
+        tipo_recurso_id
         precio_actual
         imagenes {
           file
@@ -103,8 +128,6 @@ const UPDATE_OBRA_BODEGA_RECURSO = gql`
         nombre
         codigo
         unidad_id
-        cantidad
-        descripcion
         precio_actual
         imagenes {
           file
@@ -152,6 +175,22 @@ export const listObraBodegaRecursosByBodegaService = async (obraBodegaId: string
     return response.data.listObraBodegaRecursosByObraBodegaId;
   } catch (error) {
     console.error('Error al listar recursos por bodega:', error);
+    throw error;
+  }
+};
+
+export const listRecursosBodegaByObraService = async (obraId: string) => {
+  try {
+    const response = await client.query({
+      query: LIST_RECURSOS_BODEGA_BY_OBRA,
+      variables: { obraId },
+    });
+    if (response.errors) {
+      throw new Error(response.errors[0]?.message || 'Error desconocido');
+    }
+    return response.data.listRecursosBodegaByObraId;
+  } catch (error) {
+    console.error('Error al listar recursos por obra:', error);
     throw error;
   }
 };
