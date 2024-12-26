@@ -7,7 +7,8 @@ import { fetchTransferenciaDetalles } from '../../slices/transferenciaDetalleSli
 import { fetchTransferenciaRecursosById } from '../../slices/transferenciaRecursoSlice';
 import { TransferFilter } from "./TransferFilter";
 import { DetalleTransferencia } from "./DetalleTransferencia";
-import { TransferenciaCompleta, TipoFiltro } from "./types";
+import { TransferenciaCompleta, TipoFiltro, SortState } from "./types";
+import { TableHeader } from "./components/TableHeader";
 
 const Skeleton = () => (
   <div className="animate-pulse">
@@ -20,6 +21,7 @@ export function TransferTable() {
     const [isLoading, setIsLoading] = useState(true);
     const [tipoFiltro, setTipoFiltro] = useState<TipoFiltro>('TODOS');
     const [selectedTransferencia, setSelectedTransferencia] = useState<TransferenciaCompleta | null>(null);
+    const [sortState, setSortState] = useState<SortState>({ field: '', direction: 'asc' });
     
     const transferencias = useSelector((state: RootState) => state.transferencia.transferencias);
     const detalles = useSelector((state: RootState) => state.transferenciaDetalle.transferenciaDetalles);
@@ -103,18 +105,37 @@ export function TransferTable() {
         };
     });
 
+    const handleSort = (field: keyof TransferenciaCompleta) => {
+        setSortState(prevState => {
+            const direction = prevState.field === field && prevState.direction === 'asc' ? 'desc' : 'asc';
+            return { field, direction };
+        });
+    };
+
+    const sortedTransferencias = [...transferenciasCompletas].sort((a, b) => {
+        if (sortState.field) {
+            const fieldA = a[sortState.field];
+            const fieldB = b[sortState.field];
+            if (fieldA !== undefined && fieldB !== undefined) {
+                if (fieldA < fieldB) return sortState.direction === 'asc' ? -1 : 1;
+                if (fieldA > fieldB) return sortState.direction === 'asc' ? 1 : -1;
+            }
+        }
+        return 0;
+    });
+
     return (
         <div className="w-full">
             <TransferFilter tipoFiltro={tipoFiltro} onChange={setTipoFiltro} />
             <table className="min-w-full mt-4 border">
                 <thead>
                     <tr className="bg-gray-50">
-                        <th className="font-semibold p-2 text-left">ID</th>
-                        <th className="font-semibold p-2 text-left">Usuario</th>
-                        <th className="font-semibold p-2 text-left">Fecha</th>
-                        <th className="font-semibold p-2 text-left">Movimiento</th>
-                        <th className="font-semibold p-2 text-left">Transporte</th>
-                        <th className="font-semibold p-2 text-left">Estado</th>
+                        <TableHeader field="id" label="ID" onSort={handleSort} currentSort={sortState} />
+                        <TableHeader field="usuario_id" label="Usuario" onSort={handleSort} currentSort={sortState} />
+                        <TableHeader field="fecha" label="Fecha" onSort={handleSort} currentSort={sortState} />
+                        <TableHeader field="movimiento_id" label="Movimiento" onSort={handleSort} currentSort={sortState} />
+                        <TableHeader field="movilidad_id" label="Transporte" onSort={handleSort} currentSort={sortState} />
+                        <TableHeader field="estado" label="Estado" onSort={handleSort} currentSort={sortState} />
                         <th className="font-semibold p-2 text-left">Acciones</th>
                     </tr>
                 </thead>
@@ -137,14 +158,14 @@ export function TransferTable() {
                                     Error al cargar las transferencias: {error}
                                 </td>
                             </tr>
-                        ) : transferenciasCompletas.length === 0 ? (
+                        ) : sortedTransferencias.length === 0 ? (
                             <tr>
                                 <td colSpan={8} className="p-4 text-center text-gray-500">
                                     No hay transferencias disponibles
                                 </td>
                             </tr>
                         ) : (
-                            transferenciasCompletas.map((transferencia: TransferenciaCompleta) => (
+                            sortedTransferencias.map((transferencia: TransferenciaCompleta) => (
                                 <tr key={transferencia.id} className="hover:bg-gray-50">
                                     <td className="p-2">{transferencia.id}</td>
                                     <td className="p-2">
