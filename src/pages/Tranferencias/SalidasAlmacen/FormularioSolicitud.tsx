@@ -1,15 +1,15 @@
 import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { RootState, AppDispatch } from '../../store/store';
-import { fetchSolicitudAlmacenes } from '../../slices/solicitudAlmacenSlice';
-import { getOrdenSolicitudRecursoById } from '../../slices/solicitudRecursoAlmacenSlice';
+import { RootState, AppDispatch } from '../../../store/store';
+import { fetchSolicitudAlmacenes } from '../../../slices/solicitudAlmacenSlice';
+import { getOrdenSolicitudRecursoById } from '../../../slices/solicitudRecursoAlmacenSlice';
 import { IoMdCloseCircle } from "react-icons/io";
 import OrdenTransferencia from './OrdenTransferencia';
 import { 
   FormularioSolicitudProps, 
   RecursoSeleccionado, 
   SolicitudAlmacen 
-} from './types';
+} from '../types';
 
 const Skeleton: React.FC<{ className?: string }> = ({ className }) => (
   <div className={`animate-pulse bg-gray-200 rounded ${className}`}></div>
@@ -189,6 +189,7 @@ const FormularioSolicitud: React.FC<FormularioSolicitudProps> = ({ onClose, tran
                           <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nombre</th>
                           <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Unidad</th>
                           <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Cant.Solicitada</th>
+                          <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 upercase tracking-wider">Cant. Diponible </th>
                           <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Precio</th>
                           <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Cant. Transferida</th>
                           <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Subtotal</th>
@@ -224,6 +225,7 @@ const FormularioSolicitud: React.FC<FormularioSolicitudProps> = ({ onClose, tran
                                 <td className="px-3 py-2 text-xs text-gray-600">{recurso.recurso_id.codigo}</td>
                                 <td className="px-3 py-2 text-xs text-gray-600">{recurso.recurso_id.nombre}</td>
                                 <td className="px-3 py-2 text-xs text-gray-600">{unidades.find(u => u.id === recurso.recurso_id.unidad_id)?.nombre || 'N/A'}</td>
+                                <td className="px-3 py-2 text-xs text-gray-600">{recurso.cantidad}</td>
                                 <td className="px-3 py-2 text-xs text-gray-600">{recurso.cantidad}</td>
                                 <td className="px-3 py-2 text-xs text-gray-600">S/ {recurso.recurso_id.precio_actual}</td>
                                 <td className="px-3 py-2">

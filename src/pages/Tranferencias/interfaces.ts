@@ -2,14 +2,14 @@
 export interface Movimiento {
   id: string;
   nombre: string;
-  descripcion: string;
+  descripcion?: string;
   tipo: string;
 }
 
 export interface Movilidad {
   id: string;
   denominacion: string;
-  descripcion: string;
+  descripcion?: string;
 }
 
 export interface Usuario {
@@ -73,6 +73,7 @@ export interface OrdenTransferenciaProps {
       apellidos: string;
     };
   };
+  transferenciasId?: string;
 }
 
 

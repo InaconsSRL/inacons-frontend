@@ -1,15 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import { IoMdCloseCircle } from "react-icons/io";
-import { RecursoSeleccionado, OrdenTransferenciaProps } from './interfaces';
-import { addTransferencia } from '../../slices/transferenciaSlice';
-import { addTransferenciaRecurso } from '../../slices/transferenciaRecursoSlice';
-import { addTransferenciaDetalle } from '../../slices/transferenciaDetalleSlice';
+import { OrdenTransferenciaProps } from '../interfaces';
+import { addTransferencia } from '../../../slices/transferenciaSlice';
+import { addTransferenciaRecurso } from '../../../slices/transferenciaRecursoSlice';
+import { addTransferenciaDetalle } from '../../../slices/transferenciaDetalleSlice';
 import { useDispatch, useSelector } from 'react-redux'; 
 import { ThunkDispatch } from 'redux-thunk';
 import { AnyAction } from 'redux';
-import { RootState } from '../../store/store';
-import { fetchMovimientos } from '../../slices/movimientoSlice';
-import { fetchMovilidades } from '../../slices/movilidadSlice';
+import { RootState } from '../../../store/store';
+import { fetchMovimientos } from '../../../slices/movimientoSlice';
+import { fetchMovilidades } from '../../../slices/movilidadSlice';
+
+
 
 const OrdenTransferencia: React.FC<OrdenTransferenciaProps> = ({ 
   onClose, 

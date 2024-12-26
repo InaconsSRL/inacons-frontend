@@ -153,7 +153,7 @@ const { transferenciaDetalles, loading: detallesLoading, error: detallesError } 
       fecha: new Date(),
       movimiento_id: 'movimiento_id_placeholder', 
       movilidad_id: 'movilidad_id_placeholder', 
-      estado: 'COMPLETO' 
+      estado: 'COMPLETO' as EstadoTransferencia
     };
 
     const transferencia = await dispatch(addTransferencia(transferenciaData) as any).unwrap();
@@ -381,13 +381,16 @@ const { transferenciaDetalles, loading: detallesLoading, error: detallesError } 
                   fEmision={fEmision}
                   estado={estado}
                   obra={obra}
-                  recursos={Object.values(recursosState)}
+                  recursos={Object.values(recursosState).map(recurso => ({
+                    ...recurso,
+                    cantidad_original: recurso.cantidad_recibida,
+                    diferencia: recurso.cantidad_recibida - recurso.cantidad_recibida
+                  }))}
                   transferenciaRecursos={transferenciaRecursos}
                   unidades={unidades}
                   tipoTransporte={transferenciaDetalles[0]?.tipo || ''}
                   usuarioTransferencia={{ nombres: '', apellidos: '' }}
-                  descripcionMovimiento={''}
-                />
+                  descripcionMovimiento={''} obraDestino={''}                />
               </div>
             </div>
           )}

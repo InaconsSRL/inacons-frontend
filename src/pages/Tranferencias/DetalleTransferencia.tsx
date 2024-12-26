@@ -8,7 +8,7 @@ interface DetalleTransferenciaProps {
   onClose: () => void;
 }
 
-export function DetalleTransferencia({ transferencia, onClose }: DetalleTransferenciaProps) {
+export function DetalleTransferencia({ transferencia, onClose }: DetalleTransferenciaProps): JSX.Element {
   const [activeTab, setActiveTab] = useState('info');
 
   return (
@@ -102,7 +102,7 @@ export function DetalleTransferencia({ transferencia, onClose }: DetalleTransfer
               </thead>
               <tbody>
                 {transferencia.recursos.map((recurso: TransferenciaRecurso) => (
-                  <tr key={recurso.id} className="border-b">
+                  <tr key={recurso.recurso_id.codigo} className="border-b">
                     <td className="px-4 py-2">{recurso.recurso_id.codigo}</td>
                     <td className="px-4 py-2">{recurso.recurso_id.nombre}</td>
                     <td className="px-4 py-2">{recurso.cantidad}</td>

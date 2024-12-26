@@ -23,7 +23,7 @@ export const AlmacenBoardPage: React.FC = () => {
   const almacenRecursos = useSelector((state: RootState) => state.almacenRecurso.almacenRecursos);
   const [selectedAlmacenId, setSelectedAlmacenId] = useState<string>('');
 
-  const navigate = useNavigate();
+
 
   // Estados principales
   const [inventory, setInventory] = useState<InventoryItem[]>(generateMockData());

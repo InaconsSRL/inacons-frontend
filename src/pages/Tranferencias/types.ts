@@ -87,6 +87,7 @@ export interface RecursoSeleccionado {
   cantidad: number;
   cantidadSeleccionada: number;
   bodega?: string;
+  isChecked?: boolean;
 }
 
 export interface FormularioSolicitudProps {
@@ -132,3 +133,5 @@ export interface RecursoSeleccionado {
   bodega?: string;
   isChecked?: boolean;
 }
+
+export type TipoMovimiento = 'COMPRAS' | 'OBRA' | 'TRASLADOS' | 'RECEPCIONES';

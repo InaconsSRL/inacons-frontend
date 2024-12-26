@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { TransferTable } from "./TransfersTable";
-import TransfersForms from "./TransfersForms"; 
-import FormularioSolicitud from "./FormularioSolicitud";
+import FormularioSolicitud from "./SalidasAlmacen/FormularioSolicitud"; 
 import RecepcionTransferencia from "./RecepcionTransferencias/RecepcionTransferencias";
 import { TipoMovimiento } from './types';
 import RecepcionCompra from "./RecepcionCompras/RecepcionCompra";
@@ -14,7 +13,7 @@ export default function TransfersPage() {
 
   const handleCloseModal = () => {
     setIsModalOpen(false);
-    setSelectedOption(''); // Restablecer el estado del select al cerrar el modal
+    setSelectedOption(''); 
   };
 
   const renderModalContent = () => {

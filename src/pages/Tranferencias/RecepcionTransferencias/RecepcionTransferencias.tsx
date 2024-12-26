@@ -11,7 +11,7 @@ import ValidationErrors from '../RecepcionCompras/components/ValidationErrors';
 import { ValidationError } from '../RecepcionCompras/utils/validaciones';
 import { RootState, AppDispatch } from '../../../store/store';
 import GuiaTransferencia from './GuiaTransfer';
-import { EstadoTransferencia } from './GuiaTransfer'; // Asegúrate de importar el tipo
+//import { EstadoTransferencia } from './GuiaTransfer'; 
 
 interface Props {
     onClose: () => void;
@@ -117,12 +117,11 @@ const RecepcionTransferencia: React.FC<Props> = ({ onClose }) => {
                 solicita={`${selectedDetalle.transferencia_id.usuario_id.nombres} ${selectedDetalle.transferencia_id.usuario_id.apellidos}`}
                 recibe={selectedDetalle.transferencia_id.movilidad_id?.denominacion || ''}
                 fEmision={new Date(selectedDetalle.fecha)}
-                estado={selectedDetalle.tipo as EstadoTransferencia} // Asegúrate de que el tipo sea correcto
+                //estado={selectedDetalle.tipo as EstadoTransferencia} // Asegúrate de que el tipo sea correcto
                 obra={selectedDetalle.transferencia_id.movimiento_id.nombre}
                 transferenciaId={selectedDetalle.transferencia_id.id}
-                obraDestino={selectedDetalle.transferencia_id.movilidad_id?.denominacion || ''}
-                onClose={() => setShowGuiaTransfer(false)}
-            />
+                //obraDestino={selectedDetalle.transferencia_id.movilidad_id?.denominacion || ''}
+                onClose={() => setShowGuiaTransfer(false)} estado={'PARCIAL'}            />
         );
     }
 

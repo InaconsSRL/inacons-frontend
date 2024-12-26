@@ -45,7 +45,7 @@ export function TransferTable() {
             if (transferencias.length > 0 && selectedTransferencia) {
                 try {
                     // Cargar todos los detalles en paralelo
-                    const detallesPromises = transferencias.map(transferencia =>
+                    const detallesPromises = transferencias.map(_transferencia =>
                         dispatch(fetchTransferenciaDetalles()).unwrap()
                     );
                     const todosDetalles = await Promise.all(detallesPromises);
