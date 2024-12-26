@@ -288,7 +288,7 @@ const GuiaTransferPDF: React.FC<Props> = ({
               </View>
               <View style={styles.firma}>
                 <View style={styles.lineaFirma} />
-                <Text style={styles.nombreFirma}>JHON EDERSON NUÑEZ Y</Text>
+                <Text style={styles.nombreFirma}></Text>
                 <Text style={styles.cargoFirma}>Recibe</Text>
               </View>
             </View>

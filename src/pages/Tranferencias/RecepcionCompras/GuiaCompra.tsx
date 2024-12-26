@@ -20,7 +20,7 @@ const GuiaCompra: React.FC<GuiaCompraProps> = ({
     fEmision,
     estado,
     proveedor,
-    compraId,
+
     onSubmit,
     onClose
 }) => {

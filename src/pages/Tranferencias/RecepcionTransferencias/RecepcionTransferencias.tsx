@@ -199,7 +199,6 @@ const RecepcionTransferencia: React.FC<Props> = ({ onClose }) => {
                                         <th className="px-3 py-2 text-left text-xs font-medium text-gray-500">Nombre</th>
                                         <th className="px-3 py-2 text-left text-xs font-medium text-gray-500">Unidad</th>
                                         <th className="px-3 py-2 text-left text-xs font-medium text-gray-500">Cant.Solicitada</th>
-                                        <th className="px-3 py-2 text-left text-xs font-medium text-gray-500">Cant.Disponible</th>
                                         <th className="px-3 py-2 text-left text-xs font-medium text-gray-500">Cant.Recibida</th>
                                         <th className="px-3 py-2 text-left text-xs font-medium text-gray-500">Diferencia</th>
                                     </tr>
@@ -217,8 +216,7 @@ const RecepcionTransferencia: React.FC<Props> = ({ onClose }) => {
                                                 <td className="px-3 py-2 text-sm text-gray-500">
                                                     {unidades?.find(u => u.id === recurso.recurso_id.unidad_id)?.nombre || 'UND'}
                                                 </td>
-                                                <td className="px-3 py-2 text-sm text-gray-900">{recurso.cantidad}</td>
-                                                <td>0</td> {/* Aqui ira la Cantidad disponible dentro de la bodega  */}
+                                                <td className="px-3 py-2 text-sm text-gray-900">{recurso.cantidad}</td>                   
                                                 <td className="px-3 py-2">
                                                     <input
                                                         type="number"
