@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { TransferTable } from "./TransfersTable";
-import TransfersForms from "./TransfersForms"; 
 import FormularioSolicitud from "./FormularioSolicitud";
 import RecepcionTransferencia from "./RecepcionTransferencias/RecepcionTransferencias";
 import { TipoMovimiento } from './types';

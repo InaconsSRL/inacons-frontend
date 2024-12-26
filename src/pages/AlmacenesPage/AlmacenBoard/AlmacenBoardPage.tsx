@@ -16,6 +16,7 @@ import type {
   FilterOptions,
 } from './interfaces';
 import TransfersPage from '../../Tranferencias/TransfersPage';
+import AlmacenBetha from '../../AlmacenBetha/AlmacenBetha';
 
 export const AlmacenBoardPage: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
@@ -161,19 +162,6 @@ export const AlmacenBoardPage: React.FC = () => {
       </div>
 
       <div className="flex justify-between items-center mb-6">
-        <select
-          value={selectedAlmacenId}
-          onChange={(e) => setSelectedAlmacenId(e.target.value)}
-          className="w-64 p-2 rounded"
-        >
-          <option value="">Seleccione un Almacen</option>
-          {almacenes.map(almacen => (
-            <option key={almacen.id} value={almacen.id}>
-              {almacen.nombre}
-            </option>
-          ))}
-        </select>
-
         <button
           className="bg-violet-600 text-white px-4 py-2 rounded"
           onClick={() => setMostrarTransfersPage(!mostrarTransfersPage)}
@@ -197,56 +185,7 @@ export const AlmacenBoardPage: React.FC = () => {
       {/* Todo esto es la tabla */}
 
       {mostrarTransfersPage ? (<TransfersPage />) : 
-      (<div className="bg-white rounded-lg shadow-lg p-6">
-        {/* Filtros - Altura fija */}
-        <div className="h-24">
-          <FilterSection
-            filters={filters}
-            selectedAlmacenId={selectedAlmacenId}
-            onAlmacenChange={setSelectedAlmacenId}
-            onFilterChange={(newFilters) => setFilters(prev => ({ ...prev, ...newFilters }))}
-          />
-        </div>
-        {/*tabla de trasnferencia */}
-
-
-        {/* Tabla - Altura flexible con scroll */}
-        <div className="flex-1 min-h-0 overflow-auto">
-          <InventoryTable
-            items={filteredItems.slice((page - 1) * itemsPerPage, page * itemsPerPage)}
-            sortConfig={sortConfig}
-            onSort={handleSort}
-            onItemSelect={setSelectedItem}
-            onMovement={(itemId, type, quantity) => handleMovement({
-              id: String(itemId),
-              type,
-              quantity
-            })}
-          />
-        </div>
-        {/* Paginación - Altura fija */}
-        <div className="h-16 flex justify-between items-center px-4 border-t">
-          <div className="text-sm text-gray-700">
-            Mostrando {((page - 1) * itemsPerPage) + 1} a {Math.min(page * itemsPerPage, filteredItems.length)} de {filteredItems.length}
-          </div>
-          <div className="flex gap-2">
-            <button
-              className="px-3 py-1 border rounded-lg text-sm disabled:opacity-50"
-              disabled={page === 1}
-              onClick={() => setPage(page - 1)}
-            >
-              Anterior
-            </button>
-            <button
-              className="px-3 py-1 border rounded-lg text-sm disabled:opacity-50"
-              disabled={page >= Math.ceil(filteredItems.length / itemsPerPage)}
-              onClick={() => setPage(page + 1)}
-            >
-              Siguiente
-            </button>
-          </div>
-        </div>
-      </div>)
+      ( <AlmacenBetha />)
       }
 
       {/* Modales */}
