@@ -134,4 +134,4 @@ export interface RecursoSeleccionado {
   isChecked?: boolean;
 }
 
-export type TipoMovimiento = 'COMPRAS' | 'OBRA' | 'TRASLADOS' | 'RECEPCIONES';
+export type TipoMovimiento = 'COMPRAS' | 'DEVOLUCION' | 'TRASLADOS' | 'RECEPCIONES';

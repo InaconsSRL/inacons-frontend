@@ -1,4 +1,3 @@
-
 import { gql } from '@apollo/client';
 import client from '../apolloClient';
 
@@ -18,13 +17,16 @@ const GET_REQUERIMIENTO_RECURSO_WITH_ALMACEN = gql`
       costo_ref
       fecha_limit
       presupuestado
-      listAlmacenRecursos {
-        recurso_id
-        cantidad
-        almacen_id
-        costo
-        nombre_almacen
-        _id
+      list_obra_bodega_recursos {
+        obra_id
+        cantidad_total_obra
+        obra_nombre
+        bodegas {
+          obra_bodega_id
+          nombre
+          cantidad
+          costo
+        }
       }
     }
   }

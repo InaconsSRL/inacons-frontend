@@ -1,21 +1,58 @@
 import { gql } from '@apollo/client';
 import client from '../apolloClient';
+import {
+  PrestamoRecursoResponse,
+  AddPrestamoRecursoInput,
+  UpdatePrestamoRecursoInput
+} from '../types/prestamoRecurso';
 
 // Queries
 const LIST_PRESTAMO_RECURSOS = gql`
   query ListPrestamoRecursos {
     listPrestamoRecursos {
       id
-      prestamo_id {
-        id
-      }
-      obrabodega_recurso_id {
-        id
-      }
-      cantidad
-      observaciones
+    prestamo_id {
+      id
     }
+    obrabodega_recurso_id {
+      id
+      recurso_id {
+        nombre
+        codigo
+        id
+        tipo_recurso_id
+        unidad_id
+      }
+    }
+    cantidad
+    observaciones
+    
   }
+}
+`;
+
+const GET_PRESTAMO_RECURSOS_BY_PRESTAMO_ID = gql`
+  query GetPrestamoRecursosByPrestamoId($prestamoId: ID!) {
+    getPrestamoRecursosByPrestamoId(prestamoId: $prestamoId) {
+      id
+    prestamo_id {
+      id
+    }
+    obrabodega_recurso_id {
+      id
+      recurso_id {
+        nombre
+        codigo
+        id
+        tipo_recurso_id
+        unidad_id
+      }
+    }
+    cantidad
+    observaciones
+    
+  }
+}
 `;
 
 const ADD_PRESTAMO_RECURSO = gql`
@@ -32,16 +69,24 @@ const ADD_PRESTAMO_RECURSO = gql`
       observaciones: $observaciones
     ) {
       id
-      prestamo_id {
-        id
-      }
-      obrabodega_recurso_id {
-        id
-      }
-      cantidad
-      observaciones
+    prestamo_id {
+      id
     }
+    obrabodega_recurso_id {
+      id
+      recurso_id {
+        nombre
+        codigo
+        id
+        tipo_recurso_id
+        unidad_id
+      }
+    }
+    cantidad
+    observaciones
+    
   }
+}
 `;
 
 const UPDATE_PRESTAMO_RECURSO = gql`
@@ -60,16 +105,24 @@ const UPDATE_PRESTAMO_RECURSO = gql`
       observaciones: $observaciones
     ) {
       id
-      prestamo_id {
-        id
-      }
-      obrabodega_recurso_id {
-        id
-      }
-      cantidad
-      observaciones
+    prestamo_id {
+      id
     }
+    obrabodega_recurso_id {
+      id
+      recurso_id {
+        nombre
+        codigo
+        id
+        tipo_recurso_id
+        unidad_id
+      }
+    }
+    cantidad
+    observaciones
+    
   }
+}
 `;
 
 const DELETE_PRESTAMO_RECURSO = gql`
@@ -81,7 +134,7 @@ const DELETE_PRESTAMO_RECURSO = gql`
 `;
 
 // Service functions
-export const listPrestamoRecursosService = async () => {
+export const listPrestamoRecursosService = async (): Promise<PrestamoRecursoResponse[]> => {
   try {
     const { data } = await client.query({
       query: LIST_PRESTAMO_RECURSOS,
@@ -93,12 +146,22 @@ export const listPrestamoRecursosService = async () => {
   }
 };
 
-export const addPrestamoRecursoService = async (prestamoRecursoData: {
-  cantidad: number;
-  prestamoId: string;
-  obrabodegaRecursoId: string;
-  observaciones?: string;
-}) => {
+export const getPrestamoRecursosByPrestamoIdService = async (prestamoId: string): Promise<PrestamoRecursoResponse[]> => {
+  try {
+    const { data } = await client.query({
+      query: GET_PRESTAMO_RECURSOS_BY_PRESTAMO_ID,
+      variables: { prestamoId },
+    });
+    return data.getPrestamoRecursosByPrestamoId;
+  } catch (error) {
+    console.error('Error fetching prestamo recursos by prestamo id:', error);
+    throw error;
+  }
+};
+
+export const addPrestamoRecursoService = async (
+  prestamoRecursoData: AddPrestamoRecursoInput
+): Promise<PrestamoRecursoResponse> => {
   try {
     const { data } = await client.mutate({
       mutation: ADD_PRESTAMO_RECURSO,
@@ -111,13 +174,9 @@ export const addPrestamoRecursoService = async (prestamoRecursoData: {
   }
 };
 
-export const updatePrestamoRecursoService = async (prestamoRecursoData: {
-  id: string;
-  prestamoId: string;
-  obrabodegaRecursoId: string;
-  cantidad: number;
-  observaciones?: string;
-}) => {
+export const updatePrestamoRecursoService = async (
+  prestamoRecursoData: UpdatePrestamoRecursoInput
+): Promise<PrestamoRecursoResponse> => {
   try {
     const { data } = await client.mutate({
       mutation: UPDATE_PRESTAMO_RECURSO,

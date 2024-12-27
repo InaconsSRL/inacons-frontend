@@ -4,28 +4,16 @@ import {
   addPrestamoRecursoService,
   updatePrestamoRecursoService,
   deletePrestamoRecursoService,
+  getPrestamoRecursosByPrestamoIdService,
 } from '../services/prestamoRecursoService';
-
-// Interfaces
-
-interface Prestamo {
-  id: string;
-}
-
-interface ObraBodegaRecurso {
-  id: string;
-}
-
-export interface PrestamoRecurso {
-  id: string;
-  cantidad: number;
-  observaciones?: string;
-  prestamo_id: Prestamo;
-  obrabodega_recurso_id: ObraBodegaRecurso;
-}
+import {
+  PrestamoRecursoResponse,
+  AddPrestamoRecursoInput,
+  UpdatePrestamoRecursoInput
+} from '../types/prestamoRecurso';
 
 interface PrestamoRecursoState {
-  prestamoRecursos: PrestamoRecurso[];
+  prestamoRecursos: PrestamoRecursoResponse[];
   loading: boolean;
   error: string | null;
 }
@@ -51,12 +39,7 @@ export const fetchPrestamoRecursos = createAsyncThunk(
 
 export const addPrestamoRecurso = createAsyncThunk(
   'prestamoRecursos/addPrestamoRecurso',
-  async (prestamoRecursoData: {
-    cantidad: number;
-    prestamoId: string;
-    obrabodegaRecursoId: string;
-    observaciones?: string;
-  }, { rejectWithValue }) => {
+  async (prestamoRecursoData: AddPrestamoRecursoInput, { rejectWithValue }) => {
     try {
       return await addPrestamoRecursoService(prestamoRecursoData);
     } catch (error) {
@@ -67,13 +50,7 @@ export const addPrestamoRecurso = createAsyncThunk(
 
 export const updatePrestamoRecurso = createAsyncThunk(
   'prestamoRecursos/updatePrestamoRecurso',
-  async (prestamoRecursoData: {
-    id: string;
-    prestamoId: string;
-    obrabodegaRecursoId: string;
-    cantidad: number;
-    observaciones?: string;
-  }, { rejectWithValue }) => {
+  async (prestamoRecursoData: UpdatePrestamoRecursoInput, { rejectWithValue }) => {
     try {
       return await updatePrestamoRecursoService(prestamoRecursoData);
     } catch (error) {
@@ -93,6 +70,17 @@ export const deletePrestamoRecurso = createAsyncThunk(
   }
 );
 
+export const fetchPrestamoRecursosByPrestamoId = createAsyncThunk(
+  'prestamoRecursos/fetchPrestamoRecursosByPrestamoId',
+  async (prestamoId: string, { rejectWithValue }) => {
+    try {
+      return await getPrestamoRecursosByPrestamoIdService(prestamoId);
+    } catch (error) {
+      return rejectWithValue(error instanceof Error ? error.message : 'Error desconocido');
+    }
+  }
+);
+
 // Slice
 const prestamoRecursoSlice = createSlice({
   name: 'prestamoRecursos',
@@ -105,7 +93,7 @@ const prestamoRecursoSlice = createSlice({
         state.loading = true;
         state.error = null;
       })
-      .addCase(fetchPrestamoRecursos.fulfilled, (state, action: PayloadAction<PrestamoRecurso[]>) => {
+      .addCase(fetchPrestamoRecursos.fulfilled, (state, action: PayloadAction<PrestamoRecursoResponse[]>) => {
         state.loading = false;
         state.prestamoRecursos = action.payload;
       })
@@ -114,11 +102,11 @@ const prestamoRecursoSlice = createSlice({
         state.error = action.payload as string;
       })
       // Add prestamo recurso
-      .addCase(addPrestamoRecurso.fulfilled, (state, action: PayloadAction<PrestamoRecurso>) => {
+      .addCase(addPrestamoRecurso.fulfilled, (state, action: PayloadAction<PrestamoRecursoResponse>) => {
         state.prestamoRecursos.push(action.payload);
       })
       // Update prestamo recurso
-      .addCase(updatePrestamoRecurso.fulfilled, (state, action: PayloadAction<PrestamoRecurso>) => {
+      .addCase(updatePrestamoRecurso.fulfilled, (state, action: PayloadAction<PrestamoRecursoResponse>) => {
         const index = state.prestamoRecursos.findIndex(pr => pr.id === action.payload.id);
         if (index !== -1) {
           state.prestamoRecursos[index] = action.payload;
@@ -127,6 +115,19 @@ const prestamoRecursoSlice = createSlice({
       // Delete prestamo recurso
       .addCase(deletePrestamoRecurso.fulfilled, (state, action: PayloadAction<string>) => {
         state.prestamoRecursos = state.prestamoRecursos.filter(pr => pr.id !== action.payload);
+      })
+      // Fetch prestamo recursos by prestamo id
+      .addCase(fetchPrestamoRecursosByPrestamoId.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(fetchPrestamoRecursosByPrestamoId.fulfilled, (state, action: PayloadAction<PrestamoRecursoResponse[]>) => {
+        state.loading = false;
+        state.prestamoRecursos = action.payload;
+      })
+      .addCase(fetchPrestamoRecursosByPrestamoId.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
       });
   },
 });

@@ -1,18 +1,14 @@
+
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
 import { getRequerimientoRecursoWithAlmacen } from '../services/requerimientoRecursoWithAlmacenService';
 
-interface Bodega {
-  obra_bodega_id: string;
-  nombre: string;
+interface AlmacenRecurso {
+  recurso_id: string;
   cantidad: number;
+  almacen_id: string;
   costo: number;
-}
-
-interface ObraBodegaRecurso {
-  obra_id: string;
-  cantidad_total_obra: number;
-  obra_nombre: string;
-  bodegas: Bodega[];
+  nombre_almacen: string;
+  _id: string;
 }
 
 interface RequerimientoRecursoWithAlmacen {
@@ -27,10 +23,9 @@ interface RequerimientoRecursoWithAlmacen {
   estado: string;
   notas: string;
   costo_ref: number;
-  metrado: number;
   fecha_limit: Date;
   presupuestado: boolean;
-  list_obra_bodega_recursos: ObraBodegaRecurso[];
+  listAlmacenRecursos: AlmacenRecurso[];
 }
 
 interface RequerimientoRecursoWithAlmacenState {

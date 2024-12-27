@@ -5,7 +5,8 @@ import RecepcionTransferencia from "./RecepcionTransferencias/RecepcionTransfere
 import { TipoMovimiento } from './types';
 import RecepcionCompra from "./RecepcionCompras/RecepcionCompra";
 import Recursos from "../CalendarPage/CalendarPage";
-//import SalidasConsumosPrestamos from "./SalidasConsumosPrestamos/SalidasConsumosPrestamos";
+import DevolucionPrestamos from "./DevolucionPrestamos/DevolucionPrestamos";
+import Modal from '../../components/Modal/Modal';
 
 export default function TransfersPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -40,8 +41,8 @@ export default function TransfersPage() {
             )}
           </div>
         );
-      {/*case 'OBRA':
-        return <SalidasConsumosPrestamos />;*/}
+      case 'DEVOLUCION':
+        return <DevolucionPrestamos />;
       case 'TRASLADOS':
         return <FormularioSolicitud onClose={handleCloseModal} />;
       default:
@@ -68,9 +69,9 @@ export default function TransfersPage() {
                 <optgroup label="Ingresos">
                   <option value="COMPRAS">Compras</option>
                   <option value="RECEPCIONES">Recepciones</option>
+                 <option value="DEVOLUCION">Devoluciones</option>
                 </optgroup>
                 <optgroup label="Salidas">
-                 {/* <option value="OBRA">Obra</option>*/}
                   <option value="TRASLADOS">Traslados</option>
                 </optgroup>
               </select>
@@ -83,12 +84,13 @@ export default function TransfersPage() {
       </main>
 
       {isModalOpen && (
-        <>
-          <div className="fixed inset-0 opacity-50" onClick={handleCloseModal}></div>
-          <div className="fixed inset-0 flex items-center justify-center z-50 rounded">
-            {renderModalContent()}
-          </div>
-        </>
+        <Modal 
+          isOpen={isModalOpen} 
+          onClose={handleCloseModal} 
+          title="Transferencias"
+        >
+          {renderModalContent()}
+        </Modal>
       )}
     </div>
   );
