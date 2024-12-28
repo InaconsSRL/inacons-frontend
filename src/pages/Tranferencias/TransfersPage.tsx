@@ -6,7 +6,7 @@ import { TipoMovimiento } from './types';
 import RecepcionCompra from "./RecepcionCompras/RecepcionCompra";
 import Recursos from "../CalendarPage/CalendarPage";
 import DevolucionPrestamos from "./DevolucionPrestamos/DevolucionPrestamos";
-import Modal from '../../components/Modal/Modal';
+import Modal from "../../components/Modal/Modal";
 
 export default function TransfersPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -23,12 +23,6 @@ export default function TransfersPage() {
       case 'RECEPCIONES':
         return (
           <div className=" p-6 rounded-lg shadow-lg w-11/12 max-h-[90vh] overflow-y-auto">
-           {/* <button 
-              onClick={handleCloseModal}
-              className="absolute top-4 right-4 text-gray-500 hover:text-gray-700"
-            >
-              ✕
-            </button>*/}
             {selectedOption === 'COMPRAS' ? (
               <RecepcionCompra 
                 onClose={handleCloseModal} 
@@ -42,7 +36,11 @@ export default function TransfersPage() {
           </div>
         );
       case 'DEVOLUCION':
-        return <DevolucionPrestamos />;
+        return (
+          <Modal isOpen={isModalOpen} onClose={handleCloseModal} title="Devolución de Préstamos">
+            <DevolucionPrestamos />
+          </Modal>
+        );
       case 'TRASLADOS':
         return <FormularioSolicitud onClose={handleCloseModal} />;
       default:
@@ -69,7 +67,7 @@ export default function TransfersPage() {
                 <optgroup label="Ingresos">
                   <option value="COMPRAS">Compras</option>
                   <option value="RECEPCIONES">Recepciones</option>
-                 <option value="DEVOLUCION">Devoluciones</option>
+                 <option value="DEVOLUCION">Devolucion Prestamos</option>
                 </optgroup>
                 <optgroup label="Salidas">
                   <option value="TRASLADOS">Traslados</option>
@@ -83,15 +81,15 @@ export default function TransfersPage() {
         </div>
       </main>
 
-      {isModalOpen && (
-        <Modal 
-          isOpen={isModalOpen} 
-          onClose={handleCloseModal} 
-          title="Transferencias"
-        >
-          {renderModalContent()}
-        </Modal>
+      {isModalOpen && selectedOption !== 'DEVOLUCION' && (
+        <>
+          <div className="fixed inset-0 opacity-100" onClick={handleCloseModal}></div>
+          <div className="fixed inset-0 flex items-center justify-center z-50 rounded">
+            {renderModalContent()}
+          </div>
+        </>
       )}
+      {isModalOpen && selectedOption === 'DEVOLUCION' && renderModalContent()}
     </div>
   );
 }

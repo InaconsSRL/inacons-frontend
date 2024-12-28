@@ -193,7 +193,8 @@ const AprobacionTransferenciaPageAlmacen: React.FC<AprobacionTransferenciaPagePr
         const solicitudData = {
           requerimiento_id: selectedRequerimiento.id,
           usuario_id: currentUserId,
-          almacen_origen_id: almacenId,
+          obra_origen_id: almacenId, // Cambiado de almacen_origen_id
+          obra_destino_id: selectedRequerimiento.obra_id, // Cambiado de almacen_destino_id
           fecha: new Date(),
           estado: 'aprobado',
         };
@@ -207,17 +208,12 @@ const AprobacionTransferenciaPageAlmacen: React.FC<AprobacionTransferenciaPagePr
             currentResourceName: recurso.recurso_id, // Reemplazar si se necesita el nombre
             resourceProgress: Math.round(((recursos.indexOf(recurso) + 1) / recursos.length) * 100),
           }));
-
-          // Encontrar el recurso y el almacén específico para obtener el costo
-          const requerimientoRecurso = requerimientoRecursos.find(r => r.recurso_id === recurso.recurso_id);
-          const almacenRecurso = requerimientoRecurso?.list_obra_bodega_recursos.find(a => a.obra_id === almacenId);
           
           await dispatch(
             addSolicitudRecursoAlmacen({
-              recurso_id: recurso.recurso_id,
+              recursoId: recurso.recurso_id,
               cantidad: recurso.cantidad,
-              solicitud_almacen_id: solicitud.id,
-              costo: almacenRecurso?.cantidad_total_obra || 0, // Incluimos el costo del almacén específico
+              solicitudAlmacenId: solicitud.id,
             })
           ).unwrap();
 
