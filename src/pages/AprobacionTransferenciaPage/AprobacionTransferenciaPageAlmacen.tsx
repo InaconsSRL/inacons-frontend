@@ -12,6 +12,7 @@ import { addSolicitudRecursoAlmacen } from '../../slices/solicitudRecursoAlmacen
 import { addSolicitudCompra } from '../../slices/solicitudCompraSlice';
 import { addSolicitudCompraRecurso } from '../../slices/solicitudCompraRecursoSlice';
 import Toast from '../../components/Toast/Toast';
+import { Tooltip } from 'react-tooltip';
 
 // Interfaces
 
@@ -272,6 +273,7 @@ const AprobacionTransferenciaPageAlmacen: React.FC<AprobacionTransferenciaPagePr
       id: almacenRecurso.obra_id,
       name: almacenRecurso.obra_nombre,
       stock: almacenRecurso.cantidad_total_obra,
+      bodegas: almacenRecurso.bodegas // Añadimos la información de bodegas aquí
     }))
   }));
 
@@ -374,20 +376,56 @@ const AprobacionTransferenciaPageAlmacen: React.FC<AprobacionTransferenciaPagePr
                   </td>
                   <td className="px-2 py-1 text-center">{item.limitDate}</td>
                   <td className="px-2 py-1 text-center">{item.partialCost}</td>
-                  <td className="px-2 py-1">
+                  <td className="px-2 py-1 relative">
                     {item.warehouses.map(obra => (
-                      <div key={obra.id} className="mb-0.5">
-                        <div className="flex flex-row justify-end items-center gap-x-3">
-                          <span className="text-[8px] text-gray-600">{obra.name} - Stock: {obra.stock}</span>
-                          <input
-                            type="number"
-                            min="0"
-                            max={obra.stock}
-                            className="w-12 text-[8px] border rounded px-1"
-                            value={warehouseQuantities[`${item.id}-${obra.id}`] || ''}
-                            onChange={(e) => handleQuantityChange(item.id, obra.id, e.target.value)}
-                          />
+                      <div key={obra.id} className="mb-0.5 flex items-center justify-end gap-x-3">
+                        <div className="flex-shrink-0">
+                          <span
+                            data-tooltip-id={`tooltip-${item.id}-${obra.id}`}
+                            className="text-[8px] text-gray-600 cursor-help whitespace-nowrap"
+                          >
+                            {obra.name} - Stock: {obra.stock}
+                          </span>
+                          <Tooltip
+                            id={`tooltip-${item.id}-${obra.id}`}
+                            place="left"
+                            className="!bg-white !text-gray-800 !shadow-lg !rounded-lg !p-0 !opacity-100 !border !border-gray-200 !z-[9999]"
+                            positionStrategy="fixed"
+                            noArrow={true}
+                          >
+                            <div className="p-3 min-w-[200px]">
+                              <h3 className="font-medium text-xs border-b pb-2 mb-2">{obra.name}</h3>
+                              <div className="space-y-2">
+                                {obra.bodegas?.map((bodega) => (
+                                  <div key={bodega.obra_bodega_id} className="flex justify-between items-center">
+                                    <span className="text-[10px] text-gray-600">{bodega.nombre}</span>
+                                    <div className="flex items-center gap-2">
+                                      <div className="h-2 w-24 bg-gray-200 rounded-full overflow-hidden">
+                                        <div 
+                                          className="h-full bg-blue-500 transition-all"
+                                          style={{ 
+                                            width: `${(bodega.cantidad / obra.stock) * 100}%`
+                                          }}
+                                        />
+                                      </div>
+                                      <span className="text-[10px] text-gray-500">
+                                        {bodega.cantidad}
+                                      </span>
+                                    </div>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          </Tooltip>
                         </div>
+                        <input
+                          type="number"
+                          min="0"
+                          max={obra.stock}
+                          className="w-12 text-[8px] border rounded px-1 flex-shrink-0"
+                          value={warehouseQuantities[`${item.id}-${obra.id}`] || ''}
+                          onChange={(e) => handleQuantityChange(item.id, obra.id, e.target.value)}
+                        />
                       </div>
                     ))}
                   </td>
