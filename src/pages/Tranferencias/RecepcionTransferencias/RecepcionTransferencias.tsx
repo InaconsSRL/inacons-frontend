@@ -104,9 +104,11 @@ const RecepcionTransferencia: React.FC<Props> = ({ onClose }) => {
     }
 
     const detallesFiltrados = transferenciaDetalles?.filter(detalle => 
-        detalle.transferencia_id.movimiento_id.nombre.toLowerCase().includes('salida') &&
-        detalle.transferencia_id.movimiento_id.nombre.toLowerCase().includes('')
+        detalle.transferencia_id.movimiento_id?.nombre.toLowerCase().includes('salida') &&
+        detalle.transferencia_id.movimiento_id?.nombre.toLowerCase().includes('')
     );
+     console.log('imprimiendo transferencias')
+     console.log(transferenciaDetalles);
 
     const selectedDetalle = transferenciaDetalles?.find(d => d.id === selectedDetalleId);
 

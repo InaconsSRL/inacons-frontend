@@ -21,11 +21,11 @@ const LIST_SOLICITUD_ALMACENES_QUERY = gql`
         sustento
         usuario_id
       }
-      almacen_origen_id {
+      obra_origen_id {
         id
         nombre
       }
-      almacen_destino_id {
+      obra_destino_id {
         id
         nombre
         estado
@@ -41,14 +41,14 @@ const ADD_SOLICITUD_ALMACEN_MUTATION = gql`
   mutation AddSolicitudAlmacen(
     $usuario_id: ID!
     $requerimiento_id: ID!
-    $almacen_origen_id: ID!
+    $obra_origen_id: ID!
     $fecha: DateTime
     $estado: String!
   ) {
     addSolicitudAlmacen(
       usuario_id: $usuario_id
       requerimiento_id: $requerimiento_id
-      almacen_origen_id: $almacen_origen_id
+      obra_origen_id: $obra_origen_id
       fecha: $fecha
       estado: $estado
     ) {
@@ -69,11 +69,11 @@ const ADD_SOLICITUD_ALMACEN_MUTATION = gql`
         sustento
         usuario_id
       }
-      almacen_origen_id {
+      obra_origen_id {
         id
         nombre
       }
-      almacen_destino_id {
+      obra_destino_id {
         id
         nombre
         estado
@@ -90,7 +90,7 @@ const UPDATE_SOLICITUD_ALMACEN_MUTATION = gql`
     $updateSolicitudAlmacenId: ID!
     $usuario_id: ID!
     $requerimiento_id: ID
-    $almacen_origen_id: ID
+    $obra_origen_id: ID
     $fecha: DateTime
     $estado: String
   ) {
@@ -98,7 +98,7 @@ const UPDATE_SOLICITUD_ALMACEN_MUTATION = gql`
       id: $updateSolicitudAlmacenId
       usuario_id: $usuario_id
       requerimiento_id: $requerimiento_id
-      almacen_origen_id: $almacen_origen_id
+      obra_origen_id: $obra_origen_id
       fecha: $fecha
       estado: $estado
     ) {
@@ -119,11 +119,11 @@ const UPDATE_SOLICITUD_ALMACEN_MUTATION = gql`
         sustento
         usuario_id
       }
-      almacen_origen_id {
+      obra_origen_id {
         id
         nombre
       }
-      almacen_destino_id {
+      obra_destino_id {
         id
         nombre
         estado
@@ -161,7 +161,7 @@ export const listSolicitudAlmacenesService = async () => {
 export const addSolicitudAlmacenService = async (solicitudData: {
   usuario_id: string;
   requerimiento_id: string;
-  almacen_origen_id: string;
+  obra_origen_id: string;
   fecha: Date;
   estado: string;
 }) => {
@@ -171,7 +171,7 @@ export const addSolicitudAlmacenService = async (solicitudData: {
       variables: {
         usuario_id: solicitudData.usuario_id,
         requerimiento_id: solicitudData.requerimiento_id,
-        almacen_origen_id: solicitudData.almacen_origen_id,
+        obra_origen_id: solicitudData.obra_origen_id,
         fecha: solicitudData.fecha,
         estado: 'pendiente',
       },
@@ -190,7 +190,7 @@ export const updateSolicitudAlmacenService = async (solicitudData: {
   updateSolicitudAlmacenId: string;
   usuario_id: string;
   requerimiento_id: string;
-  almacen_origen_id: string;
+  obra_origen_id: string;
   fecha: Date;
   estado: string
 }) => {
@@ -201,7 +201,7 @@ export const updateSolicitudAlmacenService = async (solicitudData: {
         updateSolicitudAlmacenId: solicitudData.updateSolicitudAlmacenId,
         usuario_id: solicitudData.usuario_id,
         requerimiento_id: solicitudData.requerimiento_id,
-        almacen_origen_id: solicitudData.almacen_origen_id,
+        obra_origen_id: solicitudData.obra_origen_id,
         fecha: solicitudData.fecha,
         estado: solicitudData.estado,
       },

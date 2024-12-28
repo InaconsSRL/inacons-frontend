@@ -96,8 +96,8 @@ const FormularioSolicitud: React.FC<FormularioSolicitudProps> = ({ onClose, tran
     recursos={selectedRecursos.filter(recurso => recurso.isChecked)}
     solicitudData={{
       id: selectedSolicitud.id,
-      almacenOrigen: selectedSolicitud.almacen_origen_id,
-      almacenDestino: selectedSolicitud.almacen_destino_id,
+      almacenOrigen: selectedSolicitud.obra_origen_id,
+      almacenDestino: selectedSolicitud.obra_destino_id,
       usuario: selectedSolicitud.usuario_id
     }}
   />
