@@ -6,7 +6,6 @@ import { addTransferencia, TransferenciaData } from '../../../slices/transferenc
 import { addTransferenciaRecurso } from '../../../slices/transferenciaRecursoSlice';
 import { addTransferenciaDetalle } from '../../../slices/transferenciaDetalleSlice';
 import ValidationErrors from './components/ValidationErrors';
-import { updateOrdenCompra } from '../../../slices/ordenCompraSlice';
 import { ValidationError } from './utils/validaciones';
 import { fetchOrdenCompraRecursosByOrdenId } from '../../../slices/ordenCompraRecursosSlice';
 import { fetchMovilidades } from '../../../slices/movilidadSlice';
@@ -48,14 +47,12 @@ const RecepcionCompra: React.FC<RecepcionesCompraProps> = ({ onClose, onComplete
     const [detalles, setDetalles] = useState<RecursoDetalle[]>([]);
     const userId = useSelector((state: RootState) => state.user.id);
 
-
     const { ordenCompras, loading: ordenesLoading } = useSelector((state: RootState) => state.ordenCompra);
     const { ordenCompraRecursosByOrdenId: recursos, loading: recursosLoading } = useSelector((state: RootState) => state.ordenCompraRecursos);
     const movilidades = useSelector((state: RootState) => state.movilidad.movilidades);
     const movimientos = useSelector((state: RootState) => state.movimiento.movimientos);
     const unidades = useSelector((state: RootState) => state.unidad.unidades);
 
-    
     useEffect(() => {
         dispatch(fetchOrdenCompras());
         dispatch(fetchMovilidades());
@@ -69,27 +66,26 @@ const RecepcionCompra: React.FC<RecepcionesCompraProps> = ({ onClose, onComplete
     }, [dispatch, selectedOrdenId]);
 
     useEffect(() => {
-            if (recursos) {
-            const nuevosDetalles: RecursoDetalle[] = recursos
-                .filter(recurso => recurso.cantidad > 0)
-                .map(recurso => ({
-                    id: recurso.id,
-                    id_recurso: {
-                        id: recurso.id_recurso.id,
-                        codigo: recurso.id_recurso.codigo,
-                        nombre: recurso.id_recurso.nombre,
-                        unidad_id: recurso.id_recurso.unidad_id,
-                    },
-                    cantidad: recurso.cantidad,
-                    cantidadRecibida: 0,
-                    diferencia: recurso.cantidad,
-                    costo: recurso.costo_real
-                }));
-                setDetalles(nuevosDetalles);
-            }
-        }, [recursos]);
+        if (recursos) {
+        const nuevosDetalles: RecursoDetalle[] = recursos
+            .filter(recurso => recurso.cantidad > 0)
+            .map(recurso => ({
+                id: recurso.id,
+                id_recurso: {
+                    id: recurso.id_recurso.id,
+                    codigo: recurso.id_recurso.codigo,
+                    nombre: recurso.id_recurso.nombre,
+                    unidad_id: recurso.id_recurso.unidad_id,
+                },
+                cantidad: recurso.cantidad,
+                cantidadRecibida: 0,
+                diferencia: recurso.cantidad,
+                costo: recurso.costo_real
+            }));
+            setDetalles(nuevosDetalles);
+        }
+    }, [recursos]);
 
-    
     const handleOrdenClick = (orden: OrdenCompra) => {
         setSelectedOrdenId(orden.id);
         setSelectedOrden(orden);
@@ -148,7 +144,7 @@ const RecepcionCompra: React.FC<RecepcionesCompraProps> = ({ onClose, onComplete
 
             const transferencia = await dispatch(addTransferencia(transferenciaData)).unwrap();
 
-            //  Crear el detalle de transferencia
+            // Crear el detalle de transferencia
             const detalleData = {
                 transferencia_id: transferencia.id,
                 referencia_id: selectedOrden!.id,
@@ -160,10 +156,8 @@ const RecepcionCompra: React.FC<RecepcionesCompraProps> = ({ onClose, onComplete
                     .map(detalle => ({
                         recurso_id: detalle.id_recurso.id,
                         cantidad: detalle.cantidadRecibida,
-                        
                     }))
-                };
-                console.log(detalles);
+            };
 
             const detalleTransferencia = await dispatch(addTransferenciaDetalle(detalleData)).unwrap();
 
@@ -183,9 +177,7 @@ const RecepcionCompra: React.FC<RecepcionesCompraProps> = ({ onClose, onComplete
             // Esperar a que todos los recursos se guarden
             await Promise.all(recursosPromises);
 
-            // Actualizar el estado de la orden de compra
-            await dispatch(updateOrdenCompra(selectedOrden!)).unwrap();
-
+            // Completar el proceso
             onComplete(selectedOrden!, detalles);
             setOrdenesCompletadas(prev => [...prev, selectedOrden!] as OrdenCompra[]);
             handleCloseRecepcion();
@@ -235,7 +227,6 @@ const RecepcionCompra: React.FC<RecepcionesCompraProps> = ({ onClose, onComplete
         setDetalles(newDetalles);
     };
 
-    
     if (ordenesLoading || recursosLoading) {
         return <div className="flex justify-center items-center h-full">Cargando...</div>;
     }
@@ -262,7 +253,6 @@ const RecepcionCompra: React.FC<RecepcionesCompraProps> = ({ onClose, onComplete
                 <ValidationErrors errors={validationErrors} />
             )}
 
-            
             <div className="flex flex-1 min-h-0">
                 {/* Panel izquierdo - Lista de órdenes */}
                 <div className="w-1/3 border-r border-gray-100 overflow-y-auto">

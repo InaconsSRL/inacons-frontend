@@ -125,8 +125,9 @@ const RecepcionTransferencia: React.FC<Props> = ({ onClose }) => {
                 //estado={selectedDetalle.tipo as EstadoTransferencia} // Asegúrate de que el tipo sea correcto
                 obra={selectedDetalle.transferencia_id.movimiento_id.nombre}
                 transferenciaId={selectedDetalle.transferencia_id.id}
+                recursos={Object.values(recursosState)}
                 //obraDestino={selectedDetalle.transferencia_id.movilidad_id?.denominacion || ''}
-                onClose={() => setShowGuiaTransfer(false)} estado={'PARCIAL'} recursosSeleccionados={recursosState} transferenciaRecursos={transferenciaRecursos}            />
+                onClose={() => setShowGuiaTransfer(false)} estado={'PARCIAL'}            />
         );
     }
 

@@ -87,12 +87,18 @@ const RecepcionComp: React.FC<RecepcionCompProps> = ({
 
     useEffect(() => {
         if (recursos) {
-            setDetalles(recursos.map(recurso => ({
-                ...recurso,
-                cantidadRecibida: 0,
-                diferencia: recurso.cantidad,
-                observaciones: ''
-            })));
+            const recursosFiltrados = recursos.filter(recurso => recurso.cantidad > 0);
+            if (recursosFiltrados.length > 0) {
+                setDetalles(recursosFiltrados.map(recurso => ({
+                    ...recurso,
+                    cantidadRecibida: 0,
+                    diferencia: recurso.cantidad,
+                    observaciones: ''
+                })));
+            } else {
+                // Si no hay recursos con cantidad mayor a 0, no se establece detalles
+                setDetalles([]);
+            }
         }
     }, [recursos]);
 

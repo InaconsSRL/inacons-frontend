@@ -29,7 +29,7 @@ export const TableHeader: React.FC<TableHeaderProps> = ({
 
   return (
     <th
-      className={`font-semibold p-3 text-center bg-gray-400 border-b ${
+      className={`font-semibold p-3 text-center bg-gray-100 border-b ${
         sortable ? 'cursor-pointer hover:bg-gray-100' : ''
       }`}
       onClick={handleClick}
