@@ -105,11 +105,11 @@ export const updateObraBodegaRecurso = createAsyncThunk(
   'obraBodegaRecurso/update',
   async (recursoData: {
     updateObraBodegaRecursoId: string;
-    obraBodegaId: string;
-    recursoId: string;
-    cantidad: number;
-    costo: number;
-    estado: string;
+    obraBodegaId?: string;
+    recursoId?: string;
+    cantidad?: number;
+    costo?: number;
+    estado?: string;
   }, { rejectWithValue }) => {
     try {
       return await updateObraBodegaRecursoService(recursoData);

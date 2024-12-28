@@ -153,54 +153,23 @@ const DevolucionPrestamos: React.FC = () => {
         estado: esDevolucionCompleta ? 'COMPLETADO' : 'PARCIAL'
       })).unwrap();
 
-
-
-
-
-
-
-
-
-
-
-
-
-
       // Actualizar cantidades de préstamo y bodega
       for (const { recurso, cantidadDevolver } of Object.values(selectedRecursos)) {
         // Actualizar cantidad en préstamo
         const nuevaCantidadPrestamo = recurso.cantidad - cantidadDevolver;
         await dispatch(updatePrestamoRecurso({
-          updatePrestamoRecursoId: recurso.obrabodega_recurso_id.id,
           id: recurso.id,
+          prestamoId: selectedPrestamo,
+          obrabodegaRecursoId: recurso.obrabodega_recurso_id.id,
           cantidad: nuevaCantidadPrestamo
         })).unwrap();
 
         // Actualizar cantidad en bodega
         await dispatch(updateObraBodegaRecurso({
           updateObraBodegaRecursoId: recurso.obrabodega_recurso_id.id,
-          obraBodegaId: recurso.obrabodega_recurso_id.obra_bodega_id,
-          recursoId: recurso.obrabodega_recurso_id.recurso_id.id,
-          cantidad: recurso.obrabodega_recurso_id.cantidad + cantidadDevolver,
-          costo: recurso.obrabodega_recurso_id.costo,
-          estado: recurso.obrabodega_recurso_id.estado
+          cantidad: recurso.cantidad + cantidadDevolver,
         })).unwrap();
       }
-
-
-
-
-
-
-      
-
-
-
-
-
-
-
-
 
       // Limpiar selección y actualizar datos
       setSelectedRecursos({});

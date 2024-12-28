@@ -30,7 +30,7 @@ const LIST_OBRA_BODEGA_RECURSOS = gql`
 `;
 
 const LIST_OBRA_BODEGA_RECURSOS_BY_BODEGA = gql`
-  query ListObraBodegaRecursosByObraBodegaId($obraBodegaId: ID!) {
+  query ListObraBodegaRecurosByObraBodegaId($obraBodegaId: ID!) {
     listObraBodegaRecurosByObraBodegaId(obraBodegaId: $obraBodegaId) {
       id
       obra_bodega_id {
@@ -114,7 +114,7 @@ const ADD_OBRA_BODEGA_RECURSO = gql`
 `;
 
 const UPDATE_OBRA_BODEGA_RECURSO = gql`
-  mutation UpdateObraBodegaRecurso($updateObraBodegaRecursoId: ID!, $obraBodegaId: ID!, $recursoId: ID!, $cantidad: Float!, $costo: Float!, $estado: String!) {
+  mutation UpdateObraBodegaRecurso($updateObraBodegaRecursoId: ID!, $obraBodegaId: ID, $recursoId: ID, $cantidad: Float, $costo: Float, $estado: String) {
     updateObraBodegaRecurso(id: $updateObraBodegaRecursoId, obra_bodega_id: $obraBodegaId, recurso_id: $recursoId, cantidad: $cantidad, costo: $costo, estado: $estado) {
       id
       obra_bodega_id {
@@ -219,11 +219,11 @@ export const addObraBodegaRecursoService = async (recursoData: {
 
 export const updateObraBodegaRecursoService = async (recursoData: {
   updateObraBodegaRecursoId: string;
-  obraBodegaId: string;
-  recursoId: string;
-  cantidad: number;
-  costo: number;
-  estado: string;
+  obraBodegaId?: string;
+  recursoId?: string;
+  cantidad?: number;
+  costo?: number;
+  estado?: string;
 }) => {
   try {
     const response = await client.mutate({
