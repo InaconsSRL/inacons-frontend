@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { FiX } from 'react-icons/fi';
 import { useDispatch, useSelector } from 'react-redux';
-import { fetchOrdenCompras } from '../../../slices/ordenCompraSlice';
+import { fetchOrdenCompras, updateOrdenCompra } from '../../../slices/ordenCompraSlice';
 import { addTransferencia, TransferenciaData } from '../../../slices/transferenciaSlice';
 import { addTransferenciaRecurso } from '../../../slices/transferenciaRecursoSlice';
 import { addTransferenciaDetalle } from '../../../slices/transferenciaDetalleSlice';
@@ -67,21 +67,21 @@ const RecepcionCompra: React.FC<RecepcionesCompraProps> = ({ onClose, onComplete
 
     useEffect(() => {
         if (recursos) {
-        const nuevosDetalles: RecursoDetalle[] = recursos
-            .filter(recurso => recurso.cantidad > 0)
-            .map(recurso => ({
-                id: recurso.id,
-                id_recurso: {
-                    id: recurso.id_recurso.id,
-                    codigo: recurso.id_recurso.codigo,
-                    nombre: recurso.id_recurso.nombre,
-                    unidad_id: recurso.id_recurso.unidad_id,
-                },
-                cantidad: recurso.cantidad,
-                cantidadRecibida: 0,
-                diferencia: recurso.cantidad,
-                costo: recurso.costo_real
-            }));
+            const nuevosDetalles: RecursoDetalle[] = recursos
+                .filter(recurso => recurso.cantidad > 0)
+                .map(recurso => ({
+                    id: recurso.id,
+                    id_recurso: {
+                        id: recurso.id_recurso.id,
+                        codigo: recurso.id_recurso.codigo,
+                        nombre: recurso.id_recurso.nombre,
+                        unidad_id: recurso.id_recurso.unidad_id,
+                    },
+                    cantidad: recurso.cantidad,
+                    cantidadRecibida: 0,
+                    diferencia: recurso.cantidad,
+                    costo: recurso.costo_real
+                }));
             setDetalles(nuevosDetalles);
         }
     }, [recursos]);
@@ -177,7 +177,9 @@ const RecepcionCompra: React.FC<RecepcionesCompraProps> = ({ onClose, onComplete
             // Esperar a que todos los recursos se guarden
             await Promise.all(recursosPromises);
 
-            // Completar el proceso
+            // Actualizar el estado de la orden de compra
+            await dispatch(updateOrdenCompra(selectedOrden!)).unwrap();
+
             onComplete(selectedOrden!, detalles);
             setOrdenesCompletadas(prev => [...prev, selectedOrden!] as OrdenCompra[]);
             handleCloseRecepcion();
@@ -237,8 +239,7 @@ const RecepcionCompra: React.FC<RecepcionesCompraProps> = ({ onClose, onComplete
     );
 
     return (
-        <div className="rounded-xl shadow-lg w-full h-[90vh] flex flex-col overflow-hidden border border-gray-100">
-            
+        <div className="flex flex-col h-full">
             <div className="border-b border-gray-100 bg-white">
                 <div className="p-4 flex items-center justify-between">
                     <h2 className="text-xl font-semibold text-blue-800">Recepción de Compras</h2>
@@ -255,9 +256,15 @@ const RecepcionCompra: React.FC<RecepcionesCompraProps> = ({ onClose, onComplete
 
             <div className="flex flex-1 min-h-0">
                 {/* Panel izquierdo - Lista de órdenes */}
-                <div className="w-1/3 border-r border-gray-100 overflow-y-auto">
-                    <div className="p-4 bg-white border-b">
+                <div className="w-full md:w-1/3 border-r border-gray-100 overflow-y-auto">
+                    <div className="p-4 bg-white border-b sticky top-0 z-10">
                         <h3 className="text-sm font-medium text-gray-700">Órdenes de Compra Pendientes</h3>
+                        <button
+                            onClick={() => setOrdenesCompletadas([...ordenesPendientes].sort((a, b) => new Date(a.fecha_ini).getTime() - new Date(b.fecha_ini).getTime()))}
+                            className="mt-2 px-4 py-2 text-sm bg-blue-500 text-white rounded hover:bg-blue-600"
+                        >
+                            Ordenar por Fecha
+                        </button>
                     </div>
                     <div className="bg-gray-50 p-4 space-y-3">
                         {ordenesPendientes.map((oc: OrdenCompra) => (
@@ -304,7 +311,7 @@ const RecepcionCompra: React.FC<RecepcionesCompraProps> = ({ onClose, onComplete
 
                             {/* Formulario de recepción */}
                             <div className="p-4 border-b">
-                                <div className="grid grid-cols-2 gap-4">
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     <div>
                                         <label className="block text-sm font-medium text-gray-700">
                                             Fecha de Recepción
@@ -339,7 +346,7 @@ const RecepcionCompra: React.FC<RecepcionesCompraProps> = ({ onClose, onComplete
                             </div>
 
                             {/* Tabla de recursos */}
-                            <div className="p-4">
+                            <div className="p-4 overflow-x-auto">
                                 <table className="min-w-full divide-y divide-gray-200">
                                     <thead className="bg-gray-50">
                                         <tr>
@@ -390,16 +397,8 @@ const RecepcionCompra: React.FC<RecepcionesCompraProps> = ({ onClose, onComplete
                 </div>
             </div>
 
-            {/* Footer */}
-            <div className="p-5 border-t border-gray-100 bg-white">
-                <div className="text-sm text-gray-600">
-                    Total Órdenes: {ordenCompras.length} |
-                    Pendientes: {ordenesPendientes.length} |
-                    Completadas: {ordenesCompletadas.length}
-                </div>
-            </div>
             {/* Footer con botones */}
-            <div className="p-4 border-t bg-white">
+            <div className="p-4 border-t bg-white sticky bottom-0 z-10">
                 <div className="flex justify-end space-x-3">
                     <button
                         onClick={handleCloseRecepcion}
@@ -415,6 +414,7 @@ const RecepcionCompra: React.FC<RecepcionesCompraProps> = ({ onClose, onComplete
                     </button>
                 </div>
             </div>
+
             {/* Diálogo de confirmación */}
             {showConfirmDialog && (
                 <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[9999]">

@@ -248,15 +248,7 @@ const RecepcionCompra: React.FC<RecepcionesCompraProps> = ({ onClose, onComplete
     return (
         <div className="rounded-xl shadow-lg w-full h-[90vh] flex flex-col overflow-hidden border border-gray-100">
             
-            <div className="border-b border-gray-100 bg-white">
-                <div className="p-4 flex items-center justify-between">
-                    <h2 className="text-xl font-semibold text-blue-800">Recepción de Compras</h2>
-                    <button onClick={onClose} className="text-2xl text-red-500 hover:text-red-600">
-                        <FiX />
-                    </button>
-                </div>
-            </div>
-
+            
             {/* Errores de validación */}
             {validationErrors.length > 0 && (
                 <ValidationErrors errors={validationErrors} />
@@ -400,16 +392,9 @@ const RecepcionCompra: React.FC<RecepcionesCompraProps> = ({ onClose, onComplete
                 </div>
             </div>
 
-            {/* Footer */}
-            <div className="p-5 border-t border-gray-100 bg-white">
-                <div className="text-sm text-gray-600">
-                    Total Órdenes: {ordenCompras.length} |
-                    Pendientes: {ordenesPendientes.length} |
-                    Completadas: {ordenesCompletadas.length}
-                </div>
-            </div>
+           
             {/* Footer con botones */}
-            <div className="p-4 border-t bg-white">
+            <div className="p-4 border-t bg-white sticky bottom-0 z-10">
                 <div className="flex justify-end space-x-3">
                     <button
                         onClick={handleCloseRecepcion}
