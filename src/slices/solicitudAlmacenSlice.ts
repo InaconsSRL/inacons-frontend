@@ -7,13 +7,6 @@ import {
 } from '../services/solicitudAlmacenService';
 
 // Interfaces para los datos completos
-interface AlmacenData {
-  id: string;
-  nombre: string;
-  estado?: string;
-  direccion?: string;
-}
-
 interface UsuarioData {
   id: string;
   nombres: string;
@@ -22,33 +15,37 @@ interface UsuarioData {
 
 interface RequerimientoData {
   id: string;
-  codigo: string;
-  estado_atencion: string;
-  fecha_final: string;
-  fecha_solicitud: string;
+  usuario: string;
   obra_id: string;
-  presupuesto_id: string;
-  sustento: string;
-  usuario_id: string;
+  fecha_solicitud: string;
+  fecha_final: string;
+  estado_atencion: string;
+  codigo: string;
 }
 
-// Interface para la solicitud con datos completos (usado en queries)
+interface ObraData {
+  id: string;
+  nombre: string;
+  titulo: string;
+}
+
+// Interface para la solicitud con datos completos
 interface SolicitudAlmacenResponse {
   id: string;
   usuario_id: UsuarioData;
   requerimiento_id: RequerimientoData;
-  almacen_origen_id: AlmacenData;
-  almacen_destino_id: AlmacenData;
-  fecha: string;
+  obra_origen_id: ObraData;
+  obra_destino_id: ObraData;
   estado: string;
+  fecha: string;
 }
 
-// Interface para las mutations (cuando enviamos datos)
+// Interface para las mutations
 interface SolicitudAlmacenInput {
   usuario_id: string;
   requerimiento_id: string;
-  almacen_origen_id: string;
-  fecha: Date;
+  obra_origen_id: string;
+  obra_destino_id: string;
   estado: string;
 }
 

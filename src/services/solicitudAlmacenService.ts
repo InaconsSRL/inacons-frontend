@@ -12,44 +12,42 @@ const LIST_SOLICITUD_ALMACENES_QUERY = gql`
       }
       requerimiento_id {
         id
-        codigo
-        estado_atencion
-        fecha_final
-        fecha_solicitud
+        usuario
         obra_id
-        presupuesto_id
-        sustento
-        usuario_id
+        fecha_solicitud
+        fecha_final
+        estado_atencion
+        codigo
       }
-      almacen_origen_id {
+      obra_origen_id {
         id
         nombre
+        titulo
       }
-      almacen_destino_id {
+      obra_destino_id {
         id
         nombre
-        estado
-        direccion
+        titulo
       }
-      fecha
       estado
+      fecha
     }
   }
 `;
 
 const ADD_SOLICITUD_ALMACEN_MUTATION = gql`
   mutation AddSolicitudAlmacen(
-    $usuario_id: ID!
-    $requerimiento_id: ID!
-    $almacen_origen_id: ID!
-    $fecha: DateTime
+    $usuarioId: ID!,
+    $requerimientoId: ID!,
+    $obraOrigenId: ID!,
+    $obraDestinoId: ID!,
     $estado: String!
   ) {
     addSolicitudAlmacen(
-      usuario_id: $usuario_id
-      requerimiento_id: $requerimiento_id
-      almacen_origen_id: $almacen_origen_id
-      fecha: $fecha
+      usuario_id: $usuarioId,
+      requerimiento_id: $requerimientoId,
+      obra_origen_id: $obraOrigenId,
+      obra_destino_id: $obraDestinoId,
       estado: $estado
     ) {
       id
@@ -60,46 +58,44 @@ const ADD_SOLICITUD_ALMACEN_MUTATION = gql`
       }
       requerimiento_id {
         id
-        codigo
-        estado_atencion
-        fecha_final
-        fecha_solicitud
+        usuario
         obra_id
-        presupuesto_id
-        sustento
-        usuario_id
+        fecha_solicitud
+        fecha_final
+        estado_atencion
+        codigo
       }
-      almacen_origen_id {
+      obra_origen_id {
         id
         nombre
+        titulo
       }
-      almacen_destino_id {
+      obra_destino_id {
         id
         nombre
-        estado
-        direccion
+        titulo
       }
-      fecha
       estado
+      fecha
     }
   }
 `;
 
 const UPDATE_SOLICITUD_ALMACEN_MUTATION = gql`
   mutation UpdateSolicitudAlmacen(
-    $updateSolicitudAlmacenId: ID!
-    $usuario_id: ID!
-    $requerimiento_id: ID
-    $almacen_origen_id: ID
-    $fecha: DateTime
+    $updateSolicitudAlmacenId: ID!,
+    $usuarioId: ID!,
+    $obraDestinoId: ID,
+    $obraOrigenId: ID,
+    $requerimientoId: ID,
     $estado: String
   ) {
     updateSolicitudAlmacen(
-      id: $updateSolicitudAlmacenId
-      usuario_id: $usuario_id
-      requerimiento_id: $requerimiento_id
-      almacen_origen_id: $almacen_origen_id
-      fecha: $fecha
+      id: $updateSolicitudAlmacenId,
+      usuario_id: $usuarioId,
+      obra_destino_id: $obraDestinoId,
+      obra_origen_id: $obraOrigenId,
+      requerimiento_id: $requerimientoId,
       estado: $estado
     ) {
       id
@@ -110,27 +106,25 @@ const UPDATE_SOLICITUD_ALMACEN_MUTATION = gql`
       }
       requerimiento_id {
         id
-        codigo
-        estado_atencion
-        fecha_final
-        fecha_solicitud
+        usuario
         obra_id
-        presupuesto_id
-        sustento
-        usuario_id
+        fecha_solicitud
+        fecha_final
+        estado_atencion
+        codigo
       }
-      almacen_origen_id {
+      obra_origen_id {
         id
         nombre
+        titulo
       }
-      almacen_destino_id {
+      obra_destino_id {
         id
         nombre
-        estado
-        direccion
+        titulo
       }
-      fecha
       estado
+      fecha
     }
   }
 `;
@@ -161,19 +155,19 @@ export const listSolicitudAlmacenesService = async () => {
 export const addSolicitudAlmacenService = async (solicitudData: {
   usuario_id: string;
   requerimiento_id: string;
-  almacen_origen_id: string;
-  fecha: Date;
+  obra_origen_id: string;
+  obra_destino_id: string;
   estado: string;
 }) => {
   try {
     const response = await client.mutate({
       mutation: ADD_SOLICITUD_ALMACEN_MUTATION,
       variables: {
-        usuario_id: solicitudData.usuario_id,
-        requerimiento_id: solicitudData.requerimiento_id,
-        almacen_origen_id: solicitudData.almacen_origen_id,
-        fecha: solicitudData.fecha,
-        estado: 'pendiente',
+        usuarioId: solicitudData.usuario_id,
+        requerimientoId: solicitudData.requerimiento_id,
+        obraOrigenId: solicitudData.obra_origen_id,
+        obraDestinoId: solicitudData.obra_destino_id,
+        estado: solicitudData.estado || 'pendiente',
       },
     });
     if (response.errors) {
@@ -190,19 +184,19 @@ export const updateSolicitudAlmacenService = async (solicitudData: {
   updateSolicitudAlmacenId: string;
   usuario_id: string;
   requerimiento_id: string;
-  almacen_origen_id: string;
-  fecha: Date;
-  estado: string
+  obra_origen_id: string;
+  obra_destino_id: string;
+  estado: string;
 }) => {
   try {
     const response = await client.mutate({
       mutation: UPDATE_SOLICITUD_ALMACEN_MUTATION,
       variables: {
         updateSolicitudAlmacenId: solicitudData.updateSolicitudAlmacenId,
-        usuario_id: solicitudData.usuario_id,
-        requerimiento_id: solicitudData.requerimiento_id,
-        almacen_origen_id: solicitudData.almacen_origen_id,
-        fecha: solicitudData.fecha,
+        usuarioId: solicitudData.usuario_id,
+        requerimientoId: solicitudData.requerimiento_id,
+        obraOrigenId: solicitudData.obra_origen_id,
+        obraDestinoId: solicitudData.obra_destino_id,
         estado: solicitudData.estado,
       },
     });

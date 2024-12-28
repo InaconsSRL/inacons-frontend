@@ -1,7 +1,7 @@
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
 import { listSolicitudRecursoAlmacenesService, addSolicitudRecursoAlmacenService, updateSolicitudRecursoAlmacenService, deleteSolicitudRecursoAlmacenService, getOrdenSolicitudRecursoByIdService } from '../services/solicitudRecursoAlmacenService';
 
-// Interfaces
+// Interfaces para respuestas del servidor
 interface Imagen {
   file: string;
 }
@@ -20,29 +20,31 @@ interface Recurso {
 
 interface SolicitudAlmacen {
   id: string;
-  fecha: string;
 }
 
-// Interface para GET
-interface SolicitudRecursoAlmacenResponse {
+// Interface para la respuesta del servidor
+export interface SolicitudRecursoAlmacenResponse {
   id: string;
-  costo: number;
   recurso_id: Recurso;
   cantidad: number;
   solicitud_almacen_id: SolicitudAlmacen;
 }
 
-// Interface para POST/PUT
-interface SolicitudRecursoAlmacenMutation {
-  id: string;
-  recurso_id: Recurso;
+// Interfaces para mutations (entrada de datos)
+export interface SolicitudRecursoAlmacenInput {
+  recursoId: string;
   cantidad: number;
-  costo: number;
-  solicitud_almacen_id: {
-    id: string;
-  };
+  solicitudAlmacenId: string;
 }
 
+export interface UpdateSolicitudRecursoAlmacenInput {
+  updateSolicitudRecursoAlmacenId: string;
+  recursoId?: string;
+  cantidad?: number;
+  solicitudAlmacenId?: string;
+}
+
+// Estado
 interface SolicitudRecursoAlmacenState {
   solicitudesRecurso: SolicitudRecursoAlmacenResponse[];
   loading: boolean;
@@ -74,10 +76,7 @@ export const fetchSolicitudesRecursoAlmacen = createAsyncThunk(
 
 export const addSolicitudRecursoAlmacen = createAsyncThunk(
   'solicitudRecursoAlmacen/addSolicitudRecursoAlmacen',
-  async (
-    data: { recurso_id: string; cantidad: number; solicitud_almacen_id: string; costo: number },
-    { rejectWithValue }
-  ) => {
+  async (data: SolicitudRecursoAlmacenInput, { rejectWithValue }) => {
     try {
       return await addSolicitudRecursoAlmacenService(data);
     } catch (error) {
@@ -88,7 +87,7 @@ export const addSolicitudRecursoAlmacen = createAsyncThunk(
 
 export const updateSolicitudRecursoAlmacen = createAsyncThunk(
   'solicitudRecursoAlmacen/updateSolicitud',
-  async (data: { updateSolicitudRecursoAlmacenId: string; recursoId: string; cantidad: number; solicitudAlmacenId: string }, { rejectWithValue }) => {
+  async (data: UpdateSolicitudRecursoAlmacenInput, { rejectWithValue }) => {
     try {
       return await updateSolicitudRecursoAlmacenService(data);
     } catch (error) {
@@ -138,16 +137,8 @@ const solicitudRecursoAlmacenSlice = createSlice({
         state.loading = false;
         state.error = action.payload as string;
       })
-      .addCase(addSolicitudRecursoAlmacen.fulfilled, (state, action: PayloadAction<SolicitudRecursoAlmacenMutation>) => {
-        // Convert mutation response to full response format
-        const fullResponse: SolicitudRecursoAlmacenResponse = {
-          ...action.payload,
-          solicitud_almacen_id: {
-            id: action.payload.solicitud_almacen_id.id,
-            fecha: ''
-          }
-        };
-        state.solicitudesRecurso.push(fullResponse);
+      .addCase(addSolicitudRecursoAlmacen.fulfilled, (state, action: PayloadAction<SolicitudRecursoAlmacenResponse>) => {
+        state.solicitudesRecurso.push(action.payload);
       })
       .addCase(updateSolicitudRecursoAlmacen.fulfilled, (state, action: PayloadAction<SolicitudRecursoAlmacenResponse>) => {
         const index = state.solicitudesRecurso.findIndex(sol => sol.id === action.payload.id);

@@ -86,23 +86,23 @@ const AprobacionTransferenciaPageAlmacen: React.FC<AprobacionTransferenciaPagePr
     }
   }, [dispatch, requerimientoId]);
 
-  const handleQuantityChange = (itemId: string, warehouseId: string, value: string): void => {
+  const handleQuantityChange = (itemId: string, obraId: string, value: string): void => {
     const numValue = parseInt(value) || 0;
     const item = requerimientoRecursos.find(i => i.id === itemId);
-    const warehouse = item?.listAlmacenRecursos.find(w => w.almacen_id === warehouseId);
+    const obra = item?.list_obra_bodega_recursos.find(o => o.obra_id === obraId);
 
-    if (warehouse && numValue >= 0 && numValue <= warehouse.cantidad) {
+    if (obra && numValue >= 0 && numValue <= obra.cantidad_total_obra) {
       setWarehouseQuantities(prev => ({
         ...prev,
-        [`${itemId}-${warehouseId}`]: numValue
+        [`${itemId}-${obraId}`]: numValue
       }));
     }
   };
 
   const calculateTransferTotal = (itemId: string): number => {
     const item = requerimientoRecursos.find(i => i.id === itemId);
-    return item?.listAlmacenRecursos.reduce((total, warehouse) => {
-      return total + (warehouseQuantities[`${itemId}-${warehouse.almacen_id}`] || 0);
+    return item?.list_obra_bodega_recursos.reduce((total, obra) => {
+      return total + (warehouseQuantities[`${itemId}-${obra.obra_id}`] || 0);
     }, 0) || 0;
   };
 
@@ -133,13 +133,13 @@ const AprobacionTransferenciaPageAlmacen: React.FC<AprobacionTransferenciaPagePr
         }
 
         // Procesar transferencias de almacén
-        recurso.listAlmacenRecursos.forEach(warehouse => {
-          const cantidadTransferencia = warehouseQuantities[`${recurso.id}-${warehouse.almacen_id}`] || 0;
+        recurso.list_obra_bodega_recursos.forEach(warehouse => {
+          const cantidadTransferencia = warehouseQuantities[`${recurso.id}-${warehouse.obra_id}`] || 0;
           if (cantidadTransferencia > 0) {
-            if (!recursosPorAlmacen[warehouse.almacen_id]) {
-              recursosPorAlmacen[warehouse.almacen_id] = [];
+            if (!recursosPorAlmacen[warehouse.obra_id]) {
+              recursosPorAlmacen[warehouse.obra_id] = [];
             }
-            recursosPorAlmacen[warehouse.almacen_id].push({
+            recursosPorAlmacen[warehouse.obra_id].push({
               recurso_id: recurso.recurso_id,
               cantidad: cantidadTransferencia,
             });
@@ -176,12 +176,12 @@ const AprobacionTransferenciaPageAlmacen: React.FC<AprobacionTransferenciaPagePr
 
       for (const almacenId of warehouses) {
         const recursos = recursosPorAlmacen[almacenId];
-        const almacen = requerimientoRecursos[0]?.listAlmacenRecursos.find(w => w.almacen_id === almacenId);
+        const almacen = requerimientoRecursos[0]?.list_obra_bodega_recursos.find(w => w.obra_id === almacenId);
 
         setProgress(prev => ({
           ...prev,
           currentWarehouse: almacenId,
-          currentWarehouseName: almacen?.nombre_almacen || '',
+          currentWarehouseName: almacen?.obra_id || '',
           totalResources: recursos.length,
           warehouseProgress: Math.round(((warehouses.indexOf(almacenId) + 1) / warehouses.length) * 100),
         }));
@@ -195,6 +195,7 @@ const AprobacionTransferenciaPageAlmacen: React.FC<AprobacionTransferenciaPagePr
           usuario_id: currentUserId,
           almacen_origen_id: almacenId,
           fecha: new Date(),
+          estado: 'aprobado',
         };
 
         const solicitud = await dispatch(addSolicitudAlmacen(solicitudData)).unwrap();
@@ -209,14 +210,14 @@ const AprobacionTransferenciaPageAlmacen: React.FC<AprobacionTransferenciaPagePr
 
           // Encontrar el recurso y el almacén específico para obtener el costo
           const requerimientoRecurso = requerimientoRecursos.find(r => r.recurso_id === recurso.recurso_id);
-          const almacenRecurso = requerimientoRecurso?.listAlmacenRecursos.find(a => a.almacen_id === almacenId);
+          const almacenRecurso = requerimientoRecurso?.list_obra_bodega_recursos.find(a => a.obra_id === almacenId);
           
           await dispatch(
             addSolicitudRecursoAlmacen({
               recurso_id: recurso.recurso_id,
               cantidad: recurso.cantidad,
               solicitud_almacen_id: solicitud.id,
-              costo: almacenRecurso?.costo || 0, // Incluimos el costo del almacén específico
+              costo: almacenRecurso?.cantidad_total_obra || 0, // Incluimos el costo del almacén específico
             })
           ).unwrap();
 
@@ -271,10 +272,10 @@ const AprobacionTransferenciaPageAlmacen: React.FC<AprobacionTransferenciaPagePr
     limitDate: recurso.fecha_limit ? new Date(recurso.fecha_limit).toISOString().split("T")[0].split("-").reverse().join("/") : '-',
     partialCost: recurso.costo_ref || 0,
     approvedQuantity: recurso.cantidad_aprobada || 0,
-    warehouses: recurso.listAlmacenRecursos.map((almacenRecurso) => ({
-      id: almacenRecurso.almacen_id,
-      name: almacenRecurso.nombre_almacen,
-      stock: almacenRecurso.cantidad,
+    warehouses: recurso.list_obra_bodega_recursos.map((almacenRecurso) => ({
+      id: almacenRecurso.obra_id,
+      name: almacenRecurso.obra_nombre,
+      stock: almacenRecurso.cantidad_total_obra,
     }))
   }));
 
@@ -378,17 +379,17 @@ const AprobacionTransferenciaPageAlmacen: React.FC<AprobacionTransferenciaPagePr
                   <td className="px-2 py-1 text-center">{item.limitDate}</td>
                   <td className="px-2 py-1 text-center">{item.partialCost}</td>
                   <td className="px-2 py-1">
-                    {item.warehouses.map(warehouse => (
-                      <div key={warehouse.id} className="mb-0.5">
+                    {item.warehouses.map(obra => (
+                      <div key={obra.id} className="mb-0.5">
                         <div className="flex flex-row justify-end items-center gap-x-3">
-                          <span className="text-[8px] text-gray-600">{warehouse.name} - Stock: {warehouse.stock}</span>
+                          <span className="text-[8px] text-gray-600">{obra.name} - Stock: {obra.stock}</span>
                           <input
                             type="number"
                             min="0"
-                            max={warehouse.stock}
+                            max={obra.stock}
                             className="w-12 text-[8px] border rounded px-1"
-                            value={warehouseQuantities[`${item.id}-${warehouse.id}`] || ''}
-                            onChange={(e) => handleQuantityChange(item.id, warehouse.id, e.target.value)}
+                            value={warehouseQuantities[`${item.id}-${obra.id}`] || ''}
+                            onChange={(e) => handleQuantityChange(item.id, obra.id, e.target.value)}
                           />
                         </div>
                       </div>

@@ -1,80 +1,72 @@
 import { gql } from '@apollo/client';
 import client from '../apolloClient';
+import {SolicitudRecursoAlmacenInput, SolicitudRecursoAlmacenResponse, UpdateSolicitudRecursoAlmacenInput} from '../slices/solicitudRecursoAlmacenSlice';
 
 const LIST_SOLICITUD_RECURSO_ALMACENES_QUERY = gql`
   query ListSolicitudRecursoAlmacenes {
     listSolicitudRecursoAlmacenes {
-     id
-     costo
-     recurso_id {
-        cantidad
-        codigo
-        descripcion
-        id
-        nombre
-        precio_actual
-        vigente
-        unidad_id
-     }
-     cantidad
-     solicitud_almacen_id {
-        id
-        fecha
-     }
-    }
-}
-`;
-
-const ADD_SOLICITUD_RECURSO_ALMACEN_MUTATION = gql`
-  mutation AddSolicitudRecursoAlmacen($recurso_id: ID!, $cantidad: Int!,$costo: Float!, $solicitud_almacen_id: ID!) {
-    addSolicitudRecursoAlmacen(recurso_id: $recurso_id, cantidad: $cantidad, costo: $costo, solicitud_almacen_id: $solicitud_almacen_id) {
       id
-      costo
       recurso_id {
-        cantidad
-        codigo
-        descripcion
         id
+        codigo
+        nombre
+        cantidad
+        unidad_id
+        precio_actual
         imagenes {
           file
         }
-        nombre
-        precio_actual
-        vigente
-        unidad_id
       }
       cantidad
       solicitud_almacen_id {
         id
-        fecha
-     }
+      }
+    }
+  }
+`;
+
+const ADD_SOLICITUD_RECURSO_ALMACEN_MUTATION = gql`
+  mutation AddSolicitudRecursoAlmacen($recursoId: ID!, $cantidad: Int!, $solicitudAlmacenId: ID!) {
+    addSolicitudRecursoAlmacen(recurso_id: $recursoId, cantidad: $cantidad, solicitud_almacen_id: $solicitudAlmacenId) {
+      id
+      recurso_id {
+        id
+        codigo
+        nombre
+        cantidad
+        unidad_id
+        precio_actual
+        imagenes {
+          file
+        }
+      }
+      cantidad
+      solicitud_almacen_id {
+        id
+      }
     }
   }
 `;
 
 const UPDATE_SOLICITUD_RECURSO_ALMACEN_MUTATION = gql`
-  mutation UpdateSolicitudRecursoAlmacen($updateSolicitudRecursoAlmacenId: ID!, $recursoId: ID!, $cantidad: Int!, $costo: Float, $solicitudAlmacenId: ID!) {
-    updateSolicitudRecursoAlmacen(id: $updateSolicitudRecursoAlmacenId, recurso_id: $recursoId, costo: $costo, cantidad: $cantidad, solicitud_almacen_id: $solicitudAlmacenId) {
+  mutation UpdateSolicitudRecursoAlmacen($updateSolicitudRecursoAlmacenId: ID!, $recursoId: ID, $cantidad: Int, $solicitudAlmacenId: ID) {
+    updateSolicitudRecursoAlmacen(id: $updateSolicitudRecursoAlmacenId, recurso_id: $recursoId, cantidad: $cantidad, solicitud_almacen_id: $solicitudAlmacenId) {
       id
-      costo
       recurso_id {
-        cantidad
-        codigo
-        descripcion
         id
+        codigo
+        nombre
+        cantidad
+        unidad_id
+        precio_actual
         imagenes {
           file
         }
-        nombre
-        precio_actual
-        vigente
-        unidad_id
       }
       cantidad
       solicitud_almacen_id {
         id
-        fecha
-     }
+      }
     }
   }
 `;
@@ -91,21 +83,20 @@ const GET_ORDEN_SOLICITUD_RECURSO_BY_ID = gql`
   query GetOrdenSolicitudRecursoforSolicitudId($getOrdenSolicitudRecursoforSolicitudIdId: ID!) {
     getOrdenSolicitudRecursoforSolicitudId(id: $getOrdenSolicitudRecursoforSolicitudIdId) {
       id
-      costo
       recurso_id {
         id
         codigo
         nombre
-        descripcion
         cantidad
         unidad_id
         precio_actual
-        vigente
+        imagenes {
+          file
+        }
       }
       cantidad
       solicitud_almacen_id {
         id
-        fecha
       }
     }
   }
@@ -126,12 +117,7 @@ export const listSolicitudRecursoAlmacenesService = async () => {
   }
 };
 
-export const addSolicitudRecursoAlmacenService = async (data: {
-  recurso_id: string;
-  cantidad: number;
-  solicitud_almacen_id: string;
-  costo: number;
-}) => {
+export const addSolicitudRecursoAlmacenService = async (data: SolicitudRecursoAlmacenInput): Promise<SolicitudRecursoAlmacenResponse> => {
   try {
     const response = await client.mutate({
       mutation: ADD_SOLICITUD_RECURSO_ALMACEN_MUTATION,
@@ -147,7 +133,7 @@ export const addSolicitudRecursoAlmacenService = async (data: {
   }
 };
 
-export const updateSolicitudRecursoAlmacenService = async (data: { updateSolicitudRecursoAlmacenId: string; recursoId: string; cantidad: number; solicitudAlmacenId: string }) => {
+export const updateSolicitudRecursoAlmacenService = async (data: UpdateSolicitudRecursoAlmacenInput): Promise<SolicitudRecursoAlmacenResponse> => {
   try {
     const response = await client.mutate({
       mutation: UPDATE_SOLICITUD_RECURSO_ALMACEN_MUTATION,
