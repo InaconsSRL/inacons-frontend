@@ -135,3 +135,17 @@ export interface RecursoSeleccionado {
 }
 
 export type TipoMovimiento = 'COMPRAS' | 'DEVOLUCION' | 'TRASLADOS' | 'RECEPCIONES';
+
+export interface TableHeaderProps {
+  field: keyof TransferenciaCompleta;
+  label: string;
+  sortable?: boolean;
+  onSort?: (field: keyof TransferenciaCompleta) => void;
+  currentSort?: SortState;
+}
+
+// Definición de SortState
+export interface SortState {
+  field: keyof TransferenciaCompleta | '';
+  direction: 'asc' | 'desc';
+}

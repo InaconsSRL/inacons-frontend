@@ -61,6 +61,7 @@ const LIST_TRANSFERENCIA_DETALLES_BY_TRANSFERENCIA_ID = gql`
       fecha
       tipo
       referencia
+     
     }
   }
 `;

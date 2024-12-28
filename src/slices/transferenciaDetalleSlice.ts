@@ -75,6 +75,7 @@ export interface TransferenciaDetalleData {
   fecha?: Date;
   tipo: string;
   referencia: string;
+  estado?: string;
 }
 
 export const addTransferenciaDetalle = createAsyncThunk(

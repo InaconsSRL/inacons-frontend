@@ -47,7 +47,6 @@ interface Item {
   precio: number;
   total: number;
   bodega: string;
-
 }
 
 interface RootState {
@@ -76,7 +75,6 @@ interface Props {
   estado: EstadoTransferencia; 
   obra: string;
   transferenciaId: string;
-  recursos?: RecursoState[],
 }
 
 interface GuiaTransferProps {
