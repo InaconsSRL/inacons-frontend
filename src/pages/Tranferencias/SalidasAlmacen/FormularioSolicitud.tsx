@@ -3,7 +3,6 @@ import { useDispatch, useSelector } from 'react-redux';
 import { RootState, AppDispatch } from '../../../store/store';
 import { fetchSolicitudAlmacenes } from '../../../slices/solicitudAlmacenSlice';
 import { getOrdenSolicitudRecursoById } from '../../../slices/solicitudRecursoAlmacenSlice';
-import { IoMdCloseCircle } from "react-icons/io";
 import OrdenTransferencia from './OrdenTransferencia';
 import { 
   FormularioSolicitudProps, 
@@ -102,18 +101,10 @@ const FormularioSolicitud: React.FC<FormularioSolicitudProps> = ({ onClose, tran
     }}
   />
       ) : (
-        <div className="bg-gradient-to-br from-white to-gray-50 rounded-xl shadow-lg w-[120px] max-w-full min-w-full max-h-[90vh] overflow-hidden border border-gray-100">
+        <div className="bg-gradient-to-br from-white to-gray-50 rounded-xl shadow-lg w-[1200px] max-w-full min-w-full max-h-[90vh] flex flex-col overflow-hidden border border-gray-100">
           {/* Header */}
           <div className="border-b border-gray-100 bg-white">
-            <div className="p-3 flex items-center justify-between">
-              <h2 className="text-xl font-semibold text-blue-800">Solicitudes de Transferencia</h2>
-              <button
-                onClick={onClose}
-                className="text-2xl text-red-500 transition-transform transform hover:scale-110"
-              >
-                <IoMdCloseCircle />
-              </button>
-            </div>
+            
             <div className="px-3 pb-3">
               <select
                 value={almacenId}

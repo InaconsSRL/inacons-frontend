@@ -68,39 +68,59 @@ interface RootState {
   };
 }
 
-interface Props {
+
+interface GuiaTransferProps {
+  
   numero: number;
   solicita: string;
   recibe: string;
   fEmision: Date;
-  estado: EstadoTransferencia; 
   obra: string;
   transferenciaId: string;
-  recursos?: RecursoState[],
-}
+  obra_origen: {
+    _id: string;
+    nombre: string;
+  }
+  obra_destino: {
+    _id: string;
+    nombre: string;
+  }
 
-interface GuiaTransferProps {
   onClose: () => void;
+
+  estado: string;
+
+  recursos?:Recursos;
+  
+
 }
 
-interface RecursoState {
-  id: string; 
-  cantidad_recibida: number;
-  precio_actual: number; 
-}
+interface Recursos {
+  _id: string;
+    codigo: string;
+    nombre: string;
+    descripcion: string;
+    cantidad_original: number;
+    cantidad_recibida: number;
+    diferencia: number;
+    precio_actual: number; 
+  }
 
-const GuiaTransferencia: React.FC<Props & GuiaTransferProps> = ({
+const GuiaTransferencia: React.FC<GuiaTransferProps > = ({
   numero,
   solicita,
   recibe,
   fEmision,
   estado,
   obra,
+  recursos,
   transferenciaId,
+  obra_origen,
+  obra_destino,
   onClose,
 }) => {
   const dispatch = useDispatch();
-  const [recursosState, setRecursosState] = useState<{ [key: string]: RecursoState }>({});
+  const [recursosState, setRecursosState] = useState<{ [key: string]: Recursos }>({});
   const { transferenciaRecursos, loading: recursosLoading } = useSelector((state: RootState) => state.transferenciaRecurso);
   const [showPDF, setShowPDF] = useState(false); 
 
@@ -113,12 +133,18 @@ const GuiaTransferencia: React.FC<Props & GuiaTransferProps> = ({
 
   useEffect(() => {
     const fetchData = async () => {
-      console.log('Fetching data for transferenciaId:', transferenciaId);
-      const detalles = await dispatch(fetchTransferenciaDetallesByTransferenciaId(transferenciaId) as any).unwrap();
-      if (detalles && detalles.length > 0) {
-        setSelectedDetalleId(detalles[0].id);
-        await dispatch(fetchTransferenciaRecursosById(detalles[0].id) as any);
-      }
+        console.log('Fetching data for transferenciaId:', transferenciaId);
+        console.log('Imprimiendo recursos:', recursos);
+        try {
+            const detalles = await dispatch(fetchTransferenciaDetallesByTransferenciaId(transferenciaId) as any).unwrap();
+            console.log('Detalles de transferencia:', detalles);
+            if (detalles && detalles.length > 0) {
+                setSelectedDetalleId(detalles[0].id);
+                await dispatch(fetchTransferenciaRecursosById(detalles[0].id) as any);
+            }
+        } catch (error) {
+            console.error('Error al obtener detalles de transferencia:', error);
+        }
     };
     fetchData();
   }, [dispatch, transferenciaId]);
@@ -161,7 +187,7 @@ const GuiaTransferencia: React.FC<Props & GuiaTransferProps> = ({
     // Guardar los recursos
     const recursosGuardados = Object.values(recursosState).map(recurso => ({
       transferencia_detalle_id: transferencia.id, 
-      recurso_id: recurso.id,
+      recurso_id: recurso._id,
       cantidad: recurso.cantidad_recibida,
       costo: recurso.precio_actual 
     }));
@@ -178,6 +204,7 @@ const GuiaTransferencia: React.FC<Props & GuiaTransferProps> = ({
       tipo: detalle.tipo,
       referencia: detalle.referencia
     }));
+    
 
     for (const detalle of detallesGuardados) {
       await dispatch(addTransferenciaDetalle(detalle) as any);
@@ -186,11 +213,17 @@ const GuiaTransferencia: React.FC<Props & GuiaTransferProps> = ({
     console.log('Transferencia, recursos y detalles guardados exitosamente');
   };
 
+  const getFormattedReference = (reference: string) => {
+    const parts = reference.split('-');
+    return parts.length > 1 ? parts.slice(1).join('-') : reference;
+  };
+
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex justify-center items-center">
       <div className="bg-white rounded-lg shadow-lg w-full max-w-[1000px] max-h-[85vh] overflow-y-auto">
         <div className="flex justify-between items-center bg-blue-900 text-white px-6 py-3">
           <h2 className="text-xl font-semibold">Recepción de transferencia</h2>
+        
           <button onClick={onClose} className="text-white hover:text-gray-300">
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -204,9 +237,12 @@ const GuiaTransferencia: React.FC<Props & GuiaTransferProps> = ({
             <div className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">N° de oden de Transferencia</label>
+
+                 { /*JSON.stringify(transferenciaDetalles[0].referencia , null, 2)*/}
+                
                 <input
                   type="text"
-                  value={`TRA-${transferenciaDetalles[0]?.referencia_id || ''}`}
+                  value={`${getFormattedReference(transferenciaDetalles[0]?.referencia || '')}`}
                   className="w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
                   readOnly
                 />
@@ -224,9 +260,10 @@ const GuiaTransferencia: React.FC<Props & GuiaTransferProps> = ({
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Almacen de Salida</label>
+               
                 <input
                   type="text"
-                  value={obra}
+                  value={obra_origen.nombre}
                   className="w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
                   readOnly
                 />
@@ -236,7 +273,7 @@ const GuiaTransferencia: React.FC<Props & GuiaTransferProps> = ({
                 <label className="block text-sm font-medium text-gray-700 mb-1">Almacen de Destino</label>
                 <input
                   type="text"
-                  value={recibe}
+                  value={obra_destino.nombre} 
                   className="w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
                   readOnly
                 />
@@ -287,6 +324,8 @@ const GuiaTransferencia: React.FC<Props & GuiaTransferProps> = ({
 
           {/* Tabla con scroll vertical y ancho fijo */}
           <div className="overflow-x-auto" style={{ maxHeight: '350px' }}>
+            {JSON.stringify(recursos, null, 2)}
+            
             <table className="min-w-[900px] divide-y divide-gray-200 border-b">
               <thead className="bg-gray-100">
                 <tr>
@@ -305,38 +344,25 @@ const GuiaTransferencia: React.FC<Props & GuiaTransferProps> = ({
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200 bg-white">
-                {transferenciaRecursos.filter((recurso: any) => recurso.transferencia_detalle_id === selectedDetalleId).map((recurso: any, index: number) => (
+                {/*{transferenciaRecursos.filter((recursos: any) => recursos?._id === selectedDetalleId).map((recurso: any, index: number) => (}*/}
+                {recursos && recursos.map((recurso: any, index: number) => (
                   <tr key={index}>
                     <td className="px-4 py-3">
                       <input type="checkbox" className="rounded border-gray-300 text-blue-600 focus:ring-blue-500" />
                     </td>
-                    <td className="px-4 py-3">{recurso.recurso_id.codigo}</td>
-                    <td className="px-4 py-3">{recurso.recurso_id.nombre}</td>
-                    <td className="px-4 py-3">{recurso.recurso_id.descripcion}</td>
+                    <td className="px-4 py-3">{recurso.codigo}</td>
+                    <td className="px-4 py-3">{recurso.nombre}</td>
+                    <td className="px-4 py-3">{recurso.descripcion}</td>
                     <td className="px-4 py-3">
-                      {unidades?.find((u: { id: string; nombre: string }) => u.id === recurso.recurso_id.unidad_id)?.nombre || 'UND'}
+                      {unidades?.find((u: { id: string; nombre: string }) => u.id === recurso.unidad_id)?.nombre || 'UND'}
                     </td>
-                    <td className="px-4 py-3">{recurso.cantidad}</td>
-                    <td className="px-4 py-3">{recurso.recurso_id.precio_actual}</td>
-                    <td className="px-4 py-3">{(recurso.cantidad * recurso.recurso_id.precio_actual).toFixed(2)}</td>
-                    <td className="px-4 py-3">
-                      <input
-                        type="number"
-                        min="0"
-                        max={recurso.cantidad}
-                        value={recursosState[recurso._id]?.cantidad_recibida || ''}
-                        onChange={(e) => {
-                          const cantidad = parseInt(e.target.value) || 0;
-                          setRecursosState(prev => ({
-                            ...prev,
-                            [recurso._id]: {
-                              cantidad_recibida: cantidad
-                            }
-                          }));
-                        }}
-                        className="w-24 p-1.5 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
-                      />
-                    </td>
+                    <td>{recurso.cantidad_original}</td>
+                    <td>{recurso.precio_actual}</td>
+                    <td className="px-4 py-3">{recurso.precio_actual}</td>
+                    <td className="px-4 py-3">{(recurso.cantidad_original * recurso.precio_actual).toFixed(2)}</td>
+                    <td>{(recurso.cantidad_original * recurso.precio_actual).toFixed(2)}</td>
+                    <td>{recurso.cantidad_recibida}</td>
+                   
                     <td className="px-4 py-3">
                       <button className="p-1.5 bg-blue-500 text-white rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">

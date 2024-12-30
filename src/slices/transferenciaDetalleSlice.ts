@@ -26,6 +26,11 @@ interface Movilidad {
   descripcion: string;
 }
 
+interface Obra {
+  _id: string;
+  nombre: string;
+}
+
 interface Transferencia {
   id: string;
   usuario_id: Usuario;
@@ -34,13 +39,18 @@ interface Transferencia {
   movilidad_id: Movilidad;
 }
 
+interface ReferenciaId {
+  obra_destino_id: Obra;
+  obra_origen_id: Obra;
+}
+
 interface TransferenciaDetalle {
   id: string;
   transferencia_id: Transferencia;
-  referencia_id: string;
   fecha: string;
   tipo: string;
   referencia: string;
+  referencia_id: ReferenciaId; 
 }
 
 interface TransferenciaDetalleState {
@@ -65,7 +75,34 @@ export const fetchTransferenciaDetalles = createAsyncThunk(
 export const fetchTransferenciaDetallesByTransferenciaId = createAsyncThunk(
   'transferenciaDetalle/fetchByTransferenciaId',
   async (transferenciaId: string) => {
-    return await listTransferenciaDetallesByTransferenciaIdService(transferenciaId);
+    const response = await listTransferenciaDetallesByTransferenciaIdService(transferenciaId);
+    console.log( 'IMPRIMIENDO RESPONSE ',response);
+    //console.log( 'IMPRIMIENDO RESPONSE con data  ',response.);
+     return response.map((detalle: any) => ({
+      fecha: detalle.fecha,
+      id: detalle.id,
+      referencia: detalle.referencia,
+      referencia_id: {
+        id: detalle.referencia_id._id,
+        obra_destino_id:{
+          _id: detalle.referencia_id.obra_destino_id._id,
+          nombre: detalle.referencia_id.obra_destino_id.nombre,
+        },
+        obra_origen_id:{
+          _id: detalle.referencia_id.obra_origen_id._id,
+          nombre: detalle.referencia_id.obra_origen_id.nombre,
+        }
+      },
+      tipo: detalle.tipo,
+      transferencia_id: {
+        estado: detalle.transferencia_id.estado,
+        fecha: detalle.transferencia_id.fecha,
+        id: detalle.transferencia_id.id,
+        movilidad_id: detalle.transferencia_id.movilidad_id,
+        usuario_id: detalle.transferencia_id.usuario_id,
+        movimiento_id: detalle.transferencia_id.movimiento_id,
+      },
+    }));
   }
 );
 
