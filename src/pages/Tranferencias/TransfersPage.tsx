@@ -5,8 +5,9 @@ import RecepcionTransferencia from "./RecepcionTransferencias/RecepcionTransfere
 import { TipoMovimiento } from './types';
 import RecepcionCompra from "./RecepcionCompras/RecepcionCompra";
 import Recursos from "../CalendarPage/CalendarPage";
+//import DevolucionPrestamos from "./DevolucionPrestamos/DevolucionPrestamos";
+import Modal from '../../components/Modal/Modal';
 import DevolucionPrestamos from "./DevolucionPrestamos/DevolucionPrestamos";
-import Modal from "../../components/Modal/Modal";
 
 export default function TransfersPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -17,17 +18,32 @@ export default function TransfersPage() {
     setSelectedOption(''); 
   };
 
+  const getModalTitle = () => {
+    switch (selectedOption) {
+      case 'COMPRAS':
+        return 'Recepción de Compras';
+      case 'RECEPCIONES':
+        return 'Recepción de Transferencias';
+      case 'DEVOLUCION':
+        return 'Transferencias';
+      case 'TRASLADOS':
+        return 'Solicitud de Traslados';
+      default:
+        return 'Transferencias';
+    }
+  };
+
   const renderModalContent = () => {
     switch (selectedOption) {
       case 'COMPRAS':
       case 'RECEPCIONES':
         return (
-          <div className=" p-6 rounded-lg shadow-lg w-11/12 max-h-[90vh] overflow-y-auto">
+          <div className="p-6 rounded-lg shadow-lg max-h-[90vh] overflow-y-auto bg-white">
             {selectedOption === 'COMPRAS' ? (
               <RecepcionCompra 
                 onClose={handleCloseModal} 
                 onComplete={(orden, detalles) => {
-                  console.log('Recepción completada:', { orden, detalles,Recursos });
+                  console.log('Recepción completada:', { orden, detalles, Recursos });
                 }} 
               />
             ) : (
@@ -36,11 +52,7 @@ export default function TransfersPage() {
           </div>
         );
       case 'DEVOLUCION':
-        return (
-          <Modal isOpen={isModalOpen} onClose={handleCloseModal} title="Devolución de Préstamos">
-            <DevolucionPrestamos />
-          </Modal>
-        );
+        return <DevolucionPrestamos />;
       case 'TRASLADOS':
         return <FormularioSolicitud onClose={handleCloseModal} />;
       default:
@@ -49,7 +61,7 @@ export default function TransfersPage() {
   };
 
   return (
-    <div className="min-h-screen ">
+    <div className="min-h-screen">
       <main className="container mx-auto py-6">
         <div className="bg-white rounded-lg shadow">
           <div className="p-4 flex justify-between items-auto">
@@ -62,12 +74,13 @@ export default function TransfersPage() {
                   setIsModalOpen(true);
                 }}
                 className="bg-blue-900 text-white px-4 py-2 rounded-xl"
+                aria-label="Seleccionar tipo de movimiento"
               >
                 <option value="">Solicitudes</option>
                 <optgroup label="Ingresos">
                   <option value="COMPRAS">Compras</option>
                   <option value="RECEPCIONES">Recepciones</option>
-                 <option value="DEVOLUCION">Devolucion Prestamos</option>
+                  <option value="DEVOLUCION">Devoluciones</option>
                 </optgroup>
                 <optgroup label="Salidas">
                   <option value="TRASLADOS">Traslados</option>
@@ -81,15 +94,15 @@ export default function TransfersPage() {
         </div>
       </main>
 
-      {isModalOpen && selectedOption !== 'DEVOLUCION' && (
-        <>
-          <div className="fixed inset-0 opacity-100" onClick={handleCloseModal}></div>
-          <div className="fixed inset-0 flex items-center justify-center z-50 rounded">
-            {renderModalContent()}
-          </div>
-        </>
+      {isModalOpen && (
+        <Modal 
+          isOpen={isModalOpen} 
+          onClose={handleCloseModal} 
+          title={getModalTitle()}
+        >
+          {renderModalContent()}
+        </Modal>
       )}
-      {isModalOpen && selectedOption === 'DEVOLUCION' && renderModalContent()}
     </div>
   );
 }

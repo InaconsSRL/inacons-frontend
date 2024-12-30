@@ -4,50 +4,10 @@ import { fetchTransferenciaDetallesByTransferenciaId } from '../../../slices/tra
 import { fetchTransferenciaRecursosById } from '../../../slices/transferenciaRecursoSlice';
 import { addTransferenciaDetalle } from '../../../slices/transferenciaDetalleSlice';
 import { addTransferenciaRecurso } from '../../../slices/transferenciaRecursoSlice';
-import { addTransferencia } from '../../../slices/transferenciaSlice';
+import { addTransferencia, TransferenciaData } from '../../../slices/transferenciaSlice';
 import GuiaTransfersPDF from './GuiaTransferPDF';
 
 type EstadoTransferencia = 'PARCIAL' | 'COMPLETO';
-
-interface Usuario {
-  id: string;
-  nombres: string;
-  apellidos: string;
-}
-
-interface Movimiento {
-  id: string;
-  nombre: string;
-  descripcion: string;
-  tipo: string;
-}
-
-interface Movilidad {
-  id: string;
-  denominacion: string;
-  descripcion: string;
-}
-
-interface Transferencia {
-  id: string;
-  usuario_id: Usuario;
-  fecha: string;
-  movimiento_id: Movimiento;
-  movilidad_id: Movilidad;
-}
-
-interface Item {
-  id: string;
-  transferencia_id: Transferencia;
-  referencia_id: string;
-  fecha: string;
-  tipo: string;
-  referencia: string;
-  cantidad: number;
-  precio: number;
-  total: number;
-  bodega: string;
-}
 
 interface RootState {
   transferenciaDetalle: {
@@ -145,16 +105,39 @@ const GuiaTransferencia: React.FC<Props & GuiaTransferProps> = ({
   };
 
   const handleSave = async () => {
+    
     // Guardar la transferencia
-    const transferenciaData = {
-      usuario_id: 'user_id_placeholder', 
+    const transferenciaData: TransferenciaData = {
+      usuario_id: userId || '',
       fecha: new Date(),
-      movimiento_id: 'movimiento_id_placeholder', 
-      movilidad_id: 'movilidad_id_placeholder', 
-      estado: 'COMPLETO' as EstadoTransferencia
-    };
+      movimiento_id: movimientoEntrada.id,
+      movilidad_id: movilidadId,
+      estado
+  };
 
-    const transferencia = await dispatch(addTransferencia(transferenciaData) as any).unwrap();
+    const transferencia = await dispatch(addTransferencia(transferenciaData)).unwrap();
+
+    const detallesGuardados = transferenciaDetalles.map(detalle => ({
+      transferencia_id: transferencia.id,
+                    referencia_id: selectedDetalleId!,
+                    fecha: new Date(),
+                    tipo: 'RECEPCION_TRANSFERENCIA',
+                    referencia: `Recepción de Transferencia - Orden ${selectedDetalleId!.id}`,
+                    recursos: detalle
+                        .filter((detalle: { cantidadRecibida: number; }) => detalle.cantidadRecibida > 0)
+                        .map((detalle: { id_recurso: { id: any; }; cantidadRecibida: any; }) => ({
+                            recurso_id: detalle.id_recurso.id,
+                            cantidad: detalle.cantidadRecibida,
+                            
+                        }))
+                    };
+                    for (const detalle of detallesGuardados) {
+                      await dispatch(addTransferenciaDetalle(detalle) as any);
+                    }
+                
+                    console.log('Transferencia, recursos y detalles guardados exitosamente');
+                  };
+
 
     // Guardar los recursos
     const recursosGuardados = Object.values(recursosState).map(recurso => ({
@@ -168,21 +151,7 @@ const GuiaTransferencia: React.FC<Props & GuiaTransferProps> = ({
       await dispatch(addTransferenciaRecurso(recurso) as any);
     }
 
-    // Guardar los detalles
-    const detallesGuardados = transferenciaDetalles.map(detalle => ({
-      transferencia_id: transferencia.id,
-      referencia_id: detalle.referencia_id,
-      fecha: detalle.fecha,
-      tipo: detalle.tipo,
-      referencia: detalle.referencia
-    }));
-
-    for (const detalle of detallesGuardados) {
-      await dispatch(addTransferenciaDetalle(detalle) as any);
-    }
-
-    console.log('Transferencia, recursos y detalles guardados exitosamente');
-  };
+   
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex justify-center items-center">

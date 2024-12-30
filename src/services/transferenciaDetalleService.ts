@@ -57,11 +57,20 @@ const LIST_TRANSFERENCIA_DETALLES_BY_TRANSFERENCIA_ID = gql`
           descripcion
         }
       }
-      referencia_id
+      referencia_id {
+       _id
+        obra_destino_id {
+          _id
+          nombre
+        }
+        obra_origen_id {
+          nombre
+          _id
+        }
+      }
       fecha
       tipo
       referencia
-     
     }
   }
 `;
@@ -119,6 +128,7 @@ export const listTransferenciaDetallesService = async () => {
 
 export const listTransferenciaDetallesByTransferenciaIdService = async (transferenciaId: string) => {
   try {
+   // console.log(' CONSULTA transferenciaId:', transferenciaId);
     const { data } = await client.query({
       query: LIST_TRANSFERENCIA_DETALLES_BY_TRANSFERENCIA_ID,
       variables: { transferenciaId },
@@ -128,7 +138,7 @@ export const listTransferenciaDetallesByTransferenciaIdService = async (transfer
     if (!data || !data.listTransferenciaDetallesByTransferenciaId) {
       throw new Error('No se encontraron detalles para esta transferencia');
     }
-    
+    //console.log(' CONSULTA list transferencia :',  data.listTransferenciaDetallesByTransferenciaId);
     return data.listTransferenciaDetallesByTransferenciaId;
   } catch (error) {
     console.error('Error en listTransferenciaDetallesByTransferenciaIdService:', error);
@@ -144,7 +154,6 @@ export const addTransferenciaDetalleService = async (transferenciaDetalle: {
   referencia: string;
 }) => {
   try {
-    // Transformar los nombres de las variables para la mutación GraphQL
     const variables = {
       transferenciaId: transferenciaDetalle.transferencia_id,
       referenciaId: transferenciaDetalle.referencia_id,
@@ -152,8 +161,6 @@ export const addTransferenciaDetalleService = async (transferenciaDetalle: {
       referencia: transferenciaDetalle.referencia,
       fecha: transferenciaDetalle.fecha,
     };
-
-    console.log('Variables para la mutación:', variables);
 
     const { data } = await client.mutate({
       mutation: ADD_TRANSFERENCIA_DETALLE,
@@ -164,7 +171,6 @@ export const addTransferenciaDetalleService = async (transferenciaDetalle: {
       throw new Error('No se recibió respuesta del servidor');
     }
 
-    // Transformar la respuesta de vuelta a snake_case
     return {
       ...data.addTransferenciaDetalle,
       transferencia_id: data.addTransferenciaDetalle.transferencia_id,
