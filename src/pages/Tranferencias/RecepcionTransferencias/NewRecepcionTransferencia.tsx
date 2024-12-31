@@ -1,28 +1,64 @@
 import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { fetchTransferenciaDetalles } from '../../../slices/transferenciaDetalleSlice';
-import { fetchTransferenciaRecursosById, clearTransferenciaRecursos } from '../../../slices/transferenciaRecursoSlice';
+import { fetchTransferenciaDetalles, fetchObraOrigenYDestino } from '../../../slices/transferenciaDetalleSlice';
+import { fetchTransferenciaRecursosById, addTransferenciaRecurso, Recurso } from '../../../slices/transferenciaRecursoSlice';
 import { RootState, AppDispatch } from '../../../store/store';
-import noImage from '../../../assets/NoImage.webp';
-import IMG from '../../../components/IMG/IMG';
+import { addTransferencia } from '../../../slices/transferenciaSlice';
+import { addTransferenciaDetalle } from '../../../slices/transferenciaDetalleSlice';
+import { updateObraBodegaRecurso } from '../../../slices/obraBodegaRecursoSlice';
+import {  } from '../../../slices/transferenciaRecursoSlice';
 import LoaderPage from '../../../components/Loader/LoaderPage';
+import { formatDate } from '../../../components/Utils/dateUtils';
 
 interface ModalProps {
   onClose: () => void;
 }
 
 interface TransferenciaRecurso {
-  id: string;
-  transferencia_detalle_id: string;
-  cantidad: number;
-  cantidadModificada?: number;
+  _id: string;
+  transferencia_detalle_id: {
+    id: string;
+    referencia_id: string;
+    fecha: string;
+    tipo: string;
+    referencia: string;
+  };
   recurso_id: {
     id: string;
     codigo: string;
     nombre: string;
-    imagenes: { file: string }[];
+    descripcion: string;
+    unidad_id: string
+    imagenes?: { file: string }[];
   };
+  cantidad: number;
+  costo: number;
+  cantidadModificada?: number; 
 }
+
+interface Unidades2 {
+  id: string;
+  nombre: string;
+}
+
+interface Obra {
+  nombre: string;
+  _id: string;
+}
+
+interface ObraInfo {
+  referencia_id: {
+    obra_destino_id: Obra;
+    obra_origen_id: Obra;
+  }
+}
+
+// Agregar esta función de utilidad antes del componente
+const getUnidadNombre = (recurso: TransferenciaRecurso, unidades: Unidades2[]): string => {
+  if (!recurso?.recurso_id?.unidad_id || !unidades) return '-';
+  const unidad = unidades.find(u => u.id === recurso.recurso_id.unidad_id);
+  return unidad?.nombre || '-';
+};
 
 const NewRecepcionTransferencia: React.FC<ModalProps> = ({ onClose }) => {
   const dispatch = useDispatch<AppDispatch>();
@@ -30,9 +66,16 @@ const NewRecepcionTransferencia: React.FC<ModalProps> = ({ onClose }) => {
   const [selectedRecursos, setSelectedRecursos] = useState<TransferenciaRecurso[]>([]);
   const [isLoadingDetalles, setIsLoadingDetalles] = useState(true);
   const [isLoadingRecursos, setIsLoadingRecursos] = useState(false);
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const userId = useSelector((state: RootState) => state.user?.id);
+  const unidades = useSelector((state: RootState) => state.unidad.unidades);
+  const [obrasInfo, setObrasInfo] = useState<ObraInfo | null>(null);
 
   const { transferenciaDetalles } = useSelector((state: RootState) => state.transferenciaDetalle);
   const { transferenciaRecursos } = useSelector((state: RootState) => state.transferenciaRecurso);
+
+  console.log('transferenciaRecursos:', transferenciaRecursos);
 
   // Filtrar solo las transferencias de tipo SALIDA-ALMACEN
   const filteredTransferencias = transferenciaDetalles.filter(
@@ -52,26 +95,146 @@ const NewRecepcionTransferencia: React.FC<ModalProps> = ({ onClose }) => {
     const loadRecursos = async () => {
       if (selectedTransferencia) {
         setIsLoadingRecursos(true);
-        // Limpiar recursos anteriores
-        dispatch(clearTransferenciaRecursos());
-        await dispatch(fetchTransferenciaRecursosById(selectedTransferencia));
+        const response = await dispatch(fetchTransferenciaRecursosById(selectedTransferencia));
+        // Inicializar los recursos con cantidadModificada en 0
+        if (response.payload) {
+          const recursosConCantidad = response.payload.map( (recurso: Recurso)  => ({
+            ...recurso,
+            cantidadModificada: 0
+          }));
+          setSelectedRecursos(recursosConCantidad);
+        }
         setIsLoadingRecursos(false);
       }
     };
     loadRecursos();
   }, [selectedTransferencia, dispatch]);
 
+  useEffect(() => {
+    const loadObrasInfo = async () => {
+      if (selectedTransferencia) {
+        const transferencia = transferenciaDetalles.find(t => t.id === selectedTransferencia);
+        if (transferencia) {
+          const response = await dispatch(fetchObraOrigenYDestino(transferencia.transferencia_id.id));
+          if (response.payload && response.payload.length > 0) {
+            setObrasInfo(response.payload[0]);
+          }
+        }
+      }
+    };
+    loadObrasInfo();
+  }, [selectedTransferencia, dispatch, transferenciaDetalles]);
+
   const handleCantidadChange = (recursoId: string, valor: number) => {
-    setSelectedRecursos(prev => prev.map(recurso =>
-      recurso.id === recursoId
-        ? { ...recurso, cantidadModificada: valor }
-        : recurso
-    ));
+    const cantidadValidada = Math.max(0, valor);
+    const recurso = transferenciaRecursos.find(r => r._id === recursoId);
+    
+    if (recurso) {
+      setSelectedRecursos(prev => {
+        const index = prev.findIndex(r => r._id === recursoId);
+        const recursoActualizado = {
+          ...recurso,
+          cantidadModificada: Math.min(cantidadValidada, recurso.cantidad)
+        };
+        
+        if (index === -1) {
+          return [...prev, recursoActualizado];
+        } else {
+          const newArray = [...prev];
+          newArray[index] = recursoActualizado;
+          return newArray;
+        }
+      });
+    }
   };
 
-  const handleSave = () => {
-    console.log('Recursos seleccionados:', selectedRecursos);
-    onClose();
+  const handleSave = async () => {
+    try {
+      setIsProcessing(true);
+      if (!userId) throw new Error('Usuario no autenticado');
+      if (!selectedTransferencia) throw new Error('No hay transferencia seleccionada');
+
+      const transferencia = transferenciaDetalles.find(t => t.id === selectedTransferencia);
+      if (!transferencia) throw new Error('Transferencia no encontrada');
+
+      // Verificar si hay recursos seleccionados con cantidad mayor a 0
+      const recursosValidos = selectedRecursos.filter(recurso => 
+        (recurso.cantidadModificada || 0) > 0
+      );
+
+      if (recursosValidos.length === 0) {
+        throw new Error('No hay recursos seleccionados para transferir');
+      }
+
+      // Crear la transferencia
+      const transferenciaData = {
+        usuario_id: userId,
+        fecha: new Date(),
+        movimiento_id: "6773f8eacfeba5769b30f4ee",
+        movilidad_id: transferencia.transferencia_id.movilidad_id?.id || "6765ecf0444c04c94802b3df",
+        estado: 'COMPLETO' as const,
+        descripcion: `Recepción de transferencia - ${transferencia.referencia}`
+      };
+
+      const nuevaTransferencia = await dispatch(addTransferencia(transferenciaData)).unwrap();
+
+      // Crear el detalle de transferencia
+      const detalleData = {
+        transferencia_id: nuevaTransferencia.id,
+        referencia_id: transferencia.id,
+        fecha: new Date(),
+        tipo: 'RECEPCION_TRANSFERENCIA',
+        referencia: `Recepción de transferencia - ${transferencia.referencia}`
+      };
+
+      const detalleTransferencia = await dispatch(addTransferenciaDetalle(detalleData)).unwrap();
+
+      // Procesar los recursos de transferencia
+      const recursosPromesas = recursosValidos.map(recurso => {
+        return dispatch(addTransferenciaRecurso({
+          transferencia_detalle_id: detalleTransferencia.id,
+          recurso_id: recurso.recurso_id.id,
+          cantidad: recurso.cantidadModificada!,
+          costo: recurso.costo
+        })).unwrap();
+      });
+
+      await Promise.all(recursosPromesas);
+
+      // Actualizar las cantidades en ObraBodegaRecurso
+      // Obtener obra destino de la transferencia original
+      if (obrasInfo) {
+        const obraDestinoId = obrasInfo.referencia_id.obra_destino_id._id;
+        
+        // Actualizar las cantidades en la bodega de destino
+        const actualizacionesObraBodega = recursosValidos.map(async (recurso) => {
+          // Aquí deberías tener la lógica para obtener el obraBodegaRecursoId correcto
+          // basado en el recurso y la obra destino
+          try {
+            await dispatch(updateObraBodegaRecurso({
+              updateObraBodegaRecursoId: obraDestinoId, // Asegúrate de tener este ID
+              cantidad: recurso.cantidadModificada!, // La cantidad a añadir
+            })).unwrap();
+          } catch (error) {
+            console.error('Error actualizando ObraBodegaRecurso:', error);
+            throw error;
+          }
+        });
+
+        await Promise.all(actualizacionesObraBodega);
+      }
+
+      // Actualizar la vista
+      dispatch(fetchTransferenciaDetalles());
+      dispatch(fetchTransferenciaRecursosById(selectedTransferencia));
+      
+      onClose();
+    } catch (error) {
+      setError(error instanceof Error ? error.message : 'Error al procesar la recepción');
+      console.error('Error:', error);
+    } finally {
+      setIsProcessing(false);
+    }
   };
 
   return (
@@ -80,6 +243,12 @@ const NewRecepcionTransferencia: React.FC<ModalProps> = ({ onClose }) => {
       <div className="p-4 border-b border-indigo-100 bg-white">
         <h2 className="text-lg font-semibold text-indigo-700">Recepción de Transferencias</h2>
       </div>
+
+      {error && (
+        <div className="p-3 text-red-500 bg-red-50 border-b border-red-100">
+          {error}
+        </div>
+      )}
 
       <div className="flex h-[calc(90vh-12rem)]">
         {/* Panel izquierdo - Lista de Transferencias */}
@@ -106,6 +275,16 @@ const NewRecepcionTransferencia: React.FC<ModalProps> = ({ onClose }) => {
                 <div className="text-xs text-gray-500 mt-1">
                   Fecha: {new Date(transferencia.fecha).toLocaleDateString()}
                 </div>
+                {selectedTransferencia === transferencia.id && obrasInfo && (
+                  <>
+                    <div className="text-xs text-gray-600 mt-1">
+                      Desde: {obrasInfo.referencia_id.obra_origen_id? obrasInfo.referencia_id.obra_origen_id.nombre : 'Sin origen'}
+                    </div>
+                    <div className="text-xs text-gray-600 mt-1">
+                      Para: {obrasInfo.referencia_id.obra_destino_id? obrasInfo.referencia_id.obra_destino_id.nombre : 'Sin destino'}
+                    </div>
+                  </>
+                )}
               </div>
             ))
           )}
@@ -122,34 +301,32 @@ const NewRecepcionTransferencia: React.FC<ModalProps> = ({ onClose }) => {
               <div className="overflow-auto p-4">
                 <table className="min-w-full divide-y divide-gray-200">
                   <thead className="bg-gray-50">
-                    <tr>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Imagen</th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Código</th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Nombre</th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Cantidad</th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Cantidad a Recibir</th>
+                    <tr className="text-center">
+                      <th className="px-2 py-3 text-xs font-medium text-gray-500 uppercase">Fecha</th>
+                      <th className="px-2 py-3 text-xs font-medium text-gray-500 uppercase">Código</th>
+                      <th className="px-2 py-3 text-xs font-medium text-gray-500 uppercase">Nombre</th>
+                      <th className="px-2 py-3 text-xs font-medium text-gray-500 uppercase">Unidad</th>
+                      <th className="px-2 py-3 text-xs font-medium text-gray-500 uppercase">Cantidad</th>
+                      <th className="px-2 py-3 text-xs font-medium text-gray-500 uppercase">Cantidad a Recibir</th>
                     </tr>
                   </thead>
                   <tbody className="bg-white divide-y divide-gray-100">
                     {transferenciaRecursos.map(recurso => (
-                      <tr key={recurso.id} className="hover:bg-gray-50">
-                        <td className="px-4 py-3">
-                          <IMG
-                            src={recurso.recurso_id.imagenes?.[0]?.file || noImage}
-                            alt={recurso.recurso_id.nombre}
-                            className="h-12 w-12 object-cover rounded-md"
-                          />
+                      <tr key={recurso._id} className="hover:bg-gray-50">                        
+                        <td className="px-2 text-center py-3 text-sm text-gray-600">{formatDate(recurso.transferencia_detalle_id.fecha,'dd/mm/yyyy')}</td>
+                        <td className="px-2 text-center py-3 text-sm text-gray-600">{recurso.recurso_id?.codigo || '-'}</td>
+                        <td className="px-2 text-left   py-3 text-sm text-gray-600">{recurso.recurso_id?.nombre || '-'}</td>
+                        <td className="px-2 text-center py-3 text-sm text-gray-600">
+                          {getUnidadNombre(recurso, unidades)}
                         </td>
-                        <td className="px-4 py-3 text-sm text-gray-600">{recurso.recurso_id.codigo}</td>
-                        <td className="px-4 py-3 text-sm text-gray-600">{recurso.recurso_id.nombre}</td>
-                        <td className="px-4 py-3 text-sm text-gray-600">{recurso.cantidad}</td>
-                        <td className="px-4 py-3">
+                        <td className="px-2 text-center py-3 text-sm text-gray-600">{recurso.cantidad}</td>
+                        <td className="px-2 text-center py-3">
                           <input
                             type="number"
                             min="0"
                             max={recurso.cantidad}
-                            value={recurso.cantidadModificada || 0}
-                            onChange={(e) => handleCantidadChange(recurso.id, parseInt(e.target.value))}
+                            value={selectedRecursos.find(r => r._id === recurso._id)?.cantidadModificada || 0}
+                            onChange={(e) => handleCantidadChange(recurso._id, parseInt(e.target.value) || 0)}
                             className="w-24 px-3 py-2 text-sm border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500"
                           />
                         </td>
@@ -174,15 +351,16 @@ const NewRecepcionTransferencia: React.FC<ModalProps> = ({ onClose }) => {
         <button
           onClick={onClose}
           className="px-4 py-2 text-sm text-gray-600 bg-gray-100 rounded-md hover:bg-gray-200 transition-colors duration-200"
+          disabled={isProcessing}
         >
           Cancelar
         </button>
         <button
           onClick={handleSave}
           className="px-4 py-2 text-sm text-white bg-indigo-500 rounded-md hover:bg-indigo-600 transition-colors duration-200"
-          disabled={!selectedTransferencia}
+          disabled={!selectedTransferencia || isProcessing || selectedRecursos.length === 0}
         >
-          Guardar
+          {isProcessing ? 'Procesando...' : 'Guardar'}
         </button>
       </div>
     </div>

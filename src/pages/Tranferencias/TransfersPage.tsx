@@ -32,7 +32,9 @@ export default function TransfersPage() {
                 }} 
               />
             ) : (
-              <NewRecepcionTransferencia onClose={handleCloseModal} />
+              <Modal isOpen={isModalOpen} onClose={handleCloseModal} title="Recepcion Traslado Alamcenes">
+                <NewRecepcionTransferencia onClose={handleCloseModal} />
+              </Modal>
             )}
           </div>
         );

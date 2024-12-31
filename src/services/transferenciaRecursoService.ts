@@ -1,7 +1,7 @@
 import { gql } from '@apollo/client';
 import client from '../apolloClient';
 
-const LIST_TRANSFERENCIA_RECURSOS_QUERY = gql`
+const LIST_TRANSFERENCIA_RECURSOS = gql`
   query ListTransferenciaRecursos {
     listTransferenciaRecursos {
       _id
@@ -32,7 +32,7 @@ const LIST_TRANSFERENCIA_RECURSOS_QUERY = gql`
   }
 `;
 
-const LIST_TRANSFERENCIA_RECURSOS_BY_ID_QUERY = gql`
+const LIST_TRANSFERENCIA_RECURSOS_BY_ID = gql`
   query ListTransferenciaRecursosById($listTransferenciaRecursosById: ID!) {
     listTransferenciaRecursosById(id: $listTransferenciaRecursosById) {
       _id
@@ -63,7 +63,7 @@ const LIST_TRANSFERENCIA_RECURSOS_BY_ID_QUERY = gql`
   }
 `;
 
-const ADD_TRANSFERENCIA_RECURSO_MUTATION = gql`
+const ADD_TRANSFERENCIA_RECURSO = gql`
   mutation AddTransferenciaRecurso($transferenciaDetalleId: ID!, $recursoId: ID!, $cantidad: Int!, $costo: Float) {
     addTransferenciaRecurso(
       transferencia_detalle_id: $transferenciaDetalleId,
@@ -74,16 +74,24 @@ const ADD_TRANSFERENCIA_RECURSO_MUTATION = gql`
       _id
       transferencia_detalle_id {
         id
+        referencia_id
+        fecha
+        tipo
+        referencia
       }
       recurso_id {
-        codigo
         id
+        codigo
         nombre
-        imagenes {
-          file
-        }
-        precio_actual
+        descripcion
+        fecha
+        cantidad
         unidad_id
+        precio_actual
+        vigente
+        tipo_recurso_id
+        tipo_costo_recurso_id
+        clasificacion_recurso_id
       }
       cantidad
       costo
@@ -91,17 +99,38 @@ const ADD_TRANSFERENCIA_RECURSO_MUTATION = gql`
   }
 `;
 
-const UPDATE_TRANSFERENCIA_RECURSO_MUTATION = gql`
+const UPDATE_TRANSFERENCIA_RECURSO = gql`
   mutation UpdateTransferenciaRecurso($updateTransferenciaRecursoId: ID!, $cantidad: Int, $costo: Float) {
     updateTransferenciaRecurso(id: $updateTransferenciaRecursoId, cantidad: $cantidad, costo: $costo) {
       _id
+      transferencia_detalle_id {
+        id
+        referencia_id
+        fecha
+        tipo
+        referencia
+      }
+      recurso_id {
+        id
+        codigo
+        nombre
+        descripcion
+        fecha
+        cantidad
+        unidad_id
+        precio_actual
+        vigente
+        tipo_recurso_id
+        tipo_costo_recurso_id
+        clasificacion_recurso_id
+      }
       cantidad
       costo
     }
   }
 `;
 
-const DELETE_TRANSFERENCIA_RECURSO_MUTATION = gql`
+const DELETE_TRANSFERENCIA_RECURSO = gql`
   mutation DeleteTransferenciaRecurso($deleteTransferenciaRecursoId: ID!) {
     deleteTransferenciaRecurso(id: $deleteTransferenciaRecursoId) {
       _id
@@ -111,24 +140,24 @@ const DELETE_TRANSFERENCIA_RECURSO_MUTATION = gql`
 
 export const listTransferenciaRecursosService = async () => {
   try {
-    const response = await client.query({
-      query: LIST_TRANSFERENCIA_RECURSOS_QUERY,
+    const { data } = await client.query({
+      query: LIST_TRANSFERENCIA_RECURSOS,
     });
-    return response.data.listTransferenciaRecursos;
+    return data.listTransferenciaRecursos;
   } catch (error) {
-    throw new Error(`Error al listar transferencia recursos: ${error}`);
+    throw new Error(`Error fetching transferencia recursos: ${error}`);
   }
 };
 
 export const listTransferenciaRecursosByIdService = async (id: string) => {
   try {
-    const response = await client.query({
-      query: LIST_TRANSFERENCIA_RECURSOS_BY_ID_QUERY,
+    const { data } = await client.query({
+      query: LIST_TRANSFERENCIA_RECURSOS_BY_ID,
       variables: { listTransferenciaRecursosById: id },
     });
-    return response.data.listTransferenciaRecursosById;
+    return data.listTransferenciaRecursosById;
   } catch (error) {
-    throw new Error(`Error al listar transferencia recursos por ID: ${error}`);
+    throw new Error(`Error fetching transferencia recurso by id: ${error}`);
   }
 };
 
@@ -136,11 +165,11 @@ export const addTransferenciaRecursoService = async (data: {
   transferencia_detalle_id: string;
   recurso_id: string;
   cantidad: number;
-  costo?: number;
+  costo: number;
 }) => {
   try {
-    const response = await client.mutate({
-      mutation: ADD_TRANSFERENCIA_RECURSO_MUTATION,
+    const { data: responseData } = await client.mutate({
+      mutation: ADD_TRANSFERENCIA_RECURSO,
       variables: {
         transferenciaDetalleId: data.transferencia_detalle_id,
         recursoId: data.recurso_id,
@@ -148,40 +177,40 @@ export const addTransferenciaRecursoService = async (data: {
         costo: data.costo,
       },
     });
-    return response.data.addTransferenciaRecurso;
+    return responseData.addTransferenciaRecurso;
   } catch (error) {
-    throw new Error(`Error al agregar transferencia recurso: ${error}`);
+    throw new Error(`Error adding transferencia recurso: ${error}`);
   }
 };
 
 export const updateTransferenciaRecursoService = async (data: {
   id: string;
-  cantidad?: number;
-  costo?: number;
+  cantidad: number;
+  costo: number;
 }) => {
   try {
-    const response = await client.mutate({
-      mutation: UPDATE_TRANSFERENCIA_RECURSO_MUTATION,
+    const { data: responseData } = await client.mutate({
+      mutation: UPDATE_TRANSFERENCIA_RECURSO,
       variables: {
         updateTransferenciaRecursoId: data.id,
         cantidad: data.cantidad,
         costo: data.costo,
       },
     });
-    return response.data.updateTransferenciaRecurso;
+    return responseData.updateTransferenciaRecurso;
   } catch (error) {
-    throw new Error(`Error al actualizar transferencia recurso: ${error}`);
+    throw new Error(`Error updating transferencia recurso: ${error}`);
   }
 };
 
 export const deleteTransferenciaRecursoService = async (id: string) => {
   try {
-    const response = await client.mutate({
-      mutation: DELETE_TRANSFERENCIA_RECURSO_MUTATION,
+    const { data } = await client.mutate({
+      mutation: DELETE_TRANSFERENCIA_RECURSO,
       variables: { deleteTransferenciaRecursoId: id },
     });
-    return response.data.deleteTransferenciaRecurso;
+    return data.deleteTransferenciaRecurso;
   } catch (error) {
-    throw new Error(`Error al eliminar transferencia recurso: ${error}`);
+    throw new Error(`Error deleting transferencia recurso: ${error}`);
   }
 };

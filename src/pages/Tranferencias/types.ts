@@ -95,16 +95,15 @@ export interface FormularioSolicitudProps {
   transferenciasId?: string;
 }
 
+export interface Almacen {
+  id: string;
+  nombre: string;
+  // ... otros campos del almacén
+}
+
 export interface SolicitudAlmacen {
   id: string;
-  almacen_origen_id: {
-    id: string;
-    nombre: string;
-  };
-  almacen_destino_id: {
-    id: string;
-    nombre: string;
-  } | null;
+  fecha: string;
   usuario_id: {
     id: string;
     nombres: string;
@@ -115,23 +114,39 @@ export interface SolicitudAlmacen {
     codigo: string;
     obra_id: string;
   };
-  fecha: string;
+  almacen_origen_id: {
+    id: string;
+    nombre: string;
+  };
+  almacen_destino_id: {
+    id: string;
+    nombre: string;
+  } | null;
   estado: string;
 }
 
-export interface RecursoSeleccionado {
-  id?: string;
-  recurso_id: {
+export interface SolicitudAlmacenResponse {
+  id: string;
+  fecha: string;
+  usuario_id: {
+    id: string;
+    nombres: string;
+    apellidos: string;
+  };
+  requerimiento_id: {
     id: string;
     codigo: string;
-    nombre: string;
-    unidad_id: string;
-    precio_actual: number;
+    obra_id: string;
   };
-  cantidad: number;
-  cantidadSeleccionada: number;
-  bodega?: string;
-  isChecked?: boolean;
+  estado: string;
+  almacen_id?: {
+    id: string;
+    nombre: string;
+  };
+  almacen_destino?: {
+    id: string;
+    nombre: string;
+  };
 }
 
 export type TipoMovimiento = 'COMPRAS' | 'DEVOLUCION' | 'TRASLADOS' | 'RECEPCIONES';

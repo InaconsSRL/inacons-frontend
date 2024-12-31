@@ -8,7 +8,8 @@ import OrdenTransferencia from './OrdenTransferencia';
 import { 
   FormularioSolicitudProps, 
   RecursoSeleccionado, 
-  SolicitudAlmacen 
+  SolicitudAlmacen,
+  SolicitudAlmacenResponse // Añadir esta importación
 } from '../types';
 
 const Skeleton: React.FC<{ className?: string }> = ({ className }) => (
@@ -86,6 +87,28 @@ const FormularioSolicitud: React.FC<FormularioSolicitudProps> = ({ onClose, tran
     return selectedRecursos.reduce((total, recurso) =>
       total + recurso.cantidadSeleccionada * recurso.recurso_id.precio_actual, 0);
   }, [selectedRecursos]);
+
+  // Agregar esta función de utilidad dentro del componente
+  const transformSolicitud = (solicitud: SolicitudAlmacenResponse): SolicitudAlmacen => {
+    return {
+      ...solicitud,
+      almacen_origen_id: {
+        id: solicitud.almacen_id?.id || '',
+        nombre: solicitud.almacen_id?.nombre || '',
+      },
+      almacen_destino_id: solicitud.almacen_destino ? {
+        id: solicitud.almacen_destino.id,
+        nombre: solicitud.almacen_destino.nombre,
+      } : null
+    };
+  };
+
+  // Modificar la parte donde se establece la solicitud seleccionada
+  const handleSolicitudSelect = (solicitud: SolicitudAlmacenResponse) => {
+    const solicitudTransformada = transformSolicitud(solicitud);
+    setSelectedSolicitud(solicitudTransformada);
+    setSelectedRecursos([]);
+  };
   
   return (
     <>
@@ -144,10 +167,7 @@ const FormularioSolicitud: React.FC<FormularioSolicitudProps> = ({ onClose, tran
                 solicitudes.filter(solicitud => almacenId === '' || solicitud.requerimiento_id.obra_id === almacenId).map((solicitud) => (
                   <div
                     key={solicitud.id}
-                    onClick={() => {
-                      setSelectedSolicitud(solicitud);
-                      setSelectedRecursos([]);
-                    }}
+                    onClick={() => handleSolicitudSelect(solicitud)}
                     className={`p-3 mb-2 shadow-xl rounded-md cursor-pointer border transition-all duration-200 hover:bg-blue-50 ${
                       selectedSolicitud?.id === solicitud.id
                         ? 'bg-blue-50 border-blue-400 shadow-sm'

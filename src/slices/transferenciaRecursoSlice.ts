@@ -1,35 +1,39 @@
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
-import {
+import { 
   listTransferenciaRecursosService,
   listTransferenciaRecursosByIdService,
   addTransferenciaRecursoService,
   updateTransferenciaRecursoService,
-  deleteTransferenciaRecursoService,
+  deleteTransferenciaRecursoService
 } from '../services/transferenciaRecursoService';
+
+interface TransferenciaDetalle {
+  id: string;
+  referencia_id: string;
+  fecha: string;
+  tipo: string;
+  referencia: string;
+}
+
+export interface Recurso {
+  id: string;
+  codigo: string;
+  nombre: string;
+  descripcion: string;
+  fecha: string;
+  cantidad: number;
+  unidad_id: string;
+  precio_actual: number;
+  vigente: boolean;
+  tipo_recurso_id: string;
+  tipo_costo_recurso_id: string;
+  clasificacion_recurso_id: string;
+}
 
 interface TransferenciaRecurso {
   _id: string;
-  transferencia_detalle_id: {
-    id: string;
-    referencia_id: string;
-    fecha: string;
-    tipo: string;
-    referencia: string;
-  };
-  recurso_id: {
-    id: string;
-    codigo: string;
-    nombre: string;
-    descripcion: string;
-    fecha: string;
-    cantidad: number;
-    unidad_id: string;
-    precio_actual: number;
-    vigente: boolean;
-    tipo_recurso_id: string;
-    tipo_costo_recurso_id: string;
-    clasificacion_recurso_id: string;
-  };
+  transferencia_detalle_id: TransferenciaDetalle;
+  recurso_id: Recurso;
   cantidad: number;
   costo: number;
 }
@@ -50,8 +54,7 @@ export const fetchTransferenciaRecursos = createAsyncThunk(
   'transferenciaRecurso/fetchAll',
   async (_, { rejectWithValue }) => {
     try {
-      const data = await listTransferenciaRecursosService();
-      return data;
+      return await listTransferenciaRecursosService();
     } catch (error) {
       return rejectWithValue((error as Error).message);
     }
@@ -62,8 +65,7 @@ export const fetchTransferenciaRecursosById = createAsyncThunk(
   'transferenciaRecurso/fetchById',
   async (id: string, { rejectWithValue }) => {
     try {
-      const data = await listTransferenciaRecursosByIdService(id);
-      return data;
+      return await listTransferenciaRecursosByIdService(id);
     } catch (error) {
       return rejectWithValue((error as Error).message);
     }
@@ -72,18 +74,9 @@ export const fetchTransferenciaRecursosById = createAsyncThunk(
 
 export const addTransferenciaRecurso = createAsyncThunk(
   'transferenciaRecurso/add',
-  async (
-    data: {
-      transferencia_detalle_id: string;
-      recurso_id: string;
-      cantidad: number;
-      costo?: number;
-    },
-    { rejectWithValue }
-  ) => {
+  async (data: { transferencia_detalle_id: string; recurso_id: string; cantidad: number; costo: number }, { rejectWithValue }) => {
     try {
-      const response = await addTransferenciaRecursoService(data);
-      return response;
+      return await addTransferenciaRecursoService(data);
     } catch (error) {
       return rejectWithValue((error as Error).message);
     }
@@ -92,17 +85,9 @@ export const addTransferenciaRecurso = createAsyncThunk(
 
 export const updateTransferenciaRecurso = createAsyncThunk(
   'transferenciaRecurso/update',
-  async (
-    data: {
-      id: string;
-      cantidad?: number;
-      costo?: number;
-    },
-    { rejectWithValue }
-  ) => {
+  async (data: { id: string; cantidad: number; costo: number }, { rejectWithValue }) => {
     try {
-      const response = await updateTransferenciaRecursoService(data);
-      return response;
+      return await updateTransferenciaRecursoService(data);
     } catch (error) {
       return rejectWithValue((error as Error).message);
     }
@@ -110,7 +95,7 @@ export const updateTransferenciaRecurso = createAsyncThunk(
 );
 
 export const deleteTransferenciaRecurso = createAsyncThunk(
-  'transferenciaRecurso/deleteTransferenciaRecurso',
+  'transferenciaRecurso/delete',
   async (id: string, { rejectWithValue }) => {
     try {
       await deleteTransferenciaRecursoService(id);
@@ -125,18 +110,15 @@ const transferenciaRecursoSlice = createSlice({
   name: 'transferenciaRecurso',
   initialState,
   reducers: {
-    clearTransferenciaRecursos: (state) => {
-      state.transferenciaRecursos = [];
-    },
-    clearError: (state) => {
+    clearErrors: (state) => {
       state.error = null;
     },
   },
   extraReducers: (builder) => {
     builder
+      // Fetch All cases
       .addCase(fetchTransferenciaRecursos.pending, (state) => {
         state.loading = true;
-        state.error = null;
       })
       .addCase(fetchTransferenciaRecursos.fulfilled, (state, action: PayloadAction<TransferenciaRecurso[]>) => {
         state.loading = false;
@@ -146,30 +128,45 @@ const transferenciaRecursoSlice = createSlice({
         state.loading = false;
         state.error = action.payload as string;
       })
+      // Fetch By Id cases
+      .addCase(fetchTransferenciaRecursosById.pending, (state) => {
+        state.loading = true;
+      })
       .addCase(fetchTransferenciaRecursosById.fulfilled, (state, action: PayloadAction<TransferenciaRecurso[]>) => {
         state.loading = false;
-        // Filtrar recursos existentes que no pertenezcan al detalle actual
-        const detalleId = action.payload[0]?.transferencia_detalle_id.id;
-        const recursosActualizados = state.transferenciaRecursos.filter(
-          recurso => recurso.transferencia_detalle_id.id !== detalleId
-        );
-        // Agregar los nuevos recursos
-        state.transferenciaRecursos = [...recursosActualizados, ...action.payload];
+        state.transferenciaRecursos = action.payload;
+      })
+      .addCase(fetchTransferenciaRecursosById.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
+      })
+      // Add cases
+      .addCase(addTransferenciaRecurso.pending, (state) => {
+        state.loading = true;
       })
       .addCase(addTransferenciaRecurso.fulfilled, (state, action: PayloadAction<TransferenciaRecurso>) => {
+        state.loading = false;
         state.transferenciaRecursos.push(action.payload);
       })
+      .addCase(addTransferenciaRecurso.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
+      })
+      // Update cases
       .addCase(updateTransferenciaRecurso.fulfilled, (state, action: PayloadAction<TransferenciaRecurso>) => {
         const index = state.transferenciaRecursos.findIndex(item => item._id === action.payload._id);
         if (index !== -1) {
           state.transferenciaRecursos[index] = action.payload;
         }
       })
+      // Delete cases
       .addCase(deleteTransferenciaRecurso.fulfilled, (state, action: PayloadAction<string>) => {
-        state.transferenciaRecursos = state.transferenciaRecursos.filter(item => item._id !== action.payload);
+        state.transferenciaRecursos = state.transferenciaRecursos.filter(
+          item => item._id !== action.payload
+        );
       });
   },
 });
 
-export const { clearTransferenciaRecursos, clearError } = transferenciaRecursoSlice.actions;
+export const { clearErrors } = transferenciaRecursoSlice.actions;
 export const transferenciaRecursoReducer = transferenciaRecursoSlice.reducer;
