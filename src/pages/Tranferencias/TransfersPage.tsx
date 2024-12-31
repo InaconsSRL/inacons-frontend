@@ -1,12 +1,13 @@
 import { useState } from "react";
 import { TransferTable } from "./TransfersTable";
 import FormularioSolicitud from "./SalidasAlmacen/FormularioSolicitud"; 
-import RecepcionTransferencia from "./RecepcionTransferencias/RecepcionTransferencias";
+// import RecepcionTransferencia from "./RecepcionTransferencias/RecepcionTransferencias";
 import { TipoMovimiento } from './types';
 import RecepcionCompra from "./RecepcionCompras/RecepcionCompra";
 import Recursos from "../CalendarPage/CalendarPage";
 import DevolucionPrestamos from "./DevolucionPrestamos/DevolucionPrestamos";
 import Modal from "../../components/Modal/Modal";
+import NewRecepcionTransferencia from "./RecepcionTransferencias/NewRecepcionTransferencia";
 
 export default function TransfersPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -31,7 +32,7 @@ export default function TransfersPage() {
                 }} 
               />
             ) : (
-              <RecepcionTransferencia onClose={handleCloseModal} />
+              <NewRecepcionTransferencia onClose={handleCloseModal} />
             )}
           </div>
         );

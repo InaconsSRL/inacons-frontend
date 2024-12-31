@@ -33,39 +33,6 @@ const LIST_TRANSFERENCIA_DETALLES = gql`
   }
 `;
 
-const LIST_TRANSFERENCIA_DETALLES_BY_TRANSFERENCIA_ID = gql`
-  query ListTransferenciaDetallesByTransferenciaId($transferenciaId: ID!) {
-    listTransferenciaDetallesByTransferenciaId(transferencia_id: $transferenciaId) {
-      id
-      transferencia_id {
-        id
-        usuario_id {
-          id
-          nombres
-          apellidos
-        }
-        fecha
-        movimiento_id {
-          id
-          nombre
-          descripcion
-          tipo
-        }
-        movilidad_id {
-          id
-          denominacion
-          descripcion
-        }
-      }
-      referencia_id
-      fecha
-      tipo
-      referencia
-     
-    }
-  }
-`;
-
 const ADD_TRANSFERENCIA_DETALLE = gql`
   mutation AddTransferenciaDetalle($transferenciaId: ID!, $referenciaId: String!, $tipo: String!, $referencia: String!, $fecha: DateTime) {
     addTransferenciaDetalle(transferencia_id: $transferenciaId, referencia_id: $referenciaId, tipo: $tipo, referencia: $referencia, fecha: $fecha) {
@@ -106,6 +73,23 @@ const DELETE_TRANSFERENCIA_DETALLE = gql`
   }
 `;
 
+const OBRA_ORIGEN_Y_DESTINO_BY_TRANSFERENCIA_ID = gql`
+  query ListTransferenciaDetallesByTransferenciaId($transferenciaId: ID!) {
+    listTransferenciaDetallesByTransferenciaId(transferencia_id: $transferenciaId) {
+      referencia_id {
+        obra_destino_id {
+          nombre
+          _id
+        }
+        obra_origen_id {
+          nombre
+          _id
+        }
+      }
+    }
+  }
+`;
+
 export const listTransferenciaDetallesService = async () => {
   try {
     const { data } = await client.query({
@@ -114,25 +98,6 @@ export const listTransferenciaDetallesService = async () => {
     return data.listTransferenciaDetalles;
   } catch (error) {
     throw new Error(`Error fetching transferencia detalles: ${error}`);
-  }
-};
-
-export const listTransferenciaDetallesByTransferenciaIdService = async (transferenciaId: string) => {
-  try {
-    const { data } = await client.query({
-      query: LIST_TRANSFERENCIA_DETALLES_BY_TRANSFERENCIA_ID,
-      variables: { transferenciaId },
-      fetchPolicy: 'network-only'
-    });
-    
-    if (!data || !data.listTransferenciaDetallesByTransferenciaId) {
-      throw new Error('No se encontraron detalles para esta transferencia');
-    }
-    
-    return data.listTransferenciaDetallesByTransferenciaId;
-  } catch (error) {
-    console.error('Error en listTransferenciaDetallesByTransferenciaIdService:', error);
-    throw new Error(`Error al obtener detalles de transferencia: ${error instanceof Error ? error.message : 'Error desconocido'}`);
   }
 };
 
@@ -207,5 +172,17 @@ export const deleteTransferenciaDetalleService = async (id: string) => {
     return data.deleteTransferenciaDetalle;
   } catch (error) {
     throw new Error(`Error deleting transferencia detalle: ${error}`);
+  }
+};
+
+export const getObraOrigenYDestinoByTransferenciaId = async (transferenciaId: string) => {
+  try {
+    const { data } = await client.query({
+      query: OBRA_ORIGEN_Y_DESTINO_BY_TRANSFERENCIA_ID,
+      variables: { transferenciaId },
+    });
+    return data.listTransferenciaDetallesByTransferenciaId;
+  } catch (error) {
+    throw new Error(`Error fetching obras origen y destino: ${error}`);
   }
 };

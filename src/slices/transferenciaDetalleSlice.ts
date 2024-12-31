@@ -1,10 +1,10 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import {
   listTransferenciaDetallesService,
-  listTransferenciaDetallesByTransferenciaIdService,
   addTransferenciaDetalleService,
   updateTransferenciaDetalleService,
   deleteTransferenciaDetalleService,
+  getObraOrigenYDestinoByTransferenciaId,
 } from '../services/transferenciaDetalleService';
 
 interface Usuario {
@@ -34,6 +34,20 @@ interface Transferencia {
   movilidad_id: Movilidad;
 }
 
+interface Obra {
+  nombre: string;
+  _id: string;
+}
+
+interface ReferenciaObras {
+  obra_destino_id: Obra;
+  obra_origen_id: Obra;
+}
+
+interface TransferenciaDetalleObras {
+  referencia_id: ReferenciaObras;
+}
+
 interface TransferenciaDetalle {
   id: string;
   transferencia_id: Transferencia;
@@ -45,12 +59,14 @@ interface TransferenciaDetalle {
 
 interface TransferenciaDetalleState {
   transferenciaDetalles: TransferenciaDetalle[];
+  obrasOrigenDestino: TransferenciaDetalleObras[];
   loading: boolean;
   error: string | null;
 }
 
 const initialState: TransferenciaDetalleState = {
   transferenciaDetalles: [],
+  obrasOrigenDestino: [],
   loading: false,
   error: null,
 };
@@ -59,13 +75,6 @@ export const fetchTransferenciaDetalles = createAsyncThunk(
   'transferenciaDetalle/fetchAll',
   async () => {
     return await listTransferenciaDetallesService();
-  }
-);
-
-export const fetchTransferenciaDetallesByTransferenciaId = createAsyncThunk(
-  'transferenciaDetalle/fetchByTransferenciaId',
-  async (transferenciaId: string) => {
-    return await listTransferenciaDetallesByTransferenciaIdService(transferenciaId);
   }
 );
 
@@ -107,12 +116,20 @@ export const deleteTransferenciaDetalle = createAsyncThunk(
   }
 );
 
+export const fetchObraOrigenYDestino = createAsyncThunk(
+  'transferenciaDetalle/fetchObraOrigenYDestino',
+  async (transferenciaId: string) => {
+    return await getObraOrigenYDestinoByTransferenciaId(transferenciaId);
+  }
+);
+
 const transferenciaDetalleSlice = createSlice({
   name: 'transferenciaDetalle',
   initialState,
   reducers: {
     clearTransferenciaDetalles: (state) => {
       state.transferenciaDetalles = [];
+      state.obrasOrigenDestino = [];
     },
   },
   extraReducers: (builder) => {
@@ -129,11 +146,6 @@ const transferenciaDetalleSlice = createSlice({
         state.loading = false;
         state.error = action.error.message || null;
       })
-      .addCase(fetchTransferenciaDetallesByTransferenciaId.fulfilled, (state, action) => {
-        state.loading = false;
-        state.transferenciaDetalles = action.payload;
-        state.error = null;
-      })
       .addCase(addTransferenciaDetalle.fulfilled, (state, action) => {
         state.transferenciaDetalles.push(action.payload);
       })
@@ -149,6 +161,18 @@ const transferenciaDetalleSlice = createSlice({
         state.transferenciaDetalles = state.transferenciaDetalles.filter(
           (item) => item.id !== action.payload
         );
+      })
+      .addCase(fetchObraOrigenYDestino.pending, (state) => {
+        state.loading = true;
+      })
+      .addCase(fetchObraOrigenYDestino.fulfilled, (state, action) => {
+        state.loading = false;
+        state.obrasOrigenDestino = action.payload;
+        state.error = null;
+      })
+      .addCase(fetchObraOrigenYDestino.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.error.message || null;
       });
   },
 });

@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { fetchTransferenciaDetallesByTransferenciaId } from '../../../slices/transferenciaDetalleSlice';
 import { fetchTransferenciaRecursosById } from '../../../slices/transferenciaRecursoSlice';
 import { addTransferenciaDetalle } from '../../../slices/transferenciaDetalleSlice';
 import { addTransferenciaRecurso } from '../../../slices/transferenciaRecursoSlice';
