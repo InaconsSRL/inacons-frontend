@@ -1,11 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { fetchTransferenciaDetalles, fetchObraOrigenYDestino } from '../../../slices/transferenciaDetalleSlice';
-import { fetchTransferenciaRecursosById, addTransferenciaRecurso, Recurso } from '../../../slices/transferenciaRecursoSlice';
 import { RootState, AppDispatch } from '../../../store/store';
+import { fetchTransferenciaDetalles, fetchObraOrigenYDestino, addTransferenciaDetalle } from '../../../slices/transferenciaDetalleSlice';
+import { fetchTransferenciaRecursosById, addTransferenciaRecurso, Recurso } from '../../../slices/transferenciaRecursoSlice';
 import { addTransferencia } from '../../../slices/transferenciaSlice';
-import { addTransferenciaDetalle } from '../../../slices/transferenciaDetalleSlice';
-import { updateObraBodegaRecurso } from '../../../slices/obraBodegaRecursoSlice';
+import { updateObraBodegaRecurso, addObraBodegaRecurso } from '../../../slices/obraBodegaRecursoSlice';
 import {  } from '../../../slices/transferenciaRecursoSlice';
 import LoaderPage from '../../../components/Loader/LoaderPage';
 import { formatDate } from '../../../components/Utils/dateUtils';
@@ -202,21 +201,31 @@ const NewRecepcionTransferencia: React.FC<ModalProps> = ({ onClose }) => {
       await Promise.all(recursosPromesas);
 
       // Actualizar las cantidades en ObraBodegaRecurso
-      // Obtener obra destino de la transferencia original
       if (obrasInfo) {
         const obraDestinoId = obrasInfo.referencia_id.obra_destino_id._id;
         
-        // Actualizar las cantidades en la bodega de destino
+        // Actualizar o crear registros en la bodega de destino
         const actualizacionesObraBodega = recursosValidos.map(async (recurso) => {
-          // Aquí deberías tener la lógica para obtener el obraBodegaRecursoId correcto
-          // basado en el recurso y la obra destino
           try {
-            await dispatch(updateObraBodegaRecurso({
-              updateObraBodegaRecursoId: obraDestinoId, // Asegúrate de tener este ID
-              cantidad: recurso.cantidadModificada!, // La cantidad a añadir
-            })).unwrap();
+            // Intentar actualizar primero
+            try {
+              await dispatch(updateObraBodegaRecurso({
+                updateObraBodegaRecursoId: obraDestinoId,
+                cantidad: recurso.cantidadModificada!,
+              })).unwrap();
+            } catch (error) {
+              console.log('Error al actualizar ObraBodegaRecurso:', error);
+              // Si falla la actualización, intentamos crear un nuevo registro
+              await dispatch(addObraBodegaRecurso({
+                obraBodegaId: obraDestinoId,
+                recursoId: recurso.recurso_id.id,
+                cantidad: recurso.cantidadModificada!,
+                costo: recurso.costo,
+                estado: 'ACTIVO' // o el estado que corresponda según tu lógica
+              })).unwrap();
+            }
           } catch (error) {
-            console.error('Error actualizando ObraBodegaRecurso:', error);
+            console.error('Error al procesar ObraBodegaRecurso:', error);
             throw error;
           }
         });
