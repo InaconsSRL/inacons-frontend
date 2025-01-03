@@ -30,8 +30,8 @@ const LIST_OBRA_BODEGA_RECURSOS = gql`
 `;
 
 const LIST_OBRA_BODEGA_RECURSOS_BY_BODEGA = gql`
-  query ListObraBodegaRecurosByObraBodegaId($obraBodegaId: ID!) {
-    listObraBodegaRecurosByObraBodegaId(obraBodegaId: $obraBodegaId) {
+  query ListObraBodegaRecursosByObraBodegaId($obraBodegaId: ID!) {
+    listObraBodegaRecursosByObraBodegaId(obraBodegaId: $obraBodegaId) {
       id
       obra_bodega_id {
         id
@@ -75,7 +75,7 @@ const LIST_RECURSOS_BODEGA_BY_OBRA = gql`
         tipo_recurso_id
         precio_actual
         imagenes {
-          file
+          recurso_id
         }
       }
       cantidad
@@ -103,7 +103,7 @@ const ADD_OBRA_BODEGA_RECURSO = gql`
         tipo_recurso_id
         precio_actual
         imagenes {
-          file
+          recurso_id
         }
       }
       cantidad
@@ -130,7 +130,7 @@ const UPDATE_OBRA_BODEGA_RECURSO = gql`
         unidad_id
         precio_actual
         imagenes {
-          file
+          recurso_id
         }
       }
       cantidad

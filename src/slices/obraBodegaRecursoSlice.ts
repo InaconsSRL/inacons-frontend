@@ -9,7 +9,7 @@ import {
 } from '../services/obraBodegaRecursoService';
 
 interface Imagen {
-  file: string;
+  recurso_id: string;
 }
 
 interface Recurso {
