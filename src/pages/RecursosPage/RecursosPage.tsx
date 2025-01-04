@@ -32,7 +32,7 @@ interface RecursoAdd {
   nombre: string;
   descripcion: string;
   unidad_id: string;
-  precio_actual: number,  
+  precio_actual: number,
   tipo_recurso_id: string;
   clasificacion_recurso_id: string;
   tipo_costo_recurso_id: string;
@@ -46,7 +46,7 @@ interface RecursoUpdate {
   nombre: string;
   descripcion: string;
   unidad_id: string;
-  precio_actual: number,  
+  precio_actual: number,
   tipo_recurso_id: string;
   clasificacion_recurso_id: string;
   tipo_costo_recurso_id: string;
@@ -204,40 +204,40 @@ const RecursosPage: React.FC = () => {
     };
 
     return {
-      filter: [true, true, true, true, true, true, true, true, true, true, true, false, false],
-      headers: ["id", "fecha", "vigente", "codigo", "nombre", "descripcion", "cantidad", "unidad_id", "precio_actual", "tipo_recurso_id", "tipo_costo_recurso_id", "clasificacion_recurso_id", "imagenes", "opcion"],
+      filter: [true, false, true, true, true, true, false, false, false, false, false, false, false],
+      filterSelect: [false, true, false, false, false, false, true, true, true, true, true, false, false],
+      headers: ["fecha", "vigente", "codigo", "nombre", "descripcion", "cant", "unidad", "precio actual", "tipo recurso", "tipo costo", "clasificacion", "imagen", "opc"],
       rows: recursos.map((recurso) => ({
-      id: recurso.id,
-      codigo: recurso.codigo,
-      nombre: recurso.nombre,
-      descripcion: recurso.descripcion,
-      cantidad: recurso.cantidad,
-      precio_actual: recurso.precio_actual,
-      fecha: new Date(recurso.fecha).toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric' }) === 'Invalid Date' ? new Date().toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric' }) : recurso.fecha.slice(0,10).split('-').reverse().join('/'),
-      unidad_id: getNameById(listData.listUnidad, recurso.unidad_id),
-      tipo_recurso_id: getNameById(listData.listTipoRecurso, recurso.tipo_recurso_id),
-      tipo_costo_recurso_id: getNameById(listData.listTipoCostoRecurso, recurso.tipo_costo_recurso_id),
-      clasificacion_recurso_id: getClasificacionNombre(recurso.clasificacion_recurso_id),
-      vigente: recurso.vigente ? 'Si' : 'No',
-      imagenes: recurso.imagenes && recurso.imagenes.length > 0 ? (
-        <div className="flex items-center cursor-pointer" onClick={() => handleOpenCarousel(recurso.imagenes)}>
-        <img
-          src={recurso.imagenes[0].file}
-          alt={recurso.nombre}
-          className="object-cover w-8 h-8"
-        />
-        {recurso.imagenes.length > 1 && (
-          <span className="ml-2 text-sm text-gray-400 underline">
-          +{recurso.imagenes.length - 1} más
-          </span>
-        )}
-        </div>
-      ) : 'Sin imagen',
-      opcion: (
-        <>
-        <Button icon={<FiEdit />} text="" color='transp' className='text-blue-500' onClick={() => handleEditNewRecursos(recurso)}></Button>
-        </>
-      )
+        codigo: recurso.codigo,
+        nombre: recurso.nombre,
+        descripcion: recurso.descripcion,
+        cant: recurso.cantidad,
+        "precio actual": recurso.precio_actual,
+        fecha: new Date(recurso.fecha).toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric' }) === 'Invalid Date' ? new Date().toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric' }) : recurso.fecha.slice(0, 10).split('-').reverse().join('/'),
+        unidad: getNameById(listData.listUnidad, recurso.unidad_id),
+        "tipo recurso": getNameById(listData.listTipoRecurso, recurso.tipo_recurso_id),
+        "tipo costo": getNameById(listData.listTipoCostoRecurso, recurso.tipo_costo_recurso_id),
+        clasificacion: getClasificacionNombre(recurso.clasificacion_recurso_id),
+        vigente: recurso.vigente ? 'Si' : 'No',
+        imagen: recurso.imagenes && recurso.imagenes.length > 0 ? (
+          <div className="flex items-center cursor-pointer" onClick={() => handleOpenCarousel(recurso.imagenes)}>
+            <img
+              src={recurso.imagenes[0].file}
+              alt={recurso.nombre}
+              className="object-cover w-8 h-8"
+            />
+            {recurso.imagenes.length > 1 && (
+              <span className="ml-2 text-sm text-gray-400 underline">
+                +{recurso.imagenes.length - 1} más
+              </span>
+            )}
+          </div>
+        ) : 'Sin imagen',
+        opc: (
+          <>
+            <Button icon={<FiEdit />} text="" color='transp' className='text-blue-500' onClick={() => handleEditNewRecursos(recurso)}></Button>
+          </>
+        )
       }))
     };
   }, [recursos, listData]);
@@ -309,7 +309,7 @@ const RecursosPage: React.FC = () => {
           </Modal>
         )}
       </AnimatePresence>
-      
+
       <AnimatePresence key="bulkResources">
         {isModalOpenBulkResources && (
           <Modal title='Carga Masiva de Recursos' isOpen={isModalOpenBulkResources} onClose={handleCloseModal}>
@@ -317,7 +317,7 @@ const RecursosPage: React.FC = () => {
           </Modal>
         )}
       </AnimatePresence>
-      
+
       <AnimatePresence key="newRecursos">
         {isModalOpenNewRecursos && (
           <Modal title='Recursos' isOpen={isModalOpenNewRecursos} onClose={handleCloseModal}>

@@ -3,13 +3,11 @@ import { useDispatch, useSelector } from 'react-redux';
 import { RootState, AppDispatch } from '../../../store/store';
 import { fetchSolicitudAlmacenes } from '../../../slices/solicitudAlmacenSlice';
 import { getOrdenSolicitudRecursoById } from '../../../slices/solicitudRecursoAlmacenSlice';
-import { IoMdCloseCircle } from "react-icons/io";
 import OrdenTransferencia from './OrdenTransferencia';
 import { 
   FormularioSolicitudProps, 
   RecursoSeleccionado, 
-  SolicitudAlmacen,
-  SolicitudAlmacenResponse // Añadir esta importación
+  SolicitudAlmacen 
 } from '../types';
 
 const Skeleton: React.FC<{ className?: string }> = ({ className }) => (
@@ -87,28 +85,6 @@ const FormularioSolicitud: React.FC<FormularioSolicitudProps> = ({ onClose, tran
     return selectedRecursos.reduce((total, recurso) =>
       total + recurso.cantidadSeleccionada * recurso.recurso_id.precio_actual, 0);
   }, [selectedRecursos]);
-
-  // Agregar esta función de utilidad dentro del componente
-  const transformSolicitud = (solicitud: SolicitudAlmacenResponse): SolicitudAlmacen => {
-    return {
-      ...solicitud,
-      almacen_origen_id: {
-        id: solicitud.almacen_id?.id || '',
-        nombre: solicitud.almacen_id?.nombre || '',
-      },
-      almacen_destino_id: solicitud.almacen_destino ? {
-        id: solicitud.almacen_destino.id,
-        nombre: solicitud.almacen_destino.nombre,
-      } : null
-    };
-  };
-
-  // Modificar la parte donde se establece la solicitud seleccionada
-  const handleSolicitudSelect = (solicitud: SolicitudAlmacenResponse) => {
-    const solicitudTransformada = transformSolicitud(solicitud);
-    setSelectedSolicitud(solicitudTransformada);
-    setSelectedRecursos([]);
-  };
   
   return (
     <>
@@ -119,24 +95,16 @@ const FormularioSolicitud: React.FC<FormularioSolicitudProps> = ({ onClose, tran
     recursos={selectedRecursos.filter(recurso => recurso.isChecked)}
     solicitudData={{
       id: selectedSolicitud.id,
-      almacenOrigen: selectedSolicitud.almacen_origen_id,
-      almacenDestino: selectedSolicitud.almacen_destino_id,
+      almacenOrigen: selectedSolicitud.obra_origen_id,
+      almacenDestino: selectedSolicitud.obra_destino_id,
       usuario: selectedSolicitud.usuario_id
     }}
   />
       ) : (
-        <div className="bg-gradient-to-br from-white to-gray-50 rounded-xl shadow-lg w-[120px] max-w-full min-w-full max-h-[90vh] overflow-hidden border border-gray-100">
+        <div className="bg-gradient-to-br from-white to-gray-50 rounded-xl shadow-lg w-[1200px] max-w-full min-w-full max-h-[90vh] flex flex-col overflow-hidden border border-gray-100">
           {/* Header */}
           <div className="border-b border-gray-100 bg-white">
-            <div className="p-3 flex items-center justify-between">
-              <h2 className="text-xl font-semibold text-blue-800">Solicitudes de Transferencia</h2>
-              <button
-                onClick={onClose}
-                className="text-2xl text-red-500 transition-transform transform hover:scale-110"
-              >
-                <IoMdCloseCircle />
-              </button>
-            </div>
+            
             <div className="px-3 pb-3">
               <select
                 value={almacenId}
@@ -167,7 +135,10 @@ const FormularioSolicitud: React.FC<FormularioSolicitudProps> = ({ onClose, tran
                 solicitudes.filter(solicitud => almacenId === '' || solicitud.requerimiento_id.obra_id === almacenId).map((solicitud) => (
                   <div
                     key={solicitud.id}
-                    onClick={() => handleSolicitudSelect(solicitud)}
+                    onClick={() => {
+                      setSelectedSolicitud(solicitud);
+                      setSelectedRecursos([]);
+                    }}
                     className={`p-3 mb-2 shadow-xl rounded-md cursor-pointer border transition-all duration-200 hover:bg-blue-50 ${
                       selectedSolicitud?.id === solicitud.id
                         ? 'bg-blue-50 border-blue-400 shadow-sm'

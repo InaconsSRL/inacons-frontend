@@ -5,7 +5,7 @@ export interface Recurso {
   unidad_id: string;
   tipo_recurso_id?: string;
   precio_actual: number;
-  imagenes: { file: string }[];
+  imagenes: { recurso_id: string }[]; //modificar esto cuando haya imagenes con "FILE"
 }
 
 export interface ObraBodega {

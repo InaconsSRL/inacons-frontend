@@ -1,10 +1,8 @@
 import { useState } from "react";
 import { TransferTable } from "./TransfersTable";
-import FormularioSolicitud from "./SalidasAlmacen/FormularioSolicitud"; 
-// import RecepcionTransferencia from "./RecepcionTransferencias/RecepcionTransferencias";
+import FormularioSolicitud from "./SalidasAlmacen/FormularioSolicitud";
 import { TipoMovimiento } from './types';
 import RecepcionCompra from "./RecepcionCompras/RecepcionCompra";
-import Recursos from "../CalendarPage/CalendarPage";
 import DevolucionPrestamos from "./DevolucionPrestamos/DevolucionPrestamos";
 import Modal from "../../components/Modal/Modal";
 import NewRecepcionTransferencia from "./RecepcionTransferencias/NewRecepcionTransferencia";
@@ -15,7 +13,12 @@ export default function TransfersPage() {
 
   const handleCloseModal = () => {
     setIsModalOpen(false);
-    setSelectedOption(''); 
+    setSelectedOption('');
+    // Resetear el select al valor por defecto
+    const selectElement = document.querySelector('select') as HTMLSelectElement;
+    if (selectElement) {
+      selectElement.value = '';
+    }
   };
 
   const renderModalContent = () => {
@@ -25,14 +28,16 @@ export default function TransfersPage() {
         return (
           <div className=" p-6 rounded-lg shadow-lg w-11/12 max-h-[90vh] overflow-y-auto">
             {selectedOption === 'COMPRAS' ? (
-              <RecepcionCompra 
-                onClose={handleCloseModal} 
-                onComplete={(orden, detalles) => {
-                  console.log('Recepción completada:', { orden, detalles,Recursos });
-                }} 
-              />
-            ) : (
               <Modal isOpen={isModalOpen} onClose={handleCloseModal} title="Recepcion Traslado Alamcenes">
+                <RecepcionCompra
+                  onClose={handleCloseModal}
+                  onComplete={(orden, detalles) => {
+                    console.log('Recepción completada:', { orden, detalles });
+                  }}
+                />
+              </Modal>
+            ) : (
+              <Modal isOpen={isModalOpen} onClose={handleCloseModal} title="Recepción de Transferencias entre Almacenes">
                 <NewRecepcionTransferencia onClose={handleCloseModal} />
               </Modal>
             )}
@@ -45,24 +50,32 @@ export default function TransfersPage() {
           </Modal>
         );
       case 'TRASLADOS':
-        return <FormularioSolicitud onClose={handleCloseModal} />;
+        return (<Modal isOpen={isModalOpen} onClose={handleCloseModal} title="Solicitudes de Salida Transferencia a otro Almacen">
+          <FormularioSolicitud onClose={handleCloseModal} />
+        </Modal>)
       default:
         return null;
     }
   };
 
   return (
-    <div className="min-h-screen ">
+    <div className="h-[calc(100vh-14rem)]">
       <main className="container mx-auto py-6">
         <div className="bg-white rounded-lg shadow">
           <div className="p-4 flex justify-between items-auto">
             <h2 className="text-blue-800 text-2xl font-semibold">Transferencias</h2>
             <div className="flex space-x-2">
               <select
+                value={selectedOption}
                 onChange={(e) => {
                   const value = e.target.value as TipoMovimiento | '';
-                  setSelectedOption(value);
-                  setIsModalOpen(true);
+                  if (value !== '') { // Solo abrir modal si no es la opción por defecto
+                    setSelectedOption(value);
+                    setIsModalOpen(true);
+                  } else {
+                    setSelectedOption('');
+                    setIsModalOpen(false);
+                  }
                 }}
                 className="bg-blue-900 text-white px-4 py-2 rounded-xl"
               >
@@ -70,7 +83,7 @@ export default function TransfersPage() {
                 <optgroup label="Ingresos">
                   <option value="COMPRAS">Compras</option>
                   <option value="RECEPCIONES">Recepciones</option>
-                 <option value="DEVOLUCION">Devolucion Prestamos</option>
+                  <option value="DEVOLUCION">Devolucion Prestamos</option>
                 </optgroup>
                 <optgroup label="Salidas">
                   <option value="TRASLADOS">Traslados</option>

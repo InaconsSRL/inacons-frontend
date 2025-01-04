@@ -57,7 +57,7 @@ const AlmacenBetha: React.FC = () => {
                     Bodega: recurso.obra_bodega_id?.nombre || 'Sin bodega',
                     Unidad: unidad?.nombre || 'Sin unidad',
                     Estado: recurso.estado,
-                    Imagen: recurso.recurso_id?.imagenes?.[0]?.file || 'Sin imagen'
+                    Imagen: recurso.recurso_id?.imagenes?.[0]?.recurso_id || 'Sin imagen' //modificar esto cuando haya imagenes con "FILE"
                 };
             })
     };

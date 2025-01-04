@@ -31,6 +31,7 @@ import HomologacionFormPage from './pages/ProveedorPage/Forms/HomologacionForm';
 import TableViewer from './pages/PresupuestosLocal/TableViewer';
 import AlmacenBetha from './pages/AlmacenesPage/AlmacenBoard/AlmacenBetha';
 import EmpleadosPage from './pages/EmpleadosPage/EmpleadosPage';
+import SorteoPage from './pages/HomePage/Sorteo';
 
 const App: React.FC = () => {
   const user = useSelector((state: RootState) => state.user);
@@ -68,6 +69,7 @@ const App: React.FC = () => {
         <Route path="tableViewer" element={<TableViewer />} />
         <Route path="almacenbetha" element={<AlmacenBetha />} />
         <Route path="empleados" element={<EmpleadosPage />} />
+        <Route path="sorteo" element={<SorteoPage />} />
 
       </Route>
       <Route path="/" element={

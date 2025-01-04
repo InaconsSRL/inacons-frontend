@@ -114,11 +114,11 @@ export interface SolicitudAlmacen {
     codigo: string;
     obra_id: string;
   };
-  almacen_origen_id: {
+  obra_origen_id: {
     id: string;
     nombre: string;
   };
-  almacen_destino_id: {
+  obra_destino_id: {
     id: string;
     nombre: string;
   } | null;

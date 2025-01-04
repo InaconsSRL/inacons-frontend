@@ -143,7 +143,7 @@ const SalidasConsumosPrestamos: React.FC<Props> = ({ obraId, recursos, onClose, 
         await dispatch(updateObraBodegaRecurso({
           updateObraBodegaRecursoId: recurso.id,
           obraBodegaId: recurso.obra_bodega_id.id,
-          recursoId: recurso.id,
+          recursoId: recurso.recurso_id.id,
           cantidad: recurso.cantidad - cantidad, // Restamos la cantidad saliente
           costo: recurso.costo,
           estado: recurso.estado

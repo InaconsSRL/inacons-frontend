@@ -94,7 +94,7 @@ const TipoCostoRecursoComponent: React.FC = () => {
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.2 }}
       >
-        <h1 className="text-2xl font-bold text-blue-800">Tipos de Costo de Recurso</h1>
+        <h1 className="text-2xl font-bold text-white">Tipos de Costo de Recurso</h1>
 
         <div className="flex items-center space-x-2">
           <Button text='Nuevo Tipo de Costo' color='verde' onClick={handleButtonClick} className="rounded w-full" />

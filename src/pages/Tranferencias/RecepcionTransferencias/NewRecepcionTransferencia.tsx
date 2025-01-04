@@ -248,10 +248,6 @@ const NewRecepcionTransferencia: React.FC<ModalProps> = ({ onClose }) => {
 
   return (
     <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl shadow-lg w-[2000px] max-w-full min-w-full max-h-[90vh] overflow-hidden border border-indigo-100">
-      {/* Header */}
-      <div className="p-4 border-b border-indigo-100 bg-white">
-        <h2 className="text-lg font-semibold text-indigo-700">Recepción de Transferencias</h2>
-      </div>
 
       {error && (
         <div className="p-3 text-red-500 bg-red-50 border-b border-red-100">

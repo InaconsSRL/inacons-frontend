@@ -166,7 +166,7 @@ const DevolucionPrestamos: React.FC = () => {
 
         // Actualizar cantidad en bodega
         await dispatch(updateObraBodegaRecurso({
-          updateObraBodegaRecursoId: recurso.obrabodega_recurso_id.id,
+          updateObraBodegaRecursoId: recurso.id,
           cantidad: recurso.cantidad + cantidadDevolver,
         })).unwrap();
       }
@@ -204,7 +204,6 @@ const DevolucionPrestamos: React.FC = () => {
     <div className="bg-gradient-to-br from-white to-gray-50 rounded-xl shadow-lg w-[2000px] max-w-full min-w-full max-h-[90vh] overflow-hidden border border-gray-100">
       {/* Header */}
       <div className="p-3 border-b border-gray-100 flex items-center justify-between bg-white">
-        <h2 className="text-lg font-semibold text-gray-700">Devolución de Préstamo</h2>
         <div className="w-56">
           <select
             value={selectedObra}

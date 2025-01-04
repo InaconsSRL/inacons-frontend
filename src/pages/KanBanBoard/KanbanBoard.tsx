@@ -107,12 +107,12 @@ const KanbanBoard = () => {
     requerimiento: filteredRequerimientos.filter(req => req.estado_atencion === "aprobado_logistica")
   };
 
-  const gestionTransferencias: Column = {
-    id: 'gestion_trasnsferencias',
-    title: 'Despacho y Transferencias',
-    color: "#68AD22",
-    requerimiento: filteredRequerimientos.filter(req => req.estado_atencion === "estado de transferencia")
-  };
+  // const gestionTransferencias: Column = {
+  //   id: 'gestion_trasnsferencias',
+  //   title: 'Despacho y Transferencias',
+  //   color: "#68AD22",
+  //   requerimiento: filteredRequerimientos.filter(req => req.estado_atencion === "estado de transferencia")
+  // };
 
   const gestionOrdenDeCompra: ColumnCotizacion = {
     id: 'gestion_orden_compra',
@@ -122,19 +122,19 @@ const KanbanBoard = () => {
   };
   console.log(cotizaciones);
 
-  const gestionatencionParcial: Column = {
-    id: 'gestion_atencion_parcial',
-    title: 'Requerimiento en Atención',
-    color: "#332e3c",
-    requerimiento: filteredRequerimientos.filter(req => req.estado_atencion === "aprobado_almacen")
-  };
+  // const gestionatencionParcial: Column = {
+  //   id: 'gestion_atencion_parcial',
+  //   title: 'Requerimiento en Atención',
+  //   color: "#332e3c",
+  //   requerimiento: filteredRequerimientos.filter(req => req.estado_atencion === "aprobado_almacen")
+  // };
 
-  const gestionCompletados: Column = {
-    id: 'atencion_completados',
-    title: 'Requerimientos Terminados',
-    color: "#0B132B",
-    requerimiento: filteredRequerimientos.filter(req => req.estado_atencion === "terminados")
-  };
+  // const gestionCompletados: Column = {
+  //   id: 'atencion_completados',
+  //   title: 'Requerimientos Terminados',
+  //   color: "#0B132B",
+  //   requerimiento: filteredRequerimientos.filter(req => req.estado_atencion === "terminados")
+  // };
 
   const scroll = (direction: 'left' | 'right') => {
     if (scrollContainerRef.current) {
@@ -171,9 +171,9 @@ const KanbanBoard = () => {
         />
         <Button  text='Actualizar' color='blanco' onClick={handleRefresh} className="rounded w-auto" 
           icon={<FiRefreshCcw className="text-green-500 text-center h-3 w-3" />} />
-        <button onClick={() => setModalNuevoRequerimiento(true)} className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition-colors">
+        {/* <button onClick={() => setModalNuevoRequerimiento(true)} className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition-colors">
           Nuevo Requerimiento
-        </button>
+        </button> */}
       </div>
 
       <div className="relative"> {/* Contenedor para los botones y el scroll */}
@@ -204,18 +204,18 @@ const KanbanBoard = () => {
           <div className="snap-center min-w-[240px] min-h-[calc(100vh-15rem)] ">
             <KanbanColumn key={gestionAlmacen.id} column={gestionAlmacen} CardComponent={KanbanCardAlmacen} />
           </div>
-          <div className="snap-center min-w-[240px] min-h-[calc(100vh-15rem)] ">
+          {/* <div className="snap-center min-w-[240px] min-h-[calc(100vh-15rem)] ">
             <KanbanColumn key={gestionTransferencias.id} column={gestionTransferencias} CardComponent={KanbanCardAprobacion} />
-          </div>
+          </div> */}
           <div className="snap-center min-w-[240px] min-h-[calc(100vh-15rem)] ">
             <KanbanColumnCotizacion key={gestionOrdenDeCompra.id} columna={gestionOrdenDeCompra} CardComponentC={KanbanCardOrdenCompra} />
           </div>
-          <div className="snap-center min-w-[240px] min-h-[calc(100vh-15rem)] ">
+          {/* <div className="snap-center min-w-[240px] min-h-[calc(100vh-15rem)] ">
             <KanbanColumn key={gestionatencionParcial.id} column={gestionatencionParcial} CardComponent={KanbanCardAprobacion} />
           </div>
           <div className="snap-center min-w-[240px] min-h-[calc(100vh-15rem)] ">
             <KanbanColumn key={gestionCompletados.id} column={gestionCompletados} CardComponent={KanbanCardAprobacion} />
-          </div>
+          </div> */}
         </div>
 
         {/* Botón derecho */}

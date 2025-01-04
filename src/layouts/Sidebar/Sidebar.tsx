@@ -1,10 +1,10 @@
 // Sidebar.tsx
 import React, { useState, useEffect } from 'react';
-import { NavLink } from 'react-router-dom';
-import { FaRegCalendarAlt, FaProjectDiagram, FaUsers, FaUserShield, FaBriefcase, FaBoxOpen, FaTags, FaBalanceScale, FaLayerGroup, FaMoneyBillWave, FaShoppingCart, FaWarehouse, FaClipboardList, FaTasks, FaHandshake, FaDatabase } from 'react-icons/fa';
+import { NavLink, useLocation } from 'react-router-dom';
+import { FaProjectDiagram, FaUsers, FaUserShield, FaBriefcase, FaBoxOpen, FaTags, FaBalanceScale, FaLayerGroup, FaMoneyBillWave, FaShoppingCart, FaWarehouse, FaClipboardList, FaHandshake, FaDatabase } from 'react-icons/fa';
 import { IoIosArchive } from "react-icons/io";
 import { FiHome } from 'react-icons/fi';
-import { GiConcreteBag, GiFireworkRocket } from 'react-icons/gi';
+import { GiConcreteBag, GiPartyFlags } from 'react-icons/gi';
 import { MdViewKanban } from "react-icons/md";
 import DropdownMenu from './DropdownMenu';
 import { motion } from 'framer-motion';
@@ -16,14 +16,16 @@ interface SidebarProps {
 }
 
 const Sidebar: React.FC<SidebarProps> = ({ isSidebarOpen, toggleSidebar }) => {
+  const location = useLocation();
   const [isHovered, setIsHovered] = useState(false);
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
   const [openDropdown, setOpenDropdown] = useState<string | null>(null);
 
   const moduloOtrosItems = [
-    { to: "/dashboard/calendar", icon: FaRegCalendarAlt, text: "Forma Básica" },
+    // { to: "/dashboard/calendar", icon: FaRegCalendarAlt, text: "Forma Básica" },
     { to: "/dashboard/organigrama", icon: FaProjectDiagram, text: "OrganigramaObras" },
-    { to: "/dashboard/almacenbetha", icon: GiFireworkRocket, text: "Alm2" },
+    { to: "/dashboard/sorteo", icon: GiPartyFlags, text: "Sortep" },
+    //{ to: "/dashboard/almacenbetha", icon: GiFireworkRocket, text: "Alm2" },
   ];
 
   const moduloAdministracionItems = [
@@ -47,22 +49,21 @@ const Sidebar: React.FC<SidebarProps> = ({ isSidebarOpen, toggleSidebar }) => {
   ];
 
   const moduloProyectos = [
-    { to: "/dashboard/obras", icon: GiConcreteBag , text: "Obras" },
+    { to: "/dashboard/obras", icon: GiConcreteBag, text: "Obras" },
     { to: "/dashboard/presupuestoBoard", icon: FaMoneyBillWave, text: "Presupuestos" },
     { to: "/dashboard/tableViewer", icon: FaDatabase, text: "DataBase" },
   ];
 
   const moduloAlmacen = [
     { to: "/dashboard/almacen", icon: FaWarehouse, text: "Almacen" },
-    { to: "/dashboard/almacenBoard", icon: FaClipboardList, text: "AlmacenBoard" },
+    { to: "/dashboard/almacenBoard", icon: FaClipboardList, text: "Inventario/Traslados" },
     { to: "/dashboard/tipoAlmacen", icon: IoIosArchive, text: "TipoDeAlmacen" },
     { to: "/dashboard/empleados", icon: IoIosArchive, text: "PersonalObra" },
   ];
 
-  const otroModuloItems = [
+  const moduloRequerimiento = [
     { to: "/dashboard/requerimiento", icon: FaClipboardList, text: "Requerimiento" },
-    { to: "/dashboard/reqRecursos", icon: FaTasks, text: "GenerarRequerimiento" },
-    { to: "/dashboard/kanban", icon: MdViewKanban, text: "Kanban" },
+    // { to: "/dashboard/reqRecursos", icon: FaTasks, text: "GenerarRequerimiento" },
   ];
 
   useEffect(() => {
@@ -106,8 +107,8 @@ const Sidebar: React.FC<SidebarProps> = ({ isSidebarOpen, toggleSidebar }) => {
       }}
       transition={{ duration: 0.3, ease: "easeInOut" }}
       className={`bg-black/50 backdrop-blur-lg select-none ${isSidebarOpen || (!isMobile && isHovered) ?
-          'w-full md:w-64 lg:w-64' :
-          'w-0 md:w-0 lg:w-16 hidden lg:block'
+        'w-full md:w-64 lg:w-64' :
+        'w-0 md:w-0 lg:w-16 hidden lg:block'
         }`}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
@@ -129,7 +130,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isSidebarOpen, toggleSidebar }) => {
           >
             <div className="flex items-center">
               <FiHome className={`w-6 h-6 ${location.pathname === '/dashboard' ? 'text-black' : 'text-white'}`} />
-              {(isSidebarOpen || (!isMobile && isHovered)) && 
+              {(isSidebarOpen || (!isMobile && isHovered)) &&
                 <span className={`pl-3 ${location.pathname === '/dashboard' ? 'text-black' : 'text-white'}`}>
                   Inicio
                 </span>
@@ -138,36 +139,32 @@ const Sidebar: React.FC<SidebarProps> = ({ isSidebarOpen, toggleSidebar }) => {
           </NavLink>
         </motion.div>
 
-        <DropdownMenu
-          title="Recursos"
-          items={moduloRecursosItems}
-          isSidebarOpen={isSidebarOpen || (!isMobile && isHovered)}
-          toggleSidebar={toggleSidebar}
-          openDropdown={openDropdown}
-          setOpenDropdown={setOpenDropdown}
-        />
+        {/* Nuevo NavLink para Kanban */}
+        <motion.div
+          whileHover={{ scale: 1.02 }}
+          whileTap={{ scale: 0.98 }}
+          className="flex flex-col w-[230px] mb-2"
+        >
+          <NavLink
+            to="/dashboard/kanban"
+            className={({ isActive }) => `${isSidebarOpen ? "w-[248px] justify-between" : "w-[58px] justify-center"} rounded-t-xl rounded-l-xl flex items-center mb-0 mt-1 pr-4 py-1.5 ${isActive ? activeStyle : ''}`}
+          >
+            {({ isActive }) => (
+              <div className="flex items-center">
+                <MdViewKanban className={`w-6 h-6 ${isActive ? 'text-black' : 'text-white'}`} />
+                {(isSidebarOpen || (!isMobile && isHovered)) &&
+                  <span className={`pl-3 ${isActive ? 'text-black' : 'text-white'}`}>
+                    Kanban
+                  </span>
+                }
+              </div>
+            )}
+          </NavLink>
+        </motion.div>
 
         <DropdownMenu
           title="Requerimiento"
-          items={otroModuloItems}
-          isSidebarOpen={isSidebarOpen || (!isMobile && isHovered)}
-          toggleSidebar={toggleSidebar}
-          openDropdown={openDropdown}
-          setOpenDropdown={setOpenDropdown}
-        />
-
-        <DropdownMenu
-          title="Administración"
-          items={moduloAdministracionItems}
-          isSidebarOpen={isSidebarOpen || (!isMobile && isHovered)}
-          toggleSidebar={toggleSidebar}
-          openDropdown={openDropdown}
-          setOpenDropdown={setOpenDropdown}
-        />
-
-        <DropdownMenu
-          title="Almacen"
-          items={moduloAlmacen}
+          items={moduloRequerimiento}
           isSidebarOpen={isSidebarOpen || (!isMobile && isHovered)}
           toggleSidebar={toggleSidebar}
           openDropdown={openDropdown}
@@ -177,6 +174,15 @@ const Sidebar: React.FC<SidebarProps> = ({ isSidebarOpen, toggleSidebar }) => {
         <DropdownMenu
           title="Compras"
           items={moduloCompras}
+          isSidebarOpen={isSidebarOpen || (!isMobile && isHovered)}
+          toggleSidebar={toggleSidebar}
+          openDropdown={openDropdown}
+          setOpenDropdown={setOpenDropdown}
+        />
+
+        <DropdownMenu
+          title="Almacen"
+          items={moduloAlmacen}
           isSidebarOpen={isSidebarOpen || (!isMobile && isHovered)}
           toggleSidebar={toggleSidebar}
           openDropdown={openDropdown}
@@ -195,6 +201,23 @@ const Sidebar: React.FC<SidebarProps> = ({ isSidebarOpen, toggleSidebar }) => {
         <DropdownMenu
           title="Otros"
           items={moduloOtrosItems}
+          isSidebarOpen={isSidebarOpen || (!isMobile && isHovered)}
+          toggleSidebar={toggleSidebar}
+          openDropdown={openDropdown}
+          setOpenDropdown={setOpenDropdown}
+        />
+
+        <DropdownMenu
+          title="Recursos"
+          items={moduloRecursosItems}
+          isSidebarOpen={isSidebarOpen || (!isMobile && isHovered)}
+          toggleSidebar={toggleSidebar}
+          openDropdown={openDropdown}
+          setOpenDropdown={setOpenDropdown}
+        />
+        <DropdownMenu
+          title="Administración"
+          items={moduloAdministracionItems}
           isSidebarOpen={isSidebarOpen || (!isMobile && isHovered)}
           toggleSidebar={toggleSidebar}
           openDropdown={openDropdown}

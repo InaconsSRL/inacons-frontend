@@ -201,10 +201,21 @@ const obraBodegaRecursoSlice = createSlice({
       })
       .addCase(updateObraBodegaRecurso.fulfilled, (state, action: PayloadAction<ObraBodegaRecurso>) => {
         state.loading = false;
+        // Actualizar en el array principal
         const index = state.obraBodegaRecursos.findIndex(recurso => recurso.id === action.payload.id);
         if (index !== -1) {
           state.obraBodegaRecursos[index] = action.payload;
         }
+
+        // Actualizar en el mapa de recursos por obra
+        // Recorrer todas las obras en el mapa
+        Object.keys(state.obraBodegaRecursosMap).forEach(obraId => {
+          const recursos = state.obraBodegaRecursosMap[obraId];
+          const recursoIndex = recursos.findIndex(r => r.id === action.payload.id);
+          if (recursoIndex !== -1) {
+            state.obraBodegaRecursosMap[obraId][recursoIndex] = action.payload;
+          }
+        });
       })
       .addCase(updateObraBodegaRecurso.rejected, (state, action) => {
         state.loading = false;

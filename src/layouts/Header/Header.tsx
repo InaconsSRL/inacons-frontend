@@ -1,6 +1,7 @@
-import React, {useEffect} from 'react';
+import React, {useEffect, useState, useRef} from 'react';
 import {useDispatch, useSelector } from 'react-redux';
-import { FiBell, FiMenu, FiX } from 'react-icons/fi';
+import { FiBell, FiMenu, FiX, FiLogOut } from 'react-icons/fi';
+import { useNavigate } from 'react-router-dom';
 import logo from '../../assets/logo.svg'
 import avatar from '../../assets/avatar.webp'
 import { fetchRecursos } from '../../slices/recursoSlice';
@@ -17,7 +18,26 @@ interface HeaderProps {
 }
 
 const Header: React.FC<HeaderProps> = ({ toggleSidebar, isSidebarOpen }) => {  
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
   const dispatch = useDispatch<AppDispatch>();
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    navigate('/login');
+  };
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+        setIsMenuOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
   useEffect(() => {
     dispatch(fetchRecursos());
     dispatch(fetchObras());
@@ -54,11 +74,28 @@ const Header: React.FC<HeaderProps> = ({ toggleSidebar, isSidebarOpen }) => {
 
         <div className="flex items-center space-x-4 text-center">
           <span className="text-white text-lg hidden lg:block">{currentTime}</span>
-          <div className="flex items-center space-x-2">
-            <div className="flex items-center text-white">
+          <div className="flex items-center space-x-2" ref={menuRef}>
+            <div 
+              className="flex items-center text-white cursor-pointer"
+              onClick={() => setIsMenuOpen(!isMenuOpen)}
+            >
               <img src={avatar} alt="Avatar" className="h-10 mr-4" />
               <span>{user.usuario || 'Usuario'}</span>
             </div>
+            {isMenuOpen && (
+              <div className="absolute right-16 top-16 bg-white rounded-lg shadow-lg py-2 px-4 min-w-[200px]">
+                <div className="flex flex-col items-start gap-3">
+                  <span className="font-semibold text-gray-800"> Hola {user.usuario}, ¿Ya te vas?</span>
+                  <button
+                    onClick={handleLogout}
+                    className="flex items-center gap-2 text-red-600 hover:text-red-700 w-full py-2 px-2 hover:bg-gray-100 rounded-md transition-colors"
+                  >
+                    <FiLogOut />
+                    <span>Cerrar Sesión</span>
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
 
           <FiBell className="w-6 h-6 text-white" />

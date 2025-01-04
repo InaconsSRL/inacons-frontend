@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from 'react';
-import { FiX } from 'react-icons/fi';
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchOrdenCompras } from '../../../slices/ordenCompraSlice';
 import { addTransferencia, TransferenciaData } from '../../../slices/transferenciaSlice';
@@ -35,7 +34,7 @@ interface RecepcionesCompraProps {
     onComplete: (orden: OrdenCompra, detalles: RecursoDetalle[]) => void;
 }
 
-const RecepcionCompra: React.FC<RecepcionesCompraProps> = ({ onClose, onComplete }) => {
+const RecepcionCompra: React.FC<RecepcionesCompraProps> = ({ onComplete }) => {
     const dispatch = useDispatch<AppDispatch>();
 
     // Estados
@@ -246,16 +245,8 @@ const RecepcionCompra: React.FC<RecepcionesCompraProps> = ({ onClose, onComplete
     );
 
     return (
-        <div className="rounded-xl shadow-lg w-full h-[90vh] flex flex-col overflow-hidden border border-gray-100">
-            
-            <div className="border-b border-gray-100 bg-white">
-                <div className="p-4 flex items-center justify-between">
-                    <h2 className="text-xl font-semibold text-blue-800">Recepción de Compras</h2>
-                    <button onClick={onClose} className="text-2xl text-red-500 hover:text-red-600">
-                        <FiX />
-                    </button>
-                </div>
-            </div>
+        <div className="rounded-xl shadow-lg w-full h-[calc(100vh-10rem)] min-w-[80vw] flex flex-col overflow-hidden border border-gray-100">
+    
 
             {/* Errores de validación */}
             {validationErrors.length > 0 && (
@@ -263,9 +254,9 @@ const RecepcionCompra: React.FC<RecepcionesCompraProps> = ({ onClose, onComplete
             )}
 
             
-            <div className="flex flex-1 min-h-0">
+            <div className="flex flex-1 min-h-0 overflow-hidden">
                 {/* Panel izquierdo - Lista de órdenes */}
-                <div className="w-1/3 border-r border-gray-100 overflow-y-auto">
+                <div className="w-1/3 bg-white border-r border-gray-100 overflow-y-auto">
                     <div className="p-4 bg-white border-b">
                         <h3 className="text-sm font-medium text-gray-700">Órdenes de Compra Pendientes</h3>
                     </div>

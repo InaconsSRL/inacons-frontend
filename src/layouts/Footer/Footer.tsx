@@ -1,6 +1,9 @@
 import React from 'react';
-
 const Footer: React.FC = () => {
+
+
+
+
   return (
     <footer className="hidden lg:flex fixed bottom-0 left-0 w-full bg-black bg-opacity-50 backdrop-blur-lg py-4">
       <div className="container mx-auto px-4 flex justify-between items-center text-white text-[8px] sm:text-sm">
@@ -18,12 +21,7 @@ const Footer: React.FC = () => {
           <a href="#print" className="hidden md:block hover:text-gray-300 transition-colors">Nuestra Web</a>
         </div>
 
-        {/* Sección derecha: Enlace adicional */}
-        <div className=" hidden md:flex items-center space-x-4">
-          <a href="https://nufago.com/" className="hover:text-gray-300 transition-colors">
-            https://nufago.com/
-          </a>
-        </div>
+        
       </div>
     </footer>
   );

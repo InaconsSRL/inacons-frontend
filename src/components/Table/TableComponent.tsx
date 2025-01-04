@@ -15,6 +15,8 @@ import {
 } from '@tanstack/react-table';
 import backImage from '../../assets/bgmedia.webp'
 
+//todo bien 04012025
+
 type TableRow = Record<string, string | number | boolean | ReactNode>;
 
 type TableData = {
@@ -36,12 +38,13 @@ const preventDefault = (e: Event) => {
 
 const shouldUseAnimations = (pageSize: number) => pageSize < 50;
 
-const TableComponent: React.FC<TableComponentProps> = ({ tableData, maxCharacters = 30 }) => {
+const TableComponent: React.FC<TableComponentProps> = ({ tableData }) => {
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
   const [columnResizeMode] = useState<ColumnResizeMode>('onChange');
   const tableContainerRef = useRef<HTMLDivElement>(null);
   const [currentPage, setCurrentPage] = useState(1);
+  const [initialColumnSizes, setInitialColumnSizes] = useState<Record<string, number>>({});
 
   // Invertimos el orden de las filas
   const reversedRows = useMemo(() => [...tableData.rows].reverse(), [tableData.rows]);
@@ -52,23 +55,81 @@ const TableComponent: React.FC<TableComponentProps> = ({ tableData, maxCharacter
     };
   }, []);
 
-  const calculateMaxChars = (columnWidth: number) => {
-    return Math.max(Math.floor(columnWidth / 8), maxCharacters);
+  // Añadir ResizeObserver para detectar cambios en el tamaño de la tabla
+  useEffect(() => {
+    if (!tableContainerRef.current) return;
+    
+    const resizeObserver = new ResizeObserver(() => {
+      const headers = tableContainerRef.current?.querySelectorAll('th');
+      if (headers) {
+        const widths: Record<string, number> = {};
+        headers.forEach((header, index) => {
+          widths[tableData.headers[index]] = header.getBoundingClientRect().width;
+        });
+      }
+    });
+
+    resizeObserver.observe(tableContainerRef.current);
+    return () => resizeObserver.disconnect();
+  }, [tableData.headers]);
+
+  // Función para calcular el ancho óptimo de cada columna
+  const calculateOptimalColumnWidths = () => {
+    const fontMeasurementDiv = document.createElement('div');
+    fontMeasurementDiv.style.visibility = 'hidden';
+    fontMeasurementDiv.style.position = 'absolute';
+    fontMeasurementDiv.style.whiteSpace = 'nowrap';
+    fontMeasurementDiv.className = 'text-xs md:text-[0.68rem]'; // Mismo tamaño de fuente que las celdas
+    document.body.appendChild(fontMeasurementDiv);
+
+    const columnWidths: Record<string, number> = {};
+    const padding = 32; // Padding para los bordes y espaciado interno
+
+    tableData.headers.forEach((header) => {
+      // Medir el ancho del encabezado
+      fontMeasurementDiv.textContent = header;
+      let maxWidth = fontMeasurementDiv.offsetWidth + padding || 500;
+
+      // Medir el contenido de las primeras 10 filas (o menos si hay menos filas)
+      const rowsToMeasure = Math.min(10, tableData.rows.length);
+      for (let i = 0; i < rowsToMeasure; i++) {
+        const cellContent = String(tableData.rows[i][header] || '');
+        fontMeasurementDiv.textContent = cellContent;
+        const contentWidth = fontMeasurementDiv.offsetWidth + padding;
+        maxWidth = Math.max(maxWidth, contentWidth);
+      }
+
+      // Establecer límites mínimo y máximo
+      const minWidth = 100;
+      columnWidths[header] = Math.min(Math.max(maxWidth, minWidth), maxWidth);
+    });
+
+    document.body.removeChild(fontMeasurementDiv);
+    return columnWidths;
   };
 
-  const truncateText = (text: string, maxLength: number): string => {
-    return text.length > maxLength ? `${text.substring(0, maxLength)}...` : text;
-  };
+  // Efecto para calcular los anchos iniciales
+  useEffect(() => {
+    const optimalWidths = calculateOptimalColumnWidths();
+    setInitialColumnSizes(optimalWidths);
+  }, [tableData.rows, tableData.headers]);
 
-  const renderCellContent = (value: unknown, maxLength: number): ReactNode => {
+  const renderCellContent = (value: unknown): ReactNode => {
     if (React.isValidElement(value)) {
       return value;
     }
     if (typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean') {
       const stringValue = String(value);
       return (
-        <div title={stringValue} className="truncate">
-          {truncateText(stringValue, maxLength)}
+        <div 
+          title={stringValue} 
+          className="break-words whitespace-normal" // Cambiado de truncate a break-words
+          style={{
+            maxWidth: '100%',
+            minWidth: 0
+          }}
+        >
+          {stringValue} {/* Ya no usamos truncateText aquí */}
         </div>
       );
     }
@@ -93,15 +154,14 @@ const TableComponent: React.FC<TableComponentProps> = ({ tableData, maxCharacter
       enableColumnFilter: (tableData.filter ? tableData.filter[index] : true) || 
                         (tableData.filterSelect ? tableData.filterSelect[index] : false),
       cell: info => {
-        const value = info.getValue();
-        const columnWidth = info.column.getSize();
-        const dynamicMaxChars = calculateMaxChars(columnWidth);
-        
-        return renderCellContent(value, dynamicMaxChars);
+        const value = info.getValue();        
+        return renderCellContent(value);
       },
       footer: props => props.column.id,
+      minSize: 100, // Añadimos un tamaño mínimo para las columnas
+      size: initialColumnSizes[header] || 150, // Usar el tamaño calculado o un valor por defecto
     })),
-  [tableData.headers, tableData.filter, tableData.filterSelect, maxCharacters]);
+  [tableData.headers, tableData.filter, tableData.filterSelect, initialColumnSizes]);
 
   const table = useReactTable({
     data: reversedRows, // Usamos las filas invertidas aquí
@@ -350,10 +410,12 @@ const TableComponent: React.FC<TableComponentProps> = ({ tableData, maxCharacter
                     {row.getVisibleCells().map(cell => (
                       <td 
                         key={cell.id} 
-                        className="border-b border-gray-200 px-1 md:px-2 py-1 md:py-2 text-xs md:text-[0.68rem] text-gray-700 text-left overflow-hidden"
+                        className="border-b border-gray-200 px-1 md:px-2 py-1 md:py-2 text-xs md:text-[0.68rem] text-gray-700 text-left"
                         style={{ 
                           width: cell.column.getSize(),
                           maxWidth: cell.column.getSize(),
+                          minWidth: cell.column.getSize(),
+                          overflow: 'hidden',
                           whiteSpace: 'normal',
                           wordWrap: 'break-word'
                         }}
@@ -613,10 +675,12 @@ const TableComponent: React.FC<TableComponentProps> = ({ tableData, maxCharacter
                   {row.getVisibleCells().map(cell => (
                     <td 
                       key={cell.id} 
-                      className="border-b border-gray-200 px-1 md:px-2 py-1 md:py-2 text-xs md:text-sm text-gray-700 text-left overflow-hidden"
+                      className="border-b border-gray-200 px-1 md:px-2 py-1 md:py-2 text-xs md:text-sm text-gray-700 text-left"
                       style={{ 
                         width: cell.column.getSize(),
                         maxWidth: cell.column.getSize(),
+                        minWidth: cell.column.getSize(),
+                        overflow: 'hidden',
                         whiteSpace: 'normal',
                         wordWrap: 'break-word'
                       }}
