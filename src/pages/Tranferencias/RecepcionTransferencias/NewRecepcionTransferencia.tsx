@@ -3,7 +3,6 @@ import { useDispatch, useSelector } from 'react-redux';
 import { RootState, AppDispatch } from '../../../store/store';
 import { fetchTransferenciaDetalles, fetchObraOrigenYDestino, addTransferenciaDetalle } from '../../../slices/transferenciaDetalleSlice';
 import { fetchTransferenciaRecursosById, addTransferenciaRecurso, Recurso } from '../../../slices/transferenciaRecursoSlice';
-import { addTransferencia } from '../../../slices/transferenciaSlice';
 import { updateObraBodegaRecurso, addObraBodegaRecurso } from '../../../slices/obraBodegaRecursoSlice';
 import {  } from '../../../slices/transferenciaRecursoSlice';
 import LoaderPage from '../../../components/Loader/LoaderPage';
@@ -165,21 +164,9 @@ const NewRecepcionTransferencia: React.FC<ModalProps> = ({ onClose }) => {
         throw new Error('No hay recursos seleccionados para transferir');
       }
 
-      // Crear la transferencia
-      const transferenciaData = {
-        usuario_id: userId,
-        fecha: new Date(),
-        movimiento_id: "6773f8eacfeba5769b30f4ee",
-        movilidad_id: transferencia.transferencia_id.movilidad_id?.id || "6765ecf0444c04c94802b3df",
-        estado: 'COMPLETO' as const,
-        descripcion: `Recepción de transferencia - ${transferencia.referencia}`
-      };
-
-      const nuevaTransferencia = await dispatch(addTransferencia(transferenciaData)).unwrap();
-
       // Crear el detalle de transferencia
       const detalleData = {
-        transferencia_id: nuevaTransferencia.id,
+        transferencia_id: transferencia.id,
         referencia_id: transferencia.id,
         fecha: new Date(),
         tipo: 'RECEPCION_TRANSFERENCIA',
