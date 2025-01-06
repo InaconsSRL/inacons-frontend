@@ -183,7 +183,10 @@ const RecepcionCompra: React.FC<RecepcionesCompraProps> = ({ onComplete }) => {
             await Promise.all(recursosPromises);
 
             // Actualizar el estado de la orden de compra
-            await dispatch(updateOrdenCompra(selectedOrden!)).unwrap();
+            await dispatch(updateOrdenCompra({
+                ...selectedOrden!,
+                cotizacion_id: { id: selectedOrden!.cotizacion_id }
+            })).unwrap();
 
             onComplete(selectedOrden!, detalles);
             setOrdenesCompletadas(prev => [...prev, selectedOrden!] as OrdenCompra[]);

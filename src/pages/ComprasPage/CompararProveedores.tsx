@@ -196,13 +196,13 @@ const handleConfirmarGenerarOC = async () => {
     setLoadingProgress(50);
     const nuevaOrdenCompra = {
       proveedor_id: proveedorAdjudicado.proveedor_id.id,
-      codigo_orden: 'ORD-' + new Date().getTime(), // Example code
+      codigo_orden: 'ORD-' + new Date().getTime(), 
       cotizacion_id: cotizacion.id,
-      estado: true, // Cambiado de 'PENDIENTE' a false para cumplir con el tipo boolean
+      estado: true, 
       descripcion: 'Orden de compra generada automáticamente',
       fecha: new Date().toISOString(),
       fecha_ini: new Date().toISOString(),
-      fecha_fin: new Date(new Date().setDate(new Date().getDate() + 7)).toISOString(), // 7 days from now
+      fecha_fin: new Date(new Date().setDate(new Date().getDate() + 7)).toISOString(), 
     };
 
     const ordenCompraCreada = await dispatch(addOrdenCompra(nuevaOrdenCompra)).unwrap();
@@ -214,11 +214,11 @@ const handleConfirmarGenerarOC = async () => {
       .filter(cpr => cpr.cotizacion_proveedor_id.id === proveedorAdjudicado.id)
       .map(cpr => ({
         orden_compra_id: ordenCompraCreada.id,
-        id_recurso: cpr.recurso_id.id, // Cambiado de recurso_id a id_recurso
+        id_recurso: cpr.recurso_id.id, 
         cantidad: cpr.cantidad,
         costo_real: cpr.costo,
-        costo_aproximado: cpr.costo, // Si es necesario
-        estado: 'pendiente' // Cambiado de 'PENDIENTE' a false asumiendo que el estado es boolean
+        costo_aproximado: cpr.costo, 
+        estado: 'pendiente' 
       }));
 
     for (const recurso of recursosOC) {

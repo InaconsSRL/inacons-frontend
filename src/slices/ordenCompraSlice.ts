@@ -1,5 +1,5 @@
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
-import { OrdenCompra, listOrdenComprasService, addOrdenCompraService, updateOrdenCompraService, deleteOrdenCompraService } from '../services/ordenCompraService';
+import { OrdenCompra, listOrdenComprasService, addOrdenCompraService, updateOrdenCompraService, deleteOrdenCompraService, OrdenCompraUpdate } from '../services/ordenCompraService';
 
 interface OrdenCompraState {
   ordenCompras: OrdenCompra[];
@@ -29,7 +29,7 @@ export const addOrdenCompra = createAsyncThunk(
 
 export const updateOrdenCompra = createAsyncThunk(
   'ordenCompra/updateOrdenCompra',
-  async (ordenCompra: OrdenCompra) => {
+  async (ordenCompra: OrdenCompraUpdate) => {
     return await updateOrdenCompraService(ordenCompra);
   }
 );
