@@ -8,7 +8,6 @@ import { fetchRecursos, fetchListData, addRecurso, updateRecurso } from '../../s
 import LoaderPage from '../../components/Loader/LoaderPage';
 import { FiEdit } from 'react-icons/fi';
 import ImageCarousel from '../../components/IMG/ImageCarousel';
-import BulkUploadComponent from './BulkUploadComponent';
 import NewRecursosPage from './NewRecursosForm';
 import { RootState, AppDispatch } from '../../store/store';
 
@@ -112,7 +111,7 @@ const RecursosPage: React.FC = () => {
   const { recursos, loading, error } = useSelector((state: RootState) => state.recurso);
   const { listData } = useSelector((state: RootState) => state.recurso);
   const [carouselImages, setCarouselImages] = useState<{ id: string; file: string }[] | null>(null);
-  const [isModalOpenBulkResources, setIsModalOpenBulkResources] = useState(false);
+  // const [isModalOpenBulkResources, setIsModalOpenBulkResources] = useState(false);
   const [isModalOpenNewRecursos, setIsModalOpenNewRecursos] = useState(false);
   const [editingRecurso, setEditingRecurso] = useState<Recurso>(recursoInicial);
   useEffect(() => {
@@ -159,12 +158,12 @@ const RecursosPage: React.FC = () => {
     setIsModalOpenNewRecursos(true);
   };
 
-  const handleButtonEnvioMasivoClick = () => {
-    setIsModalOpenBulkResources(true);
-  };
+  // const handleButtonEnvioMasivoClick = () => {
+  //   setIsModalOpenBulkResources(true);
+  // };
 
   const handleCloseModal = () => {
-    setIsModalOpenBulkResources(false);
+    // setIsModalOpenBulkResources(false);
     setIsModalOpenNewRecursos(false)
     setEditingRecurso(recursoInicial);
   };
@@ -272,13 +271,13 @@ const RecursosPage: React.FC = () => {
 
 
 
-        <div className="flex items-center space-x-2">
+        {/* <div className="flex items-center space-x-2">
           <Button text='EnvioMasivo' color='verde' onClick={handleButtonEnvioMasivoClick} className='rounded w-auto bg-emerald-500' />
-        </div>
+        </div> */}
         <div className="flex items-center space-x-2">
         </div>
         <div className="flex items-center space-x-2">
-          <Button text='Nuevo NewRecurso' color='verde' onClick={handleButtonNewRecursoClick} className="rounded w-full" />
+          <Button text='+ Nuevo Recurso' color='verde' onClick={handleButtonNewRecursoClick} className="rounded w-full" />
         </div>
       </motion.div>
 
@@ -310,13 +309,13 @@ const RecursosPage: React.FC = () => {
         )}
       </AnimatePresence>
 
-      <AnimatePresence key="bulkResources">
+      {/* <AnimatePresence key="bulkResources">
         {isModalOpenBulkResources && (
           <Modal title='Carga Masiva de Recursos' isOpen={isModalOpenBulkResources} onClose={handleCloseModal}>
             <BulkUploadComponent />
           </Modal>
         )}
-      </AnimatePresence>
+      </AnimatePresence> */}
 
       <AnimatePresence key="newRecursos">
         {isModalOpenNewRecursos && (

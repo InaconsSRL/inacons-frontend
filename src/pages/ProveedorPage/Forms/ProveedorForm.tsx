@@ -17,6 +17,7 @@ interface ProveedorFormData {
 interface FormErrors {
   razon_social?: string;
   ruc?: string;
+  nombre_comercial?: string;
 }
 
 interface ProveedorFormProps {
@@ -51,6 +52,10 @@ const ProveedorForm: React.FC<ProveedorFormProps> = ({ initialValues, onSubmit }
       newErrors.ruc = 'El RUC es requerido';
     } else if (formData.ruc.length !== 11) {
       newErrors.ruc = 'El RUC debe tener 11 caracteres';
+    }
+
+    if (!formData.nombre_comercial) {
+      newErrors.nombre_comercial = 'El nombre comercial es requerido';
     }
 
     setErrors(newErrors);
@@ -165,6 +170,7 @@ const ProveedorForm: React.FC<ProveedorFormProps> = ({ initialValues, onSubmit }
           onChange={handleChange}
           className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
         />
+        {errors.nombre_comercial && <p className="text-red-500 text-xs italic mt-1">{errors.nombre_comercial}</p>}
       </div>
 
       <div className="mb-4">
