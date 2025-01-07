@@ -4,54 +4,11 @@ import { RootState, AppDispatch } from '../../../store/store';
 import { fetchTransferenciaDetalles, fetchObraOrigenYDestino, addTransferenciaDetalle } from '../../../slices/transferenciaDetalleSlice';
 import { fetchTransferenciaRecursosById, addTransferenciaRecurso, Recurso } from '../../../slices/transferenciaRecursoSlice';
 import { updateObraBodegaRecurso, addObraBodegaRecurso } from '../../../slices/obraBodegaRecursoSlice';
-import {  } from '../../../slices/transferenciaRecursoSlice';
+import { } from '../../../slices/transferenciaRecursoSlice';
 import LoaderPage from '../../../components/Loader/LoaderPage';
 import { formatDate } from '../../../components/Utils/dateUtils';
+import { ModalProps, ObraInfo, TransferenciaRecurso, Unidades2 } from './type';
 
-interface ModalProps {
-  onClose: () => void;
-}
-
-interface TransferenciaRecurso {
-  _id: string;
-  transferencia_detalle_id: {
-    id: string;
-    referencia_id: string;
-    fecha: string;
-    tipo: string;
-    referencia: string;
-  };
-  recurso_id: {
-    id: string;
-    codigo: string;
-    nombre: string;
-    descripcion: string;
-    unidad_id: string
-    imagenes?: { file: string }[];
-  };
-  cantidad: number;
-  costo: number;
-  cantidadModificada?: number; 
-}
-
-interface Unidades2 {
-  id: string;
-  nombre: string;
-}
-
-interface Obra {
-  nombre: string;
-  _id: string;
-}
-
-interface ObraInfo {
-  referencia_id: {
-    obra_destino_id: Obra;
-    obra_origen_id: Obra;
-  }
-}
-
-// Agregar esta función de utilidad antes del componente
 const getUnidadNombre = (recurso: TransferenciaRecurso, unidades: Unidades2[]): string => {
   if (!recurso?.recurso_id?.unidad_id || !unidades) return '-';
   const unidad = unidades.find(u => u.id === recurso.recurso_id.unidad_id);
@@ -96,7 +53,7 @@ const NewRecepcionTransferencia: React.FC<ModalProps> = ({ onClose }) => {
         const response = await dispatch(fetchTransferenciaRecursosById(selectedTransferencia));
         // Inicializar los recursos con cantidadModificada en 0
         if (response.payload) {
-          const recursosConCantidad = response.payload.map( (recurso: Recurso)  => ({
+          const recursosConCantidad = response.payload.map((recurso: Recurso) => ({
             ...recurso,
             cantidadModificada: 0
           }));
@@ -126,7 +83,7 @@ const NewRecepcionTransferencia: React.FC<ModalProps> = ({ onClose }) => {
   const handleCantidadChange = (recursoId: string, valor: number) => {
     const cantidadValidada = Math.max(0, valor);
     const recurso = transferenciaRecursos.find(r => r._id === recursoId);
-    
+
     if (recurso) {
       setSelectedRecursos(prev => {
         const index = prev.findIndex(r => r._id === recursoId);
@@ -134,7 +91,7 @@ const NewRecepcionTransferencia: React.FC<ModalProps> = ({ onClose }) => {
           ...recurso,
           cantidadModificada: Math.min(cantidadValidada, recurso.cantidad)
         };
-        
+
         if (index === -1) {
           return [...prev, recursoActualizado];
         } else {
@@ -156,7 +113,7 @@ const NewRecepcionTransferencia: React.FC<ModalProps> = ({ onClose }) => {
       if (!transferencia) throw new Error('Transferencia no encontrada');
 
       // Verificar si hay recursos seleccionados con cantidad mayor a 0
-      const recursosValidos = selectedRecursos.filter(recurso => 
+      const recursosValidos = selectedRecursos.filter(recurso =>
         (recurso.cantidadModificada || 0) > 0
       );
 
@@ -190,7 +147,7 @@ const NewRecepcionTransferencia: React.FC<ModalProps> = ({ onClose }) => {
       // Actualizar las cantidades en ObraBodegaRecurso
       if (obrasInfo) {
         const obraDestinoId = obrasInfo.referencia_id.obra_destino_id._id;
-        
+
         // Actualizar o crear registros en la bodega de destino
         const actualizacionesObraBodega = recursosValidos.map(async (recurso) => {
           try {
@@ -223,7 +180,7 @@ const NewRecepcionTransferencia: React.FC<ModalProps> = ({ onClose }) => {
       // Actualizar la vista
       dispatch(fetchTransferenciaDetalles());
       dispatch(fetchTransferenciaRecursosById(selectedTransferencia));
-      
+
       onClose();
     } catch (error) {
       setError(error instanceof Error ? error.message : 'Error al procesar la recepción');
@@ -254,11 +211,10 @@ const NewRecepcionTransferencia: React.FC<ModalProps> = ({ onClose }) => {
               <div
                 key={transferencia.id}
                 onClick={() => setSelectedTransferencia(transferencia.id)}
-                className={`p-4 mb-3 rounded-lg cursor-pointer transition-all duration-200 ${
-                  selectedTransferencia === transferencia.id
+                className={`p-4 mb-3 rounded-lg cursor-pointer transition-all duration-200 ${selectedTransferencia === transferencia.id
                     ? 'bg-indigo-50 border-indigo-200 shadow'
                     : 'bg-white border border-gray-100 hover:shadow-md hover:border-indigo-100'
-                }`}
+                  }`}
               >
                 <div className="text-sm font-medium text-indigo-700">{transferencia.referencia}</div>
                 <div className="text-xs text-gray-600 mt-1">
@@ -270,10 +226,10 @@ const NewRecepcionTransferencia: React.FC<ModalProps> = ({ onClose }) => {
                 {selectedTransferencia === transferencia.id && obrasInfo && (
                   <>
                     <div className="text-xs text-gray-600 mt-1">
-                      Desde: {obrasInfo.referencia_id.obra_origen_id? obrasInfo.referencia_id.obra_origen_id.nombre : 'Sin origen'}
+                      Desde: {obrasInfo.referencia_id.obra_origen_id ? obrasInfo.referencia_id.obra_origen_id.nombre : 'Sin origen'}
                     </div>
                     <div className="text-xs text-gray-600 mt-1">
-                      Para: {obrasInfo.referencia_id.obra_destino_id? obrasInfo.referencia_id.obra_destino_id.nombre : 'Sin destino'}
+                      Para: {obrasInfo.referencia_id.obra_destino_id ? obrasInfo.referencia_id.obra_destino_id.nombre : 'Sin destino'}
                     </div>
                   </>
                 )}
@@ -304,8 +260,8 @@ const NewRecepcionTransferencia: React.FC<ModalProps> = ({ onClose }) => {
                   </thead>
                   <tbody className="bg-white divide-y divide-gray-100">
                     {transferenciaRecursos.map(recurso => (
-                      <tr key={recurso._id} className="hover:bg-gray-50">                        
-                        <td className="px-2 text-center py-3 text-sm text-gray-600">{formatDate(recurso.transferencia_detalle_id.fecha,'dd/mm/yyyy')}</td>
+                      <tr key={recurso._id} className="hover:bg-gray-50">
+                        <td className="px-2 text-center py-3 text-sm text-gray-600">{formatDate(recurso.transferencia_detalle_id.fecha, 'dd/mm/yyyy')}</td>
                         <td className="px-2 text-center py-3 text-sm text-gray-600">{recurso.recurso_id?.codigo || '-'}</td>
                         <td className="px-2 text-left   py-3 text-sm text-gray-600">{recurso.recurso_id?.nombre || '-'}</td>
                         <td className="px-2 text-center py-3 text-sm text-gray-600">
