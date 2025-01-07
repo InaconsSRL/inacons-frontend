@@ -22,7 +22,6 @@ interface FormData {
   precio_actual: number;
   vigente: boolean;
 }
-
 interface ResponseData {
   id: string;
   codigo: string;
@@ -36,7 +35,6 @@ interface ResponseData {
   vigente: boolean;
   imagenes?: { id: string; file: string; }[];
 }
-
 interface Clasificacion {
   id: string;
   nombre: string;
@@ -80,15 +78,17 @@ interface ResourceFormProps {
     tiposRecurso: Array<{ id: string; nombre: string }>;
     clasificaciones: Clasificacion[];
   };
+  similarResources: Array<{ nombre: string; unidad: string }>;
 }
 
-const ResourceForm: React.FC<ResourceFormProps> = ({ initialValues, onSubmit, options }) => {
+const ResourceForm: React.FC<ResourceFormProps> = ({ initialValues, onSubmit, options, similarResources }) => {
   const dispatch = useDispatch();
   const [isLoading, setIsLoading] = useState(false);
   const [isSelectHistorial, setIsSelectHistorial] = useState(false);
   /* const [images, setImages] = useState<File[]>([]); */
   const [imagePreviews, setImagePreviews] = useState<string[]>([]);
   const [formData, setFormData] = useState<FormData>(initialValues);
+  const [similarMatches, setSimilarMatches] = useState<Array<{ nombre: string; unidad: string }>>([]);
 
   const [uploadingImage, setUploadingImage] = useState(false);
   const [isEditing, setIsEditing] = useState(!!initialValues.codigo);
@@ -129,18 +129,6 @@ const ResourceForm: React.FC<ResourceFormProps> = ({ initialValues, onSubmit, op
     }
   };
 
-  /* useEffect(() => {
-    if (response) {
-      setFormData(response);
-      setImagePreviews(initialValues.imagenes?.map((img: any) => img.file || img) || []);
-    } else {
-      if (initialValues) {
-        setFormData(initialValues);
-        setImagePreviews(initialValues.imagenes?.map((img: any) => img.file || img) || []);
-      }
-    }
-  }, [initialValues, response]); */
-
   const defaultFormData = {
     codigo: '',
     nombre: '',
@@ -167,6 +155,16 @@ const ResourceForm: React.FC<ResourceFormProps> = ({ initialValues, onSubmit, op
     setImagePreviews((response || initialValues)?.imagenes?.map((img: any) => img.file || img) || []);
   }, [initialValues, response]);
 
+  useEffect(() => {
+    if (formData.nombre.length > 5) {
+      const filtered = similarResources
+        .filter(r => r.nombre.toLowerCase().includes(formData.nombre.toLowerCase()))
+        .slice(0, 10);
+      setSimilarMatches(filtered);
+    } else {
+      setSimilarMatches([]);
+    }
+  }, [formData.nombre, similarResources]);
 
   
   const handleSelectHistorial = () => {
@@ -282,17 +280,6 @@ const ResourceForm: React.FC<ResourceFormProps> = ({ initialValues, onSubmit, op
     handleSubmit(null, duplicatedData);
   };
 
-  /* const renderClasificaciones = (clasificaciones: Array<{ id: string; nombre: string; childs?: Array<{ id: string; nombre: string }> }>) => {
-    return clasificaciones.map(clasificacion => (
-      <React.Fragment key={clasificacion.id}>
-        <option value={clasificacion.id}>{clasificacion.nombre}</option>
-        {clasificacion.childs && clasificacion.childs.map(child => (
-          <option key={child.id} value={child.id}>&nbsp;&nbsp;{child.nombre}</option>
-        ))}
-      </React.Fragment>
-    ));
-  }; */
-
   const renderClasificaciones = (clasificaciones: Clasificacion[]) => {
     return clasificaciones.map(clasificacion => (
       <React.Fragment key={clasificacion.id}>
@@ -321,6 +308,7 @@ const ResourceForm: React.FC<ResourceFormProps> = ({ initialValues, onSubmit, op
 
   const tableData = {
     headers: ["Obra", "Fecha", "Tipo", "Nro", "Proveedor", "Unidad", "Cantidad", "Precio", "SubTotal"],
+    filterSelect: [true, false, true, true, true, true, true, true, false],
     filter: [true, true, true, true, true, true, true, true, false],
     rows: mockData.map((data, index) => ({
       Obra: data.obra,
@@ -340,9 +328,13 @@ const ResourceForm: React.FC<ResourceFormProps> = ({ initialValues, onSubmit, op
   if (isLoading || uploadingImage) return <div className='flex justify-center items-center h-full bg-blue-900/70 rounded-lg'><LoaderPage /></div>;
 
   return (
-    <form onSubmit={handleSubmit} className="rounded-lg max-w-4xl mx-auto text-xs transform origin-top-left">
-      <div className="bg-gray-200 shadow-md rounded-lg px-4 py-2  ">
-        <div className="flex flex-wrap justify-between p-2 gap-2 rounded-lg text-[10px] md:text-xs bg-gray-300">
+    <form
+      onSubmit={handleSubmit}
+      className="max-w-4xl mx-auto text-xs bg-white shadow-md rounded-lg p-4"
+    >
+      <div className="bg-gray-100 rounded-lg px-4 py-3 mb-4 shadow-sm">
+        {/* Barra superior de acciones */}
+        <div className="flex flex-wrap items-center justify-between gap-2 mb-2">
           {isEditing && <Button type="button" onClick={handleDuplicate}>Duplicar</Button>}          
           <Button type="button">H.Cambios</Button>
           <Button type="button">H.Precios</Button>
@@ -351,22 +343,26 @@ const ResourceForm: React.FC<ResourceFormProps> = ({ initialValues, onSubmit, op
             {isEditing ? 'Actualizar Recurso' : 'Crear Recurso'}
           </Button>
         </div>
+        <div className="my-2 h-0.5 bg-gray-300 rounded-full"></div>
 
-        <div className="w-full h-0.5 bg-blue-800/20 rounded-full my-4"></div>
-
-        <div className="mb-4 flex flex-row items-center">
-          <div className='text-sm font-medium text-gray-700 text-end'>
-            Codigo:
-          </div>
-          <div className='ml-2 px-2 h-8 text-gray-400 bg-gray-300 py-1.5 w-32 pr-3 rounded-lg border-solid borde min-w-32'>
-            {formData.codigo}
-          </div>
-        </div>
-        <div className="grid grid-cols-1 sm:grid-cols-12 gap-4 mb-4">
+        {/* Contenedor de campos principales */}
+        <div className="grid grid-cols-1 sm:grid-cols-12 gap-4">
           <div className='col-span-1 sm:col-span-8'>
             <div className="mb-2">
               <Label htmlFor="nombre">Nombre</Label>
               <Input id="nombre" name="nombre" value={formData.nombre} onChange={handleInputChange} />
+              {similarMatches.length > 0 && (
+                <ul className="mt-1 bg-gray-50 border border-gray-300 rounded-md max-h-40 overflow-auto text-xs">
+                  {similarMatches.map((item, idx) => (
+                    <li key={idx} className="p-1 hover:bg-gray-200">
+                      {item.nombre}
+                      <div className="text-gray-400 text-[10px]">
+                        {item.unidad}
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+              )}
             </div>
             <div className="mb-2">
               <Label htmlFor="clasificacion_recurso_id">Clase</Label>
@@ -440,8 +436,10 @@ const ResourceForm: React.FC<ResourceFormProps> = ({ initialValues, onSubmit, op
             ></textarea>
           </div>
         </div>
-
-        {formData.id && (
+      </div>
+      
+      {/* Sección de imágenes */}
+      {formData.id && (
         <div className="mb-4">
           <h3 className="font-semibold mb-2">Catálogo</h3>
           <div>
@@ -474,19 +472,17 @@ const ResourceForm: React.FC<ResourceFormProps> = ({ initialValues, onSubmit, op
         </div>
       )}
 
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          <div>
-            <Label htmlFor="costoPromedio">Costo Promedio</Label>
-            <div className='min-w-32 mt-2 min-h-8 ml-2 px-2 text-gray-400 bg-gray-300 py-1.5 pr-3 rounded-md border-solid borde'> 125
-            </div>
-
+      {/* Sección de costos */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-4">
+        <div>
+          <Label htmlFor="costoPromedio">Costo Promedio</Label>
+          <div className='min-w-32 mt-2 min-h-8 ml-2 px-2 text-gray-400 bg-gray-300 py-1.5 pr-3 rounded-md border-solid borde'> 125
           </div>
-          <div>
-            <Label htmlFor="valorUltimaCompra">Valor Última Compra</Label>
-            <div className='min-w-32 mt-2 min-h-8 ml-2 px-2 text-gray-400 bg-gray-300 py-1.5 pr-3 rounded-md border-solid borde'> 169
-            </div>
+        </div>
+        <div>
+          <Label htmlFor="valorUltimaCompra">Valor Última Compra</Label>
+          <div className='min-w-32 mt-2 min-h-8 ml-2 px-2 text-gray-400 bg-gray-300 py-1.5 pr-3 rounded-md border-solid borde'> 169
           </div>
-          
         </div>
       </div>
     </form>

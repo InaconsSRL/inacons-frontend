@@ -205,8 +205,10 @@ const RecursosPage: React.FC = () => {
     return {
       filter: [true, false, true, true, true, true, false, false, false, false, false, false, false],
       filterSelect: [false, true, false, false, false, false, true, true, true, true, true, false, false],
+      //headers: ["id","fecha", "vigente", "codigo", "nombre", "descripcion", "cant", "unidad", "precio actual", "tipo recurso", "tipo costo", "clasificacion", "imagen", "opc"],
       headers: ["fecha", "vigente", "codigo", "nombre", "descripcion", "cant", "unidad", "precio actual", "tipo recurso", "tipo costo", "clasificacion", "imagen", "opc"],
       rows: recursos.map((recurso) => ({
+        //id: recurso.id,
         codigo: recurso.codigo,
         nombre: recurso.nombre,
         descripcion: recurso.descripcion,
@@ -248,6 +250,18 @@ const RecursosPage: React.FC = () => {
   const handleCloseCarousel = () => {
     setCarouselImages(null);
   };
+
+  const computedSimilarResources = useMemo(() => {
+    if (!recursos || !listData) return [];
+    const getNameById = (list: { id: string; nombre: string }[], id: string) => {
+      const item = list.find(item => item.id === id);
+      return item ? item.nombre : 'N/A';
+    };
+    return recursos.map(r => ({
+      nombre: r.nombre,
+      unidad: getNameById(listData.listUnidad, r.unidad_id)
+    }));
+  }, [recursos, listData]);
 
   if (loading) return <LoaderPage />;
   if (error) return <motion.div initial="initial" animate="in" exit="out" variants={pageVariants} transition={pageTransition}>Error: {error}</motion.div>;
@@ -329,6 +343,7 @@ const RecursosPage: React.FC = () => {
                 clasificaciones: listData?.listClasificacionRecurso || [],
                 tipoCostoRecursos: listData?.listTipoCostoRecurso || []
               } as RecursoFormOptions}
+              similarResources={computedSimilarResources}
             />
           </Modal>
         )}
