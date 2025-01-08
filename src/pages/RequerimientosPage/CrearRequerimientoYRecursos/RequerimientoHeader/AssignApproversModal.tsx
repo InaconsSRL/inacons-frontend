@@ -95,13 +95,14 @@ const AssignApproversModal: React.FC<AssignApproversModalProps> = ({ onSubmit, o
   }, [requerimientoId, dispatch, usuariosCargo]);
 
   // Modificamos handleAddSupervisor
-  const handleAddSupervisor = async () => {
-    if (supervisorId) {
-      const usuario = supervisores.find(u => u.id === supervisorId);
+  const handleSupervisorChange = async (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const newSupervisorId = e.target.value;
+    if (newSupervisorId) {
+      const usuario = supervisores.find(u => u.id === newSupervisorId);
       if (usuario) {
         const aprobacionData = {
           requerimiento_id: requerimientoId,
-          usuario_id: supervisorId,
+          usuario_id: newSupervisorId,
           estado_aprobacion: 'pendiente_aprobacion',
           comentario: 'Asignación inicial de supervisor',
           gerarquia_aprobacion: 3
@@ -109,28 +110,28 @@ const AssignApproversModal: React.FC<AssignApproversModalProps> = ({ onSubmit, o
         setLoading(true);
         try {
           const response = await dispatch(addAprobacion(aprobacionData)).unwrap();
-          const aprobacion_id = response.id; // Asegúrate de que este sea el campo correcto
-          setSupervisoresAsignados(prev => [...prev, { usuario, aprobacion_id }]);
-          setSupervisorId(''); // Limpiar el select después de agregar
-          setLoading(false);
+          setSupervisoresAsignados(prev => [...prev, { usuario, aprobacion_id: response.id }]);
+          setSupervisorId('');
           setToastMessage({ message: 'Supervisor asignado con éxito', variant: 'success' });
         } catch (error) {
-          setLoading(false);
           setToastMessage({ message: 'Error al asignar supervisor', variant: 'danger' });
           console.error('Error al asignar supervisor:', error);
+        } finally {
+          setLoading(false);
         }
       }
     }
   };
 
   // Modificamos handleAddGerente de manera similar
-  const handleAddGerente = async () => {
-    if (gerenteId) {
-      const usuario = gerentes.find(u => u.id === gerenteId);
+  const handleGerenteChange = async (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const newGerenteId = e.target.value;
+    if (newGerenteId) {
+      const usuario = gerentes.find(u => u.id === newGerenteId);
       if (usuario) {
         const aprobacionData = {
           requerimiento_id: requerimientoId,
-          usuario_id: gerenteId,
+          usuario_id: newGerenteId,
           estado_aprobacion: 'pendiente_aprobacion',
           comentario: 'Asignación inicial de gerente',
           gerarquia_aprobacion: 4
@@ -138,15 +139,14 @@ const AssignApproversModal: React.FC<AssignApproversModalProps> = ({ onSubmit, o
         setLoading(true);
         try {
           const response = await dispatch(addAprobacion(aprobacionData)).unwrap();
-          const aprobacion_id = response.id; // Asegúrate de que este sea el campo correcto
-          setGerentesAsignados(prev => [...prev, { usuario, aprobacion_id }]);
-          setGerenteId(''); // Limpiar el select después de agregar
-          setLoading(false);
+          setGerentesAsignados(prev => [...prev, { usuario, aprobacion_id: response.id }]);
+          setGerenteId('');
           setToastMessage({ message: 'Gerente asignado con éxito', variant: 'success' });
         } catch (error) {
-          setLoading(false);
           setToastMessage({ message: 'Error al asignar gerente', variant: 'danger' });
           console.error('Error al asignar gerente:', error);
+        } finally {
+          setLoading(false);
         }
       }
     }
@@ -222,8 +222,8 @@ const AssignApproversModal: React.FC<AssignApproversModalProps> = ({ onSubmit, o
               <div className="flex mb-4">
                 <select
                   value={supervisorId}
-                  onChange={(e) => setSupervisorId(e.target.value)}
-                  className="w-full border border-gray-300 rounded-l px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 text-xs"
+                  onChange={handleSupervisorChange}
+                  className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 text-xs"
                 >
                   <option value="">Seleccione un supervisor</option>
                   {supervisoresDisponibles.map((usuario) => (
@@ -232,12 +232,6 @@ const AssignApproversModal: React.FC<AssignApproversModalProps> = ({ onSubmit, o
                     </option>
                   ))}
                 </select>
-                <button
-                  onClick={handleAddSupervisor}
-                  className="bg-blue-500 text-white px-4 py-2 rounded-r hover:bg-blue-600 text-xs"
-                >
-                  Añadir
-                </button>
               </div>
               <ul className="space-y-2 bg-neutral-200 p-4 rounded-xl h-44">
                 {supervisoresAsignados.map(({ usuario }) => (
@@ -261,8 +255,8 @@ const AssignApproversModal: React.FC<AssignApproversModalProps> = ({ onSubmit, o
               <div className="flex mb-4">
                 <select
                   value={gerenteId}
-                  onChange={(e) => setGerenteId(e.target.value)}
-                  className="w-full border border-gray-300 rounded-l px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 text-xs"
+                  onChange={handleGerenteChange}
+                  className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 text-xs"
                 >
                   <option value="">Seleccione un gerente</option>
                   {gerentesDisponibles.map((usuario) => (
@@ -271,12 +265,6 @@ const AssignApproversModal: React.FC<AssignApproversModalProps> = ({ onSubmit, o
                     </option>
                   ))}
                 </select>
-                <button
-                  onClick={handleAddGerente}
-                  className="bg-blue-500 text-white px-4 py-2 rounded-r hover:bg-blue-600 text-xs"
-                >
-                  Añadir
-                </button>
               </div>
               <ul className="space-y-2 bg-neutral-200 p-4 rounded-xl h-44">
                 {gerentesAsignados.map(({ usuario }) => (

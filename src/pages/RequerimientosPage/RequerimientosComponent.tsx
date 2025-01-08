@@ -62,27 +62,32 @@ const RequerimientosComponent: React.FC = () => {
   }
 
   const getFilteredRequerimientos = () => {
+    // Primero filtramos los requerimientos pendientes de envío que no son del usuario
+    const filteredByPendingAndUser = requerimientos.filter(req => 
+      !(req.estado_atencion === "Pendiente de envio" && req.usuario_id !== userId)
+    );
+
     switch (activeFilter) {
       case 'mis_requerimientos':
-        return requerimientos.filter(req => req.usuario_id === userId);
+        return filteredByPendingAndUser.filter(req => req.usuario_id === userId);
       case 'pendientes':
-        return requerimientos.filter(req =>
+        return filteredByPendingAndUser.filter(req =>
           ['pendiente', 'aprobado_supervisor'].includes(req.estado_atencion)
         );
       case 'atencion_parcial':
-        return requerimientos.filter(req =>
+        return filteredByPendingAndUser.filter(req =>
           req.estado_atencion === 'aprobado_gerencia'
         );
       case 'completados':
-        return requerimientos.filter(req =>
+        return filteredByPendingAndUser.filter(req =>
           ['completado', 'completado_parcial'].includes(req.estado_atencion)
         );
       case 'rechazados':
-        return requerimientos.filter(req =>
+        return filteredByPendingAndUser.filter(req =>
           req.estado_atencion.includes('rechazado')
         );
       default:
-        return requerimientos;
+        return filteredByPendingAndUser;
     }
   };
 
@@ -132,7 +137,7 @@ const RequerimientosComponent: React.FC = () => {
       </button>
     );
 
-    if (req.estado_atencion === "Pendiente de envio") {
+    if (req.estado_atencion === "Pendiente de envio" || req.estado_atencion === "rechazado_supervisor" || req.estado_atencion === "rechazado_gerencia" ) {
       return (
         <div className='flex flex-row gap-2'>
           {viewButton}
