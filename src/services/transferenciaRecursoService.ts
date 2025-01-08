@@ -56,9 +56,13 @@ const LIST_TRANSFERENCIA_RECURSOS_BY_ID = gql`
         tipo_recurso_id
         tipo_costo_recurso_id
         clasificacion_recurso_id
+        imagenes {
+          file
+        }
       }
       cantidad
       costo
+      diferencia
     }
   }
 `;

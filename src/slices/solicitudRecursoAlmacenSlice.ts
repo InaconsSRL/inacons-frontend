@@ -28,6 +28,8 @@ export interface SolicitudRecursoAlmacenResponse {
   recurso_id: Recurso;
   cantidad: number;
   solicitud_almacen_id: SolicitudAlmacen;
+  costo: number;
+  pendiente: boolean;
 }
 
 // Interfaces para mutations (entrada de datos)

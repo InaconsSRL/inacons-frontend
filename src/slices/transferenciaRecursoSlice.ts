@@ -28,6 +28,9 @@ export interface Recurso {
   tipo_recurso_id: string;
   tipo_costo_recurso_id: string;
   clasificacion_recurso_id: string;
+  imagenes: {
+    file: string;
+  }[];
 }
 
 interface TransferenciaRecurso {
@@ -36,6 +39,7 @@ interface TransferenciaRecurso {
   recurso_id: Recurso;
   cantidad: number;
   costo: number;
+  diferencia: number;
 }
 
 interface TransferenciaRecursoState {

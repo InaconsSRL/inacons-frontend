@@ -98,6 +98,8 @@ const GET_ORDEN_SOLICITUD_RECURSO_BY_ID = gql`
       solicitud_almacen_id {
         id
       }
+      costo
+      pendiente
     }
   }
 `;
