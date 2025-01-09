@@ -60,7 +60,7 @@ const DELETE_ORDEN_COMPRA_MUTATION = gql`
 export interface OrdenCompra {
   id: string;
   codigo_orden: string;
-  cotizacion_id: string;
+  cotizacion_id: {id:string};
   estado: boolean;
   descripcion: string;
   fecha_ini: string;
@@ -69,9 +69,7 @@ export interface OrdenCompra {
 export interface OrdenCompraUpdate {
   id: string;
   codigo_orden: string;
-  cotizacion_id: { //es provisional luego de revisar volvera a cambiar Orignen recepcion Compra
-    id: string
-  };
+  cotizacion_id: string;
   estado: boolean;
   descripcion: string;
   fecha_ini: string;
@@ -90,7 +88,7 @@ export const listOrdenComprasService = async () => {
   }
 };
 
-export const addOrdenCompraService = async (ordenCompra: Omit<OrdenCompra, 'id'>) => {
+export const addOrdenCompraService = async (ordenCompra: Omit<OrdenCompraUpdate, 'id'>) => {
   try {
     const response = await client.mutate({
       mutation: ADD_ORDEN_COMPRA_MUTATION,
@@ -117,7 +115,7 @@ export const updateOrdenCompraService = async (ordenCompra: OrdenCompraUpdate) =
       variables: {
         updateOrdenCompraId: ordenCompra.id,
         codigoOrden: ordenCompra.codigo_orden,
-        cotizacionId: ordenCompra.cotizacion_id.id,
+        cotizacionId: ordenCompra.cotizacion_id,
         descripcion: ordenCompra.descripcion,
         fechaIni: ordenCompra.fecha_ini,
         fechaFin: ordenCompra.fecha_fin,

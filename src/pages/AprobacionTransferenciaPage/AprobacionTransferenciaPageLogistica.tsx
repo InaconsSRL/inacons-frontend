@@ -24,6 +24,7 @@ interface AprobacionTransferenciaPageProps {
 }
 
 const AprobacionTransferenciaPageLogistica: React.FC<AprobacionTransferenciaPageProps> = ({ column }) => {
+  console.log(column);
   const requerimientoId = column.requerimiento.id;
   const selectedRequerimiento = column.requerimiento;
   const [activeRowId, setActiveRowId] = useState<string | null>(null);
@@ -271,7 +272,7 @@ const AprobacionTransferenciaPageLogistica: React.FC<AprobacionTransferenciaPage
           <th className="px-2 py-1">Estado</th>
           <th className="px-2 py-1">F.Límite</th>
           <th className="px-2 py-1">Costo Parcial</th>
-          <th className="px-2 py-1">Obras</th>
+          <th className="px-2 py-1">Almacenes</th>
           <th className="px-2 py-1">Transferencia</th>
           <th className="px-2 py-1">Cotización</th>
           <th className="px-2 py-1">Acciones</th>

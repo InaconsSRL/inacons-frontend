@@ -17,6 +17,7 @@ import KanbanColumnCotizacion, {
   ColumnCotizacion, 
   Cotizacion 
 } from './KanbanColumnCotizacion';
+import { fetchCotizaciones } from '../../slices/cotizacionSlice';
 
 const KanbanBoard = () => {
   const [searchTerm, setSearchTerm] = useState('');
@@ -157,6 +158,7 @@ const KanbanBoard = () => {
 
   const handleRefresh = () => {
     dispatch(fetchRequerimientos());
+    dispatch(fetchCotizaciones());
   };
 
   return (

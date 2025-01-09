@@ -232,15 +232,13 @@ const NewRecepcionTransferencia: React.FC<ModalProps> = ({ onClose }) => {
   try {
    setIsProcessing(true);
    if (!userId) throw new Error("Usuario no autenticado");
-   if (!selectedTransferencia)
-    throw new Error("No hay transferencia seleccionada");
+   if (!selectedTransferencia) throw new Error("No hay transferencia seleccionada");
 
    const transferencia = transferenciaDetalles.find(
     (t) => t.id === selectedTransferencia
    );
    if (!transferencia) throw new Error("Transferencia no encontrada");
 
-   // Verificar si hay recursos seleccionados con cantidad mayor a 0
    const recursosValidos = selectedRecursos.filter(
     (recurso) => (recurso.cantidadModificada || 0) > 0
    );
@@ -249,7 +247,6 @@ const NewRecepcionTransferencia: React.FC<ModalProps> = ({ onClose }) => {
     throw new Error("No hay recursos seleccionados para transferir");
    }
 
-   // Crear el detalle de transferencia
    const detalleData = {
     transferencia_id: transferencia.id,
     referencia_id: transferencia.id,
@@ -262,56 +259,51 @@ const NewRecepcionTransferencia: React.FC<ModalProps> = ({ onClose }) => {
     addTransferenciaDetalle(detalleData)
    ).unwrap();
 
-   // Procesar los recursos de transferencia
-   const recursosPromesas = recursosValidos.map((recurso) => {
-    return dispatch(
+   // Procesar cada recurso válido
+   for (const recurso of recursosValidos) {
+    // 1. Obtener el total distribuido para este recurso
+    const distribucionBodegas = recurso.bodegasDistribucion || {};
+    const totalDistribuido = Object.values(distribucionBodegas).reduce(
+     (sum, val) => sum + val,
+     0
+    );
+
+    // 2. Crear el registro de transferencia con el total
+    await dispatch(
      addTransferenciaRecurso({
       transferencia_detalle_id: detalleTransferencia.id,
       recurso_id: recurso.recurso_id.id,
-      cantidad: recurso.cantidadModificada!,
+      cantidad: totalDistribuido,
       costo: recurso.costo,
      })
     ).unwrap();
-   });
 
-   await Promise.all(recursosPromesas);
+    // 3. Procesar cada bodega del recurso
+    const bodegasDelRecurso = bodegasInfo[recurso.recurso_id.id] || [];
 
-   // Actualizar las cantidades en ObraBodegaRecurso
-   if (obrasInfo) {
-    //const obraDestinoId = obrasInfo.referencia_id.obra_destino_id._id;
-
-    // Actualizar o crear registros en la bodega de destino
-    const actualizacionesObraBodega = recursosValidos.map(
-     async (recurso) => {
-      const bodegasDelRecurso = bodegasInfo[recurso._id] || [];
-
-      for (const bodega of bodegasDelRecurso) {
-       try {
-        // Intentar actualizar primero
-        await dispatch(
-         updateObraBodegaRecurso({
-          updateObraBodegaRecursoId: bodega.obra_bodega_recursos_id,
-          cantidad: recurso.cantidadModificada!,
-         })
-        ).unwrap();
-       } catch (error) {
-        console.log("Error al actualizar ObraBodegaRecurso:", error);
-        // Si falla la actualización, crear nuevo registro
-        await dispatch(
-         addObraBodegaRecurso({
-          obraBodegaId: bodega.obra_bodega_id,
-          recursoId: recurso.recurso_id.id,
-          cantidad: recurso.cantidadModificada!,
-          costo: bodega.costo,
-          estado: "ACTIVO",
-         })
-        ).unwrap();
-       }
+    for (const bodega of bodegasDelRecurso) {
+     const cantidadBodega = distribucionBodegas[bodega.obra_bodega_id] || 0;
+     if (cantidadBodega > 0) {
+      if (bodega.existencia === "si") {
+       await dispatch(
+        updateObraBodegaRecurso({
+         updateObraBodegaRecursoId: bodega.obra_bodega_recursos_id,
+         cantidad: cantidadBodega + bodega.cantidad,
+        })
+       ).unwrap();
+      } else {
+       await dispatch(
+        addObraBodegaRecurso({
+         obraBodegaId: bodega.obra_bodega_id,
+         recursoId: recurso.recurso_id.id,
+         cantidad: cantidadBodega,
+         costo: bodega.costo,
+         estado: "Nuevo",
+        })
+       ).unwrap();
       }
      }
-    );
-
-    await Promise.all(actualizacionesObraBodega);
+    }
    }
 
    // Actualizar la vista

@@ -11,7 +11,6 @@ import { fetchOrdenCompraRecursosByOrdenId } from '../../../slices/ordenCompraRe
 import { fetchMovilidades } from '../../../slices/movilidadSlice';
 import { fetchMovimientos } from '../../../slices/movimientoSlice';
 import { RootState, AppDispatch } from '../../../store/store';
-import { OrdenCompra } from '../../../services/ordenCompraService';
 import { EstadoTransferencia } from '../types';
 
 interface RecursoDetalle {
@@ -29,6 +28,27 @@ interface RecursoDetalle {
     costo: number;
 }
 
+interface OrdenCompra {
+    id: string;
+    codigo_orden: string;
+    cotizacion_id: {id: string};
+    estado: boolean;
+    descripcion: string;
+    fecha_ini: string;
+    fecha_fin: string;
+  }
+  
+  interface OrdenCompraUpdate {
+    id: string;
+    codigo_orden: string;
+    cotizacion_id: string;
+    estado: boolean;
+    descripcion: string;
+    fecha_ini: string;
+    fecha_fin: string;
+  }
+
+
 interface RecepcionesCompraProps {
     onClose: () => void;
     onComplete: (orden: OrdenCompra, detalles: RecursoDetalle[]) => void;
@@ -40,7 +60,7 @@ const RecepcionCompra: React.FC<RecepcionesCompraProps> = ({ onComplete }) => {
     // Estados
     const [selectedOrdenId, setSelectedOrdenId] = useState<string | null>(null);
     const [selectedOrden, setSelectedOrden] = useState<OrdenCompra | null>(null);
-    const [ordenesCompletadas, setOrdenesCompletadas] = useState<OrdenCompra[]>([]);
+    const [ordenesCompletadas, setOrdenesCompletadas] = useState<OrdenCompraUpdate[]>([]);
     const [fechaRecepcion, setFechaRecepcion] = useState(new Date().toISOString().split('T')[0]);
     const [movilidadId, setMovilidadId] = useState('');
 
@@ -89,9 +109,13 @@ const RecepcionCompra: React.FC<RecepcionesCompraProps> = ({ onComplete }) => {
         }, [recursos]);
 
     
-    const handleOrdenClick = (orden: OrdenCompra) => {
+    const handleOrdenClick = (orden: OrdenCompraUpdate) => {
+        const ordenCompra: OrdenCompra = {
+            ...orden,
+            cotizacion_id: { id: orden.cotizacion_id }
+        };
         setSelectedOrdenId(orden.id);
-        setSelectedOrden(orden);
+        setSelectedOrden(ordenCompra);
     };
 
     const [validationErrors, setValidationErrors] = useState<ValidationError[]>([]);
@@ -181,15 +205,15 @@ const RecepcionCompra: React.FC<RecepcionesCompraProps> = ({ onComplete }) => {
 
             // Esperar a que todos los recursos se guarden
             await Promise.all(recursosPromises);
-
+                const idCotizaciones = selectedOrden!.cotizacion_id.id;
             // Actualizar el estado de la orden de compra
             await dispatch(updateOrdenCompra({
                 ...selectedOrden!,
-                cotizacion_id: { id: selectedOrden!.cotizacion_id }
+                cotizacion_id: idCotizaciones
             })).unwrap();
 
             onComplete(selectedOrden!, detalles);
-            setOrdenesCompletadas(prev => [...prev, selectedOrden!] as OrdenCompra[]);
+            setOrdenesCompletadas(prev => [...prev, selectedOrden!] as OrdenCompraUpdate[]);
             handleCloseRecepcion();
             setValidationErrors([]);
 
@@ -264,7 +288,7 @@ const RecepcionCompra: React.FC<RecepcionesCompraProps> = ({ onComplete }) => {
                         <h3 className="text-sm font-medium text-gray-700">Órdenes de Compra Pendientes</h3>
                     </div>
                     <div className="bg-gray-50 p-4 space-y-3">
-                        {ordenesPendientes.map((oc: OrdenCompra) => (
+                        {ordenesPendientes.map((oc: OrdenCompraUpdate) => (
                             <div
                                 key={oc.id}
                                 onClick={() => handleOrdenClick(oc)}

@@ -1,5 +1,15 @@
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
-import { OrdenCompra, listOrdenComprasService, addOrdenCompraService, updateOrdenCompraService, deleteOrdenCompraService, OrdenCompraUpdate } from '../services/ordenCompraService';
+import { listOrdenComprasService, addOrdenCompraService, updateOrdenCompraService, deleteOrdenCompraService, OrdenCompraUpdate } from '../services/ordenCompraService';
+
+interface OrdenCompra {
+  id: string;
+  codigo_orden: string;
+  cotizacion_id: string;
+  estado: boolean;
+  descripcion: string;
+  fecha_ini: string;
+  fecha_fin: string;
+}
 
 interface OrdenCompraState {
   ordenCompras: OrdenCompra[];
