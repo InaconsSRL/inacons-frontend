@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import confetti from 'canvas-confetti';
 import useSound from 'use-sound';
+import SpaceBackground from './SpaceBackground';
 
 //Todo Ok
 
@@ -179,16 +180,20 @@ const SorteoPage: React.FC = () => {
   }, [participantCount]);
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-purple-900 via-blue-900 to-black p-8 relative overflow-hidden">
-      <div className="absolute inset-0 bg-red-500 opacity-50 animate-twinkle"></div>
+    <div className="min-h-screen bg-[#0a0b1e] p-8 relative overflow-hidden">
+      <SpaceBackground />
+      <div className="absolute inset-0">
+        <div className="absolute inset-0 bg-gradient-to-b from-[#ff00ff15] via-[#00ffff15] to-transparent"></div>
+        <div className="absolute inset-0 bg-[url('/grid.png')] opacity-20"></div>
+      </div>
       
       <div className="max-w-7xl mx-auto relative z-10 space-y-6">
         <motion.h1 
-          className="text-4xl font-bold text-center mb-4 text-white glow-text"
+          className="text-4xl font-bold text-center mb-4 text-[#00fff2] neon-text"
           animate={{ scale: [1, 1.1, 1], rotate: [0, 2, -2, 0] }}
           transition={{ duration: 2, repeat: Infinity }}
         >
-          Sorteo Épico
+          Sorteo Cyberpunk
         </motion.h1>
 
         {currentStage === 0 && (
@@ -345,20 +350,20 @@ const SorteoPage: React.FC = () => {
 
       {/* Estilos CSS adicionales */}
       <style>{`
-        .glow-text {
-          text-shadow: 0 0 10px rgba(255,255,255,0.8),
-                       0 0 20px rgba(255,255,255,0.8),
-                       0 0 30px rgba(255,255,255,0.8);
+        .neon-text {
+          text-shadow: 0 0 10px #00fff2,
+                       0 0 20px #00fff2,
+                       0 0 30px #00fff2,
+                       0 0 40px #ff00ff;
         }
         
-        @keyframes twinkle {
-          0% { opacity: 0.5; }
-          50% { opacity: 1; }
-          100% { opacity: 0.5; }
+        @keyframes grid-animation {
+          0% { transform: translateY(0); }
+          100% { transform: translateY(-100%); }
         }
         
-        .animate-twinkle {
-          animation: twinkle 2s infinite;
+        .bg-grid {
+          animation: grid-animation 20s linear infinite;
         }
       `}</style>
     </div>
