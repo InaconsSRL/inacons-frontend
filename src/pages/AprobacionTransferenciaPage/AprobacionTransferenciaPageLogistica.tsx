@@ -32,14 +32,14 @@ const AprobacionTransferenciaPageLogistica: React.FC<AprobacionTransferenciaPage
   const dispatch = useDispatch<AppDispatch>();
   const requerimientoRecursos = useSelector((state: RootState) => state.requerimientoRecursoWithAlmacen.recursos);
   const loadingRequerimientoRecursos = useSelector((state: RootState) => state.requerimientoRecursoWithAlmacen.loading);
-  
+
   const currentUserId = useSelector((state: RootState) => state.user?.id);
-  
+
   console.log(requerimientoRecursos);
 
   useEffect(() => {
     if (requerimientoId) {
-     dispatch(fetchRequerimientoRecursosWithAlmacen(requerimientoId.toString()));
+      dispatch(fetchRequerimientoRecursosWithAlmacen(requerimientoId.toString()));
     }
   }, [dispatch, requerimientoId]);
 
@@ -118,14 +118,14 @@ const AprobacionTransferenciaPageLogistica: React.FC<AprobacionTransferenciaPage
       });
 
       const warehouses = Object.keys(recursosPorAlmacen);
-      setProgress(prev => ({...prev, totalWarehouses: warehouses.length}));
+      setProgress(prev => ({ ...prev, totalWarehouses: warehouses.length }));
 
       for (const almacenId in recursosPorAlmacen) {
         const recursos = recursosPorAlmacen[almacenId];
         const almacen = requerimientoRecursos[0]?.list_obra_bodega_recursos.find(o => o.obra_id === almacenId);
-        
+
         setProgress(prev => ({
-          ...prev, 
+          ...prev,
           currentWarehouse: almacenId,
           currentWarehouseName: almacen?.obra_nombre || '',
           totalResources: recursos.length,
@@ -138,7 +138,7 @@ const AprobacionTransferenciaPageLogistica: React.FC<AprobacionTransferenciaPage
 
         const preSolicitudData = {
           requerimiento_id: selectedRequerimiento.id,
-          usuario_id: currentUserId, 
+          usuario_id: currentUserId,
           almacen_id: almacenId,
           fecha: new Date(),
         };
@@ -148,7 +148,7 @@ const AprobacionTransferenciaPageLogistica: React.FC<AprobacionTransferenciaPage
         for (const recurso of recursos) {
           if (recurso.cantidad && recurso.cantidad > 0) {
             const recursoInfo = requerimientoRecursos.find(r => r.id === recurso.recurso_id);
-            
+
             setProgress(prev => ({
               ...prev,
               currentResource: recurso.recurso_id,
@@ -158,7 +158,7 @@ const AprobacionTransferenciaPageLogistica: React.FC<AprobacionTransferenciaPage
 
             await dispatch(addPreSolicitudAlmacenRecurso({
               preSolicitudAlmacenId: preSolicitud.id,
-              recursoId: recurso.recurso_id, 
+              recursoId: recurso.recurso_id,
               cantidad: recurso.cantidad,
             })).unwrap();
 
@@ -167,7 +167,7 @@ const AprobacionTransferenciaPageLogistica: React.FC<AprobacionTransferenciaPage
           }
         }
       }
-      
+
       await algoQueHacer();
     } catch (error) {
       // Manejar error si es necesario
@@ -264,111 +264,111 @@ const AprobacionTransferenciaPageLogistica: React.FC<AprobacionTransferenciaPage
           <table className="min-w-full text-xs relative">
             <thead className="bg-gray-100 sticky top-0 z-10">
               <tr>
-          <th className="px-2 py-1 text-left">Código</th>
-          <th className="px-2 py-1 text-left">Nombre</th>
-          <th className="px-2 py-1">Unidad</th>
-          <th className="px-2 py-1">U.Emb</th>
-          <th className="px-2 py-1">Metrado</th>
-          <th className="px-2 py-1">Estado</th>
-          <th className="px-2 py-1">F.Límite</th>
-          <th className="px-2 py-1">Costo Parcial</th>
-          <th className="px-2 py-1">Almacenes</th>
-          <th className="px-2 py-1">Transferencia</th>
-          <th className="px-2 py-1">Cotización</th>
-          <th className="px-2 py-1">Acciones</th>
+                <th className="px-2 py-1 text-left">Código</th>
+                <th className="px-2 py-1 text-left">Nombre</th>
+                <th className="px-2 py-1">Unidad</th>
+                <th className="px-2 py-1">U.Emb</th>
+                <th className="px-2 py-1">Metrado</th>
+                <th className="px-2 py-1">Estado</th>
+                <th className="px-2 py-1">F.Límite</th>
+                <th className="px-2 py-1">Costo Parcial</th>
+                <th className="px-2 py-1">Almacenes</th>
+                <th className="px-2 py-1">Transferencia</th>
+                <th className="px-2 py-1">Cotización</th>
+                <th className="px-2 py-1">Acciones</th>
               </tr>
             </thead>
             <tbody className="overflow-y-auto">
               {renderItems.map((item, index) => (
-            <tr 
-            key={item.id} 
-            className={`
+                <tr
+                  key={item.id}
+                  className={`
               border-b font-extralight text-[0.62rem] 
               hover:bg-gray-50 cursor-pointer
               ${activeRowId === item.id ? 'bg-blue-50' : ''}
               ${index % 2 === 0 ? '' : 'bg-sky-50'}
             `}
-            onClick={() => setActiveRowId(item.id)}
-            >
-            <td className="px-2 py-1">{item.codigo}</td>
-            <td className="px-2 py-1 text-left ">{item.name}</td>
-            <td className="px-2 py-1 text-center">{item.unit}</td>
-            <td className="px-2 py-1 text-center">{item.unitEmb}</td>
-            <td className="px-2 py-1 text-center">{item.quantity}</td>
-            <td className="px-2 py-1 text-center">
-              {item.status && (
-              <span className="bg-yellow-100 px-2 py-0.5 rounded-full text-[8px]">
-            {item.status}
-              </span>
-              )}
-            </td>
-            <td className="px-2 py-1 text-center">{item.limitDate}</td>
-            <td className="px-2 py-1 text-center">{item.partialCost}</td>
-            <td className="px-2 py-1 relative">
-  {item.obras.map(obra => (
-    <div key={obra.id} className="mb-0.5 flex items-center justify-end gap-x-3">
-      <div className="flex-shrink-0">
-        <span
-          data-tooltip-id={`tooltip-${item.id}-${obra.id}`}
-          className="text-[8px] text-gray-600 cursor-help whitespace-nowrap"
-        >
-          {obra.name} - Stock: {obra.stock}
-        </span>
-        <Tooltip
-          id={`tooltip-${item.id}-${obra.id}`}
-          place="left"
-          className="!bg-white !text-gray-800 !shadow-lg !rounded-lg !p-0 !opacity-100 !border !border-gray-200 !z-[9999]"
-          positionStrategy="fixed"
-          noArrow={true}
-        >
-          <div className="p-3 min-w-[200px]">
-            <h3 className="font-medium text-xs border-b pb-2 mb-2">{obra.name}</h3>
-            <div className="space-y-2">
-              {obra.bodegas?.map((bodega) => (
-                <div key={bodega.obra_bodega_id} className="flex justify-between items-center">
-                  <span className="text-[10px] text-gray-600">{bodega.nombre}</span>
-                  <div className="flex items-center gap-2">
-                    <div className="h-2 w-24 bg-gray-200 rounded-full overflow-hidden">
-                      <div 
-                        className="h-full bg-blue-500 transition-all"
-                        style={{ 
-                          width: `${(bodega.cantidad / obra.stock) * 100}%`
-                        }}
-                      />
-                    </div>
-                    <span className="text-[10px] text-gray-500">
-                      {bodega.cantidad}
-                    </span>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </Tooltip>
-      </div>
-      <input
-        type="number"
-        min="0"
-        max={obra.stock}
-        className="w-12 text-[8px] border rounded px-1 flex-shrink-0"
-        value={warehouseQuantities[`${item.id}-${obra.id}`] || ''}
-        onChange={(e) => handleQuantityChange(item.id, obra.id, e.target.value)}
-      />
-    </div>
-  ))}
-</td>
-            <td className="px-2 py-1 text-center font-semibold">
-              {calculateTransferTotal(item.id)}
-            </td>
-            <td className="px-2 py-1 text-center font-semibold">
-              {calculateQuotation(item.id)}
-            </td>
-            <td className="px-2 py-1 text-center">
-              <button className="text-green-500 hover:text-green-600">
-              <i className="fas fa-check"></i>
-              </button>
-            </td>
-            </tr>
+                  onClick={() => setActiveRowId(item.id)}
+                >
+                  <td className="px-2 py-1">{item.codigo}</td>
+                  <td className="px-2 py-1 text-left ">{item.name}</td>
+                  <td className="px-2 py-1 text-center">{item.unit}</td>
+                  <td className="px-2 py-1 text-center">{item.unitEmb}</td>
+                  <td className="px-2 py-1 text-center">{item.quantity}</td>
+                  <td className="px-2 py-1 text-center">
+                    {item.status && (
+                      <span className="bg-yellow-100 px-2 py-0.5 rounded-full text-[8px]">
+                        {item.status}
+                      </span>
+                    )}
+                  </td>
+                  <td className="px-2 py-1 text-center">{item.limitDate}</td>
+                  <td className="px-2 py-1 text-center">{item.partialCost}</td>
+                  <td className="px-2 py-1 relative">
+                    {item.obras.map(obra => (
+                      <div key={obra.id} className="mb-0.5 flex items-center justify-end gap-x-3">
+                        <div className="flex-shrink-0">
+                          <span
+                            data-tooltip-id={`tooltip-${item.id}-${obra.id}`}
+                            className="text-[8px] text-gray-600 cursor-help whitespace-nowrap"
+                          >
+                            {obra.name} - Stock: {obra.stock}
+                          </span>
+                          <Tooltip
+                            id={`tooltip-${item.id}-${obra.id}`}
+                            place="left"
+                            className="!bg-white !text-gray-800 !shadow-lg !rounded-lg !p-0 !opacity-100 !border !border-gray-200 !z-[9999]"
+                            positionStrategy="fixed"
+                            noArrow={true}
+                          >
+                            <div className="p-3 min-w-[200px]">
+                              <h3 className="font-medium text-xs border-b pb-2 mb-2">{obra.name}</h3>
+                              <div className="space-y-2">
+                                {obra.bodegas?.map((bodega) => (
+                                  <div key={bodega.obra_bodega_id} className="flex justify-between items-center">
+                                    <span className="text-[10px] text-gray-600">{bodega.nombre}</span>
+                                    <div className="flex items-center gap-2">
+                                      <div className="h-2 w-24 bg-gray-200 rounded-full overflow-hidden">
+                                        <div
+                                          className="h-full bg-blue-500 transition-all"
+                                          style={{
+                                            width: `${(bodega.cantidad / obra.stock) * 100}%`
+                                          }}
+                                        />
+                                      </div>
+                                      <span className="text-[10px] text-gray-500">
+                                        {bodega.cantidad}
+                                      </span>
+                                    </div>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          </Tooltip>
+                        </div>
+                        <input
+                          type="number"
+                          min="0"
+                          max={obra.stock}
+                          className="w-12 text-[8px] border rounded px-1 flex-shrink-0"
+                          value={warehouseQuantities[`${item.id}-${obra.id}`] || ''}
+                          onChange={(e) => handleQuantityChange(item.id, obra.id, e.target.value)}
+                        />
+                      </div>
+                    ))}
+                  </td>
+                  <td className="px-2 py-1 text-center font-semibold">
+                    {calculateTransferTotal(item.id)}
+                  </td>
+                  <td className="px-2 py-1 text-center font-semibold">
+                    {calculateQuotation(item.id)}
+                  </td>
+                  <td className="px-2 py-1 text-center">
+                    <button className="text-green-500 hover:text-green-600">
+                      <i className="fas fa-check"></i>
+                    </button>
+                  </td>
+                </tr>
               ))}
             </tbody>
           </table>
@@ -396,49 +396,49 @@ const AprobacionTransferenciaPageLogistica: React.FC<AprobacionTransferenciaPage
       {/* 3. Añadimos el componente de progreso */}
       {isProcessing && (
         <div className="absolute z-50 inset-0 bg-slate-900/95 flex items-center justify-center">
-        <div className="w-full max-w-md mx-4 p-6 bg-slate-200 rounded-lg shadow-xl">
-          <div className="text-center">
-            <h3 className="text-xl font-medium text-slate-950 mb-2">
-              Procesando Sugerencias
-            </h3>
-            <p className="text-sm text-slate-950">
-              Almacén: {progress.currentWarehouseName}
-            </p>
-          </div>
-      
-          {/* Barra de progreso almacenes */}
-          <div className="mt-6 space-y-2">
-            <div className="flex justify-between text-xs text-slate-950">
-              <span>Progreso Almacenes</span>
-              <span>{progress.warehouseProgress}%</span>
+          <div className="w-full max-w-md mx-4 p-6 bg-slate-200 rounded-lg shadow-xl">
+            <div className="text-center">
+              <h3 className="text-xl font-medium text-slate-950 mb-2">
+                Procesando Sugerencias
+              </h3>
+              <p className="text-sm text-slate-950">
+                Almacén: {progress.currentWarehouseName}
+              </p>
             </div>
-            <div className="h-2 bg-slate-700 rounded-lg overflow-hidden">
-              <div 
-                className="h-full bg-blue-500 transition-all duration-300 ease-out"
-                style={{width: `${progress.warehouseProgress}%`}}
-              />
+
+            {/* Barra de progreso almacenes */}
+            <div className="mt-6 space-y-2">
+              <div className="flex justify-between text-xs text-slate-950">
+                <span>Progreso Almacenes</span>
+                <span>{progress.warehouseProgress}%</span>
+              </div>
+              <div className="h-2 bg-slate-700 rounded-lg overflow-hidden">
+                <div
+                  className="h-full bg-blue-500 transition-all duration-300 ease-out"
+                  style={{ width: `${progress.warehouseProgress}%` }}
+                />
+              </div>
             </div>
-          </div>
-      
-          {/* Barra de progreso recursos */}
-          <div className="mt-4 space-y-2">
-            <div className="flex justify-between text-xs text-slate-950">
-              <span>Progreso Recursos</span>
-              <span>{progress.resourceProgress}%</span>
+
+            {/* Barra de progreso recursos */}
+            <div className="mt-4 space-y-2">
+              <div className="flex justify-between text-xs text-slate-950">
+                <span>Progreso Recursos</span>
+                <span>{progress.resourceProgress}%</span>
+              </div>
+              <div className="h-2 bg-slate-700 rounded-lg overflow-hidden">
+                <div
+                  className="h-full bg-blue-400 transition-all duration-300 ease-out"
+                  style={{ width: `${progress.resourceProgress}%` }}
+                />
+              </div>
             </div>
-            <div className="h-2 bg-slate-700 rounded-lg overflow-hidden">
-              <div 
-                className="h-full bg-blue-400 transition-all duration-300 ease-out"
-                style={{width: `${progress.resourceProgress}%`}}
-              />
+
+            <div className="mt-4 text-center text-sm text-slate-950">
+              Procesando recurso: {progress.currentResourceName}
             </div>
-          </div>
-      
-          <div className="mt-4 text-center text-sm text-slate-950">
-            Procesando recurso: {progress.currentResourceName}
           </div>
         </div>
-      </div>
       )}
     </div>
   );
