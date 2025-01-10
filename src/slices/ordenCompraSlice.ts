@@ -40,6 +40,7 @@ export const addOrdenCompra = createAsyncThunk(
 export const updateOrdenCompra = createAsyncThunk(
   'ordenCompra/updateOrdenCompra',
   async (ordenCompra: OrdenCompraUpdate) => {
+    console.log('updateOrdenCompra', ordenCompra);
     return await updateOrdenCompraService(ordenCompra);
   }
 );

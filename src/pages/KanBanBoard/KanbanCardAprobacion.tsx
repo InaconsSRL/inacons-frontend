@@ -4,12 +4,13 @@ import { useSelector } from 'react-redux';
 import { RootState } from '../../store/store';
 import AprobarRequerimiento from '../AprobacionRequerimientoPage/AprobacionRequerimiento';
 import Modal from '../../components/Modal/Modal';
+import { formatFullTime } from '../../components/Utils/dateUtils';
 
 // Usar el tipo base en lugar de definir uno nuevo
 const KanbanCardAprobacion: React.FC<KanbanCardBaseProps> = ({ column }) => {
   const [modalAprobacionReqSup, setModalAprobacionReqSup] = useState(false);
   const user = useSelector((state: RootState) => state.user);
-  
+
   const handleModalOpen = () => {
     setModalAprobacionReqSup(true);
   };
@@ -50,19 +51,21 @@ const KanbanCardAprobacion: React.FC<KanbanCardBaseProps> = ({ column }) => {
           <p className="text-xs text-gray-600 mb-2">{requerimiento.sustento}</p>
           <div className="flex flex-col text-left text-[8px] text-gray-500">
             <p><span className="font-semibold">Código:</span> {requerimiento.codigo}</p>
-            <p><span className="font-semibold">Tipo:</span> {requerimiento.estado_atencion}</p>
-            <p><span className="font-semibold">Entrega:</span> {new Date(requerimiento.fecha_solicitud).toLocaleDateString('es-ES')}</p>
+            <p><span className="font-semibold">Estado:</span> {requerimiento.estado_atencion}</p>
+            <p><span className="font-semibold">Entrega:</span> {formatFullTime(requerimiento.fecha_solicitud)}</p>
           </div>
         </div>
         <div className='col-span-1 flex flex-col justify-around items-center'>
-          <div className="flex -space-x-2">
+          <div className="flex -space-x-1 overflow-hidden">
             {requerimiento.aprobacion?.map((aprueba, index) => (
+
               <div
                 key={index}
-                className="w-8 h-8 rounded-full bg-gradient-to-r from-blue-400 to-blue-600 flex items-center justify-center text-xs font-semibold text-white border-2 border-white"
-                title={aprueba.cargo || ''}
+                className="w-6 h-6 rounded-full flex items-center justify-center text-[0.5rem] font-semibold text-white border-2 border-white"
+                title={aprueba.nombres || ''}
+                style={{ backgroundColor: `#${['F5A623', 'D0021B', 'ffbd33', '4A90E2', '50E3C2'][index % 5]}` }}
               >
-                {aprueba ? aprueba.cargo.charAt(0) : ''}
+                {aprueba ? aprueba.nombres.charAt(0) + aprueba.apellidos.charAt(0) : ''}
               </div>
             )) || []}
           </div>
@@ -81,8 +84,8 @@ const KanbanCardAprobacion: React.FC<KanbanCardBaseProps> = ({ column }) => {
         onClose={() => setModalAprobacionReqSup(false)}
         title="Aprobar Requerimiento"
       >
-        <AprobarRequerimiento 
-          newRequerimiento={newRequerimiento} 
+        <AprobarRequerimiento
+          newRequerimiento={newRequerimiento}
           userAprobacion={userAprobacion}
           columnId={column.id}
         />

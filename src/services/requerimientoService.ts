@@ -138,7 +138,7 @@ export const updateRequerimientoService = async (requerimiento: { id: string; us
   try {
     const response = await client.mutate({
       mutation: UPDATE_REQUERIMIENTO_MUTATION,
-      variables: { updateRequerimientoId: requerimiento.id, ...requerimiento },
+      variables: { fecha_solicitud: new Date(), updateRequerimientoId: requerimiento.id, ...requerimiento },
     });
     if (response.errors) {
       throw new Error(response.errors[0]?.message || 'Error desconocido');

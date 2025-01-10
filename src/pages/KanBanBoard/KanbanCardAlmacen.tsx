@@ -4,6 +4,7 @@ import { KanbanCardBaseProps } from './KanbanColumn';
 // import { RootState } from '../../store/store';
 import Modal from '../../components/Modal/Modal';
 import AprobacionTransferenciaPageAlmacen from '../AprobacionTransferenciaPage/AprobacionTransferenciaPageAlmacen';
+import { formatFullTime } from '../../components/Utils/dateUtils';
 
 const KanbanCardAlmacen
 : React.FC<KanbanCardBaseProps> = ({ column }) => {
@@ -51,12 +52,12 @@ const KanbanCardAlmacen
           <p className="text-xs text-gray-600 mb-2">{requerimiento.sustento}</p>
           <div className="flex flex-col text-left text-[8px] text-gray-500">
             <p><span className="font-semibold">Código:</span> {requerimiento.codigo}</p>
-            <p><span className="font-semibold">Tipo:</span> {requerimiento.estado_atencion}</p>
-            <p><span className="font-semibold">Entrega:</span> {new Date(requerimiento.fecha_solicitud).toLocaleDateString('es-ES')}</p>
+            <p><span className="font-semibold">Estado:</span> {requerimiento.estado_atencion}</p>
+            <p><span className="font-semibold">Entrega:</span> {formatFullTime(requerimiento.fecha_solicitud)}</p>
           </div>
         </div>
         <div className='col-span-1 flex flex-col justify-around items-center'>
-          <div className="flex -space-x-2">
+          {/* <div className="flex -space-x-2">
             {requerimiento.aprobacion?.map((aprueba, index) => (
               <div
                 key={index}
@@ -66,7 +67,7 @@ const KanbanCardAlmacen
                 {aprueba ? aprueba.cargo.charAt(0) : ''}
               </div>
             )) || []}
-          </div>
+          </div> */}
           <button
             className="text-blue-600 hover:text-blue-800 font-semibold text-xs"
             onClick={handleModalOpen}

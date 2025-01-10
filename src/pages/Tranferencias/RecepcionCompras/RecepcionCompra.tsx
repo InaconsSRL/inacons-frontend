@@ -31,14 +31,16 @@ interface RecursoDetalle {
 interface OrdenCompra {
     id: string;
     codigo_orden: string;
-    cotizacion_id: {id: string};
+    cotizacion_id: {
+        id: string;
+    };
     estado: boolean;
     descripcion: string;
     fecha_ini: string;
     fecha_fin: string;
-  }
+}
   
-  interface OrdenCompraUpdate {
+interface OrdenCompraUpdate {
     id: string;
     codigo_orden: string;
     cotizacion_id: string;
@@ -46,7 +48,7 @@ interface OrdenCompra {
     descripcion: string;
     fecha_ini: string;
     fecha_fin: string;
-  }
+}
 
 
 interface RecepcionesCompraProps {
@@ -109,10 +111,10 @@ const RecepcionCompra: React.FC<RecepcionesCompraProps> = ({ onComplete }) => {
         }, [recursos]);
 
     
-    const handleOrdenClick = (orden: OrdenCompraUpdate) => {
-        const ordenCompra: OrdenCompra = {
+    const handleOrdenClick = (orden: OrdenCompra) => {
+        const ordenCompra = {
             ...orden,
-            cotizacion_id: { id: orden.cotizacion_id }
+            cotizacion_id: orden.cotizacion_id 
         };
         setSelectedOrdenId(orden.id);
         setSelectedOrden(ordenCompra);
@@ -123,8 +125,16 @@ const RecepcionCompra: React.FC<RecepcionesCompraProps> = ({ onComplete }) => {
     const [advertencias, setAdvertencias] = useState<string[]>([]);
 
     const handleRecepcionComplete = async () => {
+        // Reiniciar errores de validación
+        setValidationErrors([]);
+
         if (!selectedOrden) {
             setValidationErrors([{ field: 'general', message: 'No se ha seleccionado una orden' }]);
+            return;
+        }
+
+        if (!movilidadId) {
+            setValidationErrors([{ field: 'movilidad', message: 'Debe seleccionar un tipo de transporte' }]);
             return;
         }
 
@@ -206,6 +216,7 @@ const RecepcionCompra: React.FC<RecepcionesCompraProps> = ({ onComplete }) => {
             // Esperar a que todos los recursos se guarden
             await Promise.all(recursosPromises);
                 const idCotizaciones = selectedOrden!.cotizacion_id.id;
+                console.log("idCotizaciones", idCotizaciones);
             // Actualizar el estado de la orden de compra
             await dispatch(updateOrdenCompra({
                 ...selectedOrden!,
@@ -288,30 +299,42 @@ const RecepcionCompra: React.FC<RecepcionesCompraProps> = ({ onComplete }) => {
                         <h3 className="text-sm font-medium text-gray-700">Órdenes de Compra Pendientes</h3>
                     </div>
                     <div className="bg-gray-50 p-4 space-y-3">
-                        {ordenesPendientes.map((oc: OrdenCompraUpdate) => (
-                            <div
-                                key={oc.id}
-                                onClick={() => handleOrdenClick(oc)}
-                                className={`bg-white rounded-lg shadow-sm border cursor-pointer transition-all duration-200 hover:shadow-md ${selectedOrdenId === oc.id
-                                        ? 'border-blue-500 ring-2 ring-blue-200'
-                                        : 'border-gray-200 hover:border-blue-300'
+                        {ordenesPendientes.map((oc) => {
+                            // Convertir el formato de la orden antes de pasarla al handleOrdenClick
+                            const ordenFormateada: OrdenCompra = {
+                                ...oc,
+                                cotizacion_id: typeof oc.cotizacion_id === 'string' 
+                                    ? { id: oc.cotizacion_id }
+                                    : oc.cotizacion_id
+                            };
+                            
+                            return (
+                                <div
+                                    key={oc.id}
+                                    onClick={() => handleOrdenClick(ordenFormateada)}
+                                    className={`bg-white rounded-lg shadow-sm border cursor-pointer transition-all duration-200 hover:shadow-md ${
+                                        selectedOrdenId === oc.id
+                                            ? 'border-blue-500 ring-2 ring-blue-200'
+                                            : 'border-gray-200 hover:border-blue-300'
                                     }`}
-                            >
-                                <div className="p-3">
-                                    <div className="text-sm font-medium text-gray-900">N° OC: {oc.codigo_orden}</div>
-                                    <div className="text-xs text-gray-500 mt-1">Descripción: {oc.descripcion}</div>
-                                    <div className="text-xs text-gray-400 mt-1">
-                                        Fecha: {new Date(oc.fecha_ini).toLocaleDateString()}
-                                    </div>
-                                    <div className="flex items-center mt-2">
-                                        <span className={`text-xs px-2 py-1 rounded-full ${oc.estado ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'
+                                >
+                                    <div className="p-3">
+                                        <div className="text-sm font-medium text-gray-900">N° OC: {oc.codigo_orden}</div>
+                                        <div className="text-xs text-gray-500 mt-1">Descripción: {oc.descripcion}</div>
+                                        <div className="text-xs text-gray-400 mt-1">
+                                            Fecha: {new Date(oc.fecha_ini).toLocaleDateString()}
+                                        </div>
+                                        <div className="flex items-center mt-2">
+                                            <span className={`text-xs px-2 py-1 rounded-full ${
+                                                oc.estado ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'
                                             }`}>
-                                            {oc.estado ? 'Activo' : 'Pendiente'}
-                                        </span>
+                                                {oc.estado ? 'Activo' : 'Pendiente'}
+                                            </span>
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
-                        ))}
+                            );
+                        })}
                     </div>
                 </div>
 
@@ -447,7 +470,7 @@ const RecepcionCompra: React.FC<RecepcionesCompraProps> = ({ onComplete }) => {
             {showConfirmDialog && (
                 <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[9999]">
                     <div className="bg-white rounded-lg p-6 max-w-2xl w-full mx-4 shadow-xl">
-                        <h3 className="text-lg font-semibold text-gray-900 mb-4">
+                        <h3 className="texnt-semiboCompleteld text-gray-900 mb-4">
                             Confirmación de Recepción Parcial
                         </h3>
                         <div className="max-h-60 overflow-y-auto mb-4 bg-yellow-50 p-4 rounded-lg">

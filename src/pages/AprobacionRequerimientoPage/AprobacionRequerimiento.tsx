@@ -9,6 +9,7 @@ import LoaderPage from '../../components/Loader/LoaderPage';
 import Button from '../../components/Buttons/Button';
 import { NewRequerimiento } from '../KanBanBoard/types/kanban';
 import { formatFullTime } from '../../components/Utils/dateUtils';
+import { formatCurrency } from '../../components/Utils/priceFormatUtils';
 
 interface EditValues {
   [key: string]: {
@@ -216,9 +217,9 @@ const AprobacionRequerimiento = ({ newRequerimiento, userAprobacion, columnId }:
 
 
   return (
-    <div className="p-6 max-w-full mx-auto bg-white rounded-lg shadow-lg">
+    <div className="p-6 max-w-[1440px] mx-auto bg-white rounded-lg shadow-lg">
       {/* Header Section */}
-      <div className="grid grid-cols-3 gap-4 mb-6">
+      <div className="grid grid-cols-3 gap-4 mb-6 w-full">
         <div className="space-y-2">
           <div className="flex items-center gap-2">
             <label className="text-xs font-medium text-gray-600">Tipo de Solicitud:</label>
@@ -262,6 +263,15 @@ const AprobacionRequerimiento = ({ newRequerimiento, userAprobacion, columnId }:
               readOnly
             />
           </div>
+          <div className="flex items-center gap-2">
+            <label className="text-xs font-medium text-gray-600">Sustento:</label>
+            <input
+              type="text"
+              value={newRequerimiento.sustento}
+              className="px-2 py-1 border rounded text-xs "
+              readOnly
+            />
+          </div>
         </div>
 
         <div className="space-y-2">
@@ -294,9 +304,9 @@ const AprobacionRequerimiento = ({ newRequerimiento, userAprobacion, columnId }:
       </div>
 
       {/* Table Section */}
-      <div className="overflow-x-auto">
-        <table className="w-full text-xs block h-[50vh] overflow-y-auto">
-          <thead className="bg-gray-200 sticky top-0 z-10 shadow-sm">
+      <div className="w-full overflow-x-auto">
+        <table className="min-w-full table-auto">
+          <thead className="bg-gray-200 sticky top-0 z-10">
             <tr>
               <th className="px-2 py-2 text-left font-medium text-gray-600">Código</th>
               <th className="px-2 py-2 text-left font-medium text-gray-600">Nombre</th>
@@ -305,15 +315,15 @@ const AprobacionRequerimiento = ({ newRequerimiento, userAprobacion, columnId }:
               <th className="px-2 py-2 text-left font-medium text-gray-600">Metrado</th>
               <th className="px-2 py-2 text-left font-medium text-gray-600">P.Historico</th>
               <th className="px-2 py-2 text-left font-medium text-gray-600">CostoParcial</th>
-              <th className="px-2 py-2 text-left font-medium text-gray-600">Metrado Aprobado</th>
-              <th className="px-2 py-2 text-left font-medium text-gray-600">Notas</th>
-              <th className="px-2 py-2 text-left font-medium text-gray-600">F.Limite</th>
+              <th className="px-2 py-2 text-left font-medium text-gray-600">MetradoAprobado</th>
+              <th className="px-2 py-2 text-center font-medium text-gray-600">Notas</th>
+              <th className="px-2 py-2 text-center font-medium text-gray-600">F.Limite</th>
               {shouldShowButtons() && (
-                <th className="px-2 py-2 text-left font-medium text-gray-600">Acciones</th>
+                <th className="px-2 py-2 text-center font-medium text-gray-600">Acciones</th>
               )}
             </tr>
           </thead>
-            <tbody >
+            <tbody className="divide-y divide-gray-200">
             {requerimientoRecursos.map((recurso) => (
               <tr
               key={recurso.id}
@@ -324,9 +334,9 @@ const AprobacionRequerimiento = ({ newRequerimiento, userAprobacion, columnId }:
               <td className="px-2 py-2">{recurso.unidad}.</td>
               <td className="px-2 py-2">{recurso.unidad}</td>
               <td className="px-2 py-2">{recurso.cantidad_aprobada ?? "-"}</td>
-              <td className="px-2 py-2">{recurso.costo_ref ?? "-"}</td>
+              <td className="px-2 py-2">{formatCurrency(recurso.costo_ref ?? 0) ?? "-"}</td>
                 <td className="px-2 py-2">
-                {((recurso.costo_ref ?? 1) * (editValues[recurso.id]?.cantidad_aprobada || recurso.cantidad_aprobada || 2)).toFixed(2)}
+                {formatCurrency((recurso.costo_ref ?? 1) * (editValues[recurso.id]?.cantidad_aprobada || recurso.cantidad_aprobada || 2))}
                 </td>
                 <td className="px-2 py-2">
                 <input
@@ -378,12 +388,12 @@ const AprobacionRequerimiento = ({ newRequerimiento, userAprobacion, columnId }:
               </tr>
             ))}
             </tbody>
-          <tfoot className='bg-gray-200 sticky -bottom-0.5 z-10 shadow-sm mt-20'>
+          <tfoot className="bg-gray-200 sticky bottom-0 z-10">
             <tr>
               <td colSpan={6} className="px-2 py-2 text-right font-medium text-gray-600">Total:</td>
                 <td className="px-2 py-2 text-center font-medium text-gray-600">
-                S/. {requerimientoRecursos.reduce((total, recurso) => 
-                  total + (recurso.costo_ref ?? 1) * (editValues[recurso.id]?.cantidad_aprobada || recurso.cantidad_aprobada || 2), 0).toFixed(2)}
+                S/. {formatCurrency(requerimientoRecursos.reduce((total, recurso) => 
+                  total + (recurso.costo_ref ?? 1) * (editValues[recurso.id]?.cantidad_aprobada || recurso.cantidad_aprobada || 2), 0))}
                 </td>
               <td></td>
               <td></td>
@@ -397,7 +407,7 @@ const AprobacionRequerimiento = ({ newRequerimiento, userAprobacion, columnId }:
       {/* Action Buttons */}
 
       {shouldShowButtons() && (
-        <div className="flex justify-end items-center gap-2 mt-4">
+        <div className="flex justify-end items-center gap-2 mt-4 w-full">
           <input
             type="text"
             value={comentario}

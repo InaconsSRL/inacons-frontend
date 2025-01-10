@@ -13,6 +13,8 @@ import { addSolicitudCompra } from '../../slices/solicitudCompraSlice';
 import { addSolicitudCompraRecurso } from '../../slices/solicitudCompraRecursoSlice';
 import Toast from '../../components/Toast/Toast';
 import { Tooltip } from 'react-tooltip';
+import { FiCalendar, FiChevronsDown } from 'react-icons/fi';
+import { formatDate, formatFullTime } from '../../components/Utils/dateUtils';
 
 // Interfaces
 
@@ -209,7 +211,7 @@ const AprobacionTransferenciaPageAlmacen: React.FC<AprobacionTransferenciaPagePr
             currentResourceName: recurso.recurso_id, // Reemplazar si se necesita el nombre
             resourceProgress: Math.round(((recursos.indexOf(recurso) + 1) / recursos.length) * 100),
           }));
-          
+
           await dispatch(
             addSolicitudRecursoAlmacen({
               recursoId: recurso.recurso_id,
@@ -279,54 +281,87 @@ const AprobacionTransferenciaPageAlmacen: React.FC<AprobacionTransferenciaPagePr
 
   return (
     <div className="p-4 bg-white rounded-lg shadow">
-      <div className="mb-4 flex justify-between items-center">
+      {/* Header Section */}
+      <div className="grid grid-cols-3 gap-4 mb-6 w-full">
         <div className="space-y-2">
-          <div className="flex gap-4">
-            <div>
-              <label className="text-xs text-gray-600">Tipo de Solicitud:</label>
-              <select className="ml-2 text-xs border rounded p-1">
-                <option>SP-Según Ppto.</option>
-              </select>
-            </div>
-            <div>
-              <label className="text-xs text-gray-600">Obra:</label>
-              <input
-                type="text"
-                value={selectedRequerimiento.codigo.split('-')[1]}
-                className="ml-2 text-xs border rounded p-1"
-                readOnly
-              />
+          <div className="flex items-center gap-2">
+            <label className="text-xs font-medium text-gray-600">Tipo de Solicitud:</label>
+            <div className="flex items-center gap-1 px-2 py-1 border rounded bg-white text-xs">
+              <span>SP-Según Ppto.</span>
+              <FiChevronsDown size={14} />
             </div>
           </div>
-          <div className="flex gap-4">
-            <div>
-              <label className="text-xs text-gray-600">F Emisión:</label>
-              <input
-                type="text"
-                value={new Date(selectedRequerimiento.fecha_solicitud).toISOString().split("T")[0].split("-").reverse().join("/")}
-                className="ml-2 text-xs border rounded p-1"
-                readOnly
-              />
+          <div className="flex items-center gap-2">
+            <label className="text-xs font-medium text-gray-600">F Emisión:</label>
+            <div className="flex items-center gap-1 px-2 py-1 border rounded bg-white text-xs">
+              <span>{formatFullTime(selectedRequerimiento.fecha_solicitud)}</span>
+              <FiCalendar size={14} />
             </div>
-            <div>
-              <label className="text-xs text-gray-600">Número:</label>
-              <input
-                type="text"
-                value={selectedRequerimiento.codigo.split('-')[0]}
-                className="ml-2 text-xs border rounded p-1"
-                readOnly
-              />
+          </div>
+          <div className="flex items-center gap-2">
+            <label className="text-xs font-medium text-gray-600">F Final:</label>
+            <div className="flex items-center gap-1 px-2 py-1 border rounded bg-white text-xs">
+              <span>{formatDate(selectedRequerimiento.fecha_final, 'dd/mm/yyyy')}</span>
+              <FiCalendar size={14} />
             </div>
           </div>
         </div>
-        <div className="space-y-2 text-right">
-          <div>
-            <span className="text-xs text-gray-600">Estado:</span>
-            <span className="ml-2 text-xs bg-yellow-100 px-2 py-1 rounded">Aprobación Logística</span>
+
+        <div className="space-y-2">
+          <div className="flex items-center gap-2">
+            <label className="text-xs font-medium text-gray-600">Obra:</label>
+            <input
+              type="text"
+              value={selectedRequerimiento.codigo.split('-')[1]}
+              className="px-2 py-1 border rounded text-xs"
+              readOnly
+            />
           </div>
-          <div>
-            <span className="text-xs text-gray-600">Aprobado:</span>
-            <span className="ml-2 text-xs bg-blue-100 px-2 py-1 rounded">{selectedRequerimiento.estado_atencion}</span>
+          <div className="flex items-center gap-2">
+            <label className="text-xs font-medium text-gray-600">Número:</label>
+            <input
+              type="text"
+              value={selectedRequerimiento.codigo.split('-')[0]}
+              className="px-2 py-1 border rounded text-xs w-16"
+              readOnly
+            />
+          </div>
+          <div className="flex items-center gap-2">
+            <label className="text-xs font-medium text-gray-600">Sustento:</label>
+            <input
+              type="text"
+              value={selectedRequerimiento.sustento}
+              className="px-2 py-1 border rounded text-xs "
+              readOnly
+            />
+          </div>
+        </div>
+
+        <div className="space-y-2">
+          <div className="flex items-center gap-2">
+            <label className="text-xs font-medium text-gray-600">Estado:</label>
+            <span className="px-2 py-1 bg-yellow-100 text-yellow-800 rounded text-xs">
+              {selectedRequerimiento.estado_atencion || 'Sin estado'}
+            </span>
+          </div>
+          <div className="flex items-center gap-2">
+            <label className="text-xs font-medium text-gray-600">Aprueba(n):</label>
+            <span className="px-2 py-1 bg-blue-100 text-blue-800 rounded text-xs">
+              {selectedRequerimiento.estado_atencion === "pendiente"
+                ? selectedRequerimiento?.aprobacion?.map(ap => (
+                  <span
+                    key={ap.id_aprobacion}
+                    className={ap.cargo !== "Gerente" ? "text-cyan-700" : ""}
+                  >
+                    {`${ap.nombres} ${ap.apellidos}`}
+                  </span>
+                )).reduce((prev, curr) => <>{prev}, {curr}</>)
+                : selectedRequerimiento?.aprobacion
+                  ?.filter(ap => ap.cargo === "Gerente")
+                  .map(ap => `${ap.nombres} ${ap.apellidos}`)
+                  .join(', ') || 'No aprobado'
+              }
+            </span>
           </div>
         </div>
       </div>
@@ -344,10 +379,9 @@ const AprobacionTransferenciaPageAlmacen: React.FC<AprobacionTransferenciaPagePr
                 <th className="px-2 py-1">Estado</th>
                 <th className="px-2 py-1">F.Límite</th>
                 <th className="px-2 py-1">Costo Parcial</th>
-                <th className="px-2 py-1">Almacenes</th>
-                <th className="px-2 py-1">Transferencia</th>
-                <th className="px-2 py-1">Cotización</th>
-                <th className="px-2 py-1">Acciones</th>
+                <th className="px-2 py-1">ExistenciasEnAlmacen</th>
+                <th className="px-2 py-1">ATransferir</th>
+                <th className="px-2 py-1">ACotizar</th>
               </tr>
             </thead>
             <tbody className="overflow-y-auto">
@@ -401,9 +435,9 @@ const AprobacionTransferenciaPageAlmacen: React.FC<AprobacionTransferenciaPagePr
                                     <span className="text-[10px] text-gray-600">{bodega.nombre}</span>
                                     <div className="flex items-center gap-2">
                                       <div className="h-2 w-24 bg-gray-200 rounded-full overflow-hidden">
-                                        <div 
+                                        <div
                                           className="h-full bg-blue-500 transition-all"
-                                          style={{ 
+                                          style={{
                                             width: `${(bodega.cantidad / obra.stock) * 100}%`
                                           }}
                                         />
@@ -434,11 +468,6 @@ const AprobacionTransferenciaPageAlmacen: React.FC<AprobacionTransferenciaPagePr
                   </td>
                   <td className="px-2 py-1 text-center font-semibold">
                     {calculateQuotation(item.id)}
-                  </td>
-                  <td className="px-2 py-1 text-center">
-                    <button className="text-green-500 hover:text-green-600">
-                      <i className="fas fa-check"></i>
-                    </button>
                   </td>
                 </tr>
               ))}
