@@ -6,6 +6,8 @@ interface Aprobacion {
   id_aprobacion: string;
   cargo: string;
   gerarquia: number;
+  nombres: string;
+  apellidos: string;
 }
 
 export interface Requerimiento {

@@ -8,6 +8,7 @@ import { RootState, AppDispatch } from '../../store/store';
 import LoaderPage from '../../components/Loader/LoaderPage';
 import Button from '../../components/Buttons/Button';
 import { NewRequerimiento } from '../KanBanBoard/types/kanban';
+import { formatFullTime } from '../../components/Utils/dateUtils';
 
 interface EditValues {
   [key: string]: {
@@ -41,6 +42,8 @@ interface Aprobacion {
   gerarquia: number;
   cargo: string;
   id_aprobacion: string;
+  nombres: string;
+  apellidos: string;
 }
 
 interface AprobarRequerimientoProps {
@@ -75,6 +78,22 @@ const AprobacionRequerimiento = ({ newRequerimiento, userAprobacion, columnId }:
     }));
   };
 
+  const isRecursoModificado = (recurso: Recurso) => {
+    const editedValues = editValues[recurso.id];
+    if (!editedValues) return false;
+
+    const currentCantidad = recurso.cantidad_aprobada ?? 0;
+    const editedCantidad = editedValues.cantidad_aprobada !== undefined 
+      ? Number(editedValues.cantidad_aprobada) 
+      : currentCantidad;
+
+    return (
+      editedCantidad !== currentCantidad ||
+      editedValues.notas !== undefined && editedValues.notas !== recurso.notas ||
+      editedValues.fecha_limit !== undefined && editedValues.fecha_limit !== (recurso.fecha_limit ? new Date(recurso.fecha_limit).toISOString().split('T')[0] : '')
+    );
+  };
+
   const handleUpdate = async (recurso: Recurso) => {
     
     try {
@@ -82,14 +101,18 @@ const AprobacionRequerimiento = ({ newRequerimiento, userAprobacion, columnId }:
 
       const updateData: UpdateRequerimientoRecursoData = {
         id: recurso.id.toString(),
-        cantidad_aprobada: recursoValues.cantidad_aprobada
+        cantidad_aprobada: (recursoValues.cantidad_aprobada
           ? Number(recursoValues.cantidad_aprobada)
-          : recurso.cantidad_aprobada,
+          : recurso.cantidad_aprobada) || 0,
         fecha_limit: recursoValues.fecha_limit ? new Date(recursoValues.fecha_limit) : new Date(recurso.fecha_limit),
         notas: recursoValues.notas || recurso.notas || ''
       };
 
       await dispatch(updateRequerimientoRecurso(updateData)).unwrap();
+
+      if (id) {
+        await dispatch(fetchRequerimientoRecursos(id.toString()));
+      }
 
       console.log('Recurso actualizado');
 
@@ -186,7 +209,6 @@ const AprobacionRequerimiento = ({ newRequerimiento, userAprobacion, columnId }:
   };
   
   const newFechaFinal = newRequerimiento ? new Date(newRequerimiento.fecha_final).toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric', timeZone: 'UTC' }) : '';
-  const newFechaInicial = newRequerimiento ? new Date(newRequerimiento.fecha_solicitud).toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric', timeZone: 'UTC' }) : '';
 
   if (loading) {
     return <LoaderPage />;
@@ -208,7 +230,7 @@ const AprobacionRequerimiento = ({ newRequerimiento, userAprobacion, columnId }:
           <div className="flex items-center gap-2">
             <label className="text-xs font-medium text-gray-600">F Emisión:</label>
             <div className="flex items-center gap-1 px-2 py-1 border rounded bg-white text-xs">
-              <span>{newFechaInicial}</span>
+              <span>{formatFullTime(newRequerimiento.fecha_solicitud)}</span>
               <FiCalendar size={14} />
             </div>
           </div>
@@ -246,13 +268,26 @@ const AprobacionRequerimiento = ({ newRequerimiento, userAprobacion, columnId }:
           <div className="flex items-center gap-2">
             <label className="text-xs font-medium text-gray-600">Estado:</label>
             <span className="px-2 py-1 bg-yellow-100 text-yellow-800 rounded text-xs">
-              {newRequerimiento?.aprobacion?.[0]?.cargo || 'Sin estado'}
+              { newRequerimiento.estado_atencion || 'Sin estado'}
             </span>
           </div>
           <div className="flex items-center gap-2">
-            <label className="text-xs font-medium text-gray-600">Aprobado:</label>
+            <label className="text-xs font-medium text-gray-600">Aprueba(n):</label>
             <span className="px-2 py-1 bg-blue-100 text-blue-800 rounded text-xs">
-              {newRequerimiento?.aprobacion?.[0]?.id_usuario || 'No aprobado'}
+              {newRequerimiento.estado_atencion === "pendiente"
+              ? newRequerimiento?.aprobacion?.map(ap => (
+                <span
+                  key={ap.id_aprobacion}
+                  className={ap.cargo !== "Gerente" ? "text-cyan-700" : ""}
+                >
+                  {`${ap.nombres} ${ap.apellidos}`}
+                </span>
+                )).reduce((prev, curr) => <>{prev}, {curr}</>)
+              : newRequerimiento?.aprobacion
+                ?.filter(ap => ap.cargo === "Gerente")
+                .map(ap => `${ap.nombres} ${ap.apellidos}`)
+                .join(', ') || 'No aprobado'
+              }
             </span>
           </div>
         </div>
@@ -268,16 +303,14 @@ const AprobacionRequerimiento = ({ newRequerimiento, userAprobacion, columnId }:
               <th className="px-2 py-2 text-left font-medium text-gray-600">Unidad</th>
               <th className="px-2 py-2 text-left font-medium text-gray-600">U.Emb</th>
               <th className="px-2 py-2 text-left font-medium text-gray-600">Metrado</th>
-              {/* <th className="px-2 py-2 text-left font-medium text-gray-600">Estado</th> */}
-              {/* <th className="px-2 py-2 text-left font-medium text-gray-600">Comprado</th>
-                            <th className="px-2 py-2 text-left font-medium text-gray-600">Cotizado</th> */}
               <th className="px-2 py-2 text-left font-medium text-gray-600">P.Historico</th>
               <th className="px-2 py-2 text-left font-medium text-gray-600">CostoParcial</th>
               <th className="px-2 py-2 text-left font-medium text-gray-600">Metrado Aprobado</th>
               <th className="px-2 py-2 text-left font-medium text-gray-600">Notas</th>
               <th className="px-2 py-2 text-left font-medium text-gray-600">F.Limite</th>
-              <th className="px-2 py-2 text-left font-medium text-gray-600">Acciones</th>
-
+              {shouldShowButtons() && (
+                <th className="px-2 py-2 text-left font-medium text-gray-600">Acciones</th>
+              )}
             </tr>
           </thead>
             <tbody >
@@ -322,14 +355,26 @@ const AprobacionRequerimiento = ({ newRequerimiento, userAprobacion, columnId }:
                 className="w-32 px-2 py-1 border rounded max-w-24"
                 />
               </td>                
-              <td className="px-2 py-2 align-middle">
-                <button
-                onClick={() => handleUpdate({ ...recurso, cantidad_aprobada: recurso.cantidad_aprobada ?? 0, costo_ref: recurso.costo_ref ?? 0, fecha_limit: (recurso.fecha_limit ? new Date(recurso.fecha_limit).toISOString().split('T')[0] : '') ?? '', notas: recurso.notas })}
-                className="w-full h-6 inline-flex items-center justify-center px-3 bg-green-500 text-white rounded-md hover:bg-blue-600 transition-colors"
-                >
-                <FiCheckSquare className='h-2.5 w-2.5' />
-                </button>                
-              </td>
+              {shouldShowButtons() && (
+                <td className="px-2 py-2 align-middle">
+                  <button
+                    onClick={() => handleUpdate({ ...recurso, cantidad_aprobada: recurso.cantidad_aprobada ?? 0, costo_ref: recurso.costo_ref ?? 0, fecha_limit: (recurso.fecha_limit ? new Date(recurso.fecha_limit).toISOString().split('T')[0] : '') ?? '', notas: recurso.notas })}
+                    className={`w-full h-6 inline-flex items-center justify-center px-3 text-white rounded-md transition-colors
+                      ${isRecursoModificado({
+                        id: recurso.id,
+                        codigo: recurso.codigo,
+                        nombre: recurso.nombre, 
+                        unidad: recurso.unidad,
+                        cantidad_aprobada: recurso.cantidad_aprobada ?? 0,
+                        costo_ref: recurso.costo_ref ?? 0,
+                        fecha_limit: (recurso.fecha_limit ? new Date(recurso.fecha_limit).toISOString().split('T')[0] : '') ?? '',
+                        notas: recurso.notas
+                      }) ? 'bg-amber-500 hover:bg-amber-600' : 'bg-green-500 hover:bg-green-600'}`}
+                  >
+                    <FiCheckSquare className='h-2.5 w-2.5' />
+                  </button>                
+                </td>
+              )}
               </tr>
             ))}
             </tbody>

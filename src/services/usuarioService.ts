@@ -91,7 +91,12 @@ const CREATE_USUARIO_MUTATION = gql`
       dni
       usuario
       contrasenna
-      cargo_id
+      cargo_id {
+        id
+        nombre
+        descripcion
+        gerarquia
+      }
       rol_id
     }
   }

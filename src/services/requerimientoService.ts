@@ -19,6 +19,8 @@ const LIST_REQUERIMIENTOS_QUERY = gql`
         id_aprobacion
         cargo
         gerarquia
+        nombres
+        apellidos
       }
     }
   }

@@ -40,6 +40,8 @@ export interface Aprobacion {
   id_usuario: string;
   gerarquia: number;
   id_aprobacion: string;
+  nombres: string;
+  apellidos: string;
 }
 
 export interface Cotizacion {
