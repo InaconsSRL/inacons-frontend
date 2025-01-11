@@ -13,7 +13,7 @@ import { addOrdenCompra } from '../../slices/ordenCompraSlice';
 import { addOrdenCompraRecurso } from '../../slices/ordenCompraRecursosSlice';
 import { fetchCotizacionesByProveedor } from '../../slices/cotizacionProveedoresRecursoSlice';
 import GeneracionOCLoader from '../../components/Loaders/GeneracionOCLoader';
-import { formatDate } from '../../components/Utils/dateUtils';
+import { formatFullTime } from '../../components/Utils/dateUtils';
 
 //Todo Ok
 
@@ -96,7 +96,7 @@ const CompararProveedores: React.FC<CompararProveedoresProps> = ({ cotizacion, r
     }
   }, [dispatch, proveedorAdjudicado]);
 
-  console.log(cotizacionProveedores)
+  console.log(cotizacion)
 
   useEffect(() => {
     const fetchAndUpdateProveedores = async () => {
@@ -241,7 +241,7 @@ const CompararProveedores: React.FC<CompararProveedoresProps> = ({ cotizacion, r
       setLoadingProgress(95);
       await dispatch(updateCotizacionProveedor({
         id: proveedorAdjudicado.id,
-        estado: "buenaProEnEjecucion"
+        estado: "buenaProAdjudicada"
       }));
 
       // Finalizando
@@ -307,7 +307,7 @@ const CompararProveedores: React.FC<CompararProveedoresProps> = ({ cotizacion, r
               <span className="font-semibold">Solicita:</span> {cotizacion.usuario_id?.nombres.split(" ")[0]} {cotizacion.usuario_id?.apellidos.split(" ")[0]}
             </div>
             <div>
-              <span className="font-semibold">F.Emision:</span> {formatDate(cotizacion.fecha ?? '', 'dd/mm/yyyy')}
+              <span className="font-semibold">F.Emision:</span> {formatFullTime(cotizacion.fecha?? new Date().toISOString())}
             </div>
           </div>
         </div>

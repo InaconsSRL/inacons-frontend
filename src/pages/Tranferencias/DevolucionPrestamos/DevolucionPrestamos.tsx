@@ -11,6 +11,7 @@ import { addTransferenciaRecurso } from '../../../slices/transferenciaRecursoSli
 import { updatePrestamo } from '../../../slices/prestamoSlice';
 import { updatePrestamoRecurso } from '../../../slices/prestamoRecursoSlice';
 import { updateObraBodegaRecurso } from '../../../slices/obraBodegaRecursoSlice';
+import { formatFullTime } from '../../../components/Utils/dateUtils';
 
 interface SelectedRecursoDevolucion {
   recurso: PrestamoRecursoResponse;
@@ -249,10 +250,10 @@ const DevolucionPrestamos: React.FC = () => {
                     {prestamo.personal_id.nombres}
                   </div>
                   <div className="text-xs text-gray-500 mt-1">
-                    Fecha: {new Date(prestamo.fecha).toLocaleDateString()}
+                    Fecha: { formatFullTime(prestamo.fecha.toString()) }
                   </div>
                   <div className="text-xs text-gray-400 mt-0.5">
-                    Retorno: {new Date(prestamo.f_retorno).toLocaleDateString()}
+                    Retorno: { formatFullTime(prestamo.f_retorno.toString()) }
                   </div>
                   <div className="text-xs mt-1">
                     <span className={`px-2 py-0.5 rounded-full ${

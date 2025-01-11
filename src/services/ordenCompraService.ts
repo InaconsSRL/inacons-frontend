@@ -8,6 +8,14 @@ const LIST_ORDEN_COMPRAS_QUERY = gql`
       codigo_orden
       cotizacion_id {
         id
+        usuario_id {
+          nombres
+          apellidos
+          id
+          dni
+        }
+        fecha
+        estado
       }
       estado
       descripcion

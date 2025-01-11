@@ -314,7 +314,8 @@ const ComparacionTable: React.FC<ComparacionTableProps> = ({
                 // Actualizar estado de la cotización
                 await dispatch(updateCotizacion({
                     id: cotizacionId,
-                    estado: 'adjudicada'
+                    estado: 'adjudicada',
+                    fecha: new Date()
                 })).unwrap();
             }
 
@@ -457,7 +458,7 @@ const ComparacionTable: React.FC<ComparacionTableProps> = ({
                                                             {!['buenaProAdjudicada', 'noAdjudicada'].includes(prov.estado) && (
                                                                 <>
                                                                     {
-                                                                        estadoCotizacion !== 'enEvaluacion' && (<button
+                                                                        estadoCotizacion !== 'enEvaluacion' &&  (<button
                                                                             onClick={() => handleEdit(prov.id)}
                                                                             className="bg-gradient-to-r from-cyan-500 to-cyan-600 text-white px-3 py-1.5 rounded-lg text-[10px] 
                                                                     hover:from-cyan-600 hover:to-cyan-700 transition-all duration-200 shadow-sm hover:shadow-md"

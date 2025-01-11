@@ -520,9 +520,9 @@ const TableComponent: React.FC<TableComponentProps> = ({ tableData }) => {
               }}
               className="px-2 py-1 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
-              {[10, 20, 30, 40, 50, 100].map(pageSize => (
+              {[10, 20, 30, 40, 50, 100, tableData.rows.length].map(pageSize => (
                 <option key={pageSize} value={pageSize}>
-                  Mostrar {pageSize}
+                  Mostrar {pageSize === tableData.rows.length ? 'Todo' : pageSize}
                 </option>
               ))}
             </motion.select>
@@ -583,9 +583,9 @@ const TableComponent: React.FC<TableComponentProps> = ({ tableData }) => {
               }}
               className="px-2 py-1 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
-              {[10, 20, 30, 40, 50, 1000].map(pageSize => (
+              {[10, 20, 30, 40, 50, 100, tableData.rows.length].map(pageSize => (
                 <option key={pageSize} value={pageSize}>
-                  Mostrar {pageSize}
+                  Mostrar {pageSize === tableData.rows.length ? 'Todo' : pageSize}
                 </option>
               ))}
             </select>
@@ -748,9 +748,9 @@ const TableComponent: React.FC<TableComponentProps> = ({ tableData }) => {
             }}
             className="px-2 py-1 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
           >
-            {[10, 20, 30, 40, 50, 1000].map(pageSize => (
+            {[10, 20, 30, 40, 50, 100, tableData.rows.length].map(pageSize => (
               <option key={pageSize} value={pageSize}>
-                Mostrar {pageSize}
+                Mostrar {pageSize === tableData.rows.length ? 'Todo' : pageSize}
               </option>
             ))}
           </select>
