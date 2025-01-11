@@ -79,7 +79,6 @@ const KanbanCardOrdenCompra: React.FC<KanbanCardCotizacionProps> = ({ column }) 
           <CompararProveedores
             cotizacion={{
               ...cotizacion,
-              fecha: cotizacion.fecha_solicitud?.toString()
             }}
             recursos={recursos ? recursos : []}
             onClose={() => setModalAprobacionReqSup(false)}
