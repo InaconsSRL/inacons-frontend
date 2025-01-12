@@ -1,5 +1,7 @@
 import React, { useState, useMemo, useEffect, useRef, ReactNode } from 'react';
 import { motion } from 'framer-motion';
+import { FiSettings } from 'react-icons/fi';
+import TableComponentOptions from './TableComponentOptions';
 import {
   useReactTable,
   getCoreRowModel,
@@ -14,8 +16,9 @@ import {
   Header,
 } from '@tanstack/react-table';
 import backImage from '../../assets/bgmedia.webp'
+import * as XLSX from 'xlsx';
 
-//todo bien 04012025
+//todo bien 12012025
 
 type TableRow = Record<string, string | number | boolean | ReactNode>;
 
@@ -45,6 +48,32 @@ const TableComponent: React.FC<TableComponentProps> = ({ tableData }) => {
   const tableContainerRef = useRef<HTMLDivElement>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [initialColumnSizes, setInitialColumnSizes] = useState<Record<string, number>>({});
+  const [isOptionsOpen, setIsOptionsOpen] = useState(false);
+  const [visibleColumns, setVisibleColumns] = useState<string[]>(tableData.headers);
+  const optionsButtonRef = useRef<HTMLButtonElement>(null);
+
+  const handleToggleColumn = (columnId: string) => {
+    setVisibleColumns(prev => 
+      prev.includes(columnId)
+        ? prev.filter(id => id !== columnId)
+        : [...prev, columnId]
+    );
+  };
+
+  const handleResetColumns = () => {
+    setVisibleColumns(tableData.headers);
+  };
+
+  const handleResetFilters = () => {
+    setColumnFilters([]);
+  };
+
+  const handleResetAll = () => {
+    handleResetColumns();
+    handleResetFilters();
+    table.setPageIndex(0);
+    setSorting([]);
+  };
 
   // Invertimos el orden de las filas
   const reversedRows = useMemo(() => [...tableData.rows].reverse(), [tableData.rows]);
@@ -148,7 +177,9 @@ const TableComponent: React.FC<TableComponentProps> = ({ tableData }) => {
   };
 
   const columns = useMemo<ColumnDef<TableRow>[]>(() => 
-    tableData.headers.map((header, index) => ({
+    tableData.headers
+      .filter(header => visibleColumns.includes(header))
+      .map((header, index) => ({
       header: () => header.toUpperCase(),
       accessorKey: header,
       enableColumnFilter: (tableData.filter ? tableData.filter[index] : true) || 
@@ -161,7 +192,7 @@ const TableComponent: React.FC<TableComponentProps> = ({ tableData }) => {
       minSize: 100, // Añadimos un tamaño mínimo para las columnas
       size: initialColumnSizes[header] || 150, // Usar el tamaño calculado o un valor por defecto
     })),
-  [tableData.headers, tableData.filter, tableData.filterSelect, initialColumnSizes]);
+  [tableData.headers, tableData.filter, tableData.filterSelect, initialColumnSizes, visibleColumns]);
 
   const table = useReactTable({
     data: reversedRows, // Usamos las filas invertidas aquí
@@ -239,15 +270,69 @@ const TableComponent: React.FC<TableComponentProps> = ({ tableData }) => {
     return null;
   };
 
+  const handleExportToExcel = () => {
+    // Crear un array con los headers
+    const headers = tableData.headers;
+    
+    // Obtener todas las filas de datos
+    const data = tableData.rows.map(row => {
+      const rowData: Record<string, string | number | boolean> = {};
+      headers.forEach(header => {
+        const value = row[header];
+        // Convertir elementos React a texto si es necesario
+        rowData[header] = React.isValidElement(value) 
+          ? 'React Component' 
+          : typeof value === 'object' 
+            ? String(value) 
+            : value as string | number | boolean;
+      });
+      return rowData;
+    });
+    
+    // Crear un nuevo libro de trabajo
+    const wb = XLSX.utils.book_new();
+    const ws = XLSX.utils.json_to_sheet(data, { header: headers });
+    
+    // Añadir la hoja al libro
+    XLSX.utils.book_append_sheet(wb, ws, 'Datos');
+    
+    // Generar el archivo y descargarlo
+    XLSX.writeFile(wb, 'tabla_datos.xlsx');
+  };
+
   return (
     shouldUseAnimations(table.getState().pagination.pageSize) ? (
       <motion.div 
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
-        className="p-2 bg-gray-50/50 rounded-xl shadow-md"
+        className="p-1.5 bg-gray-50/50 rounded-xl shadow-md relative min-h-[50vh] flex flex-col"
       >
-        <div className="overflow-x-auto font-lato " ref={tableContainerRef}>
+        <div className="flex justify-end mb-1">
+          <motion.button
+            ref={optionsButtonRef}
+            data-settings-button
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            onClick={() => setIsOptionsOpen(!isOptionsOpen)}
+            className="px-2 rounded-full hover:bg-gray-100 transition-colors"
+          >
+            <FiSettings className="w-4 h-4 text-gray-600" />
+          </motion.button>
+          <TableComponentOptions
+            table={table}
+            onExportToExcel={handleExportToExcel}
+            isOpen={isOptionsOpen}
+            onClose={() => setIsOptionsOpen(false)}
+            columns={tableData.headers}
+            visibleColumns={visibleColumns}
+            onToggleColumn={handleToggleColumn}
+            onResetColumns={handleResetColumns}
+            onResetFilters={handleResetFilters}
+            onResetAll={handleResetAll}
+          />
+        </div>
+        <div className="overflow-x-auto font-lato flex-grow" ref={tableContainerRef}>
           <table className="w-full border-collapse bg-white table-fixed rounded-xl">
             <thead>
               {table.getHeaderGroups().map(headerGroup => (
@@ -454,7 +539,7 @@ const TableComponent: React.FC<TableComponentProps> = ({ tableData }) => {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.3 }}
-            className="mt-4 flex flex-wrap items-center justify-between gap-4"
+            className="mt-auto pt-4 flex flex-wrap items-center justify-between gap-4"
           >
             <div className="flex items-center space-x-2">
               <motion.button
@@ -593,8 +678,8 @@ const TableComponent: React.FC<TableComponentProps> = ({ tableData }) => {
         )}
       </motion.div>
     ) : (
-      <div className="p-2 bg-gray-50/50 rounded-lg shadow-md">
-        <div className="overflow-x-auto" ref={tableContainerRef}>
+      <div className="p-2 bg-gray-50/50 rounded-lg shadow-md min-h-[50vh] flex flex-col">
+        <div className="overflow-x-auto flex-grow" ref={tableContainerRef}>
           <table className="w-full border-collapse bg-white table-fixed">
             <thead>
               {table.getHeaderGroups().map(headerGroup => (
@@ -693,7 +778,7 @@ const TableComponent: React.FC<TableComponentProps> = ({ tableData }) => {
             </tbody>
           </table>
         </div>
-        <div className="mt-4 flex flex-wrap items-center justify-between gap-4">
+        <div className="mt-auto pt-4 flex flex-wrap items-center justify-between gap-4">
           <div className="flex items-center space-x-2">
             <button
               className="px-2 py-1 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"

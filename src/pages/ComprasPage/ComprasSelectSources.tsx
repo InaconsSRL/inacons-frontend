@@ -125,10 +125,6 @@ function ComprasSelectSources({ cotizacion: initialCotizacion }: ComprasSelectSo
         }
     };
 
-    // Mostrar loader si cualquier operación está en progreso
-    console.log("co", cotizacionFromStore)
-    console.log("cr", cotizacionRecursos)
-
     if (isLoading) {
         return (
             <div className="min-h-[80vh] bg-gray-100 p-4">

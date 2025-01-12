@@ -64,10 +64,6 @@ const Skeleton: React.FC<{ className?: string }> = ({ className }) => (
 
 const AddRecursoRequerimientoCompra: React.FC<ModalProps> = ({ onClose, cotizacionId, estadoCotizacion, solicitudCompraId, recursosActuales }) => {
 
-  console.log (recursosActuales?.length === 0 ? "ciao": "hola")
-  console.log ("recursosActuales", recursosActuales)
-
-
   const dispatch = useDispatch<AppDispatch>();
   const [selectedSolicitud, setSelectedSolicitud] = React.useState<string | null>(null);
   const [selectedRecursos, setSelectedRecursos] = React.useState<RecursoSolicitud[]>([]);
