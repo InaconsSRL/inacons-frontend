@@ -20,7 +20,7 @@ import ProveedorComponent from './pages/ProveedorPage/ProveedorComponent';
 import RequerimientosComponent from './pages/RequerimientosPage/RequerimientosComponent';
 import TipoCostoRecursoComponent from './pages/TipoCostoRecursoPage/TipoCostoRecursoComponent';
 import RequermientoRecursos from './pages/RequerimientosPage/CrearRequerimientoYRecursos/RequerimientoRecursos';
-import AlmacenesComponent from './pages/AlmacenesPage/AlmacenesComponent';
+// import AlmacenesComponent from './pages/AlmacenesPage/AlmacenesComponent';
 import AlmacenBoardPage from './pages/AlmacenesPage/AlmacenBoard/AlmacenBoardPage';
 import Presupuestos from './pages/PresupuestosDemo/Presupuestos';
 import TipoAlmacenPage from './pages/TipoAlmacenPage/TipoAlmacenPage';
@@ -32,6 +32,7 @@ import TableViewer from './pages/PresupuestosLocal/TableViewer';
 import AlmacenBetha from './pages/AlmacenesPage/AlmacenBoard/AlmacenBetha';
 import EmpleadosPage from './pages/EmpleadosPage/EmpleadosPage';
 import SorteoPage from './pages/HomePage/Sorteo';
+import BodegasComponent from './pages/BodegasPage/BodegasComponent';
 
 const App: React.FC = () => {
   const user = useSelector((state: RootState) => state.user);
@@ -59,7 +60,7 @@ const App: React.FC = () => {
         <Route path="requerimiento" element={<RequerimientosComponent />} />
         <Route path="tipoCostoRecurso" element={<TipoCostoRecursoComponent />} />
         <Route path="reqRecursos" element={<RequermientoRecursos onClose={() => {}} />} />
-        <Route path="almacen" element={<AlmacenesComponent />}> </Route>
+        <Route path="almacen" element={<BodegasComponent />}> </Route>
         <Route path="almacenBoard" element={<AlmacenBoardPage />}> </Route>
         <Route path="presupuestoBoard" element={<Presupuestos />}> </Route>
         <Route path="compras" element={<ComprasBoard />}> </Route>

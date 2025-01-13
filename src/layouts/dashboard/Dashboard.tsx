@@ -6,7 +6,6 @@ import Sidebar from '../Sidebar/Sidebar';
 import Footer from '../Footer/Footer';
 
 import bg from '../../assets/bgmedia.gif' 
-// import SpaceBackground from '../../pages/HomePage/SpaceBackground';
 
 const Dashboard: React.FC = () => {
   const [isSidebarOpen, setSidebarOpen] = useState(true);
@@ -25,7 +24,7 @@ const Dashboard: React.FC = () => {
       <Header toggleSidebar={toggleSidebar} isSidebarOpen={isSidebarOpen} />
       <div className="flex flex-1 overflow-hidden pt-16 mb-0 lg:mb-8">
         <Sidebar toggleSidebar={toggleSidebar} isSidebarOpen={isSidebarOpen} />
-        <div className="p-4 flex-1 overflow-auto transition-all duration-500 ease-in-out bg-black bg-opacity-20 backdrop-blur-sm">
+        <div className="p-4 flex-1 overflow-auto ">
           <main className="flex-1 overflow-auto">
             <Outlet />
           </main>

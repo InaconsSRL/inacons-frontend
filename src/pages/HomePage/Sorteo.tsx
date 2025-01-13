@@ -184,7 +184,6 @@ const SorteoPage: React.FC = () => {
       <SpaceBackground />
       <div className="absolute inset-0">
         <div className="absolute inset-0 bg-gradient-to-b from-[#ff00ff15] via-[#00ffff15] to-transparent"></div>
-        <div className="absolute inset-0 bg-[url('/grid.png')] opacity-20"></div>
       </div>
       
       <div className="max-w-7xl mx-auto relative z-10 space-y-6">
