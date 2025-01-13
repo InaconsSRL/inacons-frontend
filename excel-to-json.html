@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Convertidor Excel a JSON</title>
+    <title>Convertidor2 Excel a JSON</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <style>
         body {
@@ -25,7 +25,7 @@
     <div class="container">
         <h1>Convertidor de Excel a JSON</h1>
         <input type="file" id="excelFile" accept=".xlsx,.xls">
-        <button onclick="convertToJson()">Convertir y Descargar</button>
+        <button onclick="convertToJson()">Convertir2 y Descargar</button>
     </div>
 
     <script>
@@ -45,12 +45,12 @@
                 const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
                 const jsonData = XLSX.utils.sheet_to_json(firstSheet);
 
-                // Formatear los datos según el formato requerido
+                // Formatear los datos según el nuevo formato requerido
                 const formattedData = jsonData.map(row => ({
                     obra_bodega_id: row.obra_bodega_id || '',
                     recurso_id: row.recurso_id || '',
-                    cantidad: Number(row.cantidad) || 0,
-                    costo: Number(row.costo) || 0,
+                    cantidad: Math.round(Number(row.cantidad)) || 0,
+                    costo: Math.round(Number(row.costo)) / 100 || 0,
                     estado: row.estado || ''
                 }));
 
@@ -60,7 +60,7 @@
                 const url = window.URL.createObjectURL(blob);
                 const a = document.createElement('a');
                 a.href = url;
-                a.download = 'datos_convertidos.json';
+                a.download = 'inventario_convertido.json';
                 document.body.appendChild(a);
                 a.click();
                 window.URL.revokeObjectURL(url);

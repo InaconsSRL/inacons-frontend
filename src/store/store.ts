@@ -123,7 +123,7 @@ export const store = configureStore({
     getDefaultMiddleware({
       serializableCheck: {
         // Aumentar el tiempo de advertencia a 100ms
-        warnAfter: 100,
+        warnAfter: 10,
         // Opcionalmente, puedes ignorar ciertas acciones
         ignoredActions: ['some/action/type'],
         // Opcionalmente, puedes ignorar ciertas rutas del estado

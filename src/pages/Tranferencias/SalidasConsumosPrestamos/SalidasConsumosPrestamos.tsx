@@ -12,6 +12,8 @@ import { addPrestamo } from '../../../slices/prestamoSlice';
 import { addPrestamoRecurso } from '../../../slices/prestamoRecursoSlice';
 import { PrestamoModal } from './components/PrestamoModal';
 import { updateObraBodegaRecurso } from '../../../slices/obraBodegaRecursoSlice';
+// import { addConsumo } from '../../../slices/consumoSlice';
+// import { addConsumoRecurso } from '../../../slices/consumoRecursoSlice';
 
 
 interface Props {
