@@ -1,19 +1,19 @@
 import React, { useState, useMemo } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { RootState, AppDispatch } from '../../../store/store';
-import { RecursoObra, SelectedRecurso } from './components/bodega.types';
+import { FiSearch } from 'react-icons/fi';
+import { RecursosList } from './components/RecursosList';
+import { SelectedRecursos } from './components/SelectedRecursos';
+import { PrestamoModal } from './components/PrestamoModal';
 import { addTransferencia } from '../../../slices/transferenciaSlice';
 import { addTransferenciaDetalle } from '../../../slices/transferenciaDetalleSlice';
 import { addTransferenciaRecurso } from '../../../slices/transferenciaRecursoSlice';
-import { RecursosList } from './components/RecursosList';
-import { SelectedRecursos } from './components/SelectedRecursos';
-import { FiSearch } from 'react-icons/fi';
 import { addPrestamo } from '../../../slices/prestamoSlice';
 import { addPrestamoRecurso } from '../../../slices/prestamoRecursoSlice';
-import { PrestamoModal } from './components/PrestamoModal';
 import { updateObraBodegaRecurso } from '../../../slices/obraBodegaRecursoSlice';
-// import { addConsumo } from '../../../slices/consumoSlice';
-// import { addConsumoRecurso } from '../../../slices/consumoRecursoSlice';
+import { addConsumo } from '../../../slices/consumoSlice';
+import { addConsumoRecurso } from '../../../slices/consumoRecursoSlice';
+import { RecursoObra, SelectedRecurso } from './components/bodega.types';
 
 
 interface Props {
@@ -33,6 +33,7 @@ const SalidasConsumosPrestamos: React.FC<Props> = ({ obraId, recursos, onClose, 
   const [currentPage, setCurrentPage] = useState(0);
   const [showPrestamoModal, setShowPrestamoModal] = useState(false);
   const [recursosRetornables, setRecursosRetornables] = useState<SelectedRecurso[]>([]);
+  const [recursosNoRetornables, setRecursosNoRetornables] = useState<SelectedRecurso[]>([]);
 
   // Filtrar todos los recursos primero
   const filteredRecursos = useMemo(() => {
@@ -84,77 +85,20 @@ const SalidasConsumosPrestamos: React.FC<Props> = ({ obraId, recursos, onClose, 
       setIsProcessing(true);
       if (!userId) throw new Error('Usuario no autenticado');
 
-      // Separar recursos retornables
+      // Separar recursos retornables y no retornables
       const retornables = Object.values(selectedRecursos).filter(
         ({recurso}) => recurso.recurso_id.tipo_recurso_id === "66e2075541a2c058b6fe80c4"
       );
 
-      if (retornables.length > 0) {
-        setRecursosRetornables(retornables);
-        setShowPrestamoModal(true);
-        return;
-      }
+      const noRetornables = Object.values(selectedRecursos).filter(
+        ({recurso}) => recurso.recurso_id.tipo_recurso_id !== "66e2075541a2c058b6fe80c4"
+      );
 
-      await procesarTransferencia();
+      setRecursosRetornables(retornables);
+      setRecursosNoRetornables(noRetornables);
+      setShowPrestamoModal(true);
     } catch (error) {
       setError(error instanceof Error ? error.message : 'Error al procesar');
-    } finally {
-      setIsProcessing(false);
-    }
-  };
-
-  const procesarTransferencia = async () => {
-    try {
-      setIsProcessing(true);
-      if (!userId) throw new Error('Usuario no autenticado');
-
-      const transferenciaData = {
-        usuario_id: userId,
-        fecha: new Date(),
-        movimiento_id: "6765ed96444c04c94802b3e1",
-        movilidad_id: "6765ecf0444c04c94802b3df",
-        estado: 'COMPLETO' as const,
-        descripcion: `Salida de recursos - Obra ${obraId}`
-      };
-
-      const transferencia = await dispatch(addTransferencia(transferenciaData)).unwrap();
-
-      const detalleData = {
-        transferencia_id: transferencia.id,
-        referencia_id: obraId,
-        fecha: new Date(),
-        tipo: 'SALIDA_CONSUMO',
-        referencia: `Salida de recursos - Obra ${obraId}`
-      };
-
-      const detalleTransferencia = await dispatch(addTransferenciaDetalle(detalleData)).unwrap();
-
-      const promesasRecursos = Object.values(selectedRecursos).map(({ recurso, cantidad }) => {
-        return dispatch(addTransferenciaRecurso({
-          transferencia_detalle_id: detalleTransferencia.id,
-          recurso_id: recurso.recurso_id.id,
-          cantidad: cantidad,
-          costo: recurso.costo,
-        })).unwrap();
-      });
-
-      await Promise.all(promesasRecursos);
-
-      // Después de crear la transferencia y sus detalles, actualizar cantidades en bodega
-      for (const { recurso, cantidad } of Object.values(selectedRecursos)) {
-        await dispatch(updateObraBodegaRecurso({
-          updateObraBodegaRecursoId: recurso.id,
-          obraBodegaId: recurso.obra_bodega_id.id,
-          recursoId: recurso.recurso_id.id,
-          cantidad: recurso.cantidad - cantidad, // Restamos la cantidad saliente
-          costo: recurso.costo,
-          estado: recurso.estado
-        })).unwrap();
-      }
-
-      onClose();
-    } catch (error) {
-      setError(error instanceof Error ? error.message : 'Error al procesar la salida');
     } finally {
       setIsProcessing(false);
     }
@@ -164,83 +108,108 @@ const SalidasConsumosPrestamos: React.FC<Props> = ({ obraId, recursos, onClose, 
     try {
       setIsProcessing(true);
 
-      // Primero creamos la transferencia
+      // 1. Crear transferencia principal
       const transferenciaData = {
         usuario_id: userId!,
         fecha: new Date(),
         movimiento_id: "6765ed96444c04c94802b3e1",
         movilidad_id: "6765ecf0444c04c94802b3df",
         estado: 'COMPLETO' as const,
-        descripcion: `Préstamo de recursos - Obra ${obraId}`
+        descripcion: `Préstamo y consumo de recursos - Obra ${obraId}`
       };
-
       const transferencia = await dispatch(addTransferencia(transferenciaData)).unwrap();
 
-      // Luego creamos el detalle de transferencia
+      // 2. Crear detalle de transferencia
       const detalleData = {
         transferencia_id: transferencia.id,
         referencia_id: obraId,
         fecha: new Date(),
-        tipo: 'SALIDA_PRESTAMO',
-        referencia: `Préstamo de recursos - Obra ${obraId}`
+        tipo: 'SALIDA_MIXTA',
+        referencia: `Préstamo y consumo de recursos - Obra ${obraId}`
       };
-
       const detalleTransferencia = await dispatch(addTransferenciaDetalle(detalleData)).unwrap();
 
-      // Ahora sí creamos el préstamo con el ID del detalle de transferencia
-      const prestamo = await dispatch(addPrestamo({
-        fecha: new Date(),
-        usuarioId: userId!,
-        obraId: obraId,
-        personalId: prestamoData.empleadoId,
-        fRetorno: prestamoData.fRetorno,
-        estado: 'ACTIVO',
-        transferenciaDetalleId: detalleTransferencia.id
-      })).unwrap();
+      // 3. Registrar todos los recursos en TransferenciaRecurso
+      const allResources = [...recursosRetornables, ...recursosNoRetornables];
+      await Promise.all(
+        allResources.map(({ recurso, cantidad }) => 
+          dispatch(addTransferenciaRecurso({
+            transferencia_detalle_id: detalleTransferencia.id,
+            recurso_id: recurso.recurso_id.id,
+            cantidad: cantidad,
+            costo: recurso.costo,
+          })).unwrap()
+        )
+      );
 
-      // Crear PrestamoRecurso para cada recurso retornable
-      for (const { recurso, cantidad } of recursosRetornables) {
-        await dispatch(addPrestamoRecurso({
-          prestamoId: prestamo.id,
-          obrabodegaRecursoId: recurso.id,
-          cantidad: cantidad
+      // 4. Crear préstamo y registrar recursos retornables
+      if (recursosRetornables.length > 0) {
+        const prestamo = await dispatch(addPrestamo({
+          fecha: new Date(),
+          usuarioId: userId!,
+          obraId: obraId,
+          personalId: prestamoData.empleadoId,
+          fRetorno: prestamoData.fRetorno,
+          estado: 'ACTIVO',
+          transferenciaDetalleId: detalleTransferencia.id
         })).unwrap();
 
-        // También creamos el registro de transferencia recurso
-        await dispatch(addTransferenciaRecurso({
-          transferencia_detalle_id: detalleTransferencia.id,
-          recurso_id: recurso.recurso_id.id,
-          cantidad: cantidad,
-          costo: recurso.costo,
-        })).unwrap();
-
-        // Actualizar cantidades en bodega para recursos retornables
-        await dispatch(updateObraBodegaRecurso({
-          updateObraBodegaRecursoId: recurso.id,
-          obraBodegaId: recurso.obra_bodega_id.id,
-          recursoId: recurso.recurso_id.id,
-          cantidad: recurso.cantidad - cantidad, // Restamos la cantidad prestada
-          costo: recurso.costo,
-          estado: recurso.estado
-        })).unwrap();
+        // Registrar recursos del préstamo
+        await Promise.all(
+          recursosRetornables.map(({ recurso, cantidad }) =>
+            dispatch(addPrestamoRecurso({
+              prestamoId: prestamo.id,
+              obrabodegaRecursoId: recurso.id,
+              cantidad: cantidad
+            })).unwrap()
+          )
+        );
       }
 
-      // Procesar la transferencia para los recursos no retornables
-      const recursosNoRetornables = { ...selectedRecursos };
-      recursosRetornables.forEach(({ recurso }) => {
-        delete recursosNoRetornables[recurso.id];
-      });
+      // 5. Crear consumo y registrar recursos no retornables
+      if (recursosNoRetornables.length > 0) {
+        const consumo = await dispatch(addConsumo({
+          fecha: new Date(),
+          almaceneroId: userId!,
+          responsableId: userId!,
+          obraId: obraId,
+          personalId: prestamoData.empleadoId,
+          estado: 'COMPLETO',
+          transferenciaDetalleId: detalleTransferencia.id
+        })).unwrap();
 
-      setSelectedRecursos(recursosNoRetornables);
+        // Registrar recursos del consumo
+        await Promise.all(
+          recursosNoRetornables.map(({ recurso, cantidad }) =>
+            dispatch(addConsumoRecurso({
+              consumo_id: consumo.id,
+              recurso_id: recurso.recurso_id.id,
+              cantidad: cantidad,
+              costo: recurso.costo,
+              obra_bodega_id: recurso.obra_bodega_id.id
+            })).unwrap()
+          )
+        );
+      }
+
+      // 6. Actualizar cantidades en bodega para todos los recursos
+      await Promise.all(
+        allResources.map(({ recurso, cantidad }) =>
+          dispatch(updateObraBodegaRecurso({
+            updateObraBodegaRecursoId: recurso.id,
+            obraBodegaId: recurso.obra_bodega_id.id,
+            recursoId: recurso.recurso_id.id,
+            cantidad: recurso.cantidad - cantidad,
+            costo: recurso.costo,
+            estado: recurso.estado
+          })).unwrap()
+        )
+      );
+
       setShowPrestamoModal(false);
-
-      if (Object.keys(recursosNoRetornables).length > 0) {
-        await procesarTransferencia();
-      } else {
-        onClose();
-      }
+      onClose();
     } catch (error) {
-      setError(error instanceof Error ? error.message : 'Error al procesar el préstamo');
+      setError(error instanceof Error ? error.message : 'Error al procesar el préstamo y consumo');
     } finally {
       setIsProcessing(false);
     }
@@ -315,6 +284,7 @@ const SalidasConsumosPrestamos: React.FC<Props> = ({ obraId, recursos, onClose, 
         onClose={() => setShowPrestamoModal(false)}
         onConfirm={handlePrestamoConfirm}
         recursosRetornables={recursosRetornables}
+        recursosNoRetornables={recursosNoRetornables}
       />
     </>
   );

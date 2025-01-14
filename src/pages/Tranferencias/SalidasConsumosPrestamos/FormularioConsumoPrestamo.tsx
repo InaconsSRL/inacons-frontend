@@ -8,7 +8,7 @@ interface FormularioPrestamoProps {
   hasError?: boolean;
 }
 
-const FormularioPrestamo: React.FC<FormularioPrestamoProps> = ({
+const FormularioConsumoPrestamo: React.FC<FormularioPrestamoProps> = ({
   isOpen,
   onClose,
   onSetFechaRetorno,
@@ -69,4 +69,4 @@ const FormularioPrestamo: React.FC<FormularioPrestamoProps> = ({
   );
 };
 
-export default FormularioPrestamo;
+export default FormularioConsumoPrestamo;

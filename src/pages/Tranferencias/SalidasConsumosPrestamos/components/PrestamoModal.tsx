@@ -12,14 +12,25 @@ interface RecursoRetornable {
     };
   };
   cantidad: number;
-}
+};
+
+interface RecursoNoRetornable {
+  recurso: {
+    id: string;
+    recurso_id: {
+      nombre: string;
+    };
+  };
+  cantidad: number;
+};
 
 interface PrestamoModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onConfirm: (data: { empleadoId: string; fRetorno: Date }) => void;
+  onConfirm: (data: { empleadoId: string; fRetorno: Date; prestamosRecursos: RecursoRetornable[]; consumosRecursos: RecursoNoRetornable[] }) => void;
   recursosRetornables: RecursoRetornable[];
-}
+  recursosNoRetornables: RecursoNoRetornable[];
+};
 
 const Label: React.FC<React.LabelHTMLAttributes<HTMLLabelElement>> = (props) => (
   <label {...props} className="block text-xs font-medium text-gray-700 mb-1">
@@ -35,7 +46,8 @@ export const PrestamoModal: React.FC<PrestamoModalProps> = ({
   isOpen,
   onClose,
   onConfirm,
-  recursosRetornables
+  recursosRetornables,
+  recursosNoRetornables
 }) => {
   const dispatch = useDispatch<AppDispatch>();
   const [selectedEmpleado, setSelectedEmpleado] = useState('');
@@ -127,9 +139,22 @@ export const PrestamoModal: React.FC<PrestamoModalProps> = ({
 
         {/* Lista de recursos */}
         <div className="mb-6 bg-gray-50 p-3 rounded-lg">
-          <h3 className="text-sm font-medium mb-2 text-gray-700">Recursos a prestar:</h3>
+          <h3 className="text-sm font-medium mb-2 text-gray-700">Recursos a prestar (retornables):</h3>
           <ul className="text-sm text-gray-600 space-y-1">
             {recursosRetornables.map(({ recurso, cantidad }) => (
+              <li key={recurso.id} className="flex justify-between">
+                <span>{recurso.recurso_id.nombre}</span>
+                <span className="font-medium">Cant: {cantidad}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+
+        {/* Nueva sección para los recursos no retornables */}
+        <div className="mb-6 bg-gray-50 p-3 rounded-lg">
+          <h3 className="text-sm font-medium mb-2 text-gray-700">Recursos a consumir (no retornables):</h3>
+          <ul className="text-sm text-gray-600 space-y-1">
+            {recursosNoRetornables.map(({ recurso, cantidad }) => (
               <li key={recurso.id} className="flex justify-between">
                 <span>{recurso.recurso_id.nombre}</span>
                 <span className="font-medium">Cant: {cantidad}</span>
@@ -286,7 +311,9 @@ export const PrestamoModal: React.FC<PrestamoModalProps> = ({
           <button
             onClick={() => onConfirm({
               empleadoId: selectedEmpleado,
-              fRetorno: new Date(fechaRetorno)
+              fRetorno: new Date(fechaRetorno),
+              prestamosRecursos: recursosRetornables,
+              consumosRecursos: recursosNoRetornables
             })}
             disabled={!selectedEmpleado || !fechaRetorno || loading}
             className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50"

@@ -9,7 +9,7 @@ const Footer: React.FC = () => {
       <div className="container mx-auto px-4 flex justify-between items-center text-white text-[8px] sm:text-sm">
         {/* Sección izquierda: Información de derechos reservados */}
         <div className="flex items-center space-x-4">
-          <span>© 2024 NUFAGO</span>
+          <span>© 14012025 NUFAGO</span>
           <span>|</span>
           <span>Español</span>
         </div>

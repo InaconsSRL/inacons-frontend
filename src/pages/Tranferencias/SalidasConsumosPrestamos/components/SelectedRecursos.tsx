@@ -20,11 +20,19 @@ export const SelectedRecursos: React.FC<SelectedRecursosProps> = ({
   const [observaciones, setObservaciones] = useState<RecursoObservaciones>({});
   const [showObservaciones, setShowObservaciones] = useState<{[key: string]: boolean}>({});
 
+  const unidades = useSelector((state: RootState) => state.unidad.unidades);
+  console.log(unidades);
+
   const tiposRecurso = useSelector((state: RootState) => state.tipoRecurso.tiposRecurso);
 
   const obtenerTipoConId = (id: string) => {
     return tiposRecurso.find((tipo) => tipo.id === id);
   }
+
+  const obtenerNombreUnidad = (id: string) => {
+    const unidad = unidades.find((unidad) => unidad.id === id);
+    return unidad ? unidad.nombre : 'Unidad no encontrada';
+  };
 
   const toggleObservaciones = (id: string) => {
     setShowObservaciones(prev => ({
@@ -65,8 +73,8 @@ export const SelectedRecursos: React.FC<SelectedRecursosProps> = ({
                 </span>
                 <div className="flex flex-col">
                   <p className="text-sm font-medium w-full min-w-56">{recurso.recurso_id.nombre}</p>
-                  <p className="text-xs text-gray-500">{recurso.obra_bodega_id.nombre}</p>
-                  <p className="text-xs text-gray-500">{obtenerTipoConId(recurso.recurso_id.tipo_recurso_id?? '')?.nombre ?? 'No especificado'}</p>
+                  <p className="text-xs text-gray-500">Tipo: {obtenerTipoConId(recurso.recurso_id.tipo_recurso_id?? '')?.nombre ?? 'No especificado'}</p>
+                  <p className="text-xs text-green-600">Disponible: {recurso.cantidad} {obtenerNombreUnidad(recurso.recurso_id.unidad_id)}{recurso.cantidad > 1 ? "s" : "" }</p>
                   <button
                     onClick={() => toggleObservaciones(id)}
                     className="flex items-center gap-1 text-xs text-blue-600 hover:text-blue-800 mt-1"

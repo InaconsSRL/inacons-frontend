@@ -154,6 +154,17 @@ const CompararProveedores: React.FC<CompararProveedoresProps> = ({ cotizacion, r
 
   const handleEnEvaluacion = async () => {
     if (!cotizacion.id) return;
+
+    // Verificar que todos los proveedores tengan estado "proformaRecibida"
+    const todosProveedoresListos = cotizacionProveedores.every(
+      proveedor => proveedor.estado === "proformaRecibida" || proveedor.estado === "enEvaluacion"
+    );
+
+    if (!todosProveedoresListos) {
+      alert('Todos los proveedores deben tener el estado "proformaRecibida", ingresa los precios del Proveedor por favor');
+      return;
+    }
+
     try {
       // Actualizar estado de cotización
       await dispatch(updateCotizacion({
