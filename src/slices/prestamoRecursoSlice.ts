@@ -132,4 +132,4 @@ const prestamoRecursoSlice = createSlice({
   },
 });
 
-export default prestamoRecursoSlice.reducer;
+export const prestamoRecursoReducer = prestamoRecursoSlice.reducer;

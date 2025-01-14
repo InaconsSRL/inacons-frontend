@@ -50,12 +50,13 @@ import { valoracionProveedorReducer } from '../slices/valoracionProveedorSlice';
 import { datosValoracionProveedorReducer } from '../slices/datosValoracionProveedorSlice';
 import { cuestionarioHomologacionReducer } from '../slices/cuestionarioHomologacionSlice';
 import { prestamoReducer } from '../slices/prestamoSlice';
-import prestamoRecursoReducer from '../slices/prestamoRecursoSlice';
+import { prestamoRecursoReducer } from '../slices/prestamoRecursoSlice';
 import { recursosAllTablesReducer } from '../slices/recursosAllTablesSlice';
 import { empleadoReducer } from '../slices/empleadoSlice';
 import { obraBodegaReducer } from '../slices/obraBodegaSlice';
 import { obraBodegaRecursoReducer } from '../slices/obraBodegaRecursoSlice';
 import { cantidadRecursosByBodegaReducer } from '../slices/cantidadRecursosByBodegaSlice';
+import  {consumoRecursoReducer}  from '../slices/consumoRecursoSlice';
 
 export const store = configureStore({
   reducer: {
@@ -115,6 +116,7 @@ export const store = configureStore({
     obraBodega: obraBodegaReducer,
     obraBodegaRecurso: obraBodegaRecursoReducer,
     cantidadRecursosByBodega: cantidadRecursosByBodegaReducer,
+    consumoRecurso: consumoRecursoReducer,
 
   },
 
