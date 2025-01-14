@@ -85,7 +85,6 @@ export const addRequerimientoRecurso = createAsyncThunk(
   'requerimientoRecurso/addRequerimientoRecurso',
   async (data: AddRequerimientoRecursoData, { rejectWithValue }) => {
     try {
-      console.log("data enviada creare recurso", data)
       const response = await addRequerimientoRecursoService({
         ...data,
         fecha_limit: data.fecha_limit ?? new Date(),

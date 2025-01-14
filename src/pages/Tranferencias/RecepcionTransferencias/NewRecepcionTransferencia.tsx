@@ -72,8 +72,6 @@ const NewRecepcionTransferencia: React.FC<ModalProps> = ({ onClose }) => {
   (state: RootState) => state.transferenciaRecurso
  );
 
- console.log("transferenciaRecursos:", transferenciaRecursos);
-
  // Filtrar solo las transferencias de tipo SALIDA-ALMACEN
  const filteredTransferencias = transferenciaDetalles.filter(
   (detalle) => detalle.tipo === "SALIDA-ALMACEN"

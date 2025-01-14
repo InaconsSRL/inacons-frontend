@@ -253,7 +253,9 @@ const AprobacionTransferenciaPageAlmacen: React.FC<AprobacionTransferenciaPagePr
 
   const handleReject = (): void => {
     // Implementar lógica de rechazo
-    console.log('Rechazando transferencia...');
+    setToastMessage('Transferencia RECHAZADA');
+    setToastVariant('danger');
+    setShowToast(true);
   };
 
   if (loadingRequerimientoRecursos) {

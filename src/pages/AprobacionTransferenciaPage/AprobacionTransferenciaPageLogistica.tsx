@@ -26,7 +26,6 @@ interface AprobacionTransferenciaPageProps {
 }
 
 const AprobacionTransferenciaPageLogistica: React.FC<AprobacionTransferenciaPageProps> = ({ column }) => {
-  console.log(column);
   const requerimientoId = column.requerimiento.id;
   const selectedRequerimiento = column.requerimiento;
   const [activeRowId, setActiveRowId] = useState<string | null>(null);
@@ -36,8 +35,6 @@ const AprobacionTransferenciaPageLogistica: React.FC<AprobacionTransferenciaPage
   const loadingRequerimientoRecursos = useSelector((state: RootState) => state.requerimientoRecursoWithAlmacen.loading);
 
   const currentUserId = useSelector((state: RootState) => state.user?.id);
-
-  console.log(requerimientoRecursos);
 
   useEffect(() => {
     if (requerimientoId) {
@@ -87,7 +84,7 @@ const AprobacionTransferenciaPageLogistica: React.FC<AprobacionTransferenciaPage
     totalResources: 0
   });
 
-  const algoQueHacer = async () => {
+  const handleUpdateRequerimiento = async () => {
     await dispatch(updateRequerimiento({
       id: requerimientoId,
       usuario_id: currentUserId || '',
@@ -170,7 +167,7 @@ const AprobacionTransferenciaPageLogistica: React.FC<AprobacionTransferenciaPage
         }
       }
 
-      await algoQueHacer();
+      await handleUpdateRequerimiento();
     } catch (error) {
       // Manejar error si es necesario
       console.error('Error al aprobar transferencia:', error);
@@ -181,7 +178,7 @@ const AprobacionTransferenciaPageLogistica: React.FC<AprobacionTransferenciaPage
 
   const handleReject = (): void => {
     // Implementar lógica de rechazo
-    console.log('Rechazando transferencia...');
+    console.error('Rechazando transferencia...');
   };
 
   if (loadingRequerimientoRecursos) {

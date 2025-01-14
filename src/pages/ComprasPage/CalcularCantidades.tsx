@@ -79,6 +79,6 @@ export const CalcularCantidades = (
     0
   ) || 0;
 
-  console.log(sumaCotizaciones, sumaProveedores, sumaOrdenes, sumaTransferencias);
+  //console.log(sumaCotizaciones, sumaProveedores, sumaOrdenes, sumaTransferencias);
   return (sumaCotizaciones + sumaProveedores + sumaOrdenes + sumaTransferencias);
 };

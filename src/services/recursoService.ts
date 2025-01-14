@@ -201,7 +201,6 @@ export const listRecursosService = async () => {
 };
 
 export const listDataService = async (): Promise<ListDataQueryResult> => {
-  console.log("Obteniendo datos de listas desde el servicio");
   try {
     const response = await client.query({
       query: LIST_DATA_QUERY,
@@ -217,7 +216,6 @@ export const listDataService = async (): Promise<ListDataQueryResult> => {
 };
 
 export const addRecursoService = async (recursoData: AddRecursoInput) => {
-  console.log(recursoData)
   try {
     const response = await client.mutate({
       mutation: ADD_RECURSO_MUTATION,

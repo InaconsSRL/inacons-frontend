@@ -26,13 +26,12 @@ const KanbanCardOrdenCompra: React.FC<KanbanCardCotizacionProps> = ({ column }) 
           setRecursos(response);
         })
         .catch((error) => {
-          console.log(error);
+          console.error(error);
         }
       );
     }
   }
   , [modalAprobacionReqSup, cotizacionId, dispatch]);
-  console.log(recursos)
 
   return (
     // <div className={`${shouldShowGreenBackground() ? "bg-teal-300" : "bg-white/75"} border border-gray-200 rounded-lg shadow-sm p-4 hover:shadow-md transition-shadow`}>

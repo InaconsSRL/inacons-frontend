@@ -16,8 +16,6 @@ interface ValoracionFormProps {
 }
 
 const ValoracionForm: React.FC<ValoracionFormProps> = ({ onSubmit, onCancel, initialData }) => {
-    console.log("initialData", initialData?.fecha_inicio);
-    console.log("initialData", initialData?.fecha_fin.split("T"));
   const [formData, setFormData] = useState({
     puntuacion: initialData?.puntuacion || 0,
     fecha_inicio: initialData?.fecha_inicio.split("T")[0] || '',

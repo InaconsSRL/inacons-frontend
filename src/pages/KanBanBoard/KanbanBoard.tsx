@@ -121,7 +121,6 @@ const KanbanBoard = () => {
     color: "#F7AA01",
     cotizacion: cotizacionesAdjudicadas,
   };
-  console.log(cotizaciones);
 
   // const gestionatencionParcial: Column = {
   //   id: 'gestion_atencion_parcial',

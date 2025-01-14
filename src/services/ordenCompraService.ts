@@ -130,7 +130,6 @@ export const updateOrdenCompraService = async (ordenCompra: OrdenCompraUpdate) =
         estado: ordenCompra.estado
       },
     });
-    console.log('updateOrdenCompraService', response.data.updateOrdenCompra);
     return response.data.updateOrdenCompra;
   } catch (error) {
     console.error('Error al actualizar orden de compra:', error);

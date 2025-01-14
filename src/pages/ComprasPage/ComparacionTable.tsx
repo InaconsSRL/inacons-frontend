@@ -70,7 +70,6 @@ const ComparacionTable: React.FC<ComparacionTableProps> = ({
     estadoCotizacion,
     cotizacionId
 }) => {
-    console.log(estadoCotizacion)
     const dispatch = useDispatch<AppDispatch>();
     const [editingProveedor, setEditingProveedor] = useState<string | null>(null);
     const [editedValues, setEditedValues] = useState<{
@@ -208,7 +207,6 @@ const ComparacionTable: React.FC<ComparacionTableProps> = ({
                 setEditingProveedor(null);
                 setEditedValues(prev => {
                     const { [proveedorId]: _, ...rest } = prev;
-                    console.log(_)
                     return rest;
                 });
             }
@@ -222,7 +220,6 @@ const ComparacionTable: React.FC<ComparacionTableProps> = ({
         setEditingProveedor(null);
         setEditedValues(prev => {
             const { [proveedorId]: _, ...rest } = prev;
-            console.log(_);
             return rest;
         });
         // Restaurar las notas al valor original del proveedor

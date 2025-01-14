@@ -58,7 +58,6 @@ const RequerimientosComponent: React.FC = () => {
   const handleResumen = (requerimiento: Requerimiento) => {
     setEditingRequerimiento(requerimiento);
     setIsModalResumenOpen(true);
-    console.log('resumen');
   }
 
   const getFilteredRequerimientos = () => {

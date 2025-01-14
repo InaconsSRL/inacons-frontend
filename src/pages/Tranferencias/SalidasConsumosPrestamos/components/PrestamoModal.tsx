@@ -27,7 +27,7 @@ interface RecursoNoRetornable {
 interface PrestamoModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onConfirm: (data: { empleadoId: string; fRetorno: Date; prestamosRecursos: RecursoRetornable[]; consumosRecursos: RecursoNoRetornable[] }) => void;
+  onConfirm: (data: { empleadoId: string; fRetorno: Date; prestamosRecursos: RecursoRetornable[]; consumosRecursos: RecursoNoRetornable[]; responsableId: string }) => void;
   recursosRetornables: RecursoRetornable[];
   recursosNoRetornables: RecursoNoRetornable[];
 };
@@ -63,13 +63,25 @@ export const PrestamoModal: React.FC<PrestamoModalProps> = ({
     telefono_secundario: '',
     cargo_id: '67634bf0f67ec7aecd5f013e' // ID por defecto del cargo
   });
+  const [selectedResponsable, setSelectedResponsable] = useState('');
+  const [responsableSearchTerm, setResponsableSearchTerm] = useState('');
   
   const empleados = useSelector((state: RootState) => state.empleado.empleados);
+  const usuariosCargo = useSelector((state: RootState) => state.usuario.usuariosCargo);
 
   // Filtrar empleados basado en el término de búsqueda
   const filteredEmpleados = empleados.filter(emp => 
     `${emp.nombres} ${emp.apellidos}`.toLowerCase().includes(searchTerm.toLowerCase()) ||
     emp.dni.includes(searchTerm)
+  );
+
+  // Filtrar usuarios basado en el término de búsqueda y jerarquía
+  const filteredResponsables = usuariosCargo.filter(user => 
+    (user.cargo_id.gerarquia >= 2) && // Filtrar por jerarquía
+    (
+      `${user.nombres} ${user.apellidos}`.toLowerCase().includes(responsableSearchTerm.toLowerCase()) ||
+      (user.dni && user.dni.toString().includes(responsableSearchTerm))
+    )
   );
 
   useEffect(() => {
@@ -163,10 +175,42 @@ export const PrestamoModal: React.FC<PrestamoModalProps> = ({
           </ul>
         </div>
 
+        {/* Selector de Responsable */}
+        <div className="mb-6">
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Responsable
+          </label>
+          <div className="space-y-2">
+            <div className="relative">
+              <input
+                type="text"
+                placeholder="Buscar por nombre o DNI..."
+                value={responsableSearchTerm}
+                onChange={(e) => setResponsableSearchTerm(e.target.value)}
+                className="w-full p-2 pl-8 border rounded-lg"
+              />
+              <FiSearch className="absolute left-3 top-3 text-gray-400" />
+            </div>
+            <select
+              value={selectedResponsable}
+              onChange={(e) => setSelectedResponsable(e.target.value)}
+              className="w-full p-2 border rounded-lg"
+            >
+              <option value="">Seleccione un responsable</option>
+              {filteredResponsables.map((user) => (
+                <option key={user.id} value={user.id}>
+                  {user.nombres} {user.apellidos} {user.dni ? `- DNI: ${user.dni}` : ''} - {user.cargo_id.nombre}
+                </option>
+              ))}
+            </select>
+          </div>
+        </div>
+
+
         {/* Selector de empleado con búsqueda */}
         <div className="mb-6">
           <div className="flex justify-between items-center mb-2">
-            <label className="text-sm font-medium text-gray-700">Empleado Responsable</label>
+            <label className="text-sm font-medium text-gray-700">Empleado </label>
             <button
               onClick={() => setShowNewEmpleadoForm(!showNewEmpleadoForm)}
               className="text-sm text-blue-600 hover:text-blue-800 flex items-center gap-1"
@@ -287,18 +331,21 @@ export const PrestamoModal: React.FC<PrestamoModalProps> = ({
           )}
         </div>
 
-        {/* Selector de fecha */}
-        <div className="mb-6">
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Fecha de Devolución
-          </label>
-          <input
-            type="date"
-            value={fechaRetorno}
-            onChange={(e) => setFechaRetorno(e.target.value)}
-            className="w-full p-2 border rounded-lg"
-          />
-        </div>
+        
+        {/* Selector de fecha - Solo mostrar si hay recursos retornables */}
+        {recursosRetornables.length > 0 && (
+          <div className="mb-6">
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Fecha de Devolución
+            </label>
+            <input
+              type="date"
+              value={fechaRetorno}
+              onChange={(e) => setFechaRetorno(e.target.value)}
+              className="w-full p-2 border rounded-lg"
+            />
+          </div>
+        )}
 
         {/* Botones de acción */}
         <div className="flex justify-end gap-2">
@@ -312,10 +359,11 @@ export const PrestamoModal: React.FC<PrestamoModalProps> = ({
             onClick={() => onConfirm({
               empleadoId: selectedEmpleado,
               fRetorno: new Date(fechaRetorno),
+              responsableId: selectedResponsable, // Añadir el responsableId
               prestamosRecursos: recursosRetornables,
               consumosRecursos: recursosNoRetornables
             })}
-            disabled={!selectedEmpleado || !fechaRetorno || loading}
+            disabled={!selectedEmpleado || !selectedResponsable || (!fechaRetorno && recursosRetornables.length > 0) || loading}
             className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50"
           >
             Confirmar préstamo

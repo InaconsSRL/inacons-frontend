@@ -57,19 +57,10 @@ const ProveedorComponent: React.FC = () => {
 
   const dispatch = useDispatch<AppDispatch>();
   const { proveedores, loading, error } = useSelector((state: RootState) => state.proveedor);
-  console.log(proveedores)
 
   useEffect(() => {
-    console.log('Dispatching fetchProveedores');
-    dispatch(fetchProveedores())
-      .unwrap()
-      .then((result) => console.log('Fetch result:', result))
-      .catch((error) => console.error('Fetch error:', error));
+    dispatch(fetchProveedores()).unwrap();
   }, [dispatch]);
-
-  useEffect(() => {
-    console.log('Proveedores actualizados:', proveedores);
-  }, [proveedores]);
 
   const handleEdit = (proveedor: Proveedor) => {
     setEditingProveedor(proveedor);

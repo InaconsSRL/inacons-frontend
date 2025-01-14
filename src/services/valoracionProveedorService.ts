@@ -120,7 +120,6 @@ export const addValoracionProveedorService = async (valoracionData: {
   usuario_id: string;
   notas?: string;
 }) => {
-  console.log("enviando valoracion", valoracionData);
   try {
     const { data } = await client.mutate({
       mutation: ADD_VALORACION_PROVEEDOR,
@@ -144,7 +143,6 @@ export const updateValoracionProveedorService = async (valoracionData: {
   fecha_fin?: string;
   notas?: string;
 }) => {
-  console.log("enviando valoracion actualizada", valoracionData);
   try {
     const { data } = await client.mutate({
       mutation: UPDATE_VALORACION_PROVEEDOR,

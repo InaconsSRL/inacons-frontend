@@ -46,9 +46,6 @@ const RolesComponent: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
   const { menus, roles, loading, error } = useSelector((state: RootState) => state.role);
 
-  console.log(roles)
-  console.log(menus)
-
   useEffect(() => {
     dispatch(fetchRolesAndMenus());
   }, [dispatch]);

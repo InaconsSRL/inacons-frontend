@@ -138,7 +138,6 @@ const EmpleadosPage: React.FC = () => {
       filter: [true, true, true, true, true, true, false],
       headers: ["id", "nombres", "apellidos", "telefono", "telefono_secundario", "cargo", "opciones"],
       rows: empleados.map((empleado) => ({
-        id: empleado.id,
         nombres: empleado.nombres,
         apellidos: empleado.apellidos,
         telefono: empleado.telefono,

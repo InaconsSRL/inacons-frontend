@@ -26,8 +26,6 @@ const TableViewer = () => {
             });
     }, []);
 
-    console.log(tables)
-
     const fetchTableData = (tableName: string) => {
         fetch(`http://localhost:5000/${tableName}`)
             .then(res => res.json())

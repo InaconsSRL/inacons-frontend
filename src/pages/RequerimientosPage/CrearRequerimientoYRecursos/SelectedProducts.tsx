@@ -16,7 +16,7 @@ export const SelectedProducts: React.FC<SelectedProductsProps> = ({ requerimient
     try {
       await dispatch(deleteRequerimientoRecurso(recursoId)).unwrap();
     } catch (error) {
-      console.log(error);
+      console.error(error);
     }
   };
   
@@ -39,15 +39,13 @@ export const SelectedProducts: React.FC<SelectedProductsProps> = ({ requerimient
       })).unwrap();
       setEditingId(null);
     } catch (error) {
-      console.log(error);
+      console.error(error);
     }
   };
 
   useEffect(() => {
     if (requerimiento_id) dispatch(fetchRequerimientoRecursos(requerimiento_id));
   }, []);
-
-  console.log(requerimientoRecursos)
 
   if (loading) {
     return <LoaderPage />;    

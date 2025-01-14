@@ -22,7 +22,6 @@ const RequerimientoHeader: React.FC<DetalleRequerimientoProps> = memo(({ requeri
   const dispatch = useDispatch<AppDispatch>();
   const navigate = useNavigate();
   const { usuariosCargo } = useSelector((state: RootState) => state.usuario);
-  console.log('Usuarios Cargo:', usuariosCargo);
 
   const [isEditing, setIsEditing] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -90,7 +89,6 @@ const RequerimientoHeader: React.FC<DetalleRequerimientoProps> = memo(({ requeri
       setLoading(false);
     }
   }, [dispatch, formData, requerimiento.id, requerimiento.estado_atencion]);
-  console.log('Requerimiento para Aprob:', requerimiento);
 
   const handleSubmitRequerimiento = useCallback(async (): Promise<void> => {
     setLoading(true);

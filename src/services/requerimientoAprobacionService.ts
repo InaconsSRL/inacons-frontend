@@ -105,7 +105,6 @@ export const addRequerimientoAprobacion = async (data: {
   comentario?: string;
   gerarquia_aprobacion?: number;
 }) => {
-  console.log("addService", data);
   try {
     const { data: responseData } = await client.mutate({
       mutation: ADD_REQUERIMIENTO_APROBACION,

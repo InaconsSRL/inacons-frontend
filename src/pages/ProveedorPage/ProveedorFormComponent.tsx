@@ -139,16 +139,12 @@ const ProveedorFormComponent: React.FC<FormComponentProps> = ({
     usuario_id: user_id || ''
   });
 
-  console.log(editContactoId, editMediosPagoId, editValoracionId);
-
 
   const contactos = useSelector((state: RootState) => state.contactoProveedor.contactos);
   const mediosPago = useSelector((state: RootState) => state.mediosPagoProveedor.mediosPago);
   const valoraciones = useSelector((state: RootState) => state.valoracionProveedor.valoraciones);
   // const datosValoraciones = useSelector((state: RootState) => state.datosValoracionProveedor.datosValoraciones);
   // const cuestionarios = useSelector((state: RootState) => state.cuestionarioHomologacion.cuestionarios);
-
-  console.log(contactos, mediosPago);
 
   useEffect(() => {
     if (initialValues?.id) {

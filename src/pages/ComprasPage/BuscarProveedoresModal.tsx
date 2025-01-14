@@ -24,7 +24,6 @@ const estadosProveedor=[
   ];
 
 const BuscarProveedoresModal: React.FC<BuscarProveedoresModalProps> = ({ cotizacionId, proveedoresActuales, cotizacionEstado }) => {
-  console.log(cotizacionEstado);
   const dispatch = useDispatch<AppDispatch>();
   const proveedores = useSelector((state: RootState) => state.proveedor.proveedores);
   const [searchTerm, setSearchTerm] = useState('');

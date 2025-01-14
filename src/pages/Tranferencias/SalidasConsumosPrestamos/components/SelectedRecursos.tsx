@@ -21,7 +21,6 @@ export const SelectedRecursos: React.FC<SelectedRecursosProps> = ({
   const [showObservaciones, setShowObservaciones] = useState<{[key: string]: boolean}>({});
 
   const unidades = useSelector((state: RootState) => state.unidad.unidades);
-  console.log(unidades);
 
   const tiposRecurso = useSelector((state: RootState) => state.tipoRecurso.tiposRecurso);
 

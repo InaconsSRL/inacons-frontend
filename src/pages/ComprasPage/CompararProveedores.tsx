@@ -96,8 +96,6 @@ const CompararProveedores: React.FC<CompararProveedoresProps> = ({ cotizacion, r
     }
   }, [dispatch, proveedorAdjudicado]);
 
-  console.log(cotizacion)
-
   useEffect(() => {
     const fetchAndUpdateProveedores = async () => {
       if (cotizacion.id) {

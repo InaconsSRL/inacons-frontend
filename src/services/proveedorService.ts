@@ -136,7 +136,6 @@ export const addProveedorService = async (proveedorData: {
   correo?: string;
 }) => {
   try {
-    console.log('Datos a enviar:', proveedorData); // Para debug
     const response = await client.mutate({
       mutation: ADD_PROVEEDOR_MUTATION,
       variables: proveedorData,

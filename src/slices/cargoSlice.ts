@@ -58,10 +58,7 @@ export const addCargo = createAsyncThunk(
 export const updateCargo = createAsyncThunk(
   'cargo/updateCargo',
   async (cargo: Cargo, { rejectWithValue }) => {
-    
-  console.log('updateCargo', cargo);
     try {
-      
       return await updateCargoService(cargo);
     } catch (error) {
       return rejectWithValue(handleError(error));

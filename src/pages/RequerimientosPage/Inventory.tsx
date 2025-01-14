@@ -22,8 +22,7 @@ const mockInventory: InventoryItem[] = [
   ];
 
 const Inventory: React.FC = (  ) => {
-  const [inventory, setInventory] = useState<InventoryItem[]>(mockInventory);
-  console.log(setInventory)
+  const [inventory] = useState<InventoryItem[]>(mockInventory);
   return (
     <motion.div className="flex flex-col h-full">
       <motion.div

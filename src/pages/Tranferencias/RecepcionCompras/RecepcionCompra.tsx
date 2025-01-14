@@ -196,7 +196,6 @@ const RecepcionCompra: React.FC<RecepcionesCompraProps> = ({ onComplete }) => {
                         
                     }))
                 };
-                console.log(detalles);
 
             const detalleTransferencia = await dispatch(addTransferenciaDetalle(detalleData)).unwrap();
 
@@ -216,7 +215,6 @@ const RecepcionCompra: React.FC<RecepcionesCompraProps> = ({ onComplete }) => {
             // Esperar a que todos los recursos se guarden
             await Promise.all(recursosPromises);
                 const idCotizaciones = selectedOrden!.cotizacion_id.id;
-                console.log("idCotizaciones", idCotizaciones);
             // Actualizar el estado de la orden de compra
             await dispatch(updateOrdenCompra({
                 ...selectedOrden!,

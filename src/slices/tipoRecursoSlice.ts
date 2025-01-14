@@ -42,7 +42,6 @@ export const addTipoRecurso = createAsyncThunk(
   'tipoRecurso/addTipoRecurso',
   async (tipoRecursoData: { nombre: string }, { rejectWithValue }) => {
     try {
-      console.log(tipoRecursoData)
       return await addTipoRecursoService(tipoRecursoData);
     } catch (error) {
       return rejectWithValue(handleError(error));
@@ -54,8 +53,6 @@ export const updateTipoRecurso = createAsyncThunk(
   'tipoRecurso/updateTipoRecurso',
   async (tipoRecurso: TipoRecurso, { rejectWithValue }) => {
     try {
-      
-      console.log(tipoRecurso)
       return await updateTipoRecursoService(tipoRecurso);      
     } catch (error) {
       return rejectWithValue(handleError(error));
@@ -84,10 +81,8 @@ const tipoRecursoSlice = createSlice({
       })
       .addCase(addTipoRecurso.fulfilled, (state, action: PayloadAction<TipoRecurso>) => {
         state.tiposRecurso.push(action.payload);
-        console.log(state)
       })
       .addCase(updateTipoRecurso.fulfilled, (state, action: PayloadAction<TipoRecurso>) => {
-        console.log(state)
         const index = state.tiposRecurso.findIndex(tipoRecurso => tipoRecurso.id === action.payload.id);
         if (index !== -1) {
           state.tiposRecurso[index] = action.payload;

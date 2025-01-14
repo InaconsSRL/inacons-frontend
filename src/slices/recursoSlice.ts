@@ -138,9 +138,7 @@ export const updateRecurso = createAsyncThunk(
   'recurso/updateRecurso',
   async (recursoData: RecursoUpdate, { rejectWithValue }) => {
     try {
-      console.log("Se envio", recursoData)
       const response = await updateRecursoService(recursoData);
-      console.log("Se recibio", response)
       return response;
     } catch (error) {
       return rejectWithValue(handleError(error));
@@ -212,7 +210,6 @@ const recursoSlice = createSlice({
         }
       })
       .addCase(deleteImagenRecurso.fulfilled, (state, action: PayloadAction<{ id: string, recurso_id: string }>) => {
-        console.log(action.payload);
         const recursoIndex = state.recursos.findIndex(recurso => recurso.id === action.payload.recurso_id);
         if (recursoIndex !== -1) {
           state.recursos[recursoIndex].imagenes = state.recursos[recursoIndex].imagenes.filter(

@@ -74,7 +74,6 @@ export const addClasificacionRecursoService = async (clasificacionRecursoData: {
 };
 
 export const updateClasificacionRecursoService = async (clasificacionRecurso: { id: string; nombre: string; parent_id: string | null }) => {
-  console.log(clasificacionRecurso);
   try {
     const variables = {
       updateClasificacionRecursoId: clasificacionRecurso.id,

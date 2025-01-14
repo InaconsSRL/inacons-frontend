@@ -104,7 +104,11 @@ const SalidasConsumosPrestamos: React.FC<Props> = ({ obraId, recursos, onClose, 
     }
   };
 
-  const handlePrestamoConfirm = async (prestamoData: { empleadoId: string; fRetorno: Date }) => {
+  const handlePrestamoConfirm = async (prestamoData: { 
+    empleadoId: string; 
+    fRetorno: Date;
+    responsableId: string; // Añadimos el nuevo campo
+  }) => {
     try {
       setIsProcessing(true);
 
@@ -171,7 +175,7 @@ const SalidasConsumosPrestamos: React.FC<Props> = ({ obraId, recursos, onClose, 
         const consumo = await dispatch(addConsumo({
           fecha: new Date(),
           almaceneroId: userId!,
-          responsableId: userId!,
+          responsableId: prestamoData.responsableId, // Usamos el responsableId seleccionado
           obraId: obraId,
           personalId: prestamoData.empleadoId,
           estado: 'COMPLETO',

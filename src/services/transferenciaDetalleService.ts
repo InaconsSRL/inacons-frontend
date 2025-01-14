@@ -118,8 +118,6 @@ export const addTransferenciaDetalleService = async (transferenciaDetalle: {
       fecha: transferenciaDetalle.fecha,
     };
 
-    console.log('Variables para la mutación:', variables);
-
     const { data } = await client.mutate({
       mutation: ADD_TRANSFERENCIA_DETALLE,
       variables,

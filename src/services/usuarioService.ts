@@ -155,7 +155,6 @@ const removeTypename = <T>(obj: T): T => {
 export const createUsuarioService = async (usuarioData: UsuarioInput): Promise<Usuario> => {
   try {
     const cleanedData = removeTypename(usuarioData);
-    console.log(cleanedData);
     const response = await client.mutate<{ createUsuario: Usuario }>({
       mutation: CREATE_USUARIO_MUTATION,
       variables: { data: cleanedData },
@@ -174,7 +173,6 @@ export const updateUsuarioService = async (usuario: Usuario): Promise<Usuario> =
   try {
     const { id, ...data } = usuario;
     const cleanedData = removeTypename(data);
-    console.log("este es el id:", id, ", esta es la data limpia:", cleanedData);
     const response = await client.mutate<{ updateUsuario: Usuario }>({
       mutation: UPDATE_USUARIO_MUTATION,
       variables: { updateUsuarioId: id, data: cleanedData },

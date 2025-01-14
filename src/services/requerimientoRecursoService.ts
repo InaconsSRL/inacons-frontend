@@ -82,7 +82,6 @@ export const getRequerimientoRecursoByRequerimientoId = async (requerimientoId: 
 
 export const addRequerimientoRecurso = async (data: { requerimiento_id: string; recurso_id: string; cantidad: number; cantidad_aprobada: number; fecha_limit: Date, notas: string }) => {
   try {
-    console.log("serviceAddReqRec", data)
     const { data: responseData } = await client.mutate({
       mutation: ADD_REQUERIMIENTO_RECURSO,
       variables: {
@@ -107,7 +106,6 @@ export const updateRequerimientoRecurso = async (data: {
   fecha_limit: Date;
 }) => {
   try {
-    console.log("serviceUpdReqRec", data)
     const { data: responseData } = await client.mutate({
       mutation: UPDATE_REQUERIMIENTO_RECURSO,
       variables: {

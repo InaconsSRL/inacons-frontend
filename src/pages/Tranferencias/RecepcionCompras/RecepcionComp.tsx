@@ -43,7 +43,7 @@ const RecepcionComp: React.FC<RecepcionCompProps> = ({
     // Efectos
     useEffect(() => {
         let mounted = true;
-        let controller = new AbortController();
+        const controller = new AbortController();
 
         const cargarDatos = async () => {
             if (!ordenId) return;

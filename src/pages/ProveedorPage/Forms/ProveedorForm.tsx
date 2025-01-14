@@ -94,7 +94,7 @@ const ProveedorForm: React.FC<ProveedorFormProps> = ({ initialValues, onSubmit }
       }));
     } catch (error) {
       setErrors(prev => ({ ...prev, ruc: 'Error al consultar el RUC' }));
-      console.log(error);
+      console.error(error);
     } finally {
       setIsSearching(false);
     }

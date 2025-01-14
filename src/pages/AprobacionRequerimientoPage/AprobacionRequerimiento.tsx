@@ -114,9 +114,6 @@ const AprobacionRequerimiento = ({ newRequerimiento, userAprobacion, columnId }:
       if (id) {
         await dispatch(fetchRequerimientoRecursos(id.toString()));
       }
-
-      console.log('Recurso actualizado');
-
       // Limpiar los valores editados para este recurso
       setEditValues(prev => {
         const newValues = { ...prev };
@@ -124,7 +121,7 @@ const AprobacionRequerimiento = ({ newRequerimiento, userAprobacion, columnId }:
         return newValues;
       });
     } catch (error) {
-      console.log(error);
+      console.error(error);
     }
   };
 
@@ -138,8 +135,6 @@ const AprobacionRequerimiento = ({ newRequerimiento, userAprobacion, columnId }:
     }
     return false;
   };
-
-  console.log(newRequerimiento);
 
   const aprobarRequerimiento = async () => {
     setIsLoading(true);
@@ -169,7 +164,6 @@ const AprobacionRequerimiento = ({ newRequerimiento, userAprobacion, columnId }:
         sustento: newRequerimiento?.sustento || '',
         estado_atencion: newRequerimiento.estado_atencion === "pendiente" ? "aprobado_supervisor" : "aprobado_gerencia",
       })).unwrap();
-      console.log('Requerimiento aprobado exitosamente');
     } catch (error) {
       console.error('Error al aprobar requerimiento:', error);
     }
@@ -202,7 +196,6 @@ const AprobacionRequerimiento = ({ newRequerimiento, userAprobacion, columnId }:
         sustento: newRequerimiento?.sustento || '',
         estado_atencion: newRequerimiento.estado_atencion === "pendiente" ? "rechazado_supervisor" : "rechazado_gerencia",
       })).unwrap();
-      console.log('Requerimiento rechazado exitosamente');
     } catch (error) {
       console.error('Error al rechazar requerimiento:', error);
     }

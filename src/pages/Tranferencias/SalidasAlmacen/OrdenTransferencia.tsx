@@ -37,12 +37,11 @@ const OrdenTransferencia: React.FC<OrdenTransferenciaProps> = ({
   useEffect(() => {
     const cargarDatos = async () => {
       try {
-        const [movimientosResult, movilidadesResult] = await Promise.all([
+        await Promise.all([
           dispatch(fetchMovimientos()),
           dispatch(fetchMovilidades())
         ]);
-        console.log('Resultado de cargar movimientos:', movimientosResult);
-        console.log('Resultado de cargar movilidades:', movilidadesResult);
+        
       } catch (error) {
         console.error('Error al cargar datos:', error);
         setErrorMessage('Error al cargar los datos necesarios');

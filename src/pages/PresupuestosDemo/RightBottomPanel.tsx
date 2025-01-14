@@ -37,9 +37,6 @@ const RightBottomPanel: React.FC<RightBottomPanelProps> = ({ selectedNode, compo
         }
     };
 
-    console.log(selectedNode, composiciones);
-
-
     return (
         <div className="h-[calc(60vh-65px)] overflow-y-auto overflow-x-auto bg-white border-t border-gray-200">
             <div className="px-4 py-2.5 border-b border-gray-200 bg-gray-50/50 min-w-[600px]">
