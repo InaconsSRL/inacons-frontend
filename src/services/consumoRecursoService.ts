@@ -150,7 +150,14 @@ export const addConsumoRecursoService = async (
   try {
     const { data } = await client.mutate({
       mutation: ADD_CONSUMO_RECURSO,
-      variables: consumoRecursoData,
+      variables: {
+        consumoId: consumoRecursoData.consumo_id,
+        recursoId: consumoRecursoData.recurso_id,
+        cantidad: consumoRecursoData.cantidad,
+        costo: consumoRecursoData.costo,
+        obraBodegaId: consumoRecursoData.obra_bodega_id,
+        observaciones: consumoRecursoData.observaciones
+      },
     });
     return data.addConsumoRecurso;
   } catch (error) {
