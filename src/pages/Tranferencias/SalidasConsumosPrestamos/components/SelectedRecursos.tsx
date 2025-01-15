@@ -15,7 +15,8 @@ export const SelectedRecursos: React.FC<SelectedRecursosProps> = ({
   onRemoveRecurso,
   onProcesar,
   isProcessing,
-  error
+  error,
+  onUpdateObservaciones, // Añadir esta prop
 }) => {
   const [observaciones, setObservaciones] = useState<RecursoObservaciones>({});
   const [showObservaciones, setShowObservaciones] = useState<{[key: string]: boolean}>({});
@@ -45,6 +46,7 @@ export const SelectedRecursos: React.FC<SelectedRecursosProps> = ({
       ...prev,
       [id]: value
     }));
+    onUpdateObservaciones(id, value); // Llamar a la función del padre
   };
 
   return (

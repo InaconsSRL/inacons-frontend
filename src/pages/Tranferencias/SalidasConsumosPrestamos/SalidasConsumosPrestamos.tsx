@@ -14,6 +14,7 @@ import { updateObraBodegaRecurso } from '../../../slices/obraBodegaRecursoSlice'
 import { addConsumo } from '../../../slices/consumoSlice';
 import { addConsumoRecurso } from '../../../slices/consumoRecursoSlice';
 import { RecursoObra, SelectedRecurso } from './components/bodega.types';
+import Modal from '../../../components/Modal/Modal';
 
 
 interface Props {
@@ -61,7 +62,7 @@ const SalidasConsumosPrestamos: React.FC<Props> = ({ obraId, recursos, onClose, 
   const handleAddRecurso = (recurso: RecursoObra, cantidad: number) => {
     setSelectedRecursos(prev => ({
       ...prev,
-      [recurso.id]: { cantidad, recurso }
+      [recurso.id]: { cantidad, recurso, observacion: '' }
     }));
   };
 
@@ -80,12 +81,19 @@ const SalidasConsumosPrestamos: React.FC<Props> = ({ obraId, recursos, onClose, 
     }
   };
 
+  const handleUpdateObservaciones = (recursoId: string, observacion: string) => {
+    setSelectedRecursos(prev => ({
+      ...prev,
+      [recursoId]: { ...prev[recursoId], observacion }
+    }));
+  };
+
   const procesarSalida = async () => {
     try {
       setIsProcessing(true);
       if (!userId) throw new Error('Usuario no autenticado');
 
-      // Separar recursos retornables y no retornables
+      // Separar recursos retornables y no retornables, incluyendo observaciones
       const retornables = Object.values(selectedRecursos).filter(
         ({recurso}) => recurso.recurso_id.tipo_recurso_id === "66e2075541a2c058b6fe80c4"
       );
@@ -150,9 +158,10 @@ const SalidasConsumosPrestamos: React.FC<Props> = ({ obraId, recursos, onClose, 
       if (recursosRetornables.length > 0) {
         const prestamo = await dispatch(addPrestamo({
           fecha: new Date(),
-          usuarioId: userId!,
           obraId: obraId,
+          usuarioId: userId!,
           personalId: prestamoData.empleadoId,
+          responsableId: prestamoData.responsableId, // Usar el responsableId almacenado
           fRetorno: prestamoData.fRetorno,
           estado: 'ACTIVO',
           transferenciaDetalleId: detalleTransferencia.id
@@ -160,11 +169,12 @@ const SalidasConsumosPrestamos: React.FC<Props> = ({ obraId, recursos, onClose, 
 
         // Registrar recursos del préstamo
         await Promise.all(
-          recursosRetornables.map(({ recurso, cantidad }) =>
+          recursosRetornables.map(({ recurso, cantidad, observacion }) =>
             dispatch(addPrestamoRecurso({
               prestamoId: prestamo.id,
               obrabodegaRecursoId: recurso.id,
-              cantidad: cantidad
+              cantidad: cantidad,
+              observaciones: observacion // Usar la observación almacenada
             })).unwrap()
           )
         );
@@ -184,13 +194,14 @@ const SalidasConsumosPrestamos: React.FC<Props> = ({ obraId, recursos, onClose, 
 
         // Registrar recursos del consumo
         await Promise.all(
-          recursosNoRetornables.map(({ recurso, cantidad }) =>
+          recursosNoRetornables.map(({ recurso, cantidad, observacion }) =>
             dispatch(addConsumoRecurso({
               consumo_id: consumo.id,
               recurso_id: recurso.recurso_id.id,
               cantidad: cantidad,
               costo: recurso.costo,
-              obra_bodega_id: recurso.obra_bodega_id.id
+              obra_bodega_id: recurso.obra_bodega_id.id,
+              observaciones: observacion // Añadir las observaciones también para consumos
             })).unwrap()
           )
         );
@@ -280,16 +291,24 @@ const SalidasConsumosPrestamos: React.FC<Props> = ({ obraId, recursos, onClose, 
             onProcesar={procesarSalida}
             isProcessing={isProcessing}
             error={error}
+            onUpdateObservaciones={handleUpdateObservaciones} // Añadir esta prop
           />
         </div>
       </div>
-      <PrestamoModal
+      <Modal 
         isOpen={showPrestamoModal}
         onClose={() => setShowPrestamoModal(false)}
-        onConfirm={handlePrestamoConfirm}
-        recursosRetornables={recursosRetornables}
-        recursosNoRetornables={recursosNoRetornables}
-      />
+        title="Registrar Salida y Préstamo de Recursos"
+      >
+        <PrestamoModal
+          isOpen={showPrestamoModal}
+          onClose={() => setShowPrestamoModal(false)}
+          onConfirm={handlePrestamoConfirm}
+          recursosRetornables={recursosRetornables}
+          recursosNoRetornables={recursosNoRetornables}
+          obraId={obraId}
+        />
+      </Modal>
     </>
   );
 };

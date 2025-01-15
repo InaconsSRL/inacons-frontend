@@ -11,6 +11,11 @@ const LIST_PRESTAMOS_QUERY = gql`
         id
         nombres
         apellidos
+      }        
+      responsable_id {
+        id
+        nombres
+        apellidos
       }
       obra_id {
         id
@@ -29,15 +34,26 @@ const LIST_PRESTAMOS_QUERY = gql`
 `;
 
 const ADD_PRESTAMO_MUTATION = gql`
-  mutation AddPrestamo(
+    mutation AddPrestamo(
     $fecha: Date!, 
     $usuarioId: ID!, 
     $obraId: ID!, 
     $personalId: String!, 
     $fRetorno: Date!, 
     $estado: String!, 
-    $transferenciaDetalleId: ID!
+    $transferenciaDetalleId: ID!, 
+    $responsableId: ID!
   ) {
+    addPrestamo(
+      fecha: $fecha, 
+      usuario_id: $usuarioId, 
+      obra_id: $obraId, 
+      personal_id: $personalId, 
+      f_retorno: $fRetorno, 
+      estado: $estado, 
+      transferencia_detalle_id: $transferenciaDetalleId, 
+      responsable_id: $responsableId
+    ) 
     addPrestamo(
       fecha: $fecha, 
       usuario_id: $usuarioId, 
@@ -50,6 +66,11 @@ const ADD_PRESTAMO_MUTATION = gql`
       id
       fecha
       usuario_id {
+        id
+        nombres
+        apellidos
+      }        
+      responsable_id {
         id
         nombres
         apellidos
@@ -99,6 +120,11 @@ const UPDATE_PRESTAMO_MUTATION = gql`
       obra_id {
         id
         nombre
+      }        
+      responsable_id {
+        id
+        nombres
+        apellidos
       }
       personal_id {
         nombres

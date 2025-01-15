@@ -2,16 +2,22 @@ import React, { useState, useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { RootState, AppDispatch } from '../../../../store/store';
 import { fetchEmpleados, addEmpleado } from '../../../../slices/empleadoSlice';
-import { FiSearch, FiPlus, FiX } from 'react-icons/fi';
+import { FiSearch, FiPlus, FiPrinter } from 'react-icons/fi';
+import PrestamoPDFWrapper from './PrestamoPDFWrapper';
+import Modal from '../../../../components/Modal/Modal';
 
 interface RecursoRetornable {
   recurso: {
     id: string;
     recurso_id: {
+      id: string; // Ahora es requerido
       nombre: string;
+      codigo: string; // Ahora es requerido
+      unidad_id: string; // Ahora es requerido
     };
   };
   cantidad: number;
+  observacion?: string; // Añadir observaciones
 };
 
 interface RecursoNoRetornable {
@@ -22,6 +28,7 @@ interface RecursoNoRetornable {
     };
   };
   cantidad: number;
+  observacion?: string; // Añadir observaciones
 };
 
 interface PrestamoModalProps {
@@ -30,6 +37,7 @@ interface PrestamoModalProps {
   onConfirm: (data: { empleadoId: string; fRetorno: Date; prestamosRecursos: RecursoRetornable[]; consumosRecursos: RecursoNoRetornable[]; responsableId: string }) => void;
   recursosRetornables: RecursoRetornable[];
   recursosNoRetornables: RecursoNoRetornable[];
+  obraId: string;
 };
 
 const Label: React.FC<React.LabelHTMLAttributes<HTMLLabelElement>> = (props) => (
@@ -47,7 +55,8 @@ export const PrestamoModal: React.FC<PrestamoModalProps> = ({
   onClose,
   onConfirm,
   recursosRetornables,
-  recursosNoRetornables
+  recursosNoRetornables,
+  obraId
 }) => {
   const dispatch = useDispatch<AppDispatch>();
   const [selectedEmpleado, setSelectedEmpleado] = useState('');
@@ -65,18 +74,24 @@ export const PrestamoModal: React.FC<PrestamoModalProps> = ({
   });
   const [selectedResponsable, setSelectedResponsable] = useState('');
   const [responsableSearchTerm, setResponsableSearchTerm] = useState('');
-  
+
+  const [showPDF, setShowPDF] = useState(false);
+
   const empleados = useSelector((state: RootState) => state.empleado.empleados);
   const usuariosCargo = useSelector((state: RootState) => state.usuario.usuariosCargo);
+  const userId = useSelector((state: RootState) => state.user.id);
+  const almaceneroData = usuariosCargo.find(user => user.id === userId);
+  const obras = useSelector((state: RootState) => state.obra.obras);
+  const obraActual = obras.find((obra) => obra.id === obraId);
 
   // Filtrar empleados basado en el término de búsqueda
-  const filteredEmpleados = empleados.filter(emp => 
+  const filteredEmpleados = empleados.filter(emp =>
     `${emp.nombres} ${emp.apellidos}`.toLowerCase().includes(searchTerm.toLowerCase()) ||
     emp.dni.includes(searchTerm)
   );
 
   // Filtrar usuarios basado en el término de búsqueda y jerarquía
-  const filteredResponsables = usuariosCargo.filter(user => 
+  const filteredResponsables = usuariosCargo.filter(user =>
     (user.cargo_id.gerarquia >= 2) && // Filtrar por jerarquía
     (
       `${user.nombres} ${user.apellidos}`.toLowerCase().includes(responsableSearchTerm.toLowerCase()) ||
@@ -137,64 +152,132 @@ export const PrestamoModal: React.FC<PrestamoModalProps> = ({
     }
   };
 
+  const handleGenerarPDF = () => {
+    if (!selectedEmpleado || !selectedResponsable || !fechaRetorno) {
+      return;
+    }
+    setShowPDF(true);
+  };
+
   if (!isOpen) return null;
 
-  return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4">
-      <div className="bg-white rounded-lg p-6 max-w-md w-full">
-        <div className="flex justify-between items-center mb-4">
-          <h2 className="text-xl font-semibold">Registrar Préstamo</h2>
-          <button onClick={onClose} className="text-gray-500 hover:text-gray-700">
-            <FiX size={20} />
-          </button>
-        </div>
+  // Si estamos mostrando el PDF, renderizar el componente PDF dentro de Modal
+  if (showPDF) {
+    const empleadoSeleccionado = empleados.find(emp => emp.id === selectedEmpleado);
+    const supervisorSeleccionado = usuariosCargo.find(user => user.id === selectedResponsable);
 
-        {/* Lista de recursos */}
+    if (!empleadoSeleccionado || !supervisorSeleccionado || !obraActual || !almaceneroData) {
+      return null;
+    }
+
+    return (
+      <Modal 
+        isOpen={isOpen} 
+        onClose={() => setShowPDF(false)}
+        title="Vista Previa del Documento"
+      >
+        <div className="h-[800px]">
+          <PrestamoPDFWrapper
+            recursosRetornables={recursosRetornables}
+            almaceneroData={{
+              id: almaceneroData.id,
+              nombres: almaceneroData.nombres,
+              apellidos: almaceneroData.apellidos,
+              dni: almaceneroData.dni.toString()
+            }}
+            empleadoData={{
+              id: empleadoSeleccionado.id,
+              nombres: empleadoSeleccionado.nombres,
+              apellidos: empleadoSeleccionado.apellidos,
+              dni: empleadoSeleccionado.dni
+            }}
+            supervisorData={{
+              id: supervisorSeleccionado.id,
+              nombres: supervisorSeleccionado.nombres,
+              apellidos: supervisorSeleccionado.apellidos
+            }}
+            obraData={{
+              id: obraActual.id,
+              nombre: obraActual.nombre,
+              ubicacion: obraActual.ubicacion
+            }}
+            fechaRetorno={new Date(fechaRetorno)}
+          />
+        </div>
+      </Modal>
+    );
+  }
+
+  console.log(fechaRetorno.length)
+  // Renderizado normal del modal
+  return (
+    <div className="w-full mx-auto">
+      <div className="bg-white rounded-lg p-6 w-full">
+
+        {/* Lista de recursos Retornables*/}
         <div className="mb-6 bg-gray-50 p-3 rounded-lg">
           <h3 className="text-sm font-medium mb-2 text-gray-700">Recursos a prestar (retornables):</h3>
-          <ul className="text-sm text-gray-600 space-y-1">
-            {recursosRetornables.map(({ recurso, cantidad }) => (
-              <li key={recurso.id} className="flex justify-between">
-                <span>{recurso.recurso_id.nombre}</span>
-                <span className="font-medium">Cant: {cantidad}</span>
-              </li>
-            ))}
-          </ul>
+          <div className="max-h-[15vh] overflow-y-auto">
+            <ul className="text-sm text-gray-600 space-y-2">
+              {recursosRetornables.map(({ recurso, cantidad, observacion }) => (
+                <li key={recurso.id}>
+                  <div className="flex justify-between text-xs">
+                    <span>{recurso.recurso_id.nombre}</span>
+                    <span className="font-medium text-xs">Cant: {cantidad}</span>
+                  </div>
+                  {observacion && (
+                    <div className="mt-1">
+                      <p className="text-xs text-yellow-600 italic line-clamp-2">{observacion}</p>
+                    </div>
+                  )}
+                </li>
+              ))}
+            </ul>
+          </div>
         </div>
 
         {/* Nueva sección para los recursos no retornables */}
         <div className="mb-6 bg-gray-50 p-3 rounded-lg">
           <h3 className="text-sm font-medium mb-2 text-gray-700">Recursos a consumir (no retornables):</h3>
-          <ul className="text-sm text-gray-600 space-y-1">
-            {recursosNoRetornables.map(({ recurso, cantidad }) => (
-              <li key={recurso.id} className="flex justify-between">
-                <span>{recurso.recurso_id.nombre}</span>
-                <span className="font-medium">Cant: {cantidad}</span>
-              </li>
-            ))}
-          </ul>
+          <div className="max-h-[15vh] overflow-y-auto">
+            <ul className="text-sm text-gray-600 space-y-2">
+              {recursosNoRetornables.map(({ recurso, cantidad, observacion }) => (
+                <li key={recurso.id}>
+                  <div className="flex justify-between text-xs">
+                    <span>{recurso.recurso_id.nombre}</span>
+                    <span className="font-medium text-xs">Cant: {cantidad}</span>
+                  </div>
+                  {observacion && (
+                    <div className="mt-1">
+                      <p className="text-xs text-yellow-600 italic line-clamp-2">{observacion}</p>
+                    </div>
+                  )}
+                </li>
+              ))}
+            </ul>
+          </div>
         </div>
 
         {/* Selector de Responsable */}
         <div className="mb-6">
-          <label className="block text-sm font-medium text-gray-700 mb-2">
+          <label className={`block text-sm font-medium  mb-2 ${selectedResponsable.length === 24 ? 'text-green-600' : 'text-gray-700'}`}>
             Responsable
           </label>
-          <div className="space-y-2">
+          <div className="flex flex-row">
             <div className="relative">
               <input
                 type="text"
-                placeholder="Buscar por nombre o DNI..."
+                placeholder="Nombre o DNI"
                 value={responsableSearchTerm}
                 onChange={(e) => setResponsableSearchTerm(e.target.value)}
-                className="w-full p-2 pl-8 border rounded-lg"
+                className="w-full p-2 pl-8 border rounded-lg text-xs"
               />
               <FiSearch className="absolute left-3 top-3 text-gray-400" />
             </div>
             <select
               value={selectedResponsable}
               onChange={(e) => setSelectedResponsable(e.target.value)}
-              className="w-full p-2 border rounded-lg"
+              className="w-full p-2 border rounded-lg text-xs"
             >
               <option value="">Seleccione un responsable</option>
               {filteredResponsables.map((user) => (
@@ -210,7 +293,7 @@ export const PrestamoModal: React.FC<PrestamoModalProps> = ({
         {/* Selector de empleado con búsqueda */}
         <div className="mb-6">
           <div className="flex justify-between items-center mb-2">
-            <label className="text-sm font-medium text-gray-700">Empleado </label>
+          <label className={`block text-sm font-medium  mb-2 ${selectedEmpleado.length === 24 ? 'text-green-600' : 'text-gray-700'}`}>Empleado </label>
             <button
               onClick={() => setShowNewEmpleadoForm(!showNewEmpleadoForm)}
               className="text-sm text-blue-600 hover:text-blue-800 flex items-center gap-1"
@@ -221,21 +304,21 @@ export const PrestamoModal: React.FC<PrestamoModalProps> = ({
           </div>
 
           {!showNewEmpleadoForm ? (
-            <div className="space-y-2">
+            <div className="flex flex-row">
               <div className="relative">
                 <input
                   type="text"
-                  placeholder="Buscar por nombre o DNI..."
+                  placeholder="Nombre o DNI"
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full p-2 pl-8 border rounded-lg"
+                  className="w-full p-2 pl-8 border rounded-lg text-xs"
                 />
                 <FiSearch className="absolute left-3 top-3 text-gray-400" />
               </div>
               <select
                 value={selectedEmpleado}
                 onChange={(e) => setSelectedEmpleado(e.target.value)}
-                className="w-full p-2 border rounded-lg"
+                className="w-full p-2 border rounded-lg text-xs"
               >
                 <option value="">Seleccione un empleado</option>
                 {filteredEmpleados.map((empleado) => (
@@ -255,7 +338,7 @@ export const PrestamoModal: React.FC<PrestamoModalProps> = ({
                     type="text"
                     placeholder="DNI"
                     value={newEmpleado.dni}
-                    onChange={(e) => setNewEmpleado({...newEmpleado, dni: e.target.value})}
+                    onChange={(e) => setNewEmpleado({ ...newEmpleado, dni: e.target.value })}
                     maxLength={8}
                     required
                   />
@@ -267,7 +350,7 @@ export const PrestamoModal: React.FC<PrestamoModalProps> = ({
                     type="text"
                     placeholder="Nombres"
                     value={newEmpleado.nombres}
-                    onChange={(e) => setNewEmpleado({...newEmpleado, nombres: e.target.value})}
+                    onChange={(e) => setNewEmpleado({ ...newEmpleado, nombres: e.target.value })}
                     required
                   />
                 </div>
@@ -278,7 +361,7 @@ export const PrestamoModal: React.FC<PrestamoModalProps> = ({
                     type="text"
                     placeholder="Apellidos"
                     value={newEmpleado.apellidos}
-                    onChange={(e) => setNewEmpleado({...newEmpleado, apellidos: e.target.value})}
+                    onChange={(e) => setNewEmpleado({ ...newEmpleado, apellidos: e.target.value })}
                     required
                   />
                 </div>
@@ -289,7 +372,7 @@ export const PrestamoModal: React.FC<PrestamoModalProps> = ({
                     type="tel"
                     placeholder="Teléfono"
                     value={newEmpleado.telefono}
-                    onChange={(e) => setNewEmpleado({...newEmpleado, telefono: e.target.value})}
+                    onChange={(e) => setNewEmpleado({ ...newEmpleado, telefono: e.target.value })}
                     required
                   />
                 </div>
@@ -300,7 +383,7 @@ export const PrestamoModal: React.FC<PrestamoModalProps> = ({
                     type="tel"
                     placeholder="Teléfono Secundario"
                     value={newEmpleado.telefono_secundario}
-                    onChange={(e) => setNewEmpleado({...newEmpleado, telefono_secundario: e.target.value})}
+                    onChange={(e) => setNewEmpleado({ ...newEmpleado, telefono_secundario: e.target.value })}
                   />
                 </div>
               </div>
@@ -331,40 +414,53 @@ export const PrestamoModal: React.FC<PrestamoModalProps> = ({
           )}
         </div>
 
-        
+
         {/* Selector de fecha - Solo mostrar si hay recursos retornables */}
         {recursosRetornables.length > 0 && (
           <div className="mb-6">
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className={`block text-sm font-medium  mb-2 ${fechaRetorno.length > 0 ? 'text-green-600' : 'text-gray-700'}`}>
               Fecha de Devolución
             </label>
             <input
               type="date"
               value={fechaRetorno}
+              min={new Date().toISOString().split('T')[0]}
               onChange={(e) => setFechaRetorno(e.target.value)}
-              className="w-full p-2 border rounded-lg"
+              className="w-full p-2 border rounded-lg text-xs"
             />
           </div>
         )}
 
-        {/* Botones de acción */}
-        <div className="flex justify-end gap-2">
+        {/* Agregar botón para generar PDF antes de los botones de acción */}
+        <div className="flex justify-end gap-2 mt-6">
           <button
             onClick={onClose}
-            className="px-4 py-2 text-gray-600 border rounded-lg hover:bg-gray-50"
+            className="text-sm px-4 py-2 text-white border rounded-lg bg-red-500 hover:bg-red-600"
           >
             Cancelar
           </button>
+
+          {recursosRetornables.length > 0 && (
+            <button
+              onClick={handleGenerarPDF}
+              disabled={!selectedEmpleado || !selectedResponsable || !fechaRetorno}
+              className="text-sm px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50 flex items-center gap-2"
+            >
+              <FiPrinter size={16} />
+              Generar PDF
+            </button>
+          )}
+
           <button
             onClick={() => onConfirm({
               empleadoId: selectedEmpleado,
               fRetorno: new Date(fechaRetorno),
-              responsableId: selectedResponsable, // Añadir el responsableId
+              responsableId: selectedResponsable,
               prestamosRecursos: recursosRetornables,
               consumosRecursos: recursosNoRetornables
             })}
             disabled={!selectedEmpleado || !selectedResponsable || (!fechaRetorno && recursosRetornables.length > 0) || loading}
-            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50"
+            className="text-sm px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50"
           >
             Confirmar préstamo
           </button>

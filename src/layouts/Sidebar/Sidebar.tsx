@@ -1,7 +1,7 @@
 // Sidebar.tsx
 import React, { useState, useEffect } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
-import { FaProjectDiagram, FaUsers, FaUserShield, FaBriefcase, FaBoxOpen, FaTags, FaBalanceScale, FaLayerGroup, FaMoneyBillWave, FaShoppingCart, FaWarehouse, FaClipboardList, FaHandshake, FaDatabase } from 'react-icons/fa';
+import { FaProjectDiagram, FaUsers, FaUserShield, FaBriefcase, FaBoxOpen, FaTags, FaBalanceScale, FaLayerGroup, FaMoneyBillWave, FaShoppingCart, FaWarehouse, FaClipboardList, FaHandshake } from 'react-icons/fa';
 import { IoIosArchive } from "react-icons/io";
 import { FiHome } from 'react-icons/fi';
 import { GiConcreteBag, GiPartyFlags } from 'react-icons/gi';
@@ -51,7 +51,6 @@ const Sidebar: React.FC<SidebarProps> = ({ isSidebarOpen, toggleSidebar }) => {
   const moduloProyectos = [
     { to: "/dashboard/obras", icon: GiConcreteBag, text: "Obras" },
     { to: "/dashboard/presupuestoBoard", icon: FaMoneyBillWave, text: "Presupuestos" },
-    { to: "/dashboard/tableViewer", icon: FaDatabase, text: "DataBase" },
   ];
 
   const moduloAlmacen = [

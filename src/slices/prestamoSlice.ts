@@ -13,6 +13,12 @@ interface Usuario {
   apellidos: string;
 }
 
+interface Responsable {
+  id: string;
+  nombres: string;
+  apellidos: string;
+}
+
 interface ObraBodega {
   id: string;
   nombre: string;
@@ -31,6 +37,7 @@ export interface PrestamoOutput {
   id: string;
   fecha: Date;
   usuario_id: Usuario;
+  responsable_id: Responsable;
   obra_id: ObraBodega;
   personal_id: Personal;
   f_retorno: Date;
@@ -44,6 +51,7 @@ export interface PrestamoInput {
   usuarioId: string;
   obraId: string;
   personalId: string;
+  responsableId: string;
   fRetorno: Date;
   estado: string;
   observaciones?: string;

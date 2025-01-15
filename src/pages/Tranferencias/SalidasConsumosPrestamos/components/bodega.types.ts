@@ -27,9 +27,11 @@ export interface RecursoObra {
 export interface SelectedRecurso {
   cantidad: number;
   recurso: RecursoObra;
+  observacion: string;
 }
 
 export interface SelectedRecursosProps {
+  onUpdateObservaciones: (recursoId: string, observacion: string) => void;
   selectedRecursos: Record<string, SelectedRecurso>;
   onUpdateCantidad: (recursoId: string, cantidad: number) => void;
   onRemoveRecurso: (recursoId: string) => void;

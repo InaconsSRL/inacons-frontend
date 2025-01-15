@@ -59,8 +59,8 @@ const LIST_CONSUMO_RECURSOS_BY_CONSUMO_ID = gql`
 `;
 
 const ADD_CONSUMO_RECURSO = gql`
-  mutation AddConsumoRecurso($consumoId: ID!, $recursoId: ID!, $cantidad: Int!, $costo: Float!, $obraBodegaId: ID!) {
-    addConsumoRecurso(consumo_id: $consumoId, recurso_id: $recursoId, cantidad: $cantidad, costo: $costo, obra_bodega_id: $obraBodegaId) {
+  mutation AddConsumoRecurso($consumoId: ID!, $recursoId: ID!, $cantidad: Int!, $costo: Float!, $obraBodegaId: ID!, $observaciones: String) {
+    addConsumoRecurso(consumo_id: $consumoId, recurso_id: $recursoId, cantidad: $cantidad, costo: $costo, obra_bodega_id: $obraBodegaId, observaciones: $observaciones){
       id
       consumo_id {
         id

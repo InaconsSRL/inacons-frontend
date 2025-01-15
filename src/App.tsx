@@ -20,7 +20,6 @@ import ProveedorComponent from './pages/ProveedorPage/ProveedorComponent';
 import RequerimientosComponent from './pages/RequerimientosPage/RequerimientosComponent';
 import TipoCostoRecursoComponent from './pages/TipoCostoRecursoPage/TipoCostoRecursoComponent';
 import RequermientoRecursos from './pages/RequerimientosPage/CrearRequerimientoYRecursos/RequerimientoRecursos';
-// import AlmacenesComponent from './pages/AlmacenesPage/AlmacenesComponent';
 import AlmacenBoardPage from './pages/AlmacenesPage/AlmacenBoard/AlmacenBoardPage';
 import Presupuestos from './pages/PresupuestosDemo/Presupuestos';
 import TipoAlmacenPage from './pages/TipoAlmacenPage/TipoAlmacenPage';
@@ -28,7 +27,6 @@ import ObrasComponent from './pages/ObrasPage/ObrasPage';
 import ComprasBoard from './pages/ComprasPage/ComprasBoard';
 import OrdenCompraPage from './pages/OrdenCompraPage/OrdenCompraPage';
 import HomologacionFormPage from './pages/ProveedorPage/Forms/HomologacionForm';
-import TableViewer from './pages/PresupuestosLocal/TableViewer';
 import AlmacenBetha from './pages/AlmacenesPage/AlmacenBoard/AlmacenBetha';
 import EmpleadosPage from './pages/EmpleadosPage/EmpleadosPage';
 import SorteoPage from './pages/HomePage/Sorteo';
@@ -67,7 +65,6 @@ const App: React.FC = () => {
         <Route path="tipoAlmacen" element={<TipoAlmacenPage />}> </Route>
         <Route path="obras" element={<ObrasComponent />}> </Route>
         <Route path="ordenCompra" element={<OrdenCompraPage />}> </Route>
-        <Route path="tableViewer" element={<TableViewer />} />
         <Route path="almacenbetha" element={<AlmacenBetha />} />
         <Route path="empleados" element={<EmpleadosPage />} />
         <Route path="sorteo" element={<SorteoPage />} />
