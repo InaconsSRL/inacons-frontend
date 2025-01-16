@@ -4,7 +4,7 @@ import { NavLink, useLocation } from 'react-router-dom';
 import { FaProjectDiagram, FaUsers, FaUserShield, FaBriefcase, FaBoxOpen, FaTags, FaBalanceScale, FaLayerGroup, FaMoneyBillWave, FaShoppingCart, FaWarehouse, FaClipboardList, FaHandshake } from 'react-icons/fa';
 import { IoIosArchive } from "react-icons/io";
 import { FiHome } from 'react-icons/fi';
-import { GiConcreteBag, GiPartyFlags } from 'react-icons/gi';
+import { GiConcreteBag, GiLoad, GiPartyFlags } from 'react-icons/gi';
 import { MdViewKanban } from "react-icons/md";
 import DropdownMenu from './DropdownMenu';
 import { motion } from 'framer-motion';
@@ -24,7 +24,8 @@ const Sidebar: React.FC<SidebarProps> = ({ isSidebarOpen, toggleSidebar }) => {
   const moduloOtrosItems = [
     // { to: "/dashboard/calendar", icon: FaRegCalendarAlt, text: "Forma Básica" },
     { to: "/dashboard/organigrama", icon: FaProjectDiagram, text: "OrganigramaObras" },
-    { to: "/dashboard/sorteo", icon: GiPartyFlags, text: "Sortep" },
+    { to: "/dashboard/sorteo", icon: GiPartyFlags, text: "Sorteo" },
+    { to: "/dashboard/loader", icon: GiLoad, text: "LoaderDemo" },
     //{ to: "/dashboard/almacenbetha", icon: GiFireworkRocket, text: "Alm2" },
   ];
 

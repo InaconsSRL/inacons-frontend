@@ -31,6 +31,7 @@ import AlmacenBetha from './pages/AlmacenesPage/AlmacenBoard/AlmacenBetha';
 import EmpleadosPage from './pages/EmpleadosPage/EmpleadosPage';
 import SorteoPage from './pages/HomePage/Sorteo';
 import BodegasComponent from './pages/BodegasPage/BodegasComponent';
+import LoaderOverlay from './components/Loader/LoaderOverlay';
 
 const App: React.FC = () => {
   const user = useSelector((state: RootState) => state.user);
@@ -68,6 +69,7 @@ const App: React.FC = () => {
         <Route path="almacenbetha" element={<AlmacenBetha />} />
         <Route path="empleados" element={<EmpleadosPage />} />
         <Route path="sorteo" element={<SorteoPage />} />
+        <Route path="loader" element={<LoaderOverlay />} />
 
       </Route>
       <Route path="/" element={

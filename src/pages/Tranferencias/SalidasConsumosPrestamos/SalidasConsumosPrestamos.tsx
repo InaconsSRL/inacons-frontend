@@ -15,7 +15,7 @@ import { addConsumo } from '../../../slices/consumoSlice';
 import { addConsumoRecurso } from '../../../slices/consumoRecursoSlice';
 import { RecursoObra, SelectedRecurso } from './components/bodega.types';
 import Modal from '../../../components/Modal/Modal';
-
+import LoaderOverlay from '../../../components/Loader/LoaderOverlay';
 
 interface Props {
   obraId: string;
@@ -241,6 +241,7 @@ const SalidasConsumosPrestamos: React.FC<Props> = ({ obraId, recursos, onClose, 
 
   return (
     <>
+      {isProcessing && <LoaderOverlay message="Procesando transferencia..." />}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 p-4 bg-neutral-200 rounded-lg">
         <div>
           <div className="mb-4 sticky top-0 bg-white/80 p-4 shadow-md rounded-lg">
