@@ -57,6 +57,7 @@ import { obraBodegaReducer } from '../slices/obraBodegaSlice';
 import { obraBodegaRecursoReducer } from '../slices/obraBodegaRecursoSlice';
 import { cantidadRecursosByBodegaReducer } from '../slices/cantidadRecursosByBodegaSlice';
 import  {consumoRecursoReducer}  from '../slices/consumoRecursoSlice';
+import dateFilterReducer from '../slices/dateFilterSlice';
 
 export const store = configureStore({
   reducer: {
@@ -117,7 +118,7 @@ export const store = configureStore({
     obraBodegaRecurso: obraBodegaRecursoReducer,
     cantidadRecursosByBodega: cantidadRecursosByBodegaReducer,
     consumoRecurso: consumoRecursoReducer,
-
+    dateFilter: dateFilterReducer,
   },
 
   //Para que se tome mas tiempo en responder todas las solicitudes de la API

@@ -1,5 +1,5 @@
-import React, {useEffect, useState, useRef} from 'react';
-import {useDispatch, useSelector } from 'react-redux';
+import React, { useEffect, useState, useRef } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
 import { FiBell, FiMenu, FiX, FiLogOut } from 'react-icons/fi';
 import { useNavigate } from 'react-router-dom';
 import logo from '../../assets/logo.svg'
@@ -11,13 +11,14 @@ import { fetchUnidades } from '../../slices/unidadSlice';
 import { fetchUsuariosAndCargos } from '../../slices/usuarioSlice';
 import { fetchCotizaciones } from '../../slices/cotizacionSlice';
 import { fetchTiposRecurso } from '../../slices/tipoRecursoSlice';
+import { GlobalDateFilter } from '../../components/GlobalDateFilter/GlobalDateFilter';
 
 interface HeaderProps {
   toggleSidebar: () => void;
   isSidebarOpen: boolean;
 }
 
-const Header: React.FC<HeaderProps> = ({ toggleSidebar, isSidebarOpen }) => {  
+const Header: React.FC<HeaderProps> = ({ toggleSidebar, isSidebarOpen }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
   const dispatch = useDispatch<AppDispatch>();
@@ -48,7 +49,7 @@ const Header: React.FC<HeaderProps> = ({ toggleSidebar, isSidebarOpen }) => {
   }, []);
 
   const currentTime = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-  
+
   const user = useSelector((state: RootState) => state.user);
   return (
     <header className="fixed top-0 left-0 w-full bg-black bg-opacity-50 backdrop-blur-lg z-20">
@@ -71,11 +72,12 @@ const Header: React.FC<HeaderProps> = ({ toggleSidebar, isSidebarOpen }) => {
             <FiSearch className="absolute right-3 top-2 w-5 h-5 text-white" />
           </div>
         </div> */}
+        <GlobalDateFilter />
 
         <div className="flex items-center space-x-4 text-center">
           <span className="text-white text-lg hidden lg:block">{currentTime}</span>
           <div className="flex items-center space-x-2" ref={menuRef}>
-            <div 
+            <div
               className="flex items-center text-white cursor-pointer"
               onClick={() => setIsMenuOpen(!isMenuOpen)}
             >
