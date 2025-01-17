@@ -8,15 +8,16 @@ export default defineConfig({
         ViteFaviconsPlugin({
             logo: 'public/logo.png',
             favicons: {
-              appName: 'INACONS',
-              appDescription: 'INACONS application',
-              icons: {
-                favicons: true,
-                appleIcon: true,
-                appleStartup: false,
-                android: true,
-                windows: false
-              }
+                appName: 'Proyecto para INACONS',
+                appShortName: 'App NUFAGO',
+                appDescription: 'App NUFAGO - INACONS',
+                icons: {
+                    favicons: true,
+                    appleIcon: true,
+                    appleStartup: true,
+                    windows: true,
+                    android: true,
+                }
             }
         })
     ],
