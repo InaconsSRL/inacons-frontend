@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { useDispatch } from 'react-redux';
-import { AppDispatch } from '../../../store/store';
+import { useDispatch, useSelector } from 'react-redux';
+import { AppDispatch, RootState } from '../../../store/store';
 import { addRequerimientoRecurso } from '../../../slices/requerimientoRecursoSlice';
 import { Recurso } from './types/interfaces';
 import defaultImage from '../../../assets/NoImage.webp';
@@ -12,10 +12,14 @@ export const ProductCard: React.FC<Recurso> = ({
   imagenes,
   requerimiento_id,
   fecha_limit,
+  unidad_id
 }) => {
   const dispatch = useDispatch<AppDispatch>();
   const [selectedQuantity, setSelectedQuantity] = useState(0);
   const [notas, setNotas] = useState('');
+
+  const unidades = useSelector((state: RootState) => state.unidad.unidades);
+
 
   const handleAddToCart = () => {
     dispatch(addRequerimientoRecurso({
@@ -43,19 +47,22 @@ export const ProductCard: React.FC<Recurso> = ({
         />
       </div>
       <div className="p-4">
-        <h3 className="text-[8px] font-medium">{nombre}</h3>
-        <p className="text-gray-500 text-[8px]">Códigos: {codigo}</p>
+        <h3 className="text-[14px] font-medium">{nombre}</h3>
+        <p className="text-gray-500 text-[12px]">Códigos: {codigo}</p>
+        <p className="text-gray-500 text-[12px]">Unidad: {unidades.find(u => u.id === unidad_id)?.nombre || 'No especificada'}</p>
+        
+
         <div className="flex items-center justify-between mt-4">
           <div className='flex flex-col'>
 
-            <label className='text-[8px] ' htmlFor="cantidad">Cantidad:</label>
+            <label className='text-[14px] ' htmlFor="cantidad">Cantidad:</label>
             <input
               name='cantidad'
               type="number"
               min="0"
               value={selectedQuantity}
               onChange={(e) => setSelectedQuantity(parseInt(e.target.value) || 0)}
-              className="w-8 pl-2 border rounded-md text-[10px] bg-slate-700 text-white min-w-10"
+              className="w-8 pl-2 border rounded-md text-[15px] bg-slate-700 text-white min-w-10"
             />
           </div>
           <button
@@ -68,12 +75,12 @@ export const ProductCard: React.FC<Recurso> = ({
         <div className="mt-0">
           <div className='flex flex-col'>
 
-            <label className='text-[8px] ' htmlFor="cantidad">Ingrese notas:</label>
+            <label className='text-[14px] ' htmlFor="cantidad">Ingrese notas:</label>
             <input
               type="text"
               value={notas}
               onChange={(e) => setNotas(e.target.value || "")}
-              className="w-full border pl-2 rounded-md text-[10px] bg-slate-800 text-white "
+              className="w-full border pl-2 h-7 rounded-md text-[10px] bg-slate-800 text-white "
             />
           </div>
         </div>
