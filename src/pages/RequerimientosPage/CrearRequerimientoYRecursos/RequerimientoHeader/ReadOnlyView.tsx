@@ -27,55 +27,55 @@ export const ReadOnlyView: React.FC<ReadOnlyViewProps> = memo(({ formData, reque
   };
 
   return (
-    <div className="grid grid-cols-4 gap-1 bg-white/50 p-2 rounded-lg">
+    <div className="grid grid-cols-4 gap-1 bg-gray-900/80 py-2.5 px-3 rounded-lg">
       <div>
-        <span className="block text-xs text-gray-700">Código:</span>
-        <p className="text-sm border-b p-1">{formData.codigo || '-'}</p>
+        <span className="block font-bold text-xs text-zinc-400">Código:</span>
+        <p className="text-base text-zinc-100 p-1">{formData.codigo || '-'}</p>
       </div>
 
       <div>
-        <span className="block text-xs text-gray-700">Usuario:</span>
-        <p className="text-sm border-b p-1">{requerimiento.usuario || '-'}</p>
+        <span className="block font-bold text-xs text-zinc-400">Usuario:</span>
+        <p className="text-base text-zinc-100 p-1">{requerimiento.usuario || '-'}</p>
       </div>
 
       <div>
-        <span className="block text-xs text-gray-700">Obra:</span>
-        <p className="text-sm border-b p-1">
+        <span className="block text-xs font-bold text-zinc-400">Obra:</span>
+        <p className="text-base text-zinc-100 p-1">
           {obras.obras.find(obra => obra.id === formData.obra_id)?.nombre || '-'}
         </p>
       </div>
 
       <div>
-        <span className="block text-xs text-gray-700">Fecha Final:</span>
-        <p className="text-sm border-b p-1">
+        <span className="block text-xs font-bold text-zinc-400">Fecha Final:</span>
+        <p className="text-base text-zinc-100 p-1">
           {formatDateForInput(formData.fecha_final).split("-").reverse().join("-") || '-'}
         </p>
       </div>
 
       <div className="col-span-3">
-        <span className="block text-xs text-gray-700">Sustento:</span>
-        <p className="text-sm border-b p-1">{formData.sustento || '-'}</p>
+        <span className="block text-xs font-bold text-zinc-400">Sustento:</span>
+        <p className="text-base text-zinc-100 p-1">{formData.sustento || '-'}</p>
       </div>
 
       <div className="flex items-end gap-2">
         <button
           type="button"
           onClick={onEdit}
-          className="w-full bg-blue-500 text-white rounded text-xs p-2"
+          className="w-full bg-blue-500 text-white rounded text-base p-2"
         >
           Editar
         </button>
         <button
           type="button"
           onClick={onSave}
-          className="w-full bg-green-500 text-white rounded text-xs p-2"
+          className="w-full bg-green-500 text-white rounded text-base p-2"
         >
           Guardar
         </button>
         <button
           type="button"
           onClick={handleOpenModal}
-          className="w-full bg-yellow-500 text-white rounded text-xs p-2"
+          className="w-full bg-yellow-500 text-white rounded text-base p-2"
         >
           Enviar
         </button>

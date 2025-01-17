@@ -63,8 +63,8 @@ const RequerimientoRecursos: React.FC<RequerimientoRecursosProps> = ({ initialVa
     }
 
     return (
-      <div className="grid grid-cols-1 lg:grid-cols-4 gap-2 relative min-h-[calc(90vh)] min-w-[70vw] ">
-        <div className='col-span-4'>
+      <div className="flex flex-col gap-4 min-h-[calc(85vh)] min-w-[70vw] p-4">
+        <div className='w-full h-28'>
           <RequerimientoHeader 
             key={requerimiento_id}
             requerimiento={requerimientoData!} 
@@ -72,11 +72,19 @@ const RequerimientoRecursos: React.FC<RequerimientoRecursosProps> = ({ initialVa
             onClose={onClose}
           />
         </div>
-        <div className="col-span-2 h-full ">
-          <ProductList requerimiento_id={requerimiento_id} fecha_final={requerimientoData ? new Date(requerimientoData.fecha_final) : new Date()} />
-        </div>
-        <div className="col-span-2 lg:sticky lg:top-8">
-          <SelectedProducts requerimiento_id={requerimiento_id} fecha_final={requerimientoData ? new Date(requerimientoData.fecha_final) : new Date()} />
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 h-[calc(100vh-20rem)]">
+          <div className="overflow-auto rounded-lg shadow-md bg-white/50 p-4">
+            <ProductList 
+              requerimiento_id={requerimiento_id} 
+              fecha_final={requerimientoData ? new Date(requerimientoData.fecha_final) : new Date()} 
+            />
+          </div>
+          <div className="overflow-auto rounded-lg shadow-md bg-white/50 p-4">
+            <SelectedProducts 
+              requerimiento_id={requerimiento_id} 
+              fecha_final={requerimientoData ? new Date(requerimientoData.fecha_final) : new Date()} 
+            />
+          </div>
         </div>
       </div>
     );

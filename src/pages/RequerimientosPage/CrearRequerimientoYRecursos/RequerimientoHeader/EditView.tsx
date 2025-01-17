@@ -1,5 +1,4 @@
 import React, { memo } from 'react';
-import Button from '../../../../components/Buttons/Button';
 import { FormData, Requerimiento } from './types';
 
 interface EditViewProps {
@@ -20,26 +19,26 @@ export const EditView: React.FC<EditViewProps> = memo(({
   obras,
   onCancel 
 }) => (
-    <form onSubmit={handleSubmit} className="grid grid-cols-4 gap-1 bg-white/50 p-2 rounded-lg">
+    <form onSubmit={handleSubmit} className="grid grid-cols-4 gap-x-4 bg-black/70 px-2 rounded-lg">
       <div>
-        <span className="block text-xs text-gray-700">Código:</span>
-        <p className="text-xs border rounded p-1">{formData.codigo || '-'}</p>
+        <span className="block font-bold text-base text-zinc-400">Código:</span>
+        <p className="tw-full rounded text-base text-white p-1">{formData.codigo || '-'}</p>
       </div>
   
       <div>
-        <label className="block text-xs text-gray-700">Usuario:</label>
-        <p className="w-full border rounded text-xs p-1">
+        <label className="block font-bold text-base text-zinc-400">Usuario:</label>
+        <p className="w-full rounded text-base text-white p-1">
           {requerimiento.usuario}
         </p>
       </div>
   
       <div>
-        <label className="block text-xs text-gray-700">Obra:</label>
+        <label className="block font-bold text-base text-zinc-400">Cambiar Obra:</label>
         <select
           name="obra_id"
           value={formData.obra_id}
           onChange={handleInputChange}
-          className="w-full border rounded text-xs p-1"
+          className="w-full border rounded text-base p-1"
         >
           <option value="">Seleccionar</option>
           {obras.obras.map((obra) => (
@@ -49,39 +48,39 @@ export const EditView: React.FC<EditViewProps> = memo(({
       </div>
   
       <div>
-        <label className="block text-xs text-gray-700">Fecha Final:</label>
+        <label className="block font-bold text-base text-zinc-400">Modificar Fecha Final:</label>
         <input
           name="fecha_final"
           type="date"
           value={formData.fecha_final}
           onChange={handleInputChange}
-          className="w-full border rounded text-xs p-1"
+          className="w-full border rounded text-base p-1"
         />
       </div>
   
       <div className="col-span-3">
-        <label className="block text-xs text-gray-700">Sustento:</label>
+        <label className="block font-bold text-base text-zinc-400">Modificar Sustento:</label>
         <textarea
           name="sustento"
           value={formData.sustento}
           onChange={handleInputChange}
-          className="w-full border rounded text-xs p-1 h-8"
+          className="w-full border rounded text-base p-1 h-8"
         />
       </div>
   
       <div className="flex items-end pb-2 gap-3">
         <button
           type='submit'
-          className="w-full bg-green-500 text-white rounded text-xs p-2.5"
+          className="w-full bg-green-500 text-white rounded text-base p-1.5"
         >
           Guardar
         </button>
-        <Button
+        <button
           onClick={onCancel}  // Cambiar aquí
-          text="Cancelar"
           color='rojo'
-          className="w-full bg-red-500 text-white rounded text-xs"
-        />
+          className="w-full bg-red-500 text-white rounded text-base p-1.5"
+        >Cancelar
+        </button>
       </div>
     </form>
   ));

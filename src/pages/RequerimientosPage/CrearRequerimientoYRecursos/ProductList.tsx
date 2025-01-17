@@ -6,7 +6,7 @@ import { fetchObras } from '../../../slices/obrasSlice';
 import { ProductCard } from './ProductCard';
 import LoaderPage from '../../../components/Loader/LoaderPage';
 import { ProductListProps } from './types/interfaces';
-import { FiSearch } from 'react-icons/fi';
+import { FiSearch, FiGrid, FiList } from 'react-icons/fi';
 
 export const ProductList: React.FC<ProductListProps> = ({ requerimiento_id, fecha_final }) => {
   const dispatch = useDispatch<AppDispatch>();
@@ -17,6 +17,7 @@ export const ProductList: React.FC<ProductListProps> = ({ requerimiento_id, fech
   const [searchInput, setSearchInput] = useState('');
   const [displayedRecursos, setDisplayedRecursos] = useState<typeof recursos>([]);
   const [showAll] = useState(false);
+  const [viewType, setViewType] = useState<'grid' | 'list'>('grid');
 
   // Cargar recursos y obras iniciales
   useEffect(() => {
@@ -65,7 +66,7 @@ export const ProductList: React.FC<ProductListProps> = ({ requerimiento_id, fech
   }
 
   return (
-    <div className="flex flex-col h-[calc(100vh-8rem)]">
+    <div className="flex flex-col h-[calc(100vh-22rem)] overflow-hidden">
       {/* Barra de búsqueda */}
       <div className="mb-4 sticky top-0 bg-white/80 p-4 shadow-md rounded-lg">
         <div className="flex flex-col gap-3">
@@ -88,7 +89,14 @@ export const ProductList: React.FC<ProductListProps> = ({ requerimiento_id, fech
               className="px-6 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
             >
               Buscar
-            </button>            
+            </button>
+            <button
+              onClick={() => setViewType(viewType === 'grid' ? 'list' : 'grid')}
+              className="px-3 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors"
+              title={viewType === 'grid' ? "Vista lista" : "Vista cuadrícula"}
+            >
+              {viewType === 'grid' ? <FiList size={20} /> : <FiGrid size={20} />}
+            </button>
           </div>
         </div>
       </div>
@@ -102,13 +110,18 @@ export const ProductList: React.FC<ProductListProps> = ({ requerimiento_id, fech
               "Ingrese un término de búsqueda para mostrar recursos"}
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-4 max-h-[75vh] overflow-y-auto">
+          <div className={`${
+            viewType === 'grid' 
+              ? 'grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-4' 
+              : 'grid grid-cols-1 gap-4'
+          } max-h-[calc(100vh-28rem)] overflow-y-auto`}>
             {displayedRecursos.map((recurso) => (
               <ProductCard
                 key={recurso.id}
                 {...recurso}
                 requerimiento_id={requerimiento_id}
                 fecha_limit={fecha_final}
+                viewType={viewType}
               />
             ))}
           </div>
