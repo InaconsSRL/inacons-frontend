@@ -96,7 +96,7 @@ const pageTransition = {
 const recursoInicial = {
   codigo: '',
   nombre: '',
-  clasificacion_recurso_id: '',
+  clasificacion_recurso_id: '66e20f913c70b0168443708c',
   tipo_recurso_id: '',
   tipo_costo_recurso_id: '',
   vigente: false,
@@ -259,7 +259,10 @@ const RecursosPage: React.FC = () => {
     };
     return recursos.map(r => ({
       nombre: r.nombre,
-      unidad: getNameById(listData.listUnidad, r.unidad_id)
+      unidad: getNameById(listData.listUnidad, r.unidad_id),
+      tipoRecurso: getNameById(listData.listTipoRecurso, r.tipo_recurso_id),
+      unidad_id: r.unidad_id,
+      tipo_recurso_id: r.tipo_recurso_id,
     }));
   }, [recursos, listData]);
 

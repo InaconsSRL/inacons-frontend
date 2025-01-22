@@ -41,6 +41,15 @@ interface Clasificacion {
   childs?: Clasificacion[];
 }
 
+interface FormErrors {
+  nombre?: boolean;
+  tipo_recurso_id?: boolean;
+  unidad_id?: boolean;
+  precio_actual?: boolean;
+  descripcion?: boolean;
+  tipo_costo_recurso_id?: boolean;
+}
+
 const Select: React.FC<React.SelectHTMLAttributes<HTMLSelectElement>> = (props) => (
   <select {...props} className="w-full border rounded-md p-2 mt-1">
     {props.children}
@@ -63,9 +72,9 @@ const Button: React.FC<React.ButtonHTMLAttributes<HTMLButtonElement> & { variant
   </button>
 );
 
-const Label: React.FC<React.LabelHTMLAttributes<HTMLLabelElement>> = (props) => (
-  <label {...props} className="block text-xs font-medium text-gray-700 mb-1">
-    {props.children}
+const Label: React.FC<React.LabelHTMLAttributes<HTMLLabelElement> & { error?: boolean }> = ({ error, ...props }) => (
+  <label {...props} className={`block text-xs font-medium ${error ? 'text-red-500' : 'text-gray-700'} mb-1`}>
+    {props.children} {error && <span className="text-red-500">*</span>}
   </label>
 );
 
@@ -78,21 +87,31 @@ interface ResourceFormProps {
     tiposRecurso: Array<{ id: string; nombre: string }>;
     clasificaciones: Clasificacion[];
   };
-  similarResources: Array<{ nombre: string; unidad: string }>;
+  similarResources: Array<{ 
+    nombre: string,
+    unidad: string, 
+    tipoRecurso: string,
+    unidad_id: string,
+    tipo_recurso_id: string,
+  }>;
 }
 
+
 const ResourceForm: React.FC<ResourceFormProps> = ({ initialValues, onSubmit, options, similarResources }) => {
+  console.log(options.tiposRecurso)
   const dispatch = useDispatch();
   const [isLoading, setIsLoading] = useState(false);
   const [isSelectHistorial, setIsSelectHistorial] = useState(false);
   /* const [images, setImages] = useState<File[]>([]); */
   const [imagePreviews, setImagePreviews] = useState<string[]>([]);
   const [formData, setFormData] = useState<FormData>(initialValues);
-  const [similarMatches, setSimilarMatches] = useState<Array<{ nombre: string; unidad: string }>>([]);
+  const [similarMatches, setSimilarMatches] = useState<Array<{ nombre: string; unidad: string, tipoRecurso: string }>>([]);
 
   const [uploadingImage, setUploadingImage] = useState(false);
   const [isEditing, setIsEditing] = useState(!!initialValues.codigo);
   const [response, setResponse] = useState<ResponseData | null>(null);
+  const [isDuplicate, setIsDuplicate] = useState(false);
+  const [errors, setErrors] = useState<FormErrors>({});
 
   const handleImageUpload = async (file: File) => {
     if (!formData.id) {
@@ -145,12 +164,11 @@ const ResourceForm: React.FC<ResourceFormProps> = ({ initialValues, onSubmit, op
   useEffect(() => {
     if (response && Object.keys(response).length > 0) {
       setFormData({...defaultFormData, ...response});
+    } else if (initialValues && Object.keys(initialValues).length > 0) {
+      setFormData({...defaultFormData, ...initialValues});
     } else {
-      if (initialValues && Object.keys(initialValues).length > 0) {
-        setFormData({...defaultFormData, ...initialValues});
-      } else {
-        setFormData(defaultFormData);
-      }
+      // Si no hay response ni initialValues, usar defaultFormData directamente
+      setFormData(defaultFormData);
     }
     setImagePreviews((response || initialValues)?.imagenes?.map((img: any) => img.file || img) || []);
   }, [initialValues, response]);
@@ -166,6 +184,18 @@ const ResourceForm: React.FC<ResourceFormProps> = ({ initialValues, onSubmit, op
     }
   }, [formData.nombre, similarResources]);
 
+  useEffect(() => {
+    if (!isEditing && formData.nombre && formData.unidad_id && formData.tipo_recurso_id) {
+      const duplicate = similarResources.some(resource => 
+        resource.nombre.toLowerCase() === formData.nombre.toLowerCase() && 
+        (resource.unidad_id === formData.unidad_id || resource.tipo_recurso_id === formData.tipo_recurso_id)
+      );
+      setIsDuplicate(duplicate);
+    } else {
+      setIsDuplicate(false);
+    }
+  }, [formData.nombre, formData.unidad_id, formData.tipo_recurso_id, similarResources, isEditing]);
+
   
   const handleSelectHistorial = () => {
     setIsSelectHistorial(true);
@@ -178,7 +208,7 @@ const ResourceForm: React.FC<ResourceFormProps> = ({ initialValues, onSubmit, op
       [name]: name === 'precio_actual' ? parseFloat(value) || 0 : value
     }));
   };
-
+  console.log(isDuplicate)
   const compressImage = (file: File): Promise<File> => {
     return new Promise((resolve) => {
       const reader = new FileReader();
@@ -249,11 +279,39 @@ const ResourceForm: React.FC<ResourceFormProps> = ({ initialValues, onSubmit, op
     setUploadingImage(false);
   };
 
+  const validateForm = (): boolean => {
+    const newErrors: FormErrors = {};
+    const requiredFields = {
+      nombre: formData.nombre,
+      tipo_recurso_id: formData.tipo_recurso_id,
+      unidad_id: formData.unidad_id,
+      precio_actual: formData.precio_actual,
+      descripcion: formData.descripcion,
+      tipo_costo_recurso_id: formData.tipo_costo_recurso_id,
+    };
+
+    Object.entries(requiredFields).forEach(([key, value]) => {
+      if (!value && value !== 0) {
+        newErrors[key as keyof FormErrors] = true;
+      }
+    });
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
   const handleSubmit = async (e: React.FormEvent | null, dataToSubmit = formData) => {
     if (e) e.preventDefault();
+    
+    if (!validateForm()) {
+      alert('Por favor, complete todos los campos obligatorios');
+      return;
+    }
+
     setIsLoading(true);
     try {
       const response = await onSubmit(dataToSubmit) as ResponseData;
+      console.log("Se esta enviando el formulario", dataToSubmit);
       if (response) {
         setResponse(response);
         setFormData(prevData => ({
@@ -272,7 +330,7 @@ const ResourceForm: React.FC<ResourceFormProps> = ({ initialValues, onSubmit, op
   };
   
   const handleDuplicate = () => {
-    const { id, ...dataWithoutId } = formData;
+    const { id:_id, ...dataWithoutId } = formData;
     const duplicatedData = {
       ...dataWithoutId,
       nombre: `${formData.nombre} copy`,
@@ -283,18 +341,19 @@ const ResourceForm: React.FC<ResourceFormProps> = ({ initialValues, onSubmit, op
   const renderClasificaciones = (clasificaciones: Clasificacion[]) => {
     return clasificaciones.map(clasificacion => (
       <React.Fragment key={clasificacion.id}>
-        <option value="" disabled style={{ color: 'blue', fontWeight: 'bold' }}>
+        <option value={clasificacion.id} disabled style={{ color: 'blue', fontWeight: 'bold' }}>
           {clasificacion.nombre}
         </option>
         {clasificacion.childs && clasificacion.childs.map(child => (
           <React.Fragment key={child.id}>
-            <option value="" disabled className='pl-4 text-green-500 font-bold'>
+            <option value={child.id} disabled className='pl-4 text-green-500 font-bold'>
               ├─ {child.nombre}
             </option>
-            {child.childs  && child.childs.map(grandchild   => (
+            {child.childs && child.childs.map(grandchild => (
               <option
                 key={grandchild.id}
                 value={grandchild.id}
+                selected={grandchild.id === formData.clasificacion_recurso_id}
                 style={{ color: 'black', paddingLeft: '40px' }}
               >
                 │  └─ {grandchild.nombre}
@@ -339,25 +398,38 @@ const ResourceForm: React.FC<ResourceFormProps> = ({ initialValues, onSubmit, op
           <Button type="button">H.Cambios</Button>
           <Button type="button">H.Precios</Button>
           <Button onClick={handleSelectHistorial} type="button">Ver Historial</Button>
-          <Button type="submit" variant="primary">
-            {isEditing ? 'Actualizar Recurso' : 'Crear Recurso'}
-          </Button>
+          {(!isDuplicate || isEditing) && (
+            <Button type="submit" variant="primary">
+              {isEditing ? 'Actualizar Recurso' : 'Crear Recurso'}
+            </Button>
+          )}
         </div>
+        {isDuplicate && !isEditing && (
+          <div className="text-red-500 text-xs mt-2">
+            Existe un recurso con el mismo nombre e igual Unidad y/o Tipo Recurso
+          </div>
+        )}
         <div className="my-2 h-0.5 bg-gray-300 rounded-full"></div>
 
         {/* Contenedor de campos principales */}
         <div className="grid grid-cols-1 sm:grid-cols-12 gap-4">
           <div className='col-span-1 sm:col-span-8'>
             <div className="mb-2">
-              <Label htmlFor="nombre">Nombre</Label>
-              <Input id="nombre" name="nombre" value={formData.nombre} onChange={handleInputChange} />
+              <Label htmlFor="nombre" error={errors.nombre}>Nombre</Label>
+              <Input 
+                id="nombre" 
+                name="nombre" 
+                value={formData.nombre} 
+                onChange={handleInputChange}
+                className={`w-full border ${errors.nombre ? 'border-red-500' : 'border-gray-300'} rounded-md p-2 mt-1`}
+              />
               {similarMatches.length > 0 && (
                 <ul className="mt-1 bg-gray-50 border border-gray-300 rounded-md max-h-40 overflow-auto text-xs">
                   {similarMatches.map((item, idx) => (
                     <li key={idx} className="p-1 hover:bg-gray-200">
                       {item.nombre}
                       <div className="text-gray-400 text-[10px]">
-                        {item.unidad}
+                        {item.unidad} - {item.tipoRecurso}
                       </div>
                     </li>
                   ))}
@@ -366,15 +438,26 @@ const ResourceForm: React.FC<ResourceFormProps> = ({ initialValues, onSubmit, op
             </div>
             <div className="mb-2">
               <Label htmlFor="clasificacion_recurso_id">Clase</Label>
-              <Select id="clasificacion_recurso_id" name="clasificacion_recurso_id" value={formData.clasificacion_recurso_id} onChange={handleInputChange}>
-                <option>--Elige--</option>
+              <Select 
+                id="clasificacion_recurso_id" 
+                name="clasificacion_recurso_id" 
+                value={formData.clasificacion_recurso_id || ''} 
+                onChange={handleInputChange}
+              >
+                <option value="">--Elige--</option>
                 {renderClasificaciones(options.clasificaciones)}
               </Select>
             </div>
             <div className='grid grid-cols-1 sm:grid-cols-2 gap-4'>
               <div>
-                <Label htmlFor="tipo_recurso_id">Tipo de Recurso</Label>
-                <Select id="tipo_recurso_id" name="tipo_recurso_id" value={formData.tipo_recurso_id} onChange={handleInputChange}>
+                <Label htmlFor="tipo_recurso_id" error={errors.tipo_recurso_id}>Tipo de Recurso</Label>
+                <Select 
+                  id="tipo_recurso_id" 
+                  name="tipo_recurso_id" 
+                  value={formData.tipo_recurso_id} 
+                  onChange={handleInputChange}
+                  className={`w-full border ${errors.tipo_recurso_id ? 'border-red-500' : 'border-gray-300'} rounded-md p-2 mt-1`}
+                >
                   <option>--Elige--</option>
                   {options.tiposRecurso.map((tipo) => (
                     <option key={tipo.id} value={tipo.id}>{tipo.nombre}</option>
@@ -382,7 +465,7 @@ const ResourceForm: React.FC<ResourceFormProps> = ({ initialValues, onSubmit, op
                 </Select>
               </div>
               <div>
-                <Label htmlFor="tipo_costo_recurso_id">Tipo Costo</Label>
+                <Label htmlFor="tipo_costo_recurso_id" error={errors.tipo_costo_recurso_id}>Tipo Costo</Label>
                 <Select id="tipo_costo_recurso_id" name="tipo_costo_recurso_id" value={formData.tipo_costo_recurso_id} onChange={handleInputChange}>
                   <option>--Elige--</option>
                   {options.tipoCostoRecursos.map((tipo) => (
@@ -410,8 +493,14 @@ const ResourceForm: React.FC<ResourceFormProps> = ({ initialValues, onSubmit, op
               </div>
             </div>
             <div className='mb-2'>
-              <Label htmlFor="unidad_id">Unidad</Label>
-              <Select id="unidad_id" name="unidad_id" value={formData.unidad_id} onChange={handleInputChange}>
+              <Label htmlFor="unidad_id" error={errors.unidad_id}>Unidad</Label>
+              <Select 
+                id="unidad_id" 
+                name="unidad_id" 
+                value={formData.unidad_id} 
+                onChange={handleInputChange}
+                className={`w-full border ${errors.unidad_id ? 'border-red-500' : 'border-gray-300'} rounded-md p-2 mt-1`}
+              >
                 <option>--Elige--</option>
                 {options.unidades.map(unidad => (
                   <option key={unidad.id} value={unidad.id}>{unidad.nombre}</option>
@@ -419,19 +508,26 @@ const ResourceForm: React.FC<ResourceFormProps> = ({ initialValues, onSubmit, op
               </Select>
             </div>
             <div className='mb-2'>
-            <Label htmlFor="precio_actual">Costo Inicial</Label>
-            <Input type='number' id="precio_actual" name="precio_actual" value={formData.precio_actual || ''} onChange={handleInputChange} />
+            <Label htmlFor="precio_actual" error={errors.precio_actual}>Costo Inicial</Label>
+            <Input 
+              type='number' 
+              id="precio_actual" 
+              name="precio_actual" 
+              value={formData.precio_actual || ''} 
+              onChange={handleInputChange}
+              className={`w-full border ${errors.precio_actual ? 'border-red-500' : 'border-gray-300'} rounded-md p-2 mt-1`}
+            />
           </div>
           </div>
 
           <div className="col-span-1 sm:col-span-12 mb-0">
-            <Label htmlFor="descripcion">Descripcion</Label>
+            <Label htmlFor="descripcion" error={errors.descripcion}>Descripcion</Label>
             <textarea
               id="descripcion"
               name="descripcion"
               value={formData.descripcion}
               onChange={handleInputChange}
-              className='w-full border border-gray-300 rounded-md p-2 mt-1'
+              className={`w-full border ${errors.descripcion ? 'border-red-500' : 'border-gray-300'} rounded-md p-2 mt-1`}
               rows={1}
             ></textarea>
           </div>
