@@ -6,7 +6,8 @@ import Modal from '../../components/Modal/Modal';
 import TableComponent from '../../components/Table/TableComponent';
 import { fetchOrdenCompras } from '../../slices/ordenCompraSlice';
 import LoaderPage from '../../components/Loader/LoaderPage';
-import { FiEye, FiRefreshCw } from 'react-icons/fi';
+import { FiEye, FiRefreshCw, FiDollarSign } from 'react-icons/fi';
+import { useNavigate } from 'react-router-dom';
 import { RootState, AppDispatch } from '../../store/store';
 import OrdenCompraDetalle from './OrdenCompraDetalle';
 
@@ -78,6 +79,13 @@ const OrdenCompraPage: React.FC = () => {
         }
     };
 
+
+    const navigate = useNavigate(); 
+    const handleNavigateToPayments = (ordenCompraId: string) => {
+        //navigate(`/orden-pago?ordenCompraId=${ordenCompraId}`);
+	    navigate(`/dashboard/ordenPago?ordenCompraId=${ordenCompraId}`);
+    };
+    
     const tableData = useMemo(() => ({
         headers: [
             "id",
@@ -86,6 +94,7 @@ const OrdenCompraPage: React.FC = () => {
             "codigo",
             "descripción",
             "estado",
+	    "Pagos",
             "opciones"
         ],
         rows: getFilteredOrdenCompras().map(oc => ({
@@ -95,6 +104,15 @@ const OrdenCompraPage: React.FC = () => {
             "fecha inicio": formatDate(oc.fecha_ini),
             "fecha fin": formatDate(oc.fecha_fin),
             estado: oc.estado ? 'Activo' : 'Inactivo',
+	    Pagos: (
+                <button 
+                    className="text-blue-500 hover:text-blue-700 transition-colors"
+                    onClick={() => handleNavigateToPayments(oc.id)}
+                    title="Ver pagos"
+                >
+                    <FiDollarSign size={20} />
+                </button>
+            ),	    
             opciones: (
                 <div className='flex flex-row gap-2'>
                     <button className='text-yellow-500' onClick={() => handleView(oc)}>
@@ -104,7 +122,7 @@ const OrdenCompraPage: React.FC = () => {
                 </div>
             )
         }))
-    }), [ordenCompras, activeFilter]);
+    }), [ordenCompras, activeFilter, navigate]);
 
     if (loading) return <LoaderPage />;
     if (error) return <div>Error: {error}</div>;

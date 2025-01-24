@@ -20,6 +20,9 @@ import { movilidadReducer } from '../slices/movilidadSlice';
 import { obraReducer } from '../slices/obrasSlice';
 import { ordenCompraRecursosReducer } from '../slices/ordenCompraRecursosSlice';
 import { ordenCompraReducer } from '../slices/ordenCompraSlice';
+import { ordenPagoReducer } from '../slices/ordenPagoSlice';
+import { desccuentoPagoReducer, descuentoPagoReducer} from '../slices/descuentoPagoSlice';
+
 import { preSolicitudAlmacenRecursoReducer } from '../slices/preSolicitudAlmacenRecursoSlice';
 import { preSolicitudAlmacenReducer } from '../slices/preSolicitudAlmacenSlice';
 import { proveedorReducer } from '../slices/proveedorSlice';
@@ -85,7 +88,9 @@ export const store = configureStore({
     movilidad: movilidadReducer,
     obra: obraReducer,
     ordenCompraRecursos: ordenCompraRecursosReducer,
-    ordenCompra: ordenCompraReducer,
+      ordenCompra: ordenCompraReducer,
+      ordenPago : ordenPagoReducer,
+      descuentoPago: descuentoPagoReducer,
     preSolicitudAlmacenRecurso: preSolicitudAlmacenRecursoReducer,
     preSolicitudAlmacen: preSolicitudAlmacenReducer,
     proveedor: proveedorReducer,
