@@ -21,8 +21,8 @@ import { obraReducer } from '../slices/obrasSlice';
 import { ordenCompraRecursosReducer } from '../slices/ordenCompraRecursosSlice';
 import { ordenCompraReducer } from '../slices/ordenCompraSlice';
 import { ordenPagoReducer } from '../slices/ordenPagoSlice';
-import { desccuentoPagoReducer, descuentoPagoReducer} from '../slices/descuentoPagoSlice';
-
+import { descuentoPagoReducer} from '../slices/descuentoPagoSlice';
+import { aprobacionOrdenPagoReducer } from '../slices/aprobacionesOrdenPagoSlice';
 import { preSolicitudAlmacenRecursoReducer } from '../slices/preSolicitudAlmacenRecursoSlice';
 import { preSolicitudAlmacenReducer } from '../slices/preSolicitudAlmacenSlice';
 import { proveedorReducer } from '../slices/proveedorSlice';
@@ -61,6 +61,8 @@ import { obraBodegaRecursoReducer } from '../slices/obraBodegaRecursoSlice';
 import { cantidadRecursosByBodegaReducer } from '../slices/cantidadRecursosByBodegaSlice';
 import  {consumoRecursoReducer}  from '../slices/consumoRecursoSlice';
 import dateFilterReducer from '../slices/dateFilterSlice';
+import { pagosOrdenPagoReducer } from '../slices/pagosOrdenPagoSlice';
+import { archivoPagoReducer } from '../slices/archivoPagoSlice';
 
 export const store = configureStore({
   reducer: {
@@ -91,6 +93,7 @@ export const store = configureStore({
       ordenCompra: ordenCompraReducer,
       ordenPago : ordenPagoReducer,
       descuentoPago: descuentoPagoReducer,
+      aprobacionOrdenPago: aprobacionOrdenPagoReducer,
     preSolicitudAlmacenRecurso: preSolicitudAlmacenRecursoReducer,
     preSolicitudAlmacen: preSolicitudAlmacenReducer,
     proveedor: proveedorReducer,
@@ -124,6 +127,8 @@ export const store = configureStore({
     cantidadRecursosByBodega: cantidadRecursosByBodegaReducer,
     consumoRecurso: consumoRecursoReducer,
     dateFilter: dateFilterReducer,
+    pagosOrdenPago: pagosOrdenPagoReducer,
+    archivoPago: archivoPagoReducer,
   },
 
   //Para que se tome mas tiempo en responder todas las solicitudes de la API

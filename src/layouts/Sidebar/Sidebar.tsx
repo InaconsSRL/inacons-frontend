@@ -51,6 +51,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isSidebarOpen, toggleSidebar }) => {
 
    const moduloPagos = [
       { to: "/dashboard/ordenPago", icon: FaListCheck, text: "OrdenesDePagos" },
+      { to: "/dashboard/listaOrdenPago", icon: FaClipboardList, text: "Lista de Pagos" }, // Nueva línea agregada
   ];
        
   const moduloProyectos = [

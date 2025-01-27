@@ -4,6 +4,7 @@ import {
   addOrdenPagoDescuentoService,
   updateOrdenPagoDescuentoService,
   deleteOrdenPagoDescuentoService,
+  getDescuentosByOrdenPagoService, 
   OrdenPagoDescuentoInput
 } from '../services/descuentoPagoService';
 
@@ -96,6 +97,17 @@ export const deleteDescuento = createAsyncThunk(
   }
 );
 
+export const fetchDescuentosByOrdenPago = createAsyncThunk(
+  'descuentoPago/fetchDescuentosByOrdenPago',
+  async (ordenPagoId: string, { rejectWithValue }) => {
+    try {
+      return await getDescuentosByOrdenPagoService(ordenPagoId);
+    } catch (error) {
+      return rejectWithValue((error as Error).message);
+    }
+  }
+);
+
 // Slice
 const descuentoPagoSlice = createSlice({
   name: 'descuentoPago',
@@ -130,7 +142,21 @@ const descuentoPagoSlice = createSlice({
       // Delete descuento
       .addCase(deleteDescuento.fulfilled, (state, action: PayloadAction<{ id: string }>) => {
         state.descuentos = state.descuentos.filter(item => item.id !== action.payload.id);
-      });
+      })
+
+       // Agregamos los casos para fetchDescuentosByOrdenPago
+      .addCase(fetchDescuentosByOrdenPago.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(fetchDescuentosByOrdenPago.fulfilled, (state, action: PayloadAction<OrdenPagoDescuento[]>) => {
+        state.loading = false;
+        state.descuentos = action.payload;
+      })
+      .addCase(fetchDescuentosByOrdenPago.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
+      });      
   },
 });
 

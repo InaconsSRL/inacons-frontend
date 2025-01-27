@@ -158,6 +158,38 @@ const DELETE_ORDEN_PAGO_DESCUENTO = gql`
   }
 `;
 
+const GET_DESCUENTOS_BY_ORDEN_PAGO = gql`
+  query GetDescuentosByOrdenPago($ordenPagoId: ID!) {
+    getDescuentosByOrdenPago(ordenPagoId: $ordenPagoId) {
+      id
+      orden_pago_id {
+        id
+        codigo
+        monto_solicitado
+        tipo_moneda
+        tipo_pago
+        estado
+        observaciones
+        comprobante
+        fecha
+      }
+      codigo
+      monto
+      tipo
+      detalle
+      usuario_id {
+        id
+        nombres
+        apellidos
+        dni
+        usuario
+        contrasenna
+      }
+    }
+  }
+`;
+
+
 // Interface para el input
 interface OrdenPagoDescuentoInput {
   orden_pago_id: string;
@@ -213,5 +245,17 @@ export const deleteOrdenPagoDescuentoService = async (id: string) => {
     return data.deleteOrdenPagoDescuento;
   } catch (error) {
     throw new Error(`Error al eliminar descuento de orden de pago: ${error}`);
+  }
+};
+
+export const getDescuentosByOrdenPagoService = async (ordenPagoId: string) => {
+  try {
+    const { data } = await client.query({
+      query: GET_DESCUENTOS_BY_ORDEN_PAGO,
+      variables: { ordenPagoId },
+    });
+    return data.getDescuentosByOrdenPago;
+  } catch (error) {
+    throw new Error(`Error al obtener los descuentos de la orden de pago: ${error}`);
   }
 };

@@ -8,10 +8,11 @@ import DescuentoPagosPage from './DescuentosPagosPage';
 import {useSearchParams} from 'react-router-dom';
 
 import { useDispatch, useSelector } from 'react-redux';
-import { fetchOrdenPagos, addOrdenPago, updateOrdenPago, deleteOrdenPago, fetchOrdenPagosByOrdenCompra } from '../../slices/ordenPagoSlice';
+import { addOrdenPago, updateOrdenPago, deleteOrdenPago, fetchOrdenPagosByOrdenCompra } from '../../slices/ordenPagoSlice';
 import { RootState, AppDispatch } from '../../store/store';
 import LoaderPage from '../../components/Loader/LoaderPage';
-import { FiEdit, FiTrash2, FiDollarSign, FiPercent } from 'react-icons/fi';
+import { TbEyeDiscount } from "react-icons/tb";
+import { FiEdit, FiTrash2 } from 'react-icons/fi';
 
 const pageVariants = {
   initial: { opacity: 0, y: 20 },
@@ -116,15 +117,68 @@ const OrdenPagoPage: React.FC = () => {
   };
 
   useEffect(() => {
-    dispatch(fetchOrdenPagos());
+    //dispatch(fetchOrdenPagos());
     if (ordenCompraId) {
       dispatch(fetchOrdenPagosByOrdenCompra(ordenCompraId));
     }
   }, [dispatch, ordenCompraId]);
 
   const handleEdit = (ordenPago: any) => {
+    // Establecer los valores actuales en el estado
+    setMonto(ordenPago.monto_solicitado);
+    setMoneda(ordenPago.tipo_moneda);
+    setTipoComprobante(ordenPago.comprobante);
+    setTipoPago(ordenPago.tipo_pago);
     setEditingOrdenPago(ordenPago);
     setIsModalOpen(true);
+  };
+
+  const handleUpdate = async () => {
+    try {
+      if (!editingOrdenPago) return;
+
+      if (!monto || !moneda || !tipoComprobante || !tipoPago) {
+        setToastMessage('Por favor complete todos los campos');
+        setToastVariant('warning');
+        setShowToast(true);
+        return;
+      }
+
+      const updatedOrdenPago = {
+        id: editingOrdenPago.id,
+        monto_solicitado: Number(monto),
+        tipo_moneda: moneda,
+        tipo_pago: tipoPago,
+        comprobante: tipoComprobante,
+        estado: editingOrdenPago.estado,
+        usuario_id: userId,
+        orden_compra_id: ordenCompraId || ''
+      };
+
+      await dispatch(updateOrdenPago(updatedOrdenPago));
+      
+      setToastMessage('Orden de pago actualizada exitosamente');
+      setToastVariant('success');
+      setShowToast(true);
+      
+      // Limpiar formulario y cerrar modal
+      setMonto(0);
+      setMoneda('');
+      setTipoComprobante('');
+      setTipoPago('');
+      setEditingOrdenPago(null);
+      setIsModalOpen(false);
+      
+      // Recargar datos
+      if (ordenCompraId) {
+        dispatch(fetchOrdenPagosByOrdenCompra(ordenCompraId));
+      }
+    } catch (error: any) {
+      console.error('Error al actualizar orden de pago:', error);
+      setToastMessage(`Error al actualizar la orden de pago: ${error.message}`);
+      setToastVariant('danger');
+      setShowToast(true);
+    }
   };
 
   const handleDelete = (id: string) => {
@@ -135,42 +189,6 @@ const OrdenPagoPage: React.FC = () => {
 
   if (loading) return <LoaderPage />;
   if (error) return <div>Error: {error}</div>;
-
-  // Si no hay datos, mostrar mensaje
-  if (ordenPagosByOrdenCompra.length === 0) {
-    return (
-      <motion.div
-        className="flex flex-col h-full"
-        initial="initial"
-        animate="in"
-        exit="out"
-        variants={pageVariants}
-        transition={pageTransition}
-      >
-        <motion.div className="fixed top-5 right-0 z-50">
-          {showToast && (
-            <Toast
-              message={toastMessage}
-              variant={toastVariant}
-              position="top-right"
-              duration={3000}
-              onClose={() => setShowToast(false)}
-              isVisible={showToast}
-              index={0}
-            />
-          )}
-        </motion.div>
-
-        {/* Formulario de ingreso */}
-        {/* ... tu formulario actual ... */}
-
-        {/* Mensaje cuando no hay datos */}
-        <div className="flex justify-center items-center p-8 bg-white/80 rounded-lg shadow-sm">
-          <p className="text-gray-500 text-lg">Sin órdenes de Pago</p>
-        </div>
-      </motion.div>
-    );
-  }
 
   const tableData = {
     filter: [true, true, true, true, true, true, true, true, true],
@@ -186,7 +204,7 @@ const OrdenPagoPage: React.FC = () => {
       "opciones"
     ],
     rows: ordenPagosByOrdenCompra.map(ordenPago => ({
-      codigo: ordenPago.codigo,
+      código: ordenPago.codigo,
       monto: ordenPago.monto_solicitado,
       moneda: ordenPago.tipo_moneda,
       "tipo pago": ordenPago.tipo_pago,
@@ -200,15 +218,9 @@ const OrdenPagoPage: React.FC = () => {
             onClick={() => handleOpenDescuentoModal(ordenPago, 'detracciones')}
             title="Detracciones"
           >
-            <FiDollarSign size={18} className="text-green-500" />
+            <TbEyeDiscount size={18} className="text-green-500" />
           </button>
-          <button
-            className="text-black hover:text-blue-600 transition-colors"
-            onClick={() => handleOpenDescuentoModal(ordenPago, 'retenciones')}
-            title="Retenciones"
-          >
-            <FiPercent size={18} className="text-blue-500" />
-          </button>
+         
         </div>
       ),
       opciones: (
@@ -257,6 +269,51 @@ const OrdenPagoPage: React.FC = () => {
         <h1 className="text-2xl font-bold">Órdenes de Pago</h1>
       </motion.div>
 
+      <div className="bg-white/80 p-4 rounded-lg shadow-sm mb-4">
+	<div className="flex flex-row gap-4 items-center">
+	  <div className="flex-1 min-w-[200px]">
+	  <label className="text-sm font-medium text-gray-700 mb-1">
+	  Orden de Compra :
+	    </label>
+              <label className="text-sm font-medium text-gray-700 mb-1">
+	  &nbsp; {ordenPagosByOrdenCompra[0]?.orden_compra?.codigo_orden || 'No disponible'}
+	      </label>
+	  </div>
+
+	  <div className="flex-1 min-w-[200px]">
+	    <label className="text-sm font-medium text-gray-700 mb-1">
+	  Total :
+              </label>
+	        <label className="text-sm font-medium text-gray-700 mb-1">
+	         &nbsp; {ordenPagosByOrdenCompra[0]?.monto_total 
+                 ? ordenPagosByOrdenCompra[0].monto_total.toFixed(2)
+                  : '0.00'
+                 } 
+              </label>
+	  </div>
+
+	  <div className="flex-1 min-w-[200px]">
+	    <label className="text-sm font-medium text-gray-700 mb-1">
+	  Proveedor :
+	    </label>
+               <label className="text-sm font-medium text-gray-700 mb-1">   
+	        &nbsp; {ordenPagosByOrdenCompra[0]?.proveedor?.razon_social || 'No disponible'}
+	      </label>
+	  </div>
+
+            <div className="flex-1 min-w-[100px]">
+	      <Button 
+               text='Ver recursos' 
+	       color='azul' 
+	       onClick={handleAgregar}
+	       className="rounded w-[150px] bg-blue-500 hover:bg-blue-600 text-white"
+	     />
+
+	  </div>
+	  	  
+	</div>
+      </div>
+	  	  
       {/* Formulario */}
       <motion.div className="bg-white/80 p-4 rounded-lg shadow-sm mb-4">
         <div id="seleccionables" className="flex flex-row gap-4 items-center">
@@ -352,12 +409,7 @@ const OrdenPagoPage: React.FC = () => {
       accept=".pdf,.doc,.docx,.png,.jpg,.jpeg"
     />
   </div>
-          </div>
-
-
-
-
-	  
+          </div>	  
        
 	  {moneda === 'dolares' && (
   <div className="calculo-dolares mt-4">
@@ -396,15 +448,15 @@ const OrdenPagoPage: React.FC = () => {
 	  
         <div className="mt-5 flex justify-center">
           <Button 
-            text='Agregar' 
+            text={editingOrdenPago ? 'Actualizar' : 'Agregar'}
             color='azul' 
-            onClick={handleAgregar}
-            className="rounded w-[200px] bg-blue-500 hover:bg-blue-600 text-white"
+            onClick={editingOrdenPago ? handleUpdate : handleAgregar}
+            className="rounded w-[400px] bg-blue-500 hover:bg-blue-600 text-white"
           />
         </div>
       </motion.div>
 
-      {/* Tabla */}
+      {/* Tabla o mensaje de sin datos */}
       <motion.div
         className="flex flex-1 overflow-hidden rounded-xl"
         initial={{ opacity: 0, scale: 0.95 }}
@@ -412,23 +464,29 @@ const OrdenPagoPage: React.FC = () => {
         transition={{ delay: 0.4 }}
       >
         <main className="w-full flex flex-col flex-grow p-4 bg-white/80 overflow-hidden">
-          <motion.div
-            className="flex-grow border rounded-lg overflow-hidden"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.8 }}
-          >
-            <div className="h-full overflow-auto">
-              <TableComponent tableData={tableData} />
+          {ordenPagosByOrdenCompra.length === 0 ? (
+            <div className="flex justify-center items-center p-8 bg-white/80 rounded-lg shadow-sm">
+              <p className="text-gray-500 text-lg">Sin órdenes de Pago</p>
             </div>
-          </motion.div>
+          ) : (
+            <motion.div
+              className="flex-grow border rounded-lg overflow-hidden"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.8 }}
+            >
+              <div className="h-full overflow-auto">
+                <TableComponent tableData={tableData} />
+              </div>
+            </motion.div>
+          )}
         </main>
       </motion.div>
       {/* Modal para Descuentos */}
       <AnimatePresence>
         {isDescuentoModalOpen && selectedOrdenPago && (
           <Modal 
-            title={`${tipoDescuento === 'detracciones' ? 'Detracciones' : 'Retenciones'} - Orden ${selectedOrdenPago.codigo}`}
+            title="Descuentos"  
             isOpen={isDescuentoModalOpen}
             onClose={() => setIsDescuentoModalOpen(false)}
           >
@@ -439,9 +497,12 @@ const OrdenPagoPage: React.FC = () => {
               transition={{ duration: 0.3 }}
             >
               <DescuentoPagosPage 
-                ordenPagoId={selectedOrdenPago.id}
+                ordenPagoId={selectedOrdenPago._id}
                 tipoDescuento={tipoDescuento}
                 onClose={() => setIsDescuentoModalOpen(false)}
+                montoSolicitado={selectedOrdenPago.monto_solicitado}
+                tipoMoneda={selectedOrdenPago.tipo_moneda}
+                tipoComprobante={selectedOrdenPago.comprobante}
               />
             </motion.div>
           </Modal>

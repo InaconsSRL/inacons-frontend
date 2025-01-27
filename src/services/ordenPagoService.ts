@@ -156,7 +156,8 @@ const DELETE_ORDEN_PAGO = gql`
 
 const GET_ORDEN_PAGO_BY_ORDEN_COMPRA = gql`
   query GetOrdenPagoByOrdenCompra($ordenCompraId: ID!) {
-    getOrdenPagoByOrdenCompra(ordenCompraId: $ordenCompraId) {
+getOrdenPagoByOrdenCompra(ordenCompraId: $ordenCompraId) {
+      _id
       codigo
       monto_solicitado
       tipo_moneda
@@ -205,6 +206,7 @@ interface Usuario {
 }
 
 interface OrdenPagoByOrdenCompra {
+    _id:  string;
   codigo: string;
   monto_solicitado: number;
   tipo_moneda: string;
