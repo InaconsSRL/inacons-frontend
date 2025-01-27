@@ -1,39 +1,6 @@
 import { gql } from '@apollo/client';
 import client from '../apolloClient';
 
-// const LIST_COTIZACIONES_QUERY = gql`
-//   query ListCotizaciones {
-//     listCotizaciones {
-//       id
-//       codigo_cotizacion
-//       usuario_id {
-//         apellidos
-//         nombres
-//         id
-//       }
-//       solicitud_compra_id {
-//         id
-//         usuario_id {
-//           nombres
-//           apellidos
-//           id
-//         }
-//         requerimiento_id {
-//           usuario
-//           estado_atencion
-//           codigo
-//           fecha_final
-//           fecha_solicitud
-//           id
-//           sustento
-//         }
-//       }
-//       aprobacion
-//       estado
-//       fecha
-//     }
-//   }
-// `;
 const LIST_COTIZACIONES_QUERY = gql`
   query ListCotizaciones {
     listCotizaciones {

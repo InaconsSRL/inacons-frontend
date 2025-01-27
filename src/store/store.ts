@@ -1,5 +1,6 @@
 import { configureStore } from '@reduxjs/toolkit';
 import { setupListeners } from '@reduxjs/toolkit/query';
+import dateFilterReducer from '../slices/dateFilterSlice';
 import { almacenCentroCostoReducer } from '../slices/almacenCentroCostoSlice';
 import { almacenRecursoReducer } from '../slices/almacenRecursoSlice';
 import { almacenReducer } from '../slices/almacenSlice';
@@ -57,7 +58,11 @@ import { obraBodegaReducer } from '../slices/obraBodegaSlice';
 import { obraBodegaRecursoReducer } from '../slices/obraBodegaRecursoSlice';
 import { cantidadRecursosByBodegaReducer } from '../slices/cantidadRecursosByBodegaSlice';
 import  {consumoRecursoReducer}  from '../slices/consumoRecursoSlice';
-import dateFilterReducer from '../slices/dateFilterSlice';
+import { departamentoReducer } from '../slices/departamentoSlice';
+import { provinciaReducer } from '../slices/provinciaSlice';
+import { distritoReducer } from '../slices/distritoSlice';
+import { localidadReducer } from '../slices/localidadSlice';
+import { claseReducer } from '../slices/claseSlice';
 
 export const store = configureStore({
   reducer: {
@@ -77,6 +82,8 @@ export const store = configureStore({
     cotizacion: cotizacionReducer,
     cuestionarioHomologacion: cuestionarioHomologacionReducer,
     datosValoracionProveedor: datosValoracionProveedorReducer,
+    departamento: departamentoReducer,
+    distrito: distritoReducer,
     empleado: empleadoReducer,
     guiaTransferencia: guiaTransferenciaReducer,
     mediosPagoProveedor: mediosPagoProveedorReducer,
@@ -119,6 +126,9 @@ export const store = configureStore({
     cantidadRecursosByBodega: cantidadRecursosByBodegaReducer,
     consumoRecurso: consumoRecursoReducer,
     dateFilter: dateFilterReducer,
+    provincia: provinciaReducer,
+    localidad: localidadReducer,
+    clase: claseReducer,
   },
 
   //Para que se tome mas tiempo en responder todas las solicitudes de la API
