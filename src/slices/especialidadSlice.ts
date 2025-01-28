@@ -7,8 +7,13 @@ import {
   deleteEspecialidadService,
 } from '../services/especialidadService';
 
-interface Especialidad {
+export interface Especialidad {
   id_especialidad: string;
+  nombre: string;
+  descripcion: string;
+}
+
+export interface CreateEspecialidadDto {
   nombre: string;
   descripcion: string;
 }
@@ -51,7 +56,7 @@ export const getEspecialidad = createAsyncThunk(
 
 export const addEspecialidad = createAsyncThunk(
   'especialidad/addEspecialidad',
-  async (data: { nombre: string; descripcion: string }, { rejectWithValue }) => {
+  async (data: CreateEspecialidadDto, { rejectWithValue }) => {
     try {
       return await addEspecialidadService(data);
     } catch (error) {

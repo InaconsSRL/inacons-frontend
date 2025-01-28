@@ -2,8 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { FiEdit2, FiPlus, FiTrash2 } from 'react-icons/fi';
 import { useDispatch, useSelector } from 'react-redux';
 import { AppDispatch, RootState } from '../../../store/store';
-import { getPresupuestosByProyecto, deletePresupuesto } from '../../../slices/presupuestoSlice';
-import { IPresupuesto } from '../../../types/PresupuestosTypes';
+import { getPresupuestosByProyecto, deletePresupuesto, Presupuesto } from '../../../slices/presupuestoSlice';
 import Modal from '../../../components/Modal/Modal';
 import FormularioPresupuesto from './FormularioPresupuesto';
 import ModalAlert from '../../../components/Modal/ModalAlert';
@@ -17,9 +16,9 @@ const ListaPresupuestos: React.FC<ProjectBudgetsProps> = ({ id_proyecto }) => {
   const presupuestos = useSelector((state: RootState) => state.presupuesto.presupuestos);
   const loading = useSelector((state: RootState) => state.presupuesto.loading);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [selectedBudget, setSelectedBudget] = useState<IPresupuesto | null>(null);
+  const [selectedBudget, setSelectedBudget] = useState<Presupuesto | null>(null);
   const [showDeleteAlert, setShowDeleteAlert] = useState(false);
-  const [presupuestoToDelete, setPresupuestoToDelete] = useState<IPresupuesto | null>(null);
+  const [presupuestoToDelete, setPresupuestoToDelete] = useState<Presupuesto | null>(null);
   const [isRefreshing, setIsRefreshing] = useState(false);
 
   useEffect(() => {
@@ -38,12 +37,12 @@ const ListaPresupuestos: React.FC<ProjectBudgetsProps> = ({ id_proyecto }) => {
     fetchPresupuestos();
   }, [id_proyecto]); // Solo dependerá del id_proyecto
 
-  const handleEdit = (presupuesto: IPresupuesto) => {
+  const handleEdit = (presupuesto: Presupuesto) => {
     setSelectedBudget(presupuesto);
     setIsModalOpen(true);
   };
 
-  const handleDelete = (presupuesto: IPresupuesto) => {
+  const handleDelete = (presupuesto: Presupuesto) => {
     setPresupuestoToDelete(presupuesto);
     setShowDeleteAlert(true);
   };

@@ -3,18 +3,11 @@ import { useDispatch, useSelector } from 'react-redux';
 import { RootState, AppDispatch } from '../../../store/store';
 import { motion, AnimatePresence } from 'framer-motion';
 import { FaChevronRight, FaFolder, FaFolderOpen } from 'react-icons/fa';
-import {
-  fetchRecursos,
-  fetchRecursosByTipo
-} from '../../../slices/recursoSlice';
-import {
-  fetchRecursosComposicionApu
-} from '../../../slices/recursosComposicionApuSlice';
-import { IRecurso, IRecursoComposicionApu } from '../../../types/PresupuestosTypes';
+import { fetchRecursos, Recurso } from '../../../slices/recursoSlice';
+import { fetchRecursosComposicionApu, RecursoComposicionApu } from '../../../slices/recursoComposicionApuSlice';
 import CrearRecursoApuForm from './CrearRecursoApuForm';
 import Modal from '../../../components/Modal/Modal';
 import { addComposicionApu } from '../../../slices/composicionApuSlice';
-import { IComposicionApu } from '../../../types/PresupuestosTypes';
 import ModalAlert, { ColorVariant } from '../../../components/Modal/ModalAlert';
 
 
@@ -42,8 +35,8 @@ const CatalogoRecursos: React.FC<CatalogoRecursosProps> = (
     { id_tipo: 'TIP0000000004', descripcion: 'SUB-CONTRATOS', isActive: false },
   ]);
   const [showForm, setShowForm] = useState(false);
-  const [selectedRecurso, setSelectedRecurso] = useState<IRecurso | null>(null);
-  const [acumuladorRecursos, setAcumuladorRecursos] = useState<IRecursoComposicionApu[]>([]);
+  const [selectedRecurso, setSelectedRecurso] = useState<Recurso | null>(null);
+  const [acumuladorRecursos, setAcumuladorRecursos] = useState<RecursoComposicionApu[]>([]);
   const [alertModal, setAlertModal] = useState<{
     isOpen: boolean;
     title: string;
@@ -60,11 +53,11 @@ const CatalogoRecursos: React.FC<CatalogoRecursosProps> = (
     onCancel: () => {},
   });
 
-  const recursos = useSelector((state: RootState) => state.recursos.recursos);
-  const unidades = useSelector((state: RootState) => state.unidades.unidades);
+  const recursos = useSelector((state: RootState) => state.recurso.recursos);
+  const unidades = useSelector((state: RootState) => state.unidad.unidades);
   const activeTitulo = useSelector((state: RootState) => state.activeData.activeTitulo);
   const recursosComposicionApu = useSelector(
-    (state: RootState) => state.recursosComposicionApu.recursos
+    (state: RootState) => state.recursoComposicionApu.recursosComposicionApu
   );
 
   useEffect(() => {
@@ -78,7 +71,6 @@ const CatalogoRecursos: React.FC<CatalogoRecursosProps> = (
       isActive: tipo.id_tipo === tipoId ? !tipo.isActive : false
     })));
     setSelectedTipo(tipoId);
-    dispatch(fetchRecursosByTipo(tipoId));
   };
 
   const filteredRecursos = recursos.filter(
@@ -92,7 +84,7 @@ const CatalogoRecursos: React.FC<CatalogoRecursosProps> = (
   );
 
   // Modificar la función filterResources
-  const filterResources = (resources: IRecurso[] | IRecursoComposicionApu[]) => {
+  const filterResources = (resources: Recurso[] | RecursoComposicionApu[]) => {
     const searchTermLower = searchTerm.toLowerCase();
     return resources.filter(resource => {
       // Verificar si el recurso ya está en el acumulador
@@ -113,12 +105,12 @@ const CatalogoRecursos: React.FC<CatalogoRecursosProps> = (
 
   // Añadir esta función helper antes del return
   const isRecursoComposicionApu = (
-    recurso: IRecurso | IRecursoComposicionApu
-  ): recurso is IRecursoComposicionApu => {
+    recurso: Recurso | RecursoComposicionApu
+  ): recurso is RecursoComposicionApu => {
     return 'id_rec_comp_apu' in recurso;
   };
 
-  const handleAddToAcumulador = (recurso: IRecurso | IRecursoComposicionApu) => {
+  const handleAddToAcumulador = (recurso: Recurso | RecursoComposicionApu) => {
     if (isRecursoComposicionApu(recurso)) {
       setAcumuladorRecursos(prev => [...prev, recurso]);
     } else {
@@ -131,7 +123,7 @@ const CatalogoRecursos: React.FC<CatalogoRecursosProps> = (
     setAcumuladorRecursos(prev => prev.filter(r => r.id_rec_comp_apu !== id));
   };
 
-  const handleRecursoApuCreated = (nuevoRecursoApu: IRecursoComposicionApu) => {
+  const handleRecursoApuCreated = (nuevoRecursoApu: RecursoComposicionApu) => {
     setAcumuladorRecursos(prev => [...prev, nuevoRecursoApu]);
     setShowForm(false);
     setSelectedRecurso(null);

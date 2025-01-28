@@ -18,7 +18,7 @@ export interface TituloBasic {
   descripcion: string;
   parcial: number;
   fecha_creacion: string;
-  especialidad_id: string;
+  id_especialidad: string;
   nivel: number;
   orden: number;
   tipo: string;
@@ -34,7 +34,7 @@ interface DetallePartida {
   jornada: number;
 }
 
-interface TituloDetailed extends TituloBasic {
+export interface TituloDetailed extends TituloBasic {
   detallePartida: DetallePartida[];
 }
 
@@ -43,6 +43,8 @@ interface TituloState {
   selectedTitulo: TituloDetailed | null;
   loading: boolean;
   error: string | null;
+  titulosPorPresupuesto: { [key: string]: TituloBasic[] };
+  lastSync: { [key: string]: string }; // Guardará la fecha de última sincronización por presupuesto
 }
 
 const initialState: TituloState = {
@@ -50,6 +52,8 @@ const initialState: TituloState = {
   selectedTitulo: null,
   loading: false,
   error: null,
+  titulosPorPresupuesto: {},
+  lastSync: {},
 };
 
 export const fetchTitulos = createAsyncThunk(
@@ -125,6 +129,14 @@ const tituloSlice = createSlice({
     clearErrors: (state) => {
       state.error = null;
     },
+    getTitulosFromCache: (state, action: PayloadAction<string>) => {
+      state.loading = true;  // Agregar loading incluso al obtener del cache
+      const titulosCache = state.titulosPorPresupuesto[action.payload];
+      if (titulosCache) {
+        state.titulos = titulosCache;
+      }
+      state.loading = false;  // Finalizar loading
+    }
   },
   extraReducers: (builder) => {
     builder
@@ -144,9 +156,14 @@ const tituloSlice = createSlice({
       .addCase(getTitulosByPresupuesto.pending, (state) => {
         state.loading = true;
       })
-      .addCase(getTitulosByPresupuesto.fulfilled, (state, action: PayloadAction<TituloDetailed[]>) => {
+      .addCase(getTitulosByPresupuesto.fulfilled, (state, action: PayloadAction<TituloDetailed[], string, { arg: string }>) => {
         state.loading = false;
         state.titulos = action.payload;
+        // Guardar en cache
+        if (action.meta.arg) { // action.meta.arg contiene el idPresupuesto
+          state.titulosPorPresupuesto[action.meta.arg] = action.payload;
+          state.lastSync[action.meta.arg] = new Date().toLocaleString();
+        }
       })
       .addCase(getTitulosByPresupuesto.rejected, (state, action) => {
         state.loading = false;
@@ -206,5 +223,5 @@ const tituloSlice = createSlice({
   },
 });
 
-export const { clearErrors } = tituloSlice.actions;
+export const { clearErrors, getTitulosFromCache } = tituloSlice.actions;
 export const tituloReducer = tituloSlice.reducer;

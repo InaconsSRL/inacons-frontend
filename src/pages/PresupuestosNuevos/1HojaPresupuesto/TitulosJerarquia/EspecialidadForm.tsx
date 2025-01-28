@@ -1,17 +1,16 @@
 import React, { useState } from 'react';
 import { useDispatch } from 'react-redux';
-import { IEspecialidad } from '../../../../types/PresupuestosTypes';
-import { addEspecialidad } from '../../../../slices/especialidadSlice';
+import { addEspecialidad, Especialidad, CreateEspecialidadDto } from '../../../../slices/especialidadSlice';
 import { AppDispatch } from '../../../../store/store';
 
 interface EspecialidadFormProps {
-  onSubmit: (especialidad: IEspecialidad) => void;
+  onSubmit: (especialidad: Especialidad) => void;
   onCancel: () => void;
 }
 
 const EspecialidadForm: React.FC<EspecialidadFormProps> = ({ onSubmit, onCancel }) => {
   const dispatch = useDispatch<AppDispatch>();
-  const [formData, setFormData] = useState<Partial<IEspecialidad>>({
+  const [formData, setFormData] = useState<Partial<Especialidad>>({
     nombre: '',
     descripcion: ''
   });
@@ -19,14 +18,13 @@ const EspecialidadForm: React.FC<EspecialidadFormProps> = ({ onSubmit, onCancel 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const nuevaEspecialidad: IEspecialidad = {
-        especialidad_id: 'temp', // esto será generado por el slice
+      const nuevaEspecialidad: CreateEspecialidadDto = {
         nombre: formData.nombre || '',
         descripcion: formData.descripcion || '',
       };
       
       const resultAction = await dispatch(addEspecialidad(nuevaEspecialidad));
-      const nuevaEspecialidadConId = resultAction.payload as IEspecialidad;
+      const nuevaEspecialidadConId = resultAction.payload as Especialidad;
       onSubmit(nuevaEspecialidadConId);
     } catch (error) {
       console.error('Error al crear especialidad:', error);
@@ -34,7 +32,7 @@ const EspecialidadForm: React.FC<EspecialidadFormProps> = ({ onSubmit, onCancel 
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
+    <form onSubmit={handleSubmit} className="space-y-4 bg-blue-950/80 rounded-xl p-4">
       <div>
         <label className="block text-sm font-medium text-gray-300">
           Nombre

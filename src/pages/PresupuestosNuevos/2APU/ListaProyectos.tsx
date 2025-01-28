@@ -1,11 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { RootState, AppDispatch } from '../../../store/store';
-import { fetchProyectos } from '../../../slices/proyectosSlice';
-import { fetchPresupuestosByProyecto } from '../../../slices/presupuestosSlice';
+import { fetchProyectos, Proyecto } from '../../../slices/proyectoSlice';
+import { getPresupuestosByProyecto, Presupuesto } from '../../../slices/presupuestoSlice';
 import { FiChevronDown, FiChevronRight, FiFileText, FiFolder } from 'react-icons/fi';
 import { setActiveProyecto, setActivePresupuesto } from '../../../slices/activeDataSlice';
-import { IPresupuesto, IProyecto } from '../../../types/PresupuestosTypes';
 
 interface TreeItemProps {
   title: string;
@@ -35,17 +34,17 @@ const TreeItem: React.FC<TreeItemProps> = ({
       >
         <span className="w-4 h-4 flex items-center">
           {isExpanded ? (
-            <FiChevronDown className="w-4 h-4 text-cyan-300" />
+            <FiChevronDown className="w-4 h-4 min-w-4 text-cyan-300" />
           ) : (
-            <FiChevronRight className="w-4 h-4 text-cyan-300" />
+            <FiChevronRight className="w-4 h-4 min-w-4 text-cyan-300" />
           )}
         </span>
         {isProject ? (
-          <FiFolder className={`w-4 h-4 flex-shrink-0 ${isActive ? 'text-cyan-300' : 'text-blue-400'}`} />
+          <FiFolder className={`w-4 h-4 min-w-4 flex-shrink-0 ${isActive ? 'text-cyan-300' : 'text-blue-400'}`} />
         ) : (
-          <FiFileText className="w-4 h-4 text-emerald-400" />
+          <FiFileText className="w-4 h-4 min-w-4 text-emerald-400" />
         )}
-        <span className="text-sm text-slate-200 font-medium">{title}</span>
+        <span className="text-xs text-slate-200 font-medium">{title}</span>
       </div>
       {isExpanded && (
         <div className="ml-6 border-l border-gray-700/50">
@@ -58,8 +57,8 @@ const TreeItem: React.FC<TreeItemProps> = ({
 
 const ListaProyectos: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
-  const proyectos = useSelector((state: RootState) => state.proyectos.proyectos);
-  const presupuestos = useSelector((state: RootState) => state.presupuestos.presupuestos);
+  const proyectos = useSelector((state: RootState) => state.proyecto.proyectos);
+  const presupuestos = useSelector((state: RootState) => state.presupuesto.presupuestos);
   const activeProyecto = useSelector((state: RootState) => state.activeData.activeProyecto);
   const activePresupuesto = useSelector((state: RootState) => state.activeData.activePresupuesto);
   const [expandedProjects, setExpandedProjects] = useState<Set<string>>(new Set());
@@ -68,14 +67,14 @@ const ListaProyectos: React.FC = () => {
     dispatch(fetchProyectos());
   }, [dispatch]);
 
-  const handleToggleProject = async (project: IProyecto) => {
+  const handleToggleProject = async (project: Proyecto) => {
     // Actualizar el proyecto activo
     dispatch(setActiveProyecto(project));
 
     // Manejar la expansión/colapso
     const projectId = project.id_proyecto;
     if (!expandedProjects.has(projectId)) {
-      await dispatch(fetchPresupuestosByProyecto(projectId));
+      await dispatch(getPresupuestosByProyecto(projectId));
     }
     
     const newExpanded = new Set(expandedProjects);
@@ -87,7 +86,7 @@ const ListaProyectos: React.FC = () => {
     setExpandedProjects(newExpanded);
   };
 
-  const handlePresupuestoClick = (presupuesto: IPresupuesto) => {
+  const handlePresupuestoClick = (presupuesto: Presupuesto) => {
     dispatch(setActivePresupuesto(presupuesto));
   };
 

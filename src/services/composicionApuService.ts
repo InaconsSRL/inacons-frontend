@@ -2,17 +2,31 @@ import { gql } from '@apollo/client';
 import client from '../apolloClient';
 
 const GET_COMPOSICIONES_APU_BY_TITULO_QUERY = gql`
-  query GetComposicionesApuByTitulo($idTitulo: String!) {
-    getComposicionesApuByTitulo(id_titulo: $idTitulo) {
+  query GetComposicionesApuByTitulo($idTitulo: String!, $idProyecto: String!) {
+    getComposicionesApuByTitulo(id_titulo: $idTitulo, id_proyecto: $idProyecto) {
+      id_composicion_apu
+      id_titulo
+      id_rec_comp_apu
+      cuadrilla
+      cantidad
+      fecha_creacion
       rec_comp_apu {
         id_rec_comp_apu
+        id_recurso
+        id_unidad
         nombre
         especificaciones
         descripcion
         fecha_creacion
         recurso_presupuesto {
-          nombre
           id_recurso
+          nombre
+          id_unidad
+          id_clase
+          id_tipo
+          id_recurso_app
+          precio_referencial
+          fecha_actualizacion
         }
         unidad_presupuesto {
           id_unidad
@@ -27,11 +41,6 @@ const GET_COMPOSICIONES_APU_BY_TITULO_QUERY = gql`
           fecha_creacion
         }
       }
-      cuadrilla
-      cantidad
-      fecha_creacion
-      id_composicion_apu
-      id_titulo
     }
   }
 `;
@@ -70,11 +79,11 @@ const DELETE_COMPOSICION_APU_MUTATION = gql`
   }
 `;
 
-export const getComposicionesApuByTituloService = async (idTitulo: string) => {
+export const getComposicionesApuByTituloService = async (idTitulo: string, idProyecto: string) => {
   try {
     const response = await client.query({
       query: GET_COMPOSICIONES_APU_BY_TITULO_QUERY,
-      variables: { idTitulo },
+      variables: { idTitulo, idProyecto },
     });
     return response.data.getComposicionesApuByTitulo;
   } catch (error) {

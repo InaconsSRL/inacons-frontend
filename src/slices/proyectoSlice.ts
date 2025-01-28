@@ -7,7 +7,7 @@ import {
   deleteProyectoService
 } from '../services/proyectoService';
 
-interface Proyecto {
+export interface Proyecto {
   id_proyecto: string;
   id_usuario: string;
   id_infraestructura: string;

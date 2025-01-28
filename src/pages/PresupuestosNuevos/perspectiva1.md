@@ -52,7 +52,7 @@ interface ITituloPartida {
     titulo_partida_id: number;
     descripcion: string;
     unidad_id: number;
-    especialidad_id: number;
+    id_especialidad: number;
 }
 ```
 
@@ -115,7 +115,7 @@ Permite categorizar los trabajos según su naturaleza técnica.
 
 ```typescript
 interface IEspecialidad {
-    especialidad_id: number;
+    id_especialidad: number;
     descripcion: string;
 }
 ```
@@ -128,7 +128,7 @@ Facilita la agrupación jerárquica de partidas por especialidad.
 interface ITitulo {
     titulos_id: number;
     descripcion: string;
-    especialidad_id: number;
+    id_especialidad: number;
 }
 ```
 

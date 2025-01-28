@@ -1,11 +1,10 @@
 import React, { useState, useEffect, useCallback, memo } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { AppDispatch, RootState } from '../../../store/store';
-import { addPresupuesto, updatePresupuesto } from '../../../slices/presupuestoSlice';
-import { IPresupuesto } from '../../../types/PresupuestosTypes';
+import { addPresupuesto, updatePresupuesto, Presupuesto } from '../../../slices/presupuestoSlice';
 
 interface FormularioPresupuestoProps {
-    presupuesto?: IPresupuesto | null;
+    presupuesto?: Presupuesto | null;
     id_proyecto: string;
     onClose: () => void;
     cantidadPresupuestos: number;

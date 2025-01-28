@@ -3,7 +3,7 @@ import { listRecursosService, addRecursoService, updateRecursoService, listDataS
 
 
 // Interfaces
-interface Recurso {
+export interface Recurso {
   id: string;
   codigo: string;
   nombre: string;

@@ -14,7 +14,7 @@ const LIST_TITULOS_QUERY = gql`
       descripcion
       parcial
       fecha_creacion
-      especialidad_id
+      id_especialidad
       nivel
       orden
       tipo
@@ -41,7 +41,7 @@ const GET_TITULOS_BY_PRESUPUESTO_QUERY = gql`
       descripcion
       parcial
       fecha_creacion
-      especialidad_id
+      id_especialidad
       nivel
       orden
       tipo
@@ -68,7 +68,7 @@ const GET_TITULO_QUERY = gql`
       descripcion
       parcial
       fecha_creacion
-      especialidad_id
+      id_especialidad
       nivel
       orden
       tipo
@@ -77,8 +77,8 @@ const GET_TITULO_QUERY = gql`
 `;
 
 const ADD_TITULO_MUTATION = gql`
-  mutation AddTitulo($idPresupuesto: String!, $item: String!, $descripcion: String!, $parcial: Float!, $especialidadId: String!, $nivel: Int!, $orden: Int!, $tipo: TipoTitulo!, $idTituloPadre: String, $idTituloPlantilla: String) {
-    addTitulo(id_presupuesto: $idPresupuesto, item: $item, descripcion: $descripcion, parcial: $parcial, especialidad_id: $especialidadId, nivel: $nivel, orden: $orden, tipo: $tipo, id_titulo_padre: $idTituloPadre, id_titulo_plantilla: $idTituloPlantilla) {
+  mutation AddTitulo($idPresupuesto: String!, $item: String!, $descripcion: String!, $parcial: Float!, $idEspecialidad: String!, $nivel: Int!, $orden: Float!, $tipo: TipoTitulo!, $idTituloPadre: String, $idTituloPlantilla: String) {
+    addTitulo(id_presupuesto: $idPresupuesto, item: $item, descripcion: $descripcion, parcial: $parcial, id_especialidad: $idEspecialidad, nivel: $nivel, orden: $orden, tipo: $tipo, id_titulo_padre: $idTituloPadre, id_titulo_plantilla: $idTituloPlantilla) {
       id_titulo
       id_presupuesto
       id_titulo_padre
@@ -95,7 +95,7 @@ const ADD_TITULO_MUTATION = gql`
       descripcion
       parcial
       fecha_creacion
-      especialidad_id
+      id_especialidad
       nivel
       orden
       tipo
@@ -104,8 +104,8 @@ const ADD_TITULO_MUTATION = gql`
 `;
 
 const UPDATE_TITULO_MUTATION = gql`
-  mutation UpdateTitulo($idTitulo: String!, $tipo: TipoTitulo, $idTituloPadre: String, $parcial: Float, $descripcion: String, $item: String, $idTituloPlantilla: String, $especialidadId: String, $nivel: Int, $orden: Int) {
-    updateTitulo(id_titulo: $idTitulo, tipo: $tipo, id_titulo_padre: $idTituloPadre, parcial: $parcial, descripcion: $descripcion, item: $item, id_titulo_plantilla: $idTituloPlantilla, especialidad_id: $especialidadId, nivel: $nivel, orden: $orden) {
+  mutation UpdateTitulo($idTitulo: String!, $tipo: TipoTitulo, $idTituloPadre: String, $parcial: Float, $descripcion: String, $item: String, $idTituloPlantilla: String, $idEspecialidad: String, $nivel: Int, $orden: Float) {
+    updateTitulo(id_titulo: $idTitulo, tipo: $tipo, id_titulo_padre: $idTituloPadre, parcial: $parcial, descripcion: $descripcion, item: $item, id_titulo_plantilla: $idTituloPlantilla, id_especialidad: $idEspecialidad, nivel: $nivel, orden: $orden) {
       id_titulo
       id_presupuesto
       id_titulo_padre
@@ -122,7 +122,7 @@ const UPDATE_TITULO_MUTATION = gql`
       descripcion
       parcial
       fecha_creacion
-      especialidad_id
+      id_especialidad
       nivel
       orden
       tipo
@@ -177,7 +177,18 @@ export const addTituloService = async (data: TituloBasic) => {
   try {
     const response = await client.mutate({
       mutation: ADD_TITULO_MUTATION,
-      variables: data,
+      variables: {
+        idPresupuesto: data.id_presupuesto,
+        item: data.item,
+        descripcion: data.descripcion,
+        parcial: data.parcial,
+        idEspecialidad: data.id_especialidad,
+        nivel: data.nivel,
+        orden: data.orden,
+        tipo: data.tipo,
+        idTituloPadre: data.id_titulo_padre,
+        idTituloPlantilla: data.id_titulo_plantilla,
+      },
     });
     return response.data.addTitulo;
   } catch (error) {
@@ -189,7 +200,18 @@ export const updateTituloService = async (data: TituloBasic) => {
   try {
     const response = await client.mutate({
       mutation: UPDATE_TITULO_MUTATION,
-      variables: data,
+      variables: {
+        idTitulo: data.id_titulo,
+        tipo: data.tipo,
+        idTituloPadre: data.id_titulo_padre,
+        parcial: data.parcial,
+        descripcion: data.descripcion,
+        item: data.item,
+        idTituloPlantilla: data.id_titulo_plantilla,
+        idEspecialidad: data.id_especialidad,
+        nivel: data.nivel,
+        orden: data.orden,
+      },
     });
     return response.data.updateTitulo;
   } catch (error) {

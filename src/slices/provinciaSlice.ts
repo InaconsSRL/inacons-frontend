@@ -8,7 +8,7 @@ import {
   deleteProvinciaService
 } from '../services/provinciaService';
 
-interface Provincia {
+export interface Provincia {
   _id: string;
   id_provincia: string;
   id_departamento: string;

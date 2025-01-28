@@ -8,7 +8,7 @@ import {
   deleteDistritoService
 } from '../services/distritoService';
 
-interface Distrito {
+export interface Distrito {
   id_distrito: string;
   id_provincia: string;
   nombre_distrito: string;

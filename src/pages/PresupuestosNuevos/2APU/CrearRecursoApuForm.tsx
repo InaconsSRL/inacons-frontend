@@ -1,12 +1,11 @@
 import React, { useState } from 'react';
 import { useDispatch } from 'react-redux';
-import { IRecurso, IRecursoComposicionApu } from '../../../types/PresupuestosTypes';
-import { addRecursoComposicionApu } from '../../../slices/recursosComposicionApuSlice';
+import { addRecursoComposicionApu } from '../../../slices/recursoComposicionApuSlice';
 import { AppDispatch } from '../../../store/store';
 
 interface Props {
-  recurso: IRecurso;
-  onSuccess: (nuevoRecurso: IRecursoComposicionApu) => void;
+  recurso;
+  onSuccess: (nuevoRecurso) => void;
   onCancel: () => void;
 }
 
@@ -23,7 +22,7 @@ const CrearRecursoApuForm: React.FC<Props> = ({ recurso, onSuccess, onCancel }) 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    const nuevoRecursoApu: Omit<IRecursoComposicionApu, 'id_rec_comp_apu'> = {
+    const nuevoRecursoApu = {
       id_recurso: recurso.id_recurso,
       id_unidad: recurso.id_unidad,
       nombre: formData.nombre,

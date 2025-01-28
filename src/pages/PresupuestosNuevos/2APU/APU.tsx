@@ -2,17 +2,75 @@ import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { useDispatch, useSelector } from 'react-redux';
 import { RootState, AppDispatch } from '../../../store/store';
-import { deleteComposicionApu, fetchComposicionesByTitulo, updateComposicionApu } from '../../../slices/composicionApuSlice';
+import { deleteComposicionApu, getComposicionesApuByTitulo, updateComposicionApu } from '../../../slices/composicionApuSlice';
 import { FaToolbox, FaFileContract, FaPlus, FaTrash } from 'react-icons/fa';
 import { BsClock, BsPersonStanding, BsTools } from 'react-icons/bs';
 import { MdSmartButton } from 'react-icons/md';
 import Modal from '../../../components/Modal/Modal';
-import { IComposicionApu } from '../../../types/PresupuestosTypes';
-import { addPrecioRecursoProyecto, updatePrecioRecursoProyecto } from '../../../slices/preciosRecursoProyectoSlice';
+import { addPrecioRecursoProyecto, updatePrecioRecursoProyecto } from '../../../slices/precioRecursoProyectoSlice';
 import { updateDetallePartida } from '../../../slices/detallePartidaSlice';
 import CatalogoRecursos from './CatalogoRecursos';
-import { updateRecursoComposicionApu } from '../../../slices/recursosComposicionApuSlice';
+import { updateRecursoComposicionApu } from '../../../slices/recursoComposicionApuSlice';
 import ModalAlert from '../../../components/Modal/ModalAlert';
+
+export interface IComposicionApu {
+  id_composicion_apu: string;
+  id_titulo: string;
+  id_rec_comp_apu: string;
+  rec_comp_apu?: IRecursoComposicionApu;
+  cuadrilla: number;
+  cantidad: number;
+}
+
+export interface IRecursoComposicionApu {
+  id_rec_comp_apu: string;
+  id_recurso: string;
+  id_unidad: string;
+  nombre: string;
+  especificaciones?: string;
+  descripcion?: string;
+  fecha_creacion: string;
+  precio_recurso_proyecto?: IPrecioRecursoProyecto;
+  recurso_presupuesto?:RecursoPresupuesto;
+  unidad_presupuesto?:UnidadPresupuesto;
+
+}
+
+export interface IPrecioRecursoProyecto {
+  id_prp: string;
+  id_proyecto: string;
+  id_rec_comp_apu: string;
+  precio: number;
+}
+
+export interface RecursoPresupuesto {
+  id_recurso: string;
+  id_unidad: string;
+  id_clase: string;
+  id_tipo: string;
+  tipo?: ITipo;
+  id_recurso_app: string;
+  nombre: string;
+  precio_referencial: number;
+  fecha_actualizacion: string; // Cambiado de Date a string
+}
+
+export interface UnidadPresupuesto {
+  id_unidad: string;
+  abreviatura_unidad: string;
+  descripcion: string;
+}
+
+export interface IClase {
+  id_clase: string;
+  nombre: string;
+}
+
+export interface ITipo {
+  id_tipo: string;
+  descripcion: string;
+  codigo: string;
+}
 
 interface CompositionTableProps {
   className?: string;
@@ -22,9 +80,9 @@ const APU: React.FC<CompositionTableProps> = ({ className }) => {
   const dispatch = useDispatch<AppDispatch>();
   const activeProyecto = useSelector((state: RootState) => state.activeData.activeProyecto);
   const activeTitulo = useSelector((state: RootState) => state.activeData.activeTitulo);
-  const composiciones = useSelector((state: RootState) => state.composicionApu.composiciones);
-  const unidades = useSelector((state: RootState) => state.unidades.unidades);
-  const tipos = useSelector((state: RootState) => state.tipos.tipos);
+  const composiciones = useSelector((state: RootState) => state.composicionApu.composicionesApu);
+  const unidades = useSelector((state: RootState) => state.unidad.unidades);
+  const tipos = useSelector((state: RootState) => state.tipo.tipos);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isAlertOpen, setIsAlertOpen] = useState(false);
   const [selectedComposicion, setSelectedComposicion] = useState<IComposicionApu | undefined>();
@@ -37,7 +95,7 @@ const APU: React.FC<CompositionTableProps> = ({ className }) => {
   useEffect(() => {
     if (activeTitulo?.id_titulo) {
       if (activeProyecto) {
-        dispatch(fetchComposicionesByTitulo({
+        dispatch(getComposicionesApuByTitulo({
           id_titulo: activeTitulo.id_titulo,
           id_proyecto: activeProyecto.id_proyecto
         }));
@@ -135,9 +193,8 @@ const APU: React.FC<CompositionTableProps> = ({ className }) => {
         if (editingField === 'precio' && composicion.rec_comp_apu) {
             if (!composicion.rec_comp_apu.precio_recurso_proyecto) {
                 await dispatch(addPrecioRecursoProyecto({
-                    id_prp: '',
-                    id_proyecto: activeProyecto?.id_proyecto || '',
-                    id_rec_comp_apu: composicion.id_rec_comp_apu,
+                    idProyecto: activeProyecto?.id_proyecto || '',
+                    idRecCompApu: composicion.id_rec_comp_apu,
                     precio: numericValue
                 })).unwrap();
             } else {
@@ -158,7 +215,7 @@ const APU: React.FC<CompositionTableProps> = ({ className }) => {
         // Forzar la actualización del estado después de cada edición
         if (activeTitulo?.id_titulo && activeProyecto) {
             console.log('🔄 Recargando composiciones...');
-            await dispatch(fetchComposicionesByTitulo({
+            await dispatch(getComposicionesApuByTitulo({
                 id_titulo: activeTitulo.id_titulo,
                 id_proyecto: activeProyecto.id_proyecto
             }));
@@ -189,7 +246,7 @@ const APU: React.FC<CompositionTableProps> = ({ className }) => {
   // Agregar esta función para calcular subtotales por tipo
   const calcularSubtotalPorTipo = (tipoId: string) => {
     return composiciones
-      .filter(comp => comp.rec_comp_apu?.recurso?.id_tipo === tipoId)
+      .filter(comp => comp.rec_comp_apu?.recurso_presupuesto?.id_tipo === tipoId)
       .reduce((sum, comp) =>
         sum + (comp.cantidad || 0) * (comp.rec_comp_apu?.precio_recurso_proyecto?.precio || 0),
         0

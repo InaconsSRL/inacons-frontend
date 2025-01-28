@@ -1,11 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { RootState, AppDispatch } from '../../../store/store';
-import { fetchProyectos, deleteProyecto } from '../../../slices/proyectoSlice';
+import { fetchProyectos, deleteProyecto, Proyecto } from '../../../slices/proyectoSlice';
 import { getPresupuestosByProyecto } from '../../../slices/presupuestoSlice';
 import { FiChevronDown, FiChevronRight, FiFileText, FiFolder, FiTrash2 } from 'react-icons/fi';
 import { setActiveProyecto, clearActiveProyecto, clearActivePresupuesto, clearActiveTitulo } from '../../../slices/activeDataSlice';
-import { IProyecto } from '../../../types/PresupuestosTypes';
 
 interface TreeItemProps {
   title: string;
@@ -83,7 +82,7 @@ const ListaProyectos: React.FC = () => {
     dispatch(fetchProyectos());
   }, [dispatch]);
 
-  const handleToggleProject = async (project: IProyecto) => {
+  const handleToggleProject = async (project: Proyecto) => {
     // Actualizar el proyecto activo
     dispatch(setActiveProyecto(project));
 

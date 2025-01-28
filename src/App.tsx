@@ -33,7 +33,8 @@ import SorteoPage from './pages/HomePage/Sorteo';
 import BodegasComponent from './pages/BodegasPage/BodegasComponent';
 import LoaderOverlay from './components/Loader/LoaderOverlay';
 import GestionLayoutDatosGenerales from './pages/PresupuestosNuevos/0DatosGenerales/GestionLayoutDatosGenerales';
-// import GestionLayoutHojaPresupuesto from './pages/PresupuestosNuevos/1HojaPresupuesto/GestionLayoutHojaPresupuesto';
+import GestionLayoutHojaPresupuesto from './pages/PresupuestosNuevos/1HojaPresupuesto/GestionLayoutHojaPresupuesto';
+import GestionLayoutAPU from './pages/PresupuestosNuevos/2APU/0GestionLayoutAPU';
 
 const App: React.FC = () => {
   const user = useSelector((state: RootState) => state.user);
@@ -72,8 +73,9 @@ const App: React.FC = () => {
         <Route path="empleados" element={<EmpleadosPage />} />
         <Route path="sorteo" element={<SorteoPage />} />
         <Route path="loader" element={<LoaderOverlay />} />
-        {/* <Route path="hojaPresupuesto" element={<GestionLayoutHojaPresupuesto />} /> */}
+        <Route path="hojaPresupuesto" element={<GestionLayoutHojaPresupuesto />} />
         <Route path="datosGenerales" element={<GestionLayoutDatosGenerales />} />
+        <Route path="apu" element={<GestionLayoutAPU />} />
 
 
       </Route>

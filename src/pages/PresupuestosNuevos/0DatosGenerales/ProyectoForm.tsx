@@ -1,24 +1,23 @@
 import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { FiPlus } from 'react-icons/fi';
-import { IDepartamento, IDistrito, IProvincia, IInfraestructura, IProyecto, ILocalidad } from '../../../types/PresupuestosTypes';
-import { addProyecto, updateProyecto } from '../../../slices/proyectoSlice';
-import { fetchInfraestructuras } from '../../../slices/infraestructuraSlice';
-import { addDepartamento, fetchDepartamentos } from '../../../slices/departamentoSlice';
-import { addProvincia, fetchProvinciasByDepartamento } from '../../../slices/provinciaSlice';
-import { addDistrito, getDistritosByProvincia  } from '../../../slices/distritoSlice';
+import { addProyecto, updateProyecto, Proyecto } from '../../../slices/proyectoSlice';
+import { fetchInfraestructuras, Infraestructura } from '../../../slices/infraestructuraSlice';
+import { addDepartamento, fetchDepartamentos, Departamento } from '../../../slices/departamentoSlice';
+import { addProvincia, fetchProvinciasByDepartamento, Provincia } from '../../../slices/provinciaSlice';
+import { addDistrito, getDistritosByProvincia, Distrito  } from '../../../slices/distritoSlice';
+import { addLocalidad, getLocalidadesByDistrito, Localidad } from '../../../slices/localidadSlice';
 import Modal from '../../../components/Modal/Modal';
 import { AppDispatch, RootState } from '../../../store/store';
 import { setActiveProyecto } from '../../../slices/activeDataSlice';
 import DepartamentoForm from '../Departamento/DepartamentoForm';
 import ProvinciaForm from '../Provincia/ProvinciaForm';
 import DistritoForm from '../Distrito/DistritoForm';
-import { addLocalidad, getLocalidadesByDistrito } from '../../../slices/localidadSlice';
 import LocalidadForm from '../Localidad/LocalidadForm';
 
 interface ProyectoFormProps {
   editMode?: boolean;
-  initialData?: IProyecto;
+  initialData?: Proyecto;
 }
 
 
@@ -143,7 +142,7 @@ const ProyectoForm: React.FC<ProyectoFormProps> = ({
         
         const response = await dispatch(updateProyecto(updateData));
         if ('payload' in response) {
-          const payload = response.payload as IProyecto;
+          const payload = response.payload as Proyecto;
           dispatch(setActiveProyecto(payload));
         } else {
           throw new Error('Error al actualizar el proyecto');
@@ -169,7 +168,7 @@ const ProyectoForm: React.FC<ProyectoFormProps> = ({
 
         const response = await dispatch(addProyecto(newProyecto));
         if ('payload' in response) {
-          const payload = response.payload as IProyecto;
+          const payload = response.payload as Proyecto;
           dispatch(setActiveProyecto(payload));
         } else {
           throw new Error('Error al crear el proyecto');
@@ -189,7 +188,7 @@ const ProyectoForm: React.FC<ProyectoFormProps> = ({
     }));
   };
 
-  const handleDepartamentoSubmit = async (data: Omit<IDepartamento, 'id_departamento'>) => {
+  const handleDepartamentoSubmit = async (data: Omit<Departamento, 'id_departamento'>) => {
     dispatch(addDepartamento({
       nombreDepartamento: data.nombre_departamento,
       ubigeo: data.ubigeo
@@ -198,7 +197,7 @@ const ProyectoForm: React.FC<ProyectoFormProps> = ({
     dispatch(fetchDepartamentos());
   };
 
-  const handleProvinciaSubmit = async (data: Omit<IProvincia, 'id_provincia'>) => {
+  const handleProvinciaSubmit = async (data: Omit<Provincia, 'id_provincia'>) => {
     dispatch(addProvincia({
       nombreProvincia: data.nombre_provincia,
       idDepartamento: data.id_departamento
@@ -209,7 +208,7 @@ const ProyectoForm: React.FC<ProyectoFormProps> = ({
     }
   };
 
-  const handleDistritoSubmit = async (data: Omit<IDistrito, 'id_distrito'>) => {
+  const handleDistritoSubmit = async (data: Omit<Distrito, 'id_distrito'>) => {
     dispatch(addDistrito({
       nombreDistrito: data.nombre_distrito,
       idProvincia: data.id_provincia
@@ -220,7 +219,7 @@ const ProyectoForm: React.FC<ProyectoFormProps> = ({
     }
   };
 
-  const handleLocalidadSubmit = async (data: Omit<ILocalidad, 'id_localidad'>) => {
+  const handleLocalidadSubmit = async (data: Omit<Localidad, 'id_localidad'>) => {
     dispatch(addLocalidad({
       nombreLocalidad: data.nombre_localidad,
       idDistrito: data.id_distrito
@@ -279,7 +278,7 @@ const ProyectoForm: React.FC<ProyectoFormProps> = ({
                 required
               >
                 <option value="">Seleccione infraestructura</option>
-                {infraestructuras.map((inf: IInfraestructura) => (
+                {infraestructuras.map((inf: Infraestructura) => (
                   <option key={inf.id_infraestructura} value={inf.id_infraestructura}>
                     {inf.nombre_infraestructura}
                   </option>
@@ -300,7 +299,7 @@ const ProyectoForm: React.FC<ProyectoFormProps> = ({
                 required
                 >
                 <option value="">Seleccione departamento</option>
-                {departamentos.map((dep: IDepartamento) => (
+                {departamentos.map((dep: Departamento) => (
                   <option key={dep.id_departamento} value={dep.id_departamento}>
                   {dep.nombre_departamento}
                   </option>
@@ -328,7 +327,7 @@ const ProyectoForm: React.FC<ProyectoFormProps> = ({
                   required
                 >
                   <option value="">Seleccione provincia</option>
-                  {provincias.map((prov: IProvincia) => (
+                  {provincias.map((prov: Provincia) => (
                   <option key={prov.id_provincia} value={prov.id_provincia}>
                     {prov.nombre_provincia}
                   </option>
@@ -357,7 +356,7 @@ const ProyectoForm: React.FC<ProyectoFormProps> = ({
                   required
                 >
                   <option value="">Seleccione distrito</option>
-                  {distritos.map((dist: IDistrito) => (
+                  {distritos.map((dist: Distrito) => (
                   <option key={dist.id_distrito} value={dist.id_distrito}>
                     {dist.nombre_distrito}
                   </option>
@@ -386,7 +385,7 @@ const ProyectoForm: React.FC<ProyectoFormProps> = ({
                   required
                 >
                   <option value="">Seleccione Localidad</option>
-                  {localidades.map((loc: ILocalidad) => (
+                  {localidades.map((loc: Localidad) => (
                   <option key={loc.id_localidad} value={loc.id_localidad}>
                     {loc.nombre_localidad}
                   </option>

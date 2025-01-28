@@ -7,7 +7,7 @@ import {
   deleteDepartamentoService
 } from '../services/departamentoService';
 
-interface Departamento {
+export interface Departamento {
   id_departamento: string;
   nombre_departamento: string;
   ubigeo: string;

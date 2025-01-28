@@ -19,7 +19,7 @@ interface RecursoPresupuesto {
   nombre: string;
 }
 
-interface RecursoComposicionApu {
+export interface RecursoComposicionApu {
   id_rec_comp_apu: string;
   id_recurso: string;
   nombre: string;

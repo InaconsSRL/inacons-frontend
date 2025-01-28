@@ -8,7 +8,7 @@ import {
   deleteLocalidadService
 } from '../services/localidadService';
 
-interface Localidad {
+export interface Localidad {
   id_localidad: string;
   id_distrito: string;
   nombre_localidad: string;

@@ -1,8 +1,7 @@
 import React, { useEffect, useState } from 'react';
-import { fetchTitulosByPresupuesto, updateTitulo } from '../../../slices/tituloSlice';
+import { getTitulosByPresupuesto, updateTitulo, TituloDetailed } from '../../../slices/tituloSlice';
 import { useDispatch, useSelector } from 'react-redux';
 import { RootState, AppDispatch } from '../../../store/store';
-import { ITitulo } from '../../../types/PresupuestosTypes';
 import { MdKeyboardArrowRight, MdUnfoldLess, MdUnfoldMore } from 'react-icons/md';
 import { IoLayersOutline } from 'react-icons/io5';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -16,9 +15,9 @@ const PresupuestoTable: React.FC = () => {
   const [editingMetrado, setEditingMetrado] = useState<{ [key: string]: string }>({});
   const [editingMetradoId, setEditingMetradoId] = useState<string | null>(null);
   const activePresupuesto = useSelector((state: RootState) => state.activeData.activePresupuesto);
-  const unidades = useSelector((state: RootState) => state.unidades.unidades);
+  const unidades = useSelector((state: RootState) => state.unidad.unidades);
   const activeTitulo = useSelector((state: RootState) => state.activeData.activeTitulo);
-  const titulos = useSelector((state: RootState) => state.titulos.titulos);
+  const titulos = useSelector((state: RootState) => state.titulo.titulos);
   
   // Agregar esta función para ordenar los títulos
   const sortedTitulos = [...titulos].sort((a, b) => {
@@ -27,7 +26,7 @@ const PresupuestoTable: React.FC = () => {
 
   useEffect(() => {
     if (activePresupuesto?.id_presupuesto) {
-      dispatch(fetchTitulosByPresupuesto(activePresupuesto.id_presupuesto))
+      dispatch(getTitulosByPresupuesto(activePresupuesto.id_presupuesto))
     }
   }, [dispatch, activePresupuesto]);
 
@@ -66,7 +65,7 @@ const PresupuestoTable: React.FC = () => {
     setCollapsedItems(newCollapsedItems);
   };
 
-  const isVisible = (titulo: ITitulo) => {
+  const isVisible = (titulo: TituloDetailed) => {
     const parentItems = sortedTitulos.filter(t => 
       t.item.split('.').length < titulo.item.split('.').length &&
       titulo.item.startsWith(t.item)
@@ -103,7 +102,7 @@ const PresupuestoTable: React.FC = () => {
     setCollapsedItems(newCollapsedItems);
   };
 
-  const handleUnidadChange = async (titulo: ITitulo, unidadId: string) => {
+  const handleUnidadChange = async (titulo: TituloDetailed, unidadId: string) => {
     try {
       let updatedDetalle;
       let updatedTitulo = { ...titulo };
@@ -111,7 +110,7 @@ const PresupuestoTable: React.FC = () => {
       if (titulo.id_detalle_partida) {
         // Actualizar detalle existente
         updatedDetalle = await dispatch(updateDetallePartida({
-          id_detalle_partida: titulo.id_detalle_partida,
+          id_detalle_partida: titulo.detallePartida?.id_detalle_partida || '',
           id_unidad: unidadId,
           metrado: titulo.detallePartida?.metrado || 0,
           precio: titulo.detallePartida?.precio || 0,
@@ -120,7 +119,6 @@ const PresupuestoTable: React.FC = () => {
       } else {
         // Crear nuevo detalle
         updatedDetalle = await dispatch(addDetallePartida({
-          id_detalle_partida: '',
           id_unidad: unidadId,
           metrado: 0,
           precio: 0,
@@ -135,7 +133,7 @@ const PresupuestoTable: React.FC = () => {
         };
         
         await dispatch(updateTitulo(updatedTitulo)).unwrap();
-        dispatch(fetchTitulosByPresupuesto(updatedTitulo.id_presupuesto));
+        dispatch(getTitulosByPresupuesto(updatedTitulo.id_presupuesto));
       }
     } catch (error) {
       console.error('Error al manejar el cambio de unidad:', error);
@@ -144,7 +142,7 @@ const PresupuestoTable: React.FC = () => {
     }
   };
   
-  const handleMetradoChange = async (titulo: ITitulo, metrado: number) => {
+  const handleMetradoChange = async (titulo: TituloDetailed, metrado: number) => {
     try {
       let updatedDetalle;
       if (titulo.id_detalle_partida) {
@@ -187,7 +185,7 @@ const PresupuestoTable: React.FC = () => {
     }));
   };
 
-  const handleMetradoBlur = (titulo: ITitulo) => {
+  const handleMetradoBlur = (titulo: TituloDetailed) => {
     const value = editingMetrado[titulo.id_titulo];
     if (value !== undefined) {
       handleMetradoChange(titulo, parseFloat(value) || 0);
@@ -199,13 +197,13 @@ const PresupuestoTable: React.FC = () => {
     }
   };
 
-  const handleMetradoKeyDown = (e: React.KeyboardEvent, titulo: ITitulo) => {
+  const handleMetradoKeyDown = (e: React.KeyboardEvent, titulo: TituloDetailed) => {
     if (e.key === 'Enter') {
       handleMetradoBlur(titulo);
     }
   };
   
-  const handleTituloClick = (titulo: ITitulo, event: React.MouseEvent) => {
+  const handleTituloClick = (titulo: TituloDetailed, event: React.MouseEvent) => {
     // Solo actualizar el título activo si el click no fue en un input
     const target = event.target as HTMLElement;
     if (!target.closest('input') && !target.closest('select')) {
@@ -222,12 +220,12 @@ const PresupuestoTable: React.FC = () => {
     });
   };
 
-  const handleFinishEditingMetrado = (titulo: ITitulo) => {
+  const handleFinishEditingMetrado = (titulo: TituloDetailed) => {
     handleMetradoBlur(titulo);
     setEditingMetradoId(null);
   };
 
-  const calcularParcial = (titulo: ITitulo): number => {
+  const calcularParcial = (titulo: TituloDetailed): number => {
     if (titulo.tipo === 'PARTIDA') {
       return (titulo.detallePartida?.metrado || 0) * (titulo.detallePartida?.precio || 0);
     }

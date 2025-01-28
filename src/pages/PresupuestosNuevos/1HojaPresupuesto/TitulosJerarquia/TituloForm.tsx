@@ -1,16 +1,16 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
-import { ITitulo, IEspecialidad } from '../../../../types/PresupuestosTypes';
 import { RootState, AppDispatch } from '../../../../store/store';
-import { fetchEspecialidades } from '../../../../slices/especialidadSlice';
+import { fetchEspecialidades, Especialidad  } from '../../../../slices/especialidadSlice';
 import Modal from '../../../../components/Modal/Modal';
 import EspecialidadForm from './EspecialidadForm';
+import { TituloBasic } from '../../../../slices/tituloSlice';
 
 interface TituloFormProps {
-  titulo: ITitulo | null;
-  onSubmit: (titulo: ITitulo) => void;
+  titulo: TituloBasic | null;
+  onSubmit: (titulo: TituloBasic) => void;
   onCancel: () => void;
-  titulos: ITitulo[];
+  titulos: TituloBasic[];
   tituloParentId?: string; // Nueva prop opcional
   ordenCreate?: number; // Nueva prop opcional
   tipo: 'TITULO' | 'PARTIDA';
@@ -26,21 +26,24 @@ const TituloForm: React.FC<TituloFormProps> = ({
   tipo
 }) => {
   const dispatch = useDispatch<AppDispatch>();
+  const inputRef = useRef<HTMLInputElement>(null);
   const activePresupuesto = useSelector((state: RootState) => state.activeData.activePresupuesto);
   const especialidades = useSelector((state: RootState) => state.especialidad.especialidades);
   const [showEspecialidadForm, setShowEspecialidadForm] = useState(false);
 
-  const [formData, setFormData] = useState<Partial<ITitulo>>({
+  const [formData, setFormData] = useState<Partial<TituloBasic>>({
     descripcion: '',
     nivel: 1,
     item: '',
     parcial: 0,
-    especialidad_id: ''
+    id_especialidad: ''
   });
 
   useEffect(() => {
-    dispatch(fetchEspecialidades());
-  }, [dispatch]);
+    if (especialidades.length === 0) {
+      dispatch(fetchEspecialidades());
+    }
+  }, [dispatch, especialidades.length]);
 
   useEffect(() => {
     if (titulo) {
@@ -58,25 +61,30 @@ const TituloForm: React.FC<TituloFormProps> = ({
         nivel: nivelBase,
         item: '',
         parcial: 0,
-        orden: (ordenCreate ? ordenCreate : nextOrder) +0.5,
+        orden: (ordenCreate ? ordenCreate : nextOrder) + 0.5,
         id_titulo_padre: tituloParentId || null,
-        especialidad_id: especialidades[0]?.id_especialidad || '',
+        id_especialidad: especialidades[0]?.id_especialidad || '',
         tipo: tipo
       });
     }
-  }, [titulo, titulos, especialidades, tituloParentId, tipo]);
+  }, [titulo, titulos, especialidades, tituloParentId, tipo, ordenCreate]);
 
-  const handleEspecialidadCreated = (nuevaEspecialidad: IEspecialidad) => {
-    setFormData({ ...formData, especialidad_id: nuevaEspecialidad.especialidad_id });
+  useEffect(() => {
+    // Enfocar el input cuando el componente se monte
+    inputRef.current?.focus();
+  }, []);
+
+  const handleEspecialidadCreated = (nuevaEspecialidad: Especialidad) => {
+    setFormData({ ...formData, id_especialidad: nuevaEspecialidad.id_especialidad });
     setShowEspecialidadForm(false);
   };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!activePresupuesto || !formData.especialidad_id) return;
+    if (!activePresupuesto || !formData.id_especialidad) return;
 
-    const tituloData: ITitulo = {
+    const tituloData: TituloBasic = {
       id_titulo: titulo?.id_titulo || 'TEMP_' + Date.now(),
       id_presupuesto: activePresupuesto.id_presupuesto,
       id_titulo_padre: formData.id_titulo_padre || null,
@@ -87,9 +95,8 @@ const TituloForm: React.FC<TituloFormProps> = ({
       item: formData.item || '01',
       parcial: formData.parcial || 0,
       fecha_creacion: titulo?.fecha_creacion || new Date().toISOString(),
-      especialidad_id: formData.especialidad_id,
+      id_especialidad: formData.id_especialidad,
       tipo: tipo || 'TITULO',
-      id_detalle_partida: null
     };
 
     onSubmit(tituloData);
@@ -97,19 +104,17 @@ const TituloForm: React.FC<TituloFormProps> = ({
 
   return (
     <>
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <div className="text-sm font-medium text-gray-300 mb-4">
-          Tipo: {tipo}
-        </div>
+      <form onSubmit={handleSubmit} className="space-y-4 bg-blue-950/80 rounded-xl p-4">
         <div>
           <label className="block text-sm font-medium text-gray-300">
             Descripción
           </label>
           <input
+            ref={inputRef}
             type="text"
             value={formData.descripcion || ''}
-            onChange={(e) => setFormData({...formData, descripcion: e.target.value})}
-            className="mt-1 block w-full rounded-md bg-gray-800 border-gray-700 text-gray-100 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+            onChange={(e) => setFormData({ ...formData, descripcion: e.target.value })}
+            className="mt-1 px-2 py-1 block w-full rounded-md bg-gray-800 border-gray-700 text-gray-100 shadow-sm focus:border-blue-500 focus:ring-blue-500"
             required
           />
         </div>
@@ -121,8 +126,8 @@ const TituloForm: React.FC<TituloFormProps> = ({
             </label>
             <div className="flex gap-2">
               <select
-                value={formData.especialidad_id}
-                onChange={(e) => setFormData({...formData, especialidad_id: e.target.value})}
+                value={formData.id_especialidad}
+                onChange={(e) => setFormData({ ...formData, id_especialidad: e.target.value })}
                 className="mt-1 block w-full rounded-md bg-gray-800 border-gray-700 text-gray-100"
                 required
               >
@@ -161,17 +166,17 @@ const TituloForm: React.FC<TituloFormProps> = ({
         </div>
       </form>
 
-      {showEspecialidadForm && 
-      <Modal
-        isOpen={showEspecialidadForm}
-        onClose={() => setShowEspecialidadForm(false)}
-        title="Nueva Especialidad"
-      >
-        <EspecialidadForm
-          onSubmit={handleEspecialidadCreated}
-          onCancel={() => setShowEspecialidadForm(false)}
-        />
-      </Modal>
+      {showEspecialidadForm &&
+        <Modal
+          isOpen={showEspecialidadForm}
+          onClose={() => setShowEspecialidadForm(false)}
+          title="Nueva Especialidad"
+        >
+          <EspecialidadForm
+            onSubmit={handleEspecialidadCreated}
+            onCancel={() => setShowEspecialidadForm(false)}
+          />
+        </Modal>
       }
     </>
   );

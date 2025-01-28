@@ -22,9 +22,23 @@ interface UnidadPresupuesto {
 }
 
 interface RecursoPresupuesto {
-  nombre: string;
   id_recurso: string;
+  id_unidad: string;
+  id_clase: string;
+  id_tipo: string;
+  tipo?: ITipo;
+  id_recurso_app: string;
+  nombre: string;
+  precio_referencial: number;
+  fecha_actualizacion: string; // Cambiado de Date a string
 }
+
+export interface ITipo {
+  id_tipo: string;
+  descripcion: string;
+  codigo: string;
+}
+
 
 interface RecursoComposicionApu {
   id_rec_comp_apu: string;
@@ -46,16 +60,6 @@ interface ComposicionApuWithRelations {
   id_titulo: string;
 }
 
-// Interface para operaciones básicas (add/update)
-// interface ComposicionApuBase {
-//   id_composicion_apu: string;
-//   id_titulo: string;
-//   id_rec_comp_apu: string;
-//   cuadrilla: number;
-//   cantidad: number;
-//   fecha_creacion: string;
-// }
-
 interface ComposicionApuState {
   composicionesApu: ComposicionApuWithRelations[];
   selectedComposicionApu: ComposicionApuWithRelations | null;
@@ -72,9 +76,9 @@ const initialState: ComposicionApuState = {
 
 export const getComposicionesApuByTitulo = createAsyncThunk(
   'composicionApu/getComposicionesApuByTitulo',
-  async (idTitulo: string, { rejectWithValue }) => {
+  async ({idTitulo, idProyecto}: {idTitulo: string, idProyecto: string}, { rejectWithValue }) => {
     try {
-      return await getComposicionesApuByTituloService(idTitulo);
+      return await getComposicionesApuByTituloService(idTitulo, idProyecto);
     } catch (error) {
       return rejectWithValue((error as Error).message);
     }
