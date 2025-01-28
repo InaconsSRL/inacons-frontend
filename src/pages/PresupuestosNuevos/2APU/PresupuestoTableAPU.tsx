@@ -7,6 +7,7 @@ import { IoLayersOutline } from 'react-icons/io5';
 import { motion, AnimatePresence } from 'framer-motion';
 import { addDetallePartida, updateDetallePartida } from '../../../slices/detallePartidaSlice';
 import { updateActiveTitulo } from '../../../slices/activeDataSlice'
+import { fetchUnidadesPresupuesto } from '../../../slices/unidadPresupuestoSlice';
 
 const PresupuestoTable: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
@@ -15,7 +16,7 @@ const PresupuestoTable: React.FC = () => {
   const [editingMetrado, setEditingMetrado] = useState<{ [key: string]: string }>({});
   const [editingMetradoId, setEditingMetradoId] = useState<string | null>(null);
   const activePresupuesto = useSelector((state: RootState) => state.activeData.activePresupuesto);
-  const unidades = useSelector((state: RootState) => state.unidad.unidades);
+  const unidades = useSelector((state: RootState) => state.unidadPresupuesto.unidadesPresupuesto);
   const activeTitulo = useSelector((state: RootState) => state.activeData.activeTitulo);
   const titulos = useSelector((state: RootState) => state.titulo.titulos);
   
@@ -29,6 +30,11 @@ const PresupuestoTable: React.FC = () => {
       dispatch(getTitulosByPresupuesto(activePresupuesto.id_presupuesto))
     }
   }, [dispatch, activePresupuesto]);
+
+  useEffect(() => {
+    // Cargar las unidades cuando el componente se monta
+    dispatch(fetchUnidadesPresupuesto());
+  }, [dispatch]);
 
   const getIndentation = (nivel: number) => {
     // Usar padding-left directamente en píxeles
@@ -107,7 +113,7 @@ const PresupuestoTable: React.FC = () => {
       let updatedDetalle;
       let updatedTitulo = { ...titulo };
   
-      if (titulo.id_detalle_partida) {
+      if (titulo.detallePartida.id_detalle_partida) {
         // Actualizar detalle existente
         updatedDetalle = await dispatch(updateDetallePartida({
           id_detalle_partida: titulo.detallePartida?.id_detalle_partida || '',
@@ -119,7 +125,7 @@ const PresupuestoTable: React.FC = () => {
       } else {
         // Crear nuevo detalle
         updatedDetalle = await dispatch(addDetallePartida({
-          id_unidad: unidadId,
+          idUnidad: unidadId,
           metrado: 0,
           precio: 0,
           jornada: 0
@@ -392,9 +398,12 @@ const PresupuestoTable: React.FC = () => {
                             autoFocus
                           >
                             <option value="">Seleccionar</option>
-                            {unidades.map(unidad => (
-                              <option key={unidad.id_unidad} value={unidad.id_unidad}>
-                                {unidad.abreviatura_unidad} - {unidad.descripcion}
+                            {unidades && unidades.map(unidad => (
+                              <option 
+                                key={unidad.id_unidad} 
+                                value={unidad.id_unidad}
+                              >
+                                {unidad.abreviatura_unidad}
                               </option>
                             ))}
                           </select>

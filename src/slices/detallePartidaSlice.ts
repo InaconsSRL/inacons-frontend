@@ -52,15 +52,26 @@ export const getDetallesPartidaByTitulo = createAsyncThunk(
   }
 );
 
+// Agregar interfaces para los inputs
+interface CreateDetallePartidaInput {
+  idUnidad: string;
+  idTitulo: string;
+  metrado: number;
+  precio: number;
+  jornada: number;
+}
+
+interface UpdateDetallePartidaInput {
+  idDetallePartida: string;
+  idUnidad?: string;
+  metrado?: number;
+  precio?: number;
+  jornada?: number;
+}
+
 export const addDetallePartida = createAsyncThunk(
   'detallePartida/addDetallePartida',
-  async (data: {
-    idUnidad: string;
-    idTitulo: string;
-    metrado: number;
-    precio: number;
-    jornada: number;
-  }, { rejectWithValue }) => {
+  async (data: CreateDetallePartidaInput, { rejectWithValue }) => {
     try {
       return await addDetallePartidaService(data);
     } catch (error) {
@@ -71,13 +82,7 @@ export const addDetallePartida = createAsyncThunk(
 
 export const updateDetallePartida = createAsyncThunk(
   'detallePartida/updateDetallePartida',
-  async (data: {
-    idDetallePartida: string;
-    idUnidad?: string;
-    metrado?: number;
-    precio?: number;
-    jornada?: number;
-  }, { rejectWithValue }) => {
+  async (data: UpdateDetallePartidaInput, { rejectWithValue }) => {
     try {
       return await updateDetallePartidaService(data);
     } catch (error) {

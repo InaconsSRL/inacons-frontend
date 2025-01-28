@@ -96,8 +96,8 @@ const APU: React.FC<CompositionTableProps> = ({ className }) => {
     if (activeTitulo?.id_titulo) {
       if (activeProyecto) {
         dispatch(getComposicionesApuByTitulo({
-          id_titulo: activeTitulo.id_titulo,
-          id_proyecto: activeProyecto.id_proyecto
+          idTitulo: activeTitulo.id_titulo,
+          idProyecto: activeProyecto.id_proyecto
         }));
       }
     }

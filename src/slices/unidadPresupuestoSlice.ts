@@ -49,9 +49,16 @@ export const getUnidadPresupuesto = createAsyncThunk(
   }
 );
 
+// Renombrar para consistencia
+interface CreateUnidadPresupuestoInput {
+  abreviaturaUnidad: string;
+  descripcion: string;
+}
+
+// Modificar el tipo de addUnidadPresupuesto
 export const addUnidadPresupuesto = createAsyncThunk(
   'unidadPresupuesto/addUnidadPresupuesto',
-  async (data: { abreviaturaUnidad: string; descripcion: string }, { rejectWithValue }) => {
+  async (data: CreateUnidadPresupuestoInput, { rejectWithValue }) => {
     try {
       return await addUnidadPresupuestoService(data);
     } catch (error) {
