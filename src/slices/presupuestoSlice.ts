@@ -27,6 +27,9 @@ export interface Presupuesto {
   total_presupuesto: number;
 }
 
+// Nuevo tipo para la creación de presupuestos
+export type CreatePresupuestoInput = Omit<Presupuesto, 'id_presupuesto' | 'fecha_creacion' >;
+
 interface PresupuestoState {
   presupuestos: Presupuesto[];
   selectedPresupuesto: Presupuesto | null;
@@ -76,9 +79,10 @@ export const getPresupuestosByProyecto = createAsyncThunk(
   }
 );
 
+// Modificar la definición del thunk addPresupuesto
 export const addPresupuesto = createAsyncThunk(
   'presupuesto/addPresupuesto',
-  async (data: Presupuesto, { rejectWithValue }) => {
+  async (data: CreatePresupuestoInput, { rejectWithValue }) => {
     try {
       return await addPresupuestoService(data);
     } catch (error) {
@@ -98,11 +102,13 @@ export const updatePresupuesto = createAsyncThunk(
   }
 );
 
+// Modificar la definición del thunk deletePresupuesto para devolver el ID eliminado
 export const deletePresupuesto = createAsyncThunk(
   'presupuesto/deletePresupuesto',
   async (id: string, { rejectWithValue }) => {
     try {
-      return await deletePresupuestoService(id);
+      await deletePresupuestoService(id);
+      return id; // Retornamos el ID del presupuesto eliminado
     } catch (error) {
       return rejectWithValue((error as Error).message);
     }
@@ -152,6 +158,11 @@ const presupuestoSlice = createSlice({
       })
       .addCase(getPresupuestosByProyecto.fulfilled, (state, action: PayloadAction<Presupuesto[]>) => {
         state.loading = false;
+        // Reemplazar los presupuestos existentes del proyecto con los nuevos
+        const otherPresupuestos = state.presupuestos.filter(
+          p => p.id_proyecto !== action.payload[0]?.id_proyecto
+        );
+        state.presupuestos = [...otherPresupuestos, ...action.payload];
         state.presupuestosByProyecto = action.payload;
       })
       .addCase(getPresupuestosByProyecto.rejected, (state, action) => {
@@ -195,6 +206,10 @@ const presupuestoSlice = createSlice({
       .addCase(deletePresupuesto.fulfilled, (state, action: PayloadAction<string>) => {
         state.loading = false;
         state.presupuestos = state.presupuestos.filter(p => p.id_presupuesto !== action.payload);
+        state.presupuestosByProyecto = state.presupuestosByProyecto.filter(p => p.id_presupuesto !== action.payload);
+        if (state.selectedPresupuesto?.id_presupuesto === action.payload) {
+          state.selectedPresupuesto = null;
+        }
       })
       .addCase(deletePresupuesto.rejected, (state, action) => {
         state.loading = false;

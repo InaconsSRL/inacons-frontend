@@ -74,7 +74,8 @@ import { detallePartidaReducer } from '../slices/detallePartidaSlice';
 import { especialidadReducer } from '../slices/especialidadSlice';
 import { recursoComposicionApuReducer } from '../slices/recursoComposicionApuSlice';
 import { composicionApuReducer } from '../slices/composicionApuSlice';
-
+import activeDataReducer from '../slices/activeDataSlice';
+import { tituloReducer } from '../slices/tituloSlice';
 
 export const store = configureStore({
   reducer: {
@@ -152,6 +153,8 @@ export const store = configureStore({
     especialidad: especialidadReducer,
     recursoComposicionApu: recursoComposicionApuReducer,
     composicionApu: composicionApuReducer,
+    activeData: activeDataReducer,
+    titulo: tituloReducer,
   },
 
   //Para que se tome mas tiempo en responder todas las solicitudes de la API

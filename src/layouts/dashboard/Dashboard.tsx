@@ -24,7 +24,7 @@ const Dashboard: React.FC = () => {
       <Header toggleSidebar={toggleSidebar} isSidebarOpen={isSidebarOpen} />
       <div className="flex flex-1 overflow-hidden pt-16 mb-0 lg:mb-8">
         <Sidebar toggleSidebar={toggleSidebar} isSidebarOpen={isSidebarOpen} />
-        <div className="p-4 flex-1 overflow-auto ">
+        <div className="p-1 flex-1 overflow-auto ">
           <main className="flex-1 overflow-auto">
             <Outlet />
           </main>

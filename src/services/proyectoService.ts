@@ -6,10 +6,21 @@ const LIST_PROYECTOS_QUERY = gql`
     listProyectos {
       id_proyecto
       id_usuario
+      id_infraestructura
       nombre_proyecto
+      id_departamento
+      id_provincia
+      id_distrito
+      id_localidad
+      total_proyecto
       estado
+      fecha_creacion
+      cliente
+      empresa
+      plazo
       ppto_base
       ppto_oferta
+      jornada
     }
   }
 `;

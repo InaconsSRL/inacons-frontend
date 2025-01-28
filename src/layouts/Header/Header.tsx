@@ -4,7 +4,7 @@ import { FiBell, FiMenu, FiX, FiLogOut } from 'react-icons/fi';
 import { useNavigate } from 'react-router-dom';
 import logo from '../../assets/logo.svg'
 import avatar from '../../assets/avatar.webp'
-import { fetchRecursos } from '../../slices/recursoSlice';
+//import { fetchRecursos } from '../../slices/recursoSlice';
 import { RootState, AppDispatch } from '../../store/store';
 import { fetchObras } from '../../slices/obrasSlice';
 import { fetchUnidades } from '../../slices/unidadSlice';
@@ -40,7 +40,7 @@ const Header: React.FC<HeaderProps> = ({ toggleSidebar, isSidebarOpen }) => {
   }, []);
 
   useEffect(() => {
-    dispatch(fetchRecursos());
+    //dispatch(fetchRecursos());
     dispatch(fetchObras());
     dispatch(fetchUnidades());
     dispatch(fetchUsuariosAndCargos());

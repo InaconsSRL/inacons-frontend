@@ -1,6 +1,6 @@
 import { gql } from '@apollo/client';
 import client from '../apolloClient';
-import { Presupuesto } from '../slices/presupuestoSlice';
+import { Presupuesto, CreatePresupuestoInput } from '../slices/presupuestoSlice';
 
 const LIST_PRESUPUESTOS_QUERY = gql`
   query ListPresupuestos {
@@ -49,8 +49,8 @@ const GET_PRESUPUESTO_QUERY = gql`
 `;
 
 const GET_PRESUPUESTOS_BY_PROYECTO_QUERY = gql`
-  query GetPresupuestosByProyecto($idProyecto: String!) {
-    getPresupuestosByProyecto(id_proyecto: $idProyecto) {
+  query GetPresupuestosByProyecto($id_proyecto: String!) {
+    getPresupuestosByProyecto(id_proyecto: $id_proyecto) {
       id_presupuesto
       id_proyecto
       fecha_creacion
@@ -64,8 +64,8 @@ const GET_PRESUPUESTOS_BY_PROYECTO_QUERY = gql`
 `;
 
 const ADD_PRESUPUESTO_MUTATION = gql`
-  mutation AddPresupuesto($idProyecto: String!, $costoDirecto: Float!, $montoIgv: Float!, $montoUtilidad: Float!, $parcialPresupuesto: Float!, $observaciones: String!, $porcentajeIgv: Float!, $porcentajeUtilidad: Float!, $plazo: Int!, $pptoBase: Float!, $pptoOferta: Float!, $totalPresupuesto: Float!, $nombrePresupuesto: String!, $numeracionPresupuesto: Int) {
-    addPresupuesto(id_proyecto: $idProyecto, costo_directo: $costoDirecto, monto_igv: $montoIgv, monto_utilidad: $montoUtilidad, parcial_presupuesto: $parcialPresupuesto, observaciones: $observaciones, porcentaje_igv: $porcentajeIgv, porcentaje_utilidad: $porcentajeUtilidad, plazo: $plazo, ppto_base: $pptoBase, ppto_oferta: $pptoOferta, total_presupuesto: $totalPresupuesto, nombre_presupuesto: $nombrePresupuesto, numeracion_presupuesto: $numeracionPresupuesto) {
+  mutation AddPresupuesto($id_proyecto: String!, $costo_directo: Float!, $monto_igv: Float!, $monto_utilidad: Float!, $parcial_presupuesto: Float!, $observaciones: String!, $porcentaje_igv: Float!, $porcentaje_utilidad: Float!, $plazo: Int!, $ppto_base: Float!, $ppto_oferta: Float!, $total_presupuesto: Float!, $nombre_presupuesto: String!, $numeracion_presupuesto: Int) {
+    addPresupuesto(id_proyecto: $id_proyecto, costo_directo: $costo_directo, monto_igv: $monto_igv, monto_utilidad: $monto_utilidad, parcial_presupuesto: $parcial_presupuesto, observaciones: $observaciones, porcentaje_igv: $porcentaje_igv, porcentaje_utilidad: $porcentaje_utilidad, plazo: $plazo, ppto_base: $ppto_base, ppto_oferta: $ppto_oferta, total_presupuesto: $total_presupuesto, nombre_presupuesto: $nombre_presupuesto, numeracion_presupuesto: $numeracion_presupuesto) {
       id_presupuesto
       id_proyecto
       costo_directo
@@ -87,8 +87,8 @@ const ADD_PRESUPUESTO_MUTATION = gql`
 `;
 
 const UPDATE_PRESUPUESTO_MUTATION = gql`
-  mutation UpdatePresupuesto($idPresupuesto: String!, $nombrePresupuesto: String, $costoDirecto: Float, $montoIgv: Float, $montoUtilidad: Float, $totalPresupuesto: Float, $pptoOferta: Float, $pptoBase: Float, $porcentajeUtilidad: Float, $porcentajeIgv: Float, $observaciones: String, $plazo: Int) {
-    updatePresupuesto(id_presupuesto: $idPresupuesto, nombre_presupuesto: $nombrePresupuesto, costo_directo: $costoDirecto, monto_igv: $montoIgv, monto_utilidad: $montoUtilidad, total_presupuesto: $totalPresupuesto, ppto_oferta: $pptoOferta, ppto_base: $pptoBase, porcentaje_utilidad: $porcentajeUtilidad, porcentaje_igv: $porcentajeIgv, observaciones: $observaciones, plazo: $plazo) {
+  mutation UpdatePresupuesto($idPresupuesto: String!, $nombre_presupuesto: String, $costo_directo: Float, $monto_igv: Float, $monto_utilidad: Float, $total_presupuesto: Float, $ppto_oferta: Float, $ppto_base: Float, $porcentaje_utilidad: Float, $porcentaje_igv: Float, $observaciones: String, $plazo: Int) {
+    updatePresupuesto(id_presupuesto: $idPresupuesto, nombre_presupuesto: $nombre_presupuesto, costo_directo: $costo_directo, monto_igv: $monto_igv, monto_utilidad: $monto_utilidad, total_presupuesto: $total_presupuesto, ppto_oferta: $ppto_oferta, ppto_base: $ppto_base, porcentaje_utilidad: $porcentaje_utilidad, porcentaje_igv: $porcentaje_igv, observaciones: $observaciones, plazo: $plazo) {
       id_presupuesto
       id_proyecto
       costo_directo
@@ -140,11 +140,11 @@ export const getPresupuestoService = async (id: string) => {
   }
 };
 
-export const getPresupuestosByProyectoService = async (idProyecto: string) => {
+export const getPresupuestosByProyectoService = async (id_proyecto: string) => {
   try {
     const response = await client.query({
       query: GET_PRESUPUESTOS_BY_PROYECTO_QUERY,
-      variables: { idProyecto },
+      variables: { id_proyecto },
     });
     return response.data.getPresupuestosByProyecto;
   } catch (error) {
@@ -152,11 +152,26 @@ export const getPresupuestosByProyectoService = async (idProyecto: string) => {
   }
 };
 
-export const addPresupuestoService = async (data: Presupuesto) => {
+export const addPresupuestoService = async (data: CreatePresupuestoInput) => {
   try {
     const response = await client.mutate({
       mutation: ADD_PRESUPUESTO_MUTATION,
-      variables: data,
+      variables: {
+        id_proyecto: data.id_proyecto,
+        costo_directo: parseFloat(data.costo_directo.toString()),
+        monto_igv: parseFloat(data.monto_igv.toString()),
+        monto_utilidad: parseFloat(data.monto_utilidad.toString()),
+        parcial_presupuesto: parseFloat(data.parcial_presupuesto.toString()),
+        observaciones: data.observaciones,
+        porcentaje_igv: parseFloat(data.porcentaje_igv.toString()),
+        porcentaje_utilidad: parseFloat(data.porcentaje_utilidad.toString()),
+        plazo: parseInt(data.plazo.toString()),
+        ppto_base: parseFloat(data.ppto_base.toString()),
+        ppto_oferta: parseFloat(data.ppto_oferta.toString()),
+        total_presupuesto: parseFloat(data.total_presupuesto.toString()),
+        nombre_presupuesto: data.nombre_presupuesto,
+        numeracion_presupuesto: parseInt(data.numeracion_presupuesto.toString())
+      }
     });
     return response.data.addPresupuesto;
   } catch (error) {
@@ -168,7 +183,21 @@ export const updatePresupuestoService = async (data: Presupuesto) => {
   try {
     const response = await client.mutate({
       mutation: UPDATE_PRESUPUESTO_MUTATION,
-      variables: data,
+      variables: {
+        idPresupuesto: data.id_presupuesto,
+        nombre_presupuesto: data.nombre_presupuesto,
+        costo_directo: parseFloat(data.costo_directo.toString()),
+        monto_igv: parseFloat(data.monto_igv.toString()),
+        monto_utilidad: parseFloat(data.monto_utilidad.toString()),
+        total_presupuesto: parseFloat(data.total_presupuesto.toString()),
+        ppto_oferta: parseFloat(data.ppto_oferta.toString()),
+        ppto_base: parseFloat(data.ppto_base.toString()),
+        porcentaje_utilidad: parseFloat(data.porcentaje_utilidad.toString()),
+        porcentaje_igv: parseFloat(data.porcentaje_igv.toString()),
+        observaciones: data.observaciones,
+        numeracion_presupuesto: parseInt(data.numeracion_presupuesto.toString()),
+        plazo: parseInt(data.plazo.toString())
+      }
     });
     return response.data.updatePresupuesto;
   } catch (error) {
