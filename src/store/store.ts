@@ -63,6 +63,18 @@ import { provinciaReducer } from '../slices/provinciaSlice';
 import { distritoReducer } from '../slices/distritoSlice';
 import { localidadReducer } from '../slices/localidadSlice';
 import { claseReducer } from '../slices/claseSlice';
+import { unidadPresupuestoReducer } from '../slices/unidadPresupuestoSlice';
+import { tipoReducer } from '../slices/tipoSlice';
+import { recursoPresupuestoReducer } from '../slices/recursoPresupuestoSlice';
+import { proyectoReducer } from '../slices/proyectoSlice';
+import presupuestoReducer from '../slices/presupuestoSlice';
+import infraestructuraReducer from '../slices/infraestructuraSlice';
+import precioRecursoProyectoReducer from '../slices/precioRecursoProyectoSlice';
+import { detallePartidaReducer } from '../slices/detallePartidaSlice';
+import { especialidadReducer } from '../slices/especialidadSlice';
+import { recursoComposicionApuReducer } from '../slices/recursoComposicionApuSlice';
+import { composicionApuReducer } from '../slices/composicionApuSlice';
+
 
 export const store = configureStore({
   reducer: {
@@ -86,6 +98,7 @@ export const store = configureStore({
     distrito: distritoReducer,
     empleado: empleadoReducer,
     guiaTransferencia: guiaTransferenciaReducer,
+    infraestructura: infraestructuraReducer,
     mediosPagoProveedor: mediosPagoProveedorReducer,
     menu: menuReducer,
     movimiento: movimientoReducer,
@@ -129,6 +142,16 @@ export const store = configureStore({
     provincia: provinciaReducer,
     localidad: localidadReducer,
     clase: claseReducer,
+    unidadPresupuesto: unidadPresupuestoReducer,
+    tipo: tipoReducer,
+    recursoPresupuesto: recursoPresupuestoReducer,
+    proyecto: proyectoReducer,
+    presupuesto: presupuestoReducer,
+    precioRecursoProyecto: precioRecursoProyectoReducer,
+    detallePartida: detallePartidaReducer,
+    especialidad: especialidadReducer,
+    recursoComposicionApu: recursoComposicionApuReducer,
+    composicionApu: composicionApuReducer,
   },
 
   //Para que se tome mas tiempo en responder todas las solicitudes de la API
