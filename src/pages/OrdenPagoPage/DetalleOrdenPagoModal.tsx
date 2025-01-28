@@ -141,7 +141,7 @@ const DetalleOrdenPagoModal: React.FC<DetalleOrdenPagoModalProps> = ({
               <div className="flex flex-col space-y-1">
                 <span className="text-sm font-medium text-gray-500">Código orden pago</span>
                 <span className="text-lg font-semibold text-gray-900">{ordenPago.codigo}</span>
-                  <span className="text-lg font-semibold text-gray-900">{ordenPago._id}</span>
+                {/* <span className="text-lg font-semibold text-gray-900">{ordenPago._id}</span> */}
               </div>
 
               <div className="flex flex-col space-y-1">
@@ -218,7 +218,30 @@ const DetalleOrdenPagoModal: React.FC<DetalleOrdenPagoModalProps> = ({
                   <p className="text-gray-500">No hay descuentos registrados</p>
                 </div>
               ) : (
-                <TableComponent tableData={tableData} />
+                <>
+                  <div className="bg-white shadow-md rounded-lg p-4 mb-4">
+                    <div className="flex justify-between items-center gap-4">
+                      <div className="flex flex-col items-center flex-1">
+                        <span className="text-gray-600 text-sm font-medium mb-1">Monto Solicitado</span>
+                        <span className="text-2xl font-bold text-blue-600">
+                          {ordenPago.monto_solicitado?.toFixed(2)} {' '}
+                          {ordenPago.tipo_moneda} 
+                        </span>
+                      </div>
+                      <div className="w-px h-12 bg-gray-200"></div>
+                      <div className="flex flex-col items-center flex-1">
+                        <span className="text-gray-600 text-sm font-medium mb-1">Monto a Pagar</span>
+                        <span className="text-2xl font-bold text-green-600">
+                          {descuentos
+                            .reduce((total, descuento) => total + descuento.monto, 0)
+                            .toFixed(2)} {' '}
+                              {ordenPago.tipo_moneda} 
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                  <TableComponent tableData={tableData} />
+                </>
               )}
             </div>
           </div>

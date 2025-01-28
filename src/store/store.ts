@@ -63,6 +63,8 @@ import  {consumoRecursoReducer}  from '../slices/consumoRecursoSlice';
 import dateFilterReducer from '../slices/dateFilterSlice';
 import { pagosOrdenPagoReducer } from '../slices/pagosOrdenPagoSlice';
 import { archivoPagoReducer } from '../slices/archivoPagoSlice';
+import { comprobantePagoReducer } from '../slices/comprobantePagoSlice';
+import { tipoCambioOrdenPagoReducer } from '../slices/tipoCambioOrdenPagoSlice';
 
 export const store = configureStore({
   reducer: {
@@ -129,6 +131,8 @@ export const store = configureStore({
     dateFilter: dateFilterReducer,
     pagosOrdenPago: pagosOrdenPagoReducer,
     archivoPago: archivoPagoReducer,
+    comprobantePago: comprobantePagoReducer,
+    tipoCambioOrdenPago: tipoCambioOrdenPagoReducer,
   },
 
   //Para que se tome mas tiempo en responder todas las solicitudes de la API

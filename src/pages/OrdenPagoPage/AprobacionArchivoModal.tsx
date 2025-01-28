@@ -7,6 +7,7 @@ import { updateOrdenPago } from '../../slices/ordenPagoSlice';
 import Modal from '../../components/Modal/Modal';
 import Button from '../../components/Buttons/Button';
 import Toast from '../../components/Toast/Toast';
+import { FaSpinner } from 'react-icons/fa'; // Agregar este import
 
 interface AprobacionArchivoModalProps {
   isOpen: boolean;
@@ -72,7 +73,6 @@ const AprobacionArchivoModal: React.FC<AprobacionArchivoModalProps> = ({
   };
 
   const handleSubmitArchivo = async () => {
-    console.log('Starting submit with file:', selectedFile);
     if (!selectedFile) {
       setToastMessage('Por favor seleccione un archivo');
       setToastVariant('warning');
@@ -80,99 +80,8 @@ const AprobacionArchivoModal: React.FC<AprobacionArchivoModalProps> = ({
       return;
     }
 
-    setIsSubmitting(true);
-    try {
-      // Crear y verificar FormData
-      const formData = new FormData();
-      
-      // Agregar y verificar cada campo
-      formData.append('operations', JSON.stringify({
-        query: `
-          mutation UploadArchivoPago($orden_pago_id: ID!, $usuario_id: ID!, $file: Upload!) {
-            uploadArchivoPago(orden_pago_id: $orden_pago_id, usuario_id: $usuario_id, file: $file) {
-              id
-            }
-          }
-        `,
-        variables: {
-          orden_pago_id: ordenPagoId,
-          usuario_id: userId,
-          file: null
-        }
-      }));
-
-      // Agregar el map
-      formData.append('map', JSON.stringify({
-        "0": ["variables.file"]
-      }));
-
-      // Agregar y verificar el archivo
-      formData.append('0', selectedFile);
-
-      // Depurar el FormData
-      console.log('FormData contents:');
-      for (let [key, value] of formData.entries()) {
-        if (value instanceof File) {
-          console.log(`${key}:`, {
-            name: value.name,
-            type: value.type,
-            size: value.size
-          });
-        } else {
-          console.log(`${key}:`, value);
-        }
-      }
-
-      // Verificar el archivo antes de enviarlo
-      const fileInFormData = formData.get('0');
-      console.log('File in FormData:', fileInFormData instanceof File ? {
-        name: fileInFormData.name,
-        type: fileInFormData.type,
-        size: fileInFormData.size
-      } : 'No file found');
-
-      // Intentar enviar
-      const result = await dispatch(uploadArchivo({
-        ordenPagoId,
-        userId: userId || '',
-        file: formData
-      })).unwrap();
-
-      console.log('Upload result:', result);
-
-      // Si hay monto, registrar aprobación
-      if (monto !== '') {
-        await dispatch(addAprobacion({
-          usuario_id: userId || '',
-          estado: 'APROBADO',
-          orden_pago_id: ordenPagoId,
-          monto: Number(monto),
-          tipo_moneda: tipoMoneda
-        })).unwrap();
-      }
-
-      setToastMessage('Archivo subido exitosamente');
-      setToastVariant('success');
-      setShowToast(true);
-      
-      setTimeout(onClose, 2000);
-    } catch (error) {
-      console.error('Upload error full details:', {
-        error,
-        errorMessage: error instanceof Error ? error.message : 'Unknown error',
-        errorStack: error instanceof Error ? error.stack : undefined
-      });
-      setToastMessage('Error al procesar la solicitud');
-      setToastVariant('danger');
-      setShowToast(true);
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
-  const handleFinalizarPago = async () => {
     if (monto === '') {
-      setToastMessage('Debe ingresar el monto para finalizar el pago');
+      setToastMessage('Por favor ingrese el monto');
       setToastVariant('warning');
       setShowToast(true);
       return;
@@ -180,19 +89,53 @@ const AprobacionArchivoModal: React.FC<AprobacionArchivoModalProps> = ({
 
     setIsSubmitting(true);
     try {
-      // Actualizar estado de la orden
-      await dispatch(updateOrdenPago({
-        id: ordenPagoId,
-        estado: 'FINALIZADO'
+      // Primero subir el archivo
+      await dispatch(uploadArchivo({
+        ordenPagoId,
+        userId: userId || '',
+        file: selectedFile
       })).unwrap();
 
-      setToastMessage('Pago finalizado exitosamente');
+      // Despues registrar aprobación
+      await dispatch(addAprobacion({
+        usuario_id: userId || '',
+        estado: 'APROBADO',
+        orden_pago_id: ordenPagoId,
+        monto: Number(monto),
+        tipo_moneda: tipoMoneda
+      })).unwrap();
+
+      setToastMessage('Archivo y aprobación registrados exitosamente');
       setToastVariant('success');
       setShowToast(true);
+
+      // Preguntar si desea finalizar el pago
+      const confirmarFinalizacion = window.confirm('¿Desea finalizar el pago?');
+      if (confirmarFinalizacion) {
+        try {
+          await dispatch(updateOrdenPago({
+            id: ordenPagoId,
+            estado: 'FINALIZADO'
+          })).unwrap();
+
+          setToastMessage('Pago finalizado exitosamente');
+          setToastVariant('success');
+          setShowToast(true);
+        } catch (error) {
+          setToastMessage('Error al finalizar el pago');
+          setToastVariant('danger');
+          setShowToast(true);
+          setIsSubmitting(false);
+          return;
+        }
+      }
       
-      setTimeout(onClose, 2000);
+      // Esperar 2 segundos antes de cerrar para que se vea el mensaje
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      onClose();
     } catch (error) {
-      setToastMessage('Error al finalizar el pago');
+      console.error('Error en el proceso:', error);
+      setToastMessage('Error al procesar la solicitud');
       setToastVariant('danger');
       setShowToast(true);
     } finally {
@@ -234,14 +177,14 @@ const AprobacionArchivoModal: React.FC<AprobacionArchivoModalProps> = ({
           {/* Inputs de Monto y Tipo de Moneda */}
           <div className="flex gap-4">
             <div className="flex-1">
-              <label className="block text-sm font-medium text-gray-700">
-                Monto (obligatorio si va a finalizar el Pago)
+              <label className="block text-sm  font-medium text-gray-700">
+                Monto 
               </label>
               <input
                 type="number"
                 value={monto}
                 onChange={(e) => setMonto(e.target.value ? Number(e.target.value) : '')}
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm"
+                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border"
                 min="0"
                 step="0.01"
               />
@@ -253,7 +196,7 @@ const AprobacionArchivoModal: React.FC<AprobacionArchivoModalProps> = ({
               <select
                 value={tipoMoneda}
                 onChange={handleTipoMonedaChange}
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm"
+                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border"
               >
                 <option value="soles">Soles</option>
                 <option value="dolares">Dólares</option>
@@ -262,18 +205,20 @@ const AprobacionArchivoModal: React.FC<AprobacionArchivoModalProps> = ({
           </div>
 
           {/* Botones */}
-          <div className="flex justify-end space-x-4">
+          <div className="flex justify-center space-x-4">
             <Button
-              text="Confirmar"
+              text={
+                <div className="flex items-center gap-2">
+                  {isSubmitting && (
+                    <FaSpinner className="animate-spin" />
+                  )}
+                  Confirmar
+                </div>
+              }
               color="verde"
               onClick={handleSubmitArchivo}
               disabled={isSubmitting}
-            />
-            <Button
-              text="Finalizar Pago"
-              color="azul"
-              onClick={handleFinalizarPago}
-              disabled={isSubmitting}
+              className="w-[200px]"
             />
           </div>
         </div>

@@ -9,6 +9,11 @@ import DetalleOrdenPagoModal from './DetalleOrdenPagoModal';
 import { FiEye } from 'react-icons/fi';
 import { fetchAprobacionesByOrdenPago } from '../../slices/aprobacionesOrdenPagoSlice';
 import AprobacionArchivoModal from './AprobacionArchivoModal';
+import { fetchDescuentosByOrdenPago } from '../../slices/descuentoPagoSlice';
+import { fetchArchivosByOrdenPago } from '../../slices/archivoPagoSlice';
+import ComprobantesModal from '../../components/Modals/ComprobantesModal';
+import { FiFileText } from 'react-icons/fi';
+import { ArchivoPago } from '../../services/archivoPagoService';
 
 const pageVariants = {
   initial: { opacity: 0, y: 20 },
@@ -31,6 +36,9 @@ const ListOrdenPage: React.FC = () => {
     id: string,
     estado: string
   } | null>(null);
+  const [descuentosPorOrden, setDescuentosPorOrden] = useState<{[key: string]: number}>({});
+  const [selectedComprobantes, setSelectedComprobantes] = useState<ArchivoPago[]>([]);
+  const [isComprobantesModalOpen, setIsComprobantesModalOpen] = useState(false);
 
   useEffect(() => {
     dispatch(fetchOrdenPagos());
@@ -62,6 +70,33 @@ const ListOrdenPage: React.FC = () => {
     }
   }, [dispatch, ordenPagos]);
 
+  useEffect(() => {
+    const cargarDescuentos = async () => {
+      const descuentos: {[key: string]: number} = {};
+      
+      for (const orden of ordenPagos) {
+        try {
+          const result = await dispatch(fetchDescuentosByOrdenPago(orden.id)).unwrap();
+          if (result && result.length > 0) {
+            const totalDescuentos = result.reduce((acc, desc) => acc + desc.monto, 0);
+            descuentos[orden.id] = orden.monto_solicitado - totalDescuentos;
+          } else {
+            descuentos[orden.id] = orden.monto_solicitado;
+          }
+        } catch (error) {
+          console.error('Error al cargar descuentos:', error);
+          descuentos[orden.id] = orden.monto_solicitado;
+        }
+      }
+      
+      setDescuentosPorOrden(descuentos);
+    };
+
+    if (ordenPagos.length > 0) {
+      cargarDescuentos();
+    }
+  }, [dispatch, ordenPagos]);
+
   if (loading) return <LoaderPage />;
   if (error) return <div>Error: {error}</div>;
 
@@ -69,22 +104,37 @@ const ListOrdenPage: React.FC = () => {
     setSelectedOrden({ id: ordenId, ordenCompraId });
   };
 
+  const handleVerComprobantes = async (ordenId: string) => {
+    try {
+      const archivos = await dispatch(fetchArchivosByOrdenPago(ordenId)).unwrap();
+      setSelectedComprobantes(archivos);
+      setIsComprobantesModalOpen(true);
+    } catch (error) {
+      console.error('Error al cargar comprobantes:', error);
+    }
+  };
+
   const tableData = {
-    filter: [true, true, true, true, true, true, true, true, false],
+    filter: [true, true, true, true, true, true, true, true, true, true, true, false],
     headers: [
       "código",
-      "monto",
+      "Monto Solicitado",
+      "Total descuento",
+      "Total a depositar",
       "moneda",
       "tipo pago",
       "orden compra",
       "estado",
       "usuario",
       "Aprobación",
+      "Comprobantes",
       "Acciones"
     ],
     rows: ordenPagos.map(ordenPago => ({
       código: ordenPago.codigo,
-      monto: ordenPago.monto_solicitado,
+      "Monto Solicitado": ordenPago.monto_solicitado,
+      "Total descuento": descuentosPorOrden[ordenPago.id] || ordenPago.monto_solicitado,
+      "Total a depositar": ordenPago.monto_solicitado - (descuentosPorOrden[ordenPago.id] || ordenPago.monto_solicitado),
       moneda: ordenPago.tipo_moneda,
       "tipo pago": ordenPago.tipo_pago,
       "orden compra": ordenPago.orden_compra_id.codigo_orden,
@@ -94,10 +144,12 @@ const ListOrdenPage: React.FC = () => {
             id: ordenPago.id,
             estado: ordenPago.estado
           })}
-          className={`px-2 py-1 rounded-full text-sm font-semibold ${
+          className={`px-2 py-0.5 rounded-full text-xs ${
             ordenPago.estado === 'APROBADO' 
-              ? 'bg-green-100 text-green-800' 
-              : 'bg-yellow-100 text-yellow-800'
+              ? 'bg-green-100 text-green-800'
+              : ordenPago.estado === 'FINALIZADO'
+                ? 'bg-green-100 text-green-800'
+                : 'bg-yellow-100 text-yellow-800'
           }`}
         >
           {ordenPago.estado}
@@ -105,13 +157,21 @@ const ListOrdenPage: React.FC = () => {
       ),
       usuario: `${ordenPago.usuario_id.nombres} ${ordenPago.usuario_id.apellidos}`,
       "Aprobación": (
-        <span className={`px-2 py-1 rounded-full text-sm font-semibold ${
+        <span className={`px-2 py-0.5 rounded-full text-xs ${
           aprobacionesPorOrden[ordenPago.id] === 'APROBADO' 
             ? 'bg-green-100 text-green-800' 
             : 'bg-yellow-100 text-yellow-800'
         }`}>
           {aprobacionesPorOrden[ordenPago.id] || 'PENDIENTE'}
         </span>
+      ),
+      "Comprobantes": (
+        <button
+          onClick={() => handleVerComprobantes(ordenPago.id)}
+          className="flex items-center justify-center gap-2 px-3 py-1 text-blue-600 hover:text-blue-800 hover:bg-blue-50 rounded-full transition-colors"
+        >
+          <FiFileText size={18} />
+        </button>
       ),
       "Acciones": (
         <button
@@ -179,6 +239,12 @@ const ListOrdenPage: React.FC = () => {
           currentEstado={selectedOrdenForAprobacion.estado}
         />
       )}
+
+      <ComprobantesModal
+        isOpen={isComprobantesModalOpen}
+        onClose={() => setIsComprobantesModalOpen(false)}
+        archivos={selectedComprobantes}
+      />
     </motion.div>
   );
 };

@@ -88,13 +88,13 @@ const ADD_ORDEN_PAGO = gql`
 const UPDATE_ORDEN_PAGO = gql`
   mutation UpdateOrdenPago(
     $id: ID!
-    $monto_solicitado: Float!
-    $tipo_moneda: String!
-    $tipo_pago: String!
-    $orden_compra_id: ID!
-    $estado: String!
+    $monto_solicitado: Float
+    $tipo_moneda: String
+    $tipo_pago: String
+    $orden_compra_id: ID
+    $estado: String
     $observaciones: String
-    $usuario_id: ID!
+    $usuario_id: ID
     $comprobante: String
   ) {
     updateOrdenPago(

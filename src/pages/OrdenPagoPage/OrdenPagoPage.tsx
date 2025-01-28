@@ -13,6 +13,10 @@ import { RootState, AppDispatch } from '../../store/store';
 import LoaderPage from '../../components/Loader/LoaderPage';
 import { TbEyeDiscount } from "react-icons/tb";
 import { FiEdit, FiTrash2 } from 'react-icons/fi';
+import UpdateOrdenPagoModal from './UpdateOrdenPagoModal';
+import { addTipoCambio } from '../../slices/tipoCambioOrdenPagoSlice';
+import { uploadComprobante } from '../../slices/comprobantePagoSlice';
+import { fetchDescuentosByOrdenPago } from '../../slices/descuentoPagoSlice';
 
 const pageVariants = {
   initial: { opacity: 0, y: 20 },
@@ -31,7 +35,8 @@ const OrdenPagoPage: React.FC = () => {
   const ordenCompraId = searchParams.get('ordenCompraId');
     
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [editingOrdenPago, setEditingOrdenPago] = useState<any>(null);
+  const [isUpdateModalOpen, setIsUpdateModalOpen] = useState(false);
+  const [selectedOrdenPago, setSelectedOrdenPago] = useState<any>(null);
 
   const dispatch = useDispatch<AppDispatch>();
   const { ordenPagos, loading, error } = useSelector((state: RootState) => state.ordenPago);
@@ -40,6 +45,7 @@ const OrdenPagoPage: React.FC = () => {
     loadingByOrdenCompra, 
     errorByOrdenCompra 
   } = useSelector((state: RootState) => state.ordenPago);
+  const { descuentos } = useSelector((state: RootState) => state.descuentoPago);
 
   const userId = useSelector((state: RootState) => state.user.id);
   const [moneda, setMoneda] = useState<string>('');
@@ -47,6 +53,7 @@ const OrdenPagoPage: React.FC = () => {
   const [monto, setMonto] = useState(0);
   const [tipoComprobante, setTipoComprobante] = useState<string>('');
   const [tipoPago, setTipoPago] = useState<string>('');
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
 
   // Estados para el Toast
   const [showToast, setShowToast] = useState(false);
@@ -55,7 +62,6 @@ const OrdenPagoPage: React.FC = () => {
     
   // Estados para el modal de descuentos
   const [isDescuentoModalOpen, setIsDescuentoModalOpen] = useState(false);
-  const [selectedOrdenPago, setSelectedOrdenPago] = useState<any>(null);
   const [tipoDescuento, setTipoDescuento] = useState<'detracciones' | 'retenciones' | null>(null);
 
   // Función para abrir el modal de descuentos
@@ -63,6 +69,15 @@ const OrdenPagoPage: React.FC = () => {
     setSelectedOrdenPago(ordenPago);
     setTipoDescuento(tipo);
     setIsDescuentoModalOpen(true);
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) {
+      setSelectedFile(null);
+      return;
+    }
+    setSelectedFile(files[0]);
   };
 
   // Función para manejar el envío de datos
@@ -92,8 +107,26 @@ const OrdenPagoPage: React.FC = () => {
         comprobante: tipoComprobante
       };
 
-      await dispatch(addOrdenPago(nuevaOrdenPago));
+      const result = await dispatch(addOrdenPago(nuevaOrdenPago)).unwrap();
       
+      // Si hay un archivo seleccionado, subirlo
+      if (selectedFile) {
+        await dispatch(uploadComprobante({
+          ordenPagoId: result.id,
+          file: selectedFile
+        }));
+      }
+
+      // Si es en dólares y hay tipo de cambio, guardar el tipo de cambio y el monto en soles
+      if (moneda === 'dolares' && tipoCambio > 0) {
+        const montoSoles = tipoCambio * monto;
+        await dispatch(addTipoCambio({
+          cambio: tipoCambio,
+          monto_soles: montoSoles, // Agregamos el monto en soles calculado
+          orden_pago_id: result.id
+        }));
+      }
+
       setToastMessage('Orden de pago creada exitosamente');
       setToastVariant('success');
       setShowToast(true);
@@ -103,6 +136,11 @@ const OrdenPagoPage: React.FC = () => {
       setMoneda('');
       setTipoComprobante('');
       setTipoPago('');
+      setTipoCambio(0);
+      setSelectedFile(null);
+      if (document.getElementById('comprobante-file') as HTMLInputElement) {
+        (document.getElementById('comprobante-file') as HTMLInputElement).value = '';
+      }
       
       // Recargar datos
       if (ordenCompraId) {
@@ -123,62 +161,49 @@ const OrdenPagoPage: React.FC = () => {
     }
   }, [dispatch, ordenCompraId]);
 
-  const handleEdit = (ordenPago: any) => {
-    // Establecer los valores actuales en el estado
-    setMonto(ordenPago.monto_solicitado);
-    setMoneda(ordenPago.tipo_moneda);
-    setTipoComprobante(ordenPago.comprobante);
-    setTipoPago(ordenPago.tipo_pago);
-    setEditingOrdenPago(ordenPago);
-    setIsModalOpen(true);
+  const [montosAPagar, setMontosAPagar] = useState<{ [key: string]: number }>({});
+
+  // Función para calcular el total de descuentos
+  const calcularTotalDescuentos = async (ordenPagoId: string) => {
+    try {
+      const response = await dispatch(fetchDescuentosByOrdenPago(ordenPagoId)).unwrap();
+      const total = response.reduce((sum: number, descuento: any) => sum + Number(descuento.monto), 0);
+      return total;
+    } catch (error) {
+      console.error('Error al obtener descuentos:', error);
+      return 0;
+    }
   };
 
-  const handleUpdate = async () => {
-    try {
-      if (!editingOrdenPago) return;
-
-      if (!monto || !moneda || !tipoComprobante || !tipoPago) {
-        setToastMessage('Por favor complete todos los campos');
-        setToastVariant('warning');
-        setShowToast(true);
-        return;
+  // Efecto para calcular los montos a pagar
+  useEffect(() => {
+    const calcularMontos = async () => {
+      const montos: { [key: string]: number } = {};
+      for (const ordenPago of ordenPagosByOrdenCompra) {
+        const descuentos = await calcularTotalDescuentos(ordenPago._id);
+        montos[ordenPago._id] = ordenPago.monto_solicitado - descuentos;
       }
+      setMontosAPagar(montos);
+    };
 
-      const updatedOrdenPago = {
-        id: editingOrdenPago.id,
-        monto_solicitado: Number(monto),
-        tipo_moneda: moneda,
-        tipo_pago: tipoPago,
-        comprobante: tipoComprobante,
-        estado: editingOrdenPago.estado,
-        usuario_id: userId,
-        orden_compra_id: ordenCompraId || ''
-      };
-
-      await dispatch(updateOrdenPago(updatedOrdenPago));
-      
-      setToastMessage('Orden de pago actualizada exitosamente');
-      setToastVariant('success');
-      setShowToast(true);
-      
-      // Limpiar formulario y cerrar modal
-      setMonto(0);
-      setMoneda('');
-      setTipoComprobante('');
-      setTipoPago('');
-      setEditingOrdenPago(null);
-      setIsModalOpen(false);
-      
-      // Recargar datos
-      if (ordenCompraId) {
-        dispatch(fetchOrdenPagosByOrdenCompra(ordenCompraId));
-      }
-    } catch (error: any) {
-      console.error('Error al actualizar orden de pago:', error);
-      setToastMessage(`Error al actualizar la orden de pago: ${error.message}`);
-      setToastVariant('danger');
-      setShowToast(true);
+    if (ordenPagosByOrdenCompra.length > 0) {
+      calcularMontos();
     }
+  }, [ordenPagosByOrdenCompra]);
+
+  const handleEdit = (ordenPago: any) => {
+    setSelectedOrdenPago(ordenPago);
+    setIsUpdateModalOpen(true);
+  };
+
+  const handleUpdateSuccess = () => {
+    // Recargar datos después de una actualización exitosa
+    if (ordenCompraId) {
+      dispatch(fetchOrdenPagosByOrdenCompra(ordenCompraId));
+    }
+    setToastMessage('Orden de pago actualizada exitosamente');
+    setToastVariant('success');
+    setShowToast(true);
   };
 
   const handleDelete = (id: string) => {
@@ -191,10 +216,11 @@ const OrdenPagoPage: React.FC = () => {
   if (error) return <div>Error: {error}</div>;
 
   const tableData = {
-    filter: [true, true, true, true, true, true, true, true, true],
+    filter: [true, true, true, true, true, true, true, true, true, true],
     headers: [
       "código",
-      "monto",
+      "Monto solicitado",
+      "Monto a pagar",
       "moneda",
       "tipo pago",
       "orden compra",
@@ -205,7 +231,8 @@ const OrdenPagoPage: React.FC = () => {
     ],
     rows: ordenPagosByOrdenCompra.map(ordenPago => ({
       código: ordenPago.codigo,
-      monto: ordenPago.monto_solicitado,
+      "Monto solicitado": ordenPago.monto_solicitado,
+      "Monto a pagar": montosAPagar[ordenPago._id] ,
       moneda: ordenPago.tipo_moneda,
       "tipo pago": ordenPago.tipo_pago,
       "orden compra": ordenPago.orden_compra.codigo_orden,
@@ -398,6 +425,7 @@ const OrdenPagoPage: React.FC = () => {
       type="file"
       id="comprobante-file"
       name="comprobante-file"
+      onChange={handleFileChange}
       className="block w-full text-sm text-gray-500
         file:mr-4 file:py-2 file:px-4
         file:rounded-md file:border-0
@@ -448,9 +476,9 @@ const OrdenPagoPage: React.FC = () => {
 	  
         <div className="mt-5 flex justify-center">
           <Button 
-            text={editingOrdenPago ? 'Actualizar' : 'Agregar'}
+            text="Agregar"
             color='azul' 
-            onClick={editingOrdenPago ? handleUpdate : handleAgregar}
+            onClick={handleAgregar}
             className="rounded w-[400px] bg-blue-500 hover:bg-blue-600 text-white"
           />
         </div>
@@ -508,6 +536,13 @@ const OrdenPagoPage: React.FC = () => {
           </Modal>
         )}
       </AnimatePresence>
+      {/* Add UpdateOrdenPagoModal */}
+      <UpdateOrdenPagoModal
+        isOpen={isUpdateModalOpen}
+        onClose={() => setIsUpdateModalOpen(false)}
+        ordenPago={selectedOrdenPago}
+        onSuccess={handleUpdateSuccess}
+      />
     </motion.div>
   );
 };

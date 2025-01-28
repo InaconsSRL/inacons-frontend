@@ -271,34 +271,62 @@ export const deleteArchivoPagoService = async (id: string) => {
   }
 };
 
-export const uploadArchivoPagoService = async (ordenPagoId: string, userId: string, formData: FormData) => {
+export const uploadArchivoPagoService = async (ordenPagoId: string, userId: string, file: File) => {
   try {
-    console.log('Service received FormData:', {
-      hasFile: formData.has('0'),
-      operations: formData.get('operations'),
-      map: formData.get('map')
-    });
-
-    const { data } = await client.mutate({
-      mutation: UPLOAD_ARCHIVO_PAGO,
+    const GRAPHQL_URI = import.meta.env.VITE_GRAPHQL_URI;
+    
+    // Crear FormData
+    const formData = new FormData();
+    
+    // Preparar la operación GraphQL
+    formData.append('operations', JSON.stringify({
+      query: `
+        mutation UploadArchivoPago($orden_pago_id: ID!, $usuario_id: ID!, $file: Upload!) {
+          uploadArchivoPago(orden_pago_id: $orden_pago_id, usuario_id: $usuario_id, file: $file) {
+            id
+            file
+            orden_pago_id {
+              id
+              codigo
+            }
+            usuario_id {
+              id
+              nombres
+            }
+            fecha
+          }
+        }
+      `,
       variables: {
         orden_pago_id: ordenPagoId,
         usuario_id: userId,
-        file: formData.get('0')
-      },
-      context: {
-        hasUpload: true
+        file: null
       }
+    }));
+
+    // Mapear el archivo a la variable
+    formData.append('map', JSON.stringify({
+      "0": ["variables.file"]
+    }));
+
+    // Añadir el archivo
+    formData.append('0', file);
+
+    // Realizar la petición fetch directamente
+    const response = await fetch(GRAPHQL_URI, {
+      method: 'POST',
+      body: formData,
     });
 
-    console.log('Service response:', data);
-    return data.uploadArchivoPago;
+    const result = await response.json();
+
+    if (result.errors) {
+      throw new Error(result.errors[0]?.message || 'Error en la subida del archivo');
+    }
+
+    return result.data.uploadArchivoPago;
   } catch (error) {
-    console.error('Service error details:', {
-      error,
-      errorMessage: error instanceof Error ? error.message : 'Unknown error',
-      errorStack: error instanceof Error ? error.stack : undefined
-    });
-    throw new Error(`Error uploading archivo pago: ${error}`);
+    console.error('Error en uploadArchivoPagoService:', error);
+    throw error;
   }
 };

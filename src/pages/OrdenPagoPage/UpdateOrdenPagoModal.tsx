@@ -70,42 +70,51 @@ const UpdateOrdenPagoModal: React.FC<UpdateOrdenPagoModalProps> = ({
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} title="Actualizar Orden de Pago">
-      <div className="p-4">
-        <div className="space-y-4">
+      <div className="p-6 max-w-3xl mx-auto bg-white rounded-lg">
+        <div className="grid grid-cols-2 gap-6">
           {/* Campo Monto */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700">Monto</label>
-            <input
-              type="number"
-              value={monto}
-              onChange={(e) => setMonto(Number(e.target.value))}
-              min="0"
-              step="0.01"
-              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-            />
+          <div className="col-span-1">
+            <label className="block text-sm font-semibold text-gray-700 mb-2">
+              Monto
+            </label>
+            <div className="relative">
+              <input
+                type="number"
+                value={monto}
+                onChange={(e) => setMonto(Number(e.target.value))}
+                min="0"
+                step="0.01"
+                className="w-full px-4 py-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 ease-in-out"
+                placeholder="Ingrese el monto"
+              />
+            </div>
           </div>
 
           {/* Campo Moneda */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700">Moneda</label>
+          <div className="col-span-1">
+            <label className="block text-sm font-semibold text-gray-700 mb-2">
+              Moneda
+            </label>
             <select
               value={moneda}
               onChange={(e) => setMoneda(e.target.value)}
-              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+              className="w-full px-4 py-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 ease-in-out appearance-none bg-white"
             >
-              <option value="">--Seleccione--</option>
+              <option value="">Seleccione moneda</option>
               <option value="soles">Soles</option>
               <option value="dolares">Dólares</option>
             </select>
           </div>
 
           {/* Campo Tipo de Comprobante */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700">Tipo de Comprobante</label>
+          <div className="col-span-1">
+            <label className="block text-sm font-semibold text-gray-700 mb-2">
+              Tipo de Comprobante
+            </label>
             <select
               value={tipoComprobante}
               onChange={(e) => setTipoComprobante(e.target.value)}
-              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+              className="w-full px-4 py-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 ease-in-out appearance-none bg-white"
             >
               <option value="">--Seleccione--</option>
               <option value="factura">Factura</option>
@@ -114,12 +123,14 @@ const UpdateOrdenPagoModal: React.FC<UpdateOrdenPagoModalProps> = ({
           </div>
 
           {/* Campo Tipo de Pago */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700">Tipo de Pago</label>
+          <div className="col-span-1">
+            <label className="block text-sm font-semibold text-gray-700 mb-2">
+              Tipo de Pago
+            </label>
             <select
               value={tipoPago}
               onChange={(e) => setTipoPago(e.target.value)}
-              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+              className="w-full px-4 py-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 ease-in-out appearance-none bg-white"
             >
               <option value="">--Seleccione--</option>
               <option value="adelanto">Adelanto</option>
@@ -129,30 +140,23 @@ const UpdateOrdenPagoModal: React.FC<UpdateOrdenPagoModalProps> = ({
           </div>
 
           {/* Campo Archivo Comprobante */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700">
+          <div className="col-span-2">
+            <label className="block text-sm font-semibold text-gray-700 mb-2">
               Comprobante (Factura/Boleta)
             </label>
             <input
               type="file"
               onChange={handleFileChange}
-              className="mt-1 block w-full text-sm text-gray-500
-                file:mr-4 file:py-2 file:px-4
-                file:rounded-md file:border-0
-                file:text-sm file:font-semibold
-                file:bg-indigo-50 file:text-indigo-700
-                hover:file:bg-indigo-100
-                focus:outline-none focus:ring-2 focus:ring-indigo-500
-                border border-gray-300 rounded-md shadow-sm"
+              className="w-full px-4 py-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 ease-in-out"
               accept=".pdf,.doc,.docx,.png,.jpg,.jpeg"
             />
           </div>
 
           {/* Campo Tipo de Cambio (condicional) */}
           {moneda === 'dolares' && (
-            <div className="space-y-4">
+            <div className="col-span-2 space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700">
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
                   Tipo de Cambio
                 </label>
                 <input
@@ -161,18 +165,18 @@ const UpdateOrdenPagoModal: React.FC<UpdateOrdenPagoModalProps> = ({
                   onChange={(e) => setTipoCambio(Number(e.target.value))}
                   min="0"
                   step="0.01"
-                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                  className="w-full px-4 py-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 ease-in-out"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700">
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
                   Monto en Soles
                 </label>
                 <input
                   type="number"
                   value={tipoCambio * monto}
                   disabled
-                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm bg-gray-50"
+                  className="w-full px-4 py-2.5 rounded-lg border border-gray-300 bg-gray-50"
                 />
               </div>
             </div>

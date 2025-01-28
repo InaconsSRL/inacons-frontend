@@ -10,6 +10,12 @@ import {
   ArchivoPagoInput
 } from '../services/archivoPagoService';
 
+export interface UploadArchivoParams {
+  ordenPagoId: string;
+  userId: string;
+  file: File;
+}
+
 interface ArchivoPagoState {
   archivos: ArchivoPago[];
   archivosByOrdenPago: ArchivoPago[];
@@ -88,12 +94,9 @@ export const uploadArchivo = createAsyncThunk(
     ordenPagoId, 
     userId, 
     file 
-  }: { 
-    ordenPagoId: string, 
-    userId: string, 
-    file: File 
-  }, { rejectWithValue }) => {
+  }: UploadArchivoParams, { rejectWithValue }) => {
     try {
+      console.log('uploadArchivo',  file);
       return await uploadArchivoPagoService(ordenPagoId, userId, file);
     } catch (error) {
       return rejectWithValue((error as Error).message);
