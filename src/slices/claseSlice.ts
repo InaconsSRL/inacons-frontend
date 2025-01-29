@@ -61,7 +61,7 @@ export const addClase = createAsyncThunk(
 
 export const updateClase = createAsyncThunk(
   'clase/updateClase',
-  async (data: { idClase: string; nombre?: string }, { rejectWithValue }) => {
+  async (data: { id_clase: string; nombre?: string }, { rejectWithValue }) => {
     try {
       return await updateClaseService(data);
     } catch (error) {

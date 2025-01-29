@@ -21,7 +21,6 @@ import RequerimientosComponent from './pages/RequerimientosPage/RequerimientosCo
 import TipoCostoRecursoComponent from './pages/TipoCostoRecursoPage/TipoCostoRecursoComponent';
 import RequermientoRecursos from './pages/RequerimientosPage/CrearRequerimientoYRecursos/RequerimientoRecursos';
 import AlmacenBoardPage from './pages/AlmacenesPage/AlmacenBoard/AlmacenBoardPage';
-import Presupuestos from './pages/PresupuestosDemo/Presupuestos';
 import TipoAlmacenPage from './pages/TipoAlmacenPage/TipoAlmacenPage';
 import ObrasComponent from './pages/ObrasPage/ObrasPage';
 import ComprasBoard from './pages/ComprasPage/ComprasBoard';
@@ -64,7 +63,6 @@ const App: React.FC = () => {
         <Route path="reqRecursos" element={<RequermientoRecursos onClose={() => {}} />} />
         <Route path="almacen" element={<BodegasComponent />}> </Route>
         <Route path="almacenBoard" element={<AlmacenBoardPage />}> </Route>
-        <Route path="presupuestoBoard" element={<Presupuestos />}> </Route>
         <Route path="compras" element={<ComprasBoard />}> </Route>
         <Route path="tipoAlmacen" element={<TipoAlmacenPage />}> </Route>
         <Route path="obras" element={<ObrasComponent />}> </Route>

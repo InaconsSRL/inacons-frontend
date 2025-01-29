@@ -41,9 +41,9 @@ export const fetchLocalidades = createAsyncThunk(
 
 export const getLocalidadesByDistrito = createAsyncThunk(
   'localidad/getLocalidadesByDistrito',
-  async (idDistrito: string, { rejectWithValue }) => {
+  async (id_distrito: string, { rejectWithValue }) => {
     try {
-      return await getLocalidadesByDistritoService(idDistrito);
+      return await getLocalidadesByDistritoService(id_distrito);
     } catch (error) {
       return rejectWithValue((error as Error).message);
     }
@@ -63,7 +63,7 @@ export const getLocalidad = createAsyncThunk(
 
 export const addLocalidad = createAsyncThunk(
   'localidad/addLocalidad',
-  async (data: { nombreLocalidad: string; idDistrito: string }, { rejectWithValue }) => {
+  async (data: { nombre_localidad: string; id_distrito: string }, { rejectWithValue }) => {
     try {
       return await addLocalidadService(data);
     } catch (error) {
@@ -74,7 +74,7 @@ export const addLocalidad = createAsyncThunk(
 
 export const updateLocalidad = createAsyncThunk(
   'localidad/updateLocalidad',
-  async (data: { idLocalidad: string; nombreLocalidad?: string; idDistrito?: string }, { rejectWithValue }) => {
+  async (data: { id_localidad: string; nombre_localidad?: string; id_distrito?: string }, { rejectWithValue }) => {
     try {
       return await updateLocalidadService(data);
     } catch (error) {

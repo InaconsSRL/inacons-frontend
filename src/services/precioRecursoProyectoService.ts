@@ -14,8 +14,8 @@ const LIST_PRECIOS_RECURSO_PROYECTO_QUERY = gql`
 `;
 
 const GET_PRECIOS_BY_RECURSO_COMPOSICION_APU_QUERY = gql`
-  query GetPreciosByRecursoComposicionApu($idRecCompApu: String!) {
-    getPreciosByRecursoComposicionApu(id_rec_comp_apu: $idRecCompApu) {
+  query GetPreciosByRecursoComposicionApu($id_rec_comp_apu: String!) {
+    getPreciosByRecursoComposicionApu(id_rec_comp_apu: $id_rec_comp_apu) {
       id_prp
       id_proyecto
       id_rec_comp_apu
@@ -26,8 +26,8 @@ const GET_PRECIOS_BY_RECURSO_COMPOSICION_APU_QUERY = gql`
 `;
 
 const GET_PRECIO_RECURSO_PROYECTO_QUERY = gql`
-  query GetPrecioRecursoProyecto($idPrp: String!) {
-    getPrecioRecursoProyecto(id_prp: $idPrp) {
+  query GetPrecioRecursoProyecto($id_prp: String!) {
+    getPrecioRecursoProyecto(id_prp: $id_prp) {
       id_prp
       id_proyecto
       id_rec_comp_apu
@@ -38,8 +38,8 @@ const GET_PRECIO_RECURSO_PROYECTO_QUERY = gql`
 `;
 
 const ADD_PRECIO_RECURSO_PROYECTO_MUTATION = gql`
-  mutation AddPrecioRecursoProyecto($idProyecto: String!, $idRecCompApu: String!, $precio: Float!) {
-    addPrecioRecursoProyecto(id_proyecto: $idProyecto, id_rec_comp_apu: $idRecCompApu, precio: $precio) {
+  mutation AddPrecioRecursoProyecto($id_proyecto: String!, $id_rec_comp_apu: String!, $precio: Float!) {
+    addPrecioRecursoProyecto(id_proyecto: $id_proyecto, id_rec_comp_apu: $id_rec_comp_apu, precio: $precio) {
       id_prp
       id_proyecto
       id_rec_comp_apu
@@ -50,8 +50,8 @@ const ADD_PRECIO_RECURSO_PROYECTO_MUTATION = gql`
 `;
 
 const UPDATE_PRECIO_RECURSO_PROYECTO_MUTATION = gql`
-  mutation UpdatePrecioRecursoProyecto($idPrp: String!, $precio: Float!) {
-    updatePrecioRecursoProyecto(id_prp: $idPrp, precio: $precio) {
+  mutation UpdatePrecioRecursoProyecto($id_prp: String!, $precio: Float!) {
+    updatePrecioRecursoProyecto(id_prp: $id_prp, precio: $precio) {
       id_prp
       id_proyecto
       id_rec_comp_apu
@@ -62,8 +62,8 @@ const UPDATE_PRECIO_RECURSO_PROYECTO_MUTATION = gql`
 `;
 
 const DELETE_PRECIO_RECURSO_PROYECTO_MUTATION = gql`
-  mutation DeletePrecioRecursoProyecto($idPrp: String!) {
-    deletePrecioRecursoProyecto(id_prp: $idPrp) {
+  mutation DeletePrecioRecursoProyecto($id_prp: String!) {
+    deletePrecioRecursoProyecto(id_prp: $id_prp) {
       id_prp
     }
   }
@@ -80,11 +80,11 @@ export const listPreciosRecursoProyectoService = async () => {
   }
 };
 
-export const getPreciosByRecursoComposicionApuService = async (idRecCompApu: string) => {
+export const getPreciosByRecursoComposicionApuService = async (id_rec_comp_apu: string) => {
   try {
     const response = await client.query({
       query: GET_PRECIOS_BY_RECURSO_COMPOSICION_APU_QUERY,
-      variables: { idRecCompApu },
+      variables: { id_rec_comp_apu },
     });
     return response.data.getPreciosByRecursoComposicionApu;
   } catch (error) {
@@ -96,7 +96,7 @@ export const getPrecioRecursoProyectoService = async (id: string) => {
   try {
     const response = await client.query({
       query: GET_PRECIO_RECURSO_PROYECTO_QUERY,
-      variables: { idPrp: id },
+      variables: { id_prp: id },
     });
     return response.data.getPrecioRecursoProyecto;
   } catch (error) {
@@ -105,8 +105,8 @@ export const getPrecioRecursoProyectoService = async (id: string) => {
 };
 
 export const addPrecioRecursoProyectoService = async (data: {
-  idProyecto: string;
-  idRecCompApu: string;
+  id_proyecto: string;
+  id_rec_comp_apu: string;
   precio: number;
 }) => {
   try {
@@ -121,7 +121,7 @@ export const addPrecioRecursoProyectoService = async (data: {
 };
 
 export const updatePrecioRecursoProyectoService = async (data: {
-  idPrp: string;
+  id_prp: string;
   precio: number;
 }) => {
   try {
@@ -139,7 +139,7 @@ export const deletePrecioRecursoProyectoService = async (id: string) => {
   try {
     const response = await client.mutate({
       mutation: DELETE_PRECIO_RECURSO_PROYECTO_MUTATION,
-      variables: { idPrp: id },
+      variables: { id_prp: id },
     });
     return response.data.deletePrecioRecursoProyecto;
   } catch (error) {

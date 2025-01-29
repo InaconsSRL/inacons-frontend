@@ -66,21 +66,21 @@ export const getProyecto = createAsyncThunk(
 export const addProyecto = createAsyncThunk(
   'proyecto/addProyecto',
   async (data: {
-    idUsuario: string;
-    idInfraestructura: string;
-    nombreProyecto: string;
-    idDepartamento: string;
-    idProvincia: string;
-    idDistrito: string;
+    id_usuario: string;
+    id_infraestructura: string;
+    nombre_proyecto: string;
+    id_departamento: string;
+    id_provincia: string;
+    id_distrito: string;
     estado: string;
     cliente: string;
     empresa: string;
     plazo: number;
-    pptoBase: number;
-    pptoOferta: number;
+    ppto_base: number;
+    ppto_oferta: number;
     jornada: number;
-    idLocalidad?: string;
-    totalProyecto?: number;
+    id_localidad?: string;
+    total_proyecto?: number;
   }, { rejectWithValue }) => {
     try {
       return await addProyectoService(data);
@@ -93,16 +93,22 @@ export const addProyecto = createAsyncThunk(
 export const updateProyecto = createAsyncThunk(
   'proyecto/updateProyecto',
   async (data: {
-    idProyecto: string;
+    id_proyecto: string;
     jornada?: number;
-    pptoOferta?: number;
-    pptoBase?: number;
+    ppto_oferta?: number;
+    ppto_base?: number;
     plazo?: number;
     empresa?: string;
     cliente?: string;
-    totalProyecto?: number;
+    total_proyecto?: number;
     estado?: string;
-    nombreProyecto?: string;
+    nombre_proyecto?: string;
+    id_infraestructura?: string;
+    id_usuario?: string;
+    id_departamento?: string;
+    id_provincia?: string;
+    id_distrito?: string;
+    id_localidad?: string;
   }, { rejectWithValue }) => {
     try {
       return await updateProyectoService(data);

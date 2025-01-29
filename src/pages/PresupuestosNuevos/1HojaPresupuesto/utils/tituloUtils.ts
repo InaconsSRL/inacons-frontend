@@ -1,7 +1,7 @@
-import { ITitulo } from '../../../../types/PresupuestosTypes';
+import { Titulo } from '../../../../slices/tituloSlice';
 
-export const buildTituloHierarchy = (titulos: ITitulo[]) => {
-  const buildItem = (parentId: string | null): ITitulo[] => {
+export const buildTituloHierarchy = (titulos: Titulo[]) => {
+  const buildItem = (parentId: string | null): Titulo[] => {
     return titulos
       .filter(t => t.id_titulo_padre === parentId)
       .sort((a, b) => a.orden - b.orden)
@@ -14,7 +14,7 @@ export const buildTituloHierarchy = (titulos: ITitulo[]) => {
   return buildItem(null);
 };
 
-export const generateNextItem = (parentItem: string | null, siblings: ITitulo[]): string => {
+export const generateNextItem = (parentItem: string | null, siblings: Titulo[]): string => {
   if (!parentItem) {
     const maxFirstLevel = Math.max(
       ...siblings
@@ -46,7 +46,7 @@ export const validateItem = {
   /**
    * Valida si un item es único entre sus hermanos
    */
-  isUnique: (newItem: string, parentId: string | null, titulos: ITitulo[]): boolean => {
+  isUnique: (newItem: string, parentId: string | null, titulos: Titulo[]): boolean => {
     const siblings = titulos.filter(t => t.id_titulo_padre === parentId);
     return !siblings.some(s => s.item === newItem);
   },
@@ -63,7 +63,7 @@ export const validateItem = {
   /**
    * Valida si el item sigue una secuencia válida con sus hermanos
    */
-  followsSequence: (newItem: string, parentId: string | null, titulos: ITitulo[]): boolean => {
+  followsSequence: (newItem: string, parentId: string | null, titulos: Titulo[]): boolean => {
     const siblings = titulos
       .filter(t => t.id_titulo_padre === parentId)
       .map(t => t.item)
@@ -87,7 +87,7 @@ export const validateItem = {
   /**
    * Validación completa de un item
    */
-  isValid: (newItem: string, parentId: string | null, nivel: number, titulos: ITitulo[]): boolean => {
+  isValid: (newItem: string, parentId: string | null, nivel: number, titulos: Titulo[]): boolean => {
     return (
       validateItem.isUnique(newItem, parentId, titulos) &&
       validateItem.hasValidFormat(newItem, nivel) &&
@@ -96,7 +96,7 @@ export const validateItem = {
   }
 };
 
-export const validateTituloStructure = (titulo: ITitulo, titulos: ITitulo[]) => {
+export const validateTituloStructure = (titulo: Titulo, titulos: Titulo[]) => {
   // Validar nivel máximo
   if (titulo.nivel > 5) return false;
 

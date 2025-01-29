@@ -3,14 +3,12 @@ import { useDispatch, useSelector } from 'react-redux';
 import { RootState, AppDispatch } from '../../../store/store';
 import { motion, AnimatePresence } from 'framer-motion';
 import { FaChevronRight, FaFolder, FaFolderOpen } from 'react-icons/fa';
-import { fetchRecursos, Recurso } from '../../../slices/recursoSlice';
-import { fetchRecursosComposicionApu, RecursoComposicionApu } from '../../../slices/recursoComposicionApuSlice';
+import { AddRecursoComposicionApuDto, fetchRecursosComposicionApu, RecursoComposicionApu } from '../../../slices/recursoComposicionApuSlice';
 import CrearRecursoApuForm from './CrearRecursoApuForm';
 import Modal from '../../../components/Modal/Modal';
-import { addComposicionApu } from '../../../slices/composicionApuSlice';
+import { addComposicionApu, getComposicionesApuByTitulo } from '../../../slices/composicionApuSlice';
 import ModalAlert, { ColorVariant } from '../../../components/Modal/ModalAlert';
-
-
+import { fetchRecursosPresupuesto } from '../../../slices/recursoPresupuestoSlice';
 
 interface ITipoNode {
   id_tipo: string;
@@ -22,6 +20,63 @@ interface CatalogoRecursosProps {
   onClose: () => void;
 }
 
+export interface IComposicionApu {
+  id_composicion_apu: string;
+  id_titulo: string;
+  rec_comp_apu?: IRecursoComposicionApu;
+  cuadrilla: number;
+  cantidad: number;
+}
+
+export interface IRecursoComposicionApu {
+  id_rec_comp_apu: string;
+  nombre: string;
+  especificaciones?: string;
+  descripcion?: string;
+  fecha_creacion: string;
+  precio_recurso_proyecto?: IPrecioRecursoProyecto;
+  recurso_presupuesto?: RecursoPresupuesto;
+  unidad_presupuesto?: UnidadPresupuesto;
+  recurso?: RecursoPresupuesto;
+  unidad?: UnidadPresupuesto;
+}
+
+export interface IPrecioRecursoProyecto {
+  id_prp: string;
+  id_proyecto: string;
+  id_rec_comp_apu: string;
+  precio: number;
+}
+
+export interface RecursoPresupuesto {
+  id_recurso: string;
+  id_unidad: string;
+  id_clase: string;
+  id_tipo: string;
+  tipo?: ITipo;
+  id_recurso_app: string;
+  nombre: string;
+  precio_referencial: number;
+  fecha_actualizacion: string; // Cambiado de Date a string
+}
+
+export interface UnidadPresupuesto {
+  id_unidad: string;
+  abreviatura_unidad: string;
+  descripcion: string;
+}
+
+export interface IClase {
+  id_clase: string;
+  nombre: string;
+}
+
+export interface ITipo {
+  id_tipo: string;
+  descripcion: string;
+  codigo: string;
+}
+
 const CatalogoRecursos: React.FC<CatalogoRecursosProps> = (
   { onClose }
 ) => {
@@ -29,13 +84,14 @@ const CatalogoRecursos: React.FC<CatalogoRecursosProps> = (
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedTipo, setSelectedTipo] = useState<string | null>(null);
   const [tiposTree, setTiposTree] = useState<ITipoNode[]>([
+    { id_tipo: 'TODOS', descripcion: 'TODOS', isActive: false },
     { id_tipo: 'TIP0000000001', descripcion: 'MANO DE OBRA', isActive: false },
     { id_tipo: 'TIP0000000002', descripcion: 'MATERIALES', isActive: false },
     { id_tipo: 'TIP0000000003', descripcion: 'EQUIPO', isActive: false },
     { id_tipo: 'TIP0000000004', descripcion: 'SUB-CONTRATOS', isActive: false },
   ]);
   const [showForm, setShowForm] = useState(false);
-  const [selectedRecurso, setSelectedRecurso] = useState<Recurso | null>(null);
+  const [selectedRecurso, setSelectedRecurso] = useState<RecursoPresupuesto | null>(null);
   const [acumuladorRecursos, setAcumuladorRecursos] = useState<RecursoComposicionApu[]>([]);
   const [alertModal, setAlertModal] = useState<{
     isOpen: boolean;
@@ -49,19 +105,20 @@ const CatalogoRecursos: React.FC<CatalogoRecursosProps> = (
     title: '',
     message: '',
     variant: 'blue',
-    onConfirm: () => {},
-    onCancel: () => {},
+    onConfirm: () => { },
+    onCancel: () => { },
   });
 
-  const recursos = useSelector((state: RootState) => state.recurso.recursos);
-  const unidades = useSelector((state: RootState) => state.unidad.unidades);
+  const recursos = useSelector((state: RootState) => state.recursoPresupuesto.recursosPresupuesto);
+  const unidades = useSelector((state: RootState) => state.unidadPresupuesto.unidadesPresupuesto);
   const activeTitulo = useSelector((state: RootState) => state.activeData.activeTitulo);
+  const activeProyecto = useSelector((state: RootState) => state.activeData.activeProyecto);
   const recursosComposicionApu = useSelector(
     (state: RootState) => state.recursoComposicionApu.recursosComposicionApu
   );
 
   useEffect(() => {
-    dispatch(fetchRecursos());
+    dispatch(fetchRecursosPresupuesto());
     dispatch(fetchRecursosComposicionApu());
   }, [dispatch]);
 
@@ -74,17 +131,17 @@ const CatalogoRecursos: React.FC<CatalogoRecursosProps> = (
   };
 
   const filteredRecursos = recursos.filter(
-    recurso => recurso.id_tipo === selectedTipo
+    recurso => selectedTipo === 'TODOS' ? true : recurso.id_tipo === selectedTipo
   );
 
   const filteredRecursosComposicionApu = recursosComposicionApu.filter(
-    rca => recursos.find(
+    rca => selectedTipo === 'TODOS' ? true : recursos.find(
       r => r.id_recurso === rca.id_recurso && r.id_tipo === selectedTipo
     )
   );
 
   // Modificar la función filterResources
-  const filterResources = (resources: Recurso[] | RecursoComposicionApu[]) => {
+  const filterResources = (resources: RecursoPresupuesto[] | RecursoComposicionApu[]) => {
     const searchTermLower = searchTerm.toLowerCase();
     return resources.filter(resource => {
       // Verificar si el recurso ya está en el acumulador
@@ -105,12 +162,12 @@ const CatalogoRecursos: React.FC<CatalogoRecursosProps> = (
 
   // Añadir esta función helper antes del return
   const isRecursoComposicionApu = (
-    recurso: Recurso | RecursoComposicionApu
+    recurso: RecursoPresupuesto | RecursoComposicionApu
   ): recurso is RecursoComposicionApu => {
     return 'id_rec_comp_apu' in recurso;
   };
 
-  const handleAddToAcumulador = (recurso: Recurso | RecursoComposicionApu) => {
+  const handleAddToAcumulador = (recurso: RecursoPresupuesto | RecursoComposicionApu) => {
     if (isRecursoComposicionApu(recurso)) {
       setAcumuladorRecursos(prev => [...prev, recurso]);
     } else {
@@ -155,35 +212,77 @@ const CatalogoRecursos: React.FC<CatalogoRecursosProps> = (
     }
 
     try {
-      // Crear una nueva composición APU por cada recurso acumulado
-      for (const recurso of acumuladorRecursos) {
-        const nuevaComposicion: IComposicionApu = {
-          id_composicion_apu: '',
-          id_rec_comp_apu: recurso.id_rec_comp_apu,
-          id_titulo: activeTitulo.id_titulo,
-          cuadrilla: 0,
-          cantidad: 0,
-        };
+      console.log('🟢 Iniciando envío de recursos:', acumuladorRecursos);
 
-        await dispatch(addComposicionApu(nuevaComposicion));
+      // Modificar para procesar secuencialmente con intervalo y acumular respuestas
+      const results = [];
+      let hasError = false;
+
+      for (const recurso of acumuladorRecursos) {
+        if (hasError) break;
+
+        try {
+          const result = await dispatch(addComposicionApu({
+            id_titulo: activeTitulo.id_titulo,
+            id_rec_comp_apu: recurso.id_rec_comp_apu,
+            cuadrilla: 1,
+            cantidad: 1,
+          })).unwrap();
+          results.push({ status: 'fulfilled', value: result });
+
+          // Esperar un poco antes del siguiente envío
+          if (acumuladorRecursos.indexOf(recurso) < acumuladorRecursos.length - 1) {
+            await new Promise(resolve => setTimeout(resolve, 500));
+          }
+        } catch (error) {
+          hasError = true;
+          results.push({ status: 'rejected', reason: error });
+        }
       }
 
-      setAcumuladorRecursos([]);
+      // Analizar resultados
+      const successful = results.filter(r => r.status === 'fulfilled').length;
+      const failed = results.filter(r => r.status === 'rejected').length;
+
+      console.log('🟢 Resultados procesados:', { successful, failed });
+
+      if (successful > 0) {
+        // Limpiar el acumulador
+        setAcumuladorRecursos([]);
+
+        // Cerrar el modal y mostrar mensaje de éxito
+        onClose();
+
+        // Esperar un momento antes de hacer el refresh
+        await new Promise(resolve => setTimeout(resolve, 1000));
+
+        // Actualizar la lista solo si todo fue exitoso
+        if (activeTitulo && activeProyecto) {
+          await dispatch(getComposicionesApuByTitulo({
+            id_titulo: activeTitulo.id_titulo,
+            id_proyecto: activeProyecto.id_proyecto
+          }));
+        }
+      }
+
+      // Mostrar mensaje apropiado
       setAlertModal({
         isOpen: true,
-        title: 'Éxito',
-        message: 'Recursos enviados exitosamente',
-        variant: 'green',
-        onConfirm: () => setAlertModal(prev => ({ ...prev, isOpen: false })),
+        title: successful > 0 ? 'Operación Completada' : 'Error',
+        message: `${successful} recursos añadidos exitosamente${failed > 0 ? `, ${failed} recursos fallaron` : ''}`,
+        variant: successful > 0 ? 'green' : 'yellow',
+        onConfirm: () => {
+          setAlertModal(prev => ({ ...prev, isOpen: false }));
+        },
         onCancel: () => setAlertModal(prev => ({ ...prev, isOpen: false })),
       });
-      onClose();
+
     } catch (error) {
-      console.error('Error al enviar recursos:', error);
+      console.error('🔴 Error en handleSubmitRecursos:', error);
       setAlertModal({
         isOpen: true,
         title: 'Error',
-        message: 'Error al enviar recursos',
+        message: 'Error al procesar los recursos',
         variant: 'red',
         onConfirm: () => setAlertModal(prev => ({ ...prev, isOpen: false })),
         onCancel: () => setAlertModal(prev => ({ ...prev, isOpen: false })),
@@ -282,18 +381,24 @@ const CatalogoRecursos: React.FC<CatalogoRecursosProps> = (
                               {rca.nombre}
                             </h3>
                             <p className="text-xs text-gray-500">
+                              Eespecificaciones: {rca.especificaciones} 
+                            </p>
+                            <p className="text-xs text-gray-300">
+                              Hereda de:{rca.recurso_presupuesto?.nombre} <span className='text-gray-300'>({unidades.find(und => und.id_unidad === rca.recurso_presupuesto?.id_unidad)?.abreviatura_unidad})</span>
+                            </p>
+                            <p className="text-xs text-gray-500">
                               ID: {rca.id_rec_comp_apu} <span className='text-gray-300'>(recurso APU)</span>
                             </p>
                           </div>
-                            <p className="text-blue-600">
-                              {unidades.find(und => und.id_unidad === rca.id_unidad)?.abreviatura_unidad}
-                            </p>
-                            <button
-                              onClick={() => handleAddToAcumulador(rca)}
-                              className="mt-2 px-3 py-1 bg-blue-500 text-white rounded-md text-sm"
-                            >
-                              Añadir al acumulador
-                            </button>
+                          <p className="text-blue-600">
+                            {unidades.find(und => und.id_unidad === rca.unidad_presupuesto.id_unidad)?.abreviatura_unidad}
+                          </p>
+                          <button
+                            onClick={() => handleAddToAcumulador(rca)}
+                            className="mt-2 px-3 py-1 bg-blue-500 text-white rounded-md text-sm"
+                          >
+                            Añadir al acumulador
+                          </button>
                         </motion.div>
                       );
                     })}
@@ -313,14 +418,14 @@ const CatalogoRecursos: React.FC<CatalogoRecursosProps> = (
                           </p>
                         </div>
                         <p className="text-blue-600">
-                            {unidades.find(und => und.id_unidad === recurso.id_unidad)?.abreviatura_unidad}
-                          </p>
-                          <button
-                            onClick={() => handleAddToAcumulador(recurso)}
-                            className="mt-2 px-3 py-1 bg-yellow-500 text-white rounded-md text-sm"
-                          >
-                            Crear APU y añadir
-                          </button>
+                          {unidades.find(und => und.id_unidad === (isRecursoComposicionApu(recurso) ? recurso.unidad_presupuesto.id_unidad : recurso.id_unidad))?.abreviatura_unidad}
+                        </p>
+                        <button
+                          onClick={() => handleAddToAcumulador(recurso)}
+                          className="mt-2 px-3 py-1 bg-yellow-500 text-white rounded-md text-sm"
+                        >
+                          Crear APU y añadir
+                        </button>
                       </motion.div>
                     ))}
                   </motion.div>
@@ -342,7 +447,7 @@ const CatalogoRecursos: React.FC<CatalogoRecursosProps> = (
               <div className="h-44 space-y-2 overflow-y-auto">
                 {acumuladorRecursos.map((recurso) => (
                   <div key={recurso.id_rec_comp_apu} className="flex justify-between items-center bg-gray-50 p-2 rounded">
-                    <span className="text-xs text-slate-800">{recurso.nombre} - {unidades.find(und => und.id_unidad === recurso.id_unidad)?.abreviatura_unidad}</span>
+                    <span className="text-xs text-slate-800">{recurso.nombre} - {unidades.find(und => und.id_unidad === recurso.unidad_presupuesto.id_unidad)?.abreviatura_unidad}</span>
                     <button
                       onClick={() => handleRemoveFromAcumulador(recurso.id_rec_comp_apu)}
                       className="px-2 py-1 bg-red-500 text-white rounded text-xs"
@@ -364,7 +469,30 @@ const CatalogoRecursos: React.FC<CatalogoRecursosProps> = (
         >
           <CrearRecursoApuForm
             recurso={selectedRecurso!}
-            onSuccess={handleRecursoApuCreated}
+            onSuccess={(nuevoRecurso: AddRecursoComposicionApuDto) => {
+              // Convertir el AddRecursoComposicionApuDto a RecursoComposicionApu
+              const recursoCompleto: RecursoComposicionApu = {
+                id_rec_comp_apu: '', // Se llenará cuando la API responda
+                id_recurso: nuevoRecurso.id_recurso,
+                nombre: nuevoRecurso.nombre,
+                fecha_creacion: nuevoRecurso.fecha_creacion || new Date().toISOString(),
+                unidad_presupuesto: {
+                  id_unidad: nuevoRecurso.id_unidad,
+                  descripcion: '',
+                  abreviatura_unidad: ''
+                }
+              };
+
+              // Agregar campos opcionales solo si están definidos
+              if (nuevoRecurso.especificaciones) {
+                recursoCompleto.especificaciones = nuevoRecurso.especificaciones;
+              }
+              if (nuevoRecurso.descripcion) {
+                recursoCompleto.descripcion = nuevoRecurso.descripcion;
+              }
+
+              handleRecursoApuCreated(recursoCompleto);
+            }}
             onCancel={() => setShowForm(false)}
           />
         </Modal>}

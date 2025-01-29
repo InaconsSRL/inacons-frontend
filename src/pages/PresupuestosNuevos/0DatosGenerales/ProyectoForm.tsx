@@ -10,10 +10,10 @@ import { addLocalidad, getLocalidadesByDistrito, Localidad } from '../../../slic
 import Modal from '../../../components/Modal/Modal';
 import { AppDispatch, RootState } from '../../../store/store';
 import { setActiveProyecto } from '../../../slices/activeDataSlice';
-import DepartamentoForm from '../Departamento/DepartamentoForm';
-import ProvinciaForm from '../Provincia/ProvinciaForm';
-import DistritoForm from '../Distrito/DistritoForm';
-import LocalidadForm from '../Localidad/LocalidadForm';
+import DepartamentoForm from './components/DepartamentoForm';
+import ProvinciaForm from './components/ProvinciaForm';
+import DistritoForm from './components/DistritoForm';
+import LocalidadForm from './components/LocalidadForm';
 
 interface ProyectoFormProps {
   editMode?: boolean;
@@ -130,13 +130,13 @@ const ProyectoForm: React.FC<ProyectoFormProps> = ({
     try {
       if (editMode && initialData) {
         const updateData = {
-          idProyecto: initialData.id_proyecto,
-          nombreProyecto: formData.nombre_proyecto,
+          id_proyecto: initialData.id_proyecto,
+          nombre_proyecto: formData.nombre_proyecto,
           cliente: formData.cliente,
           empresa: formData.empresa,
           plazo: formData.plazo,
-          pptoBase: formData.ppto_base,
-          pptoOferta: formData.ppto_oferta,
+          ppto_base: formData.ppto_base,
+          ppto_oferta: formData.ppto_oferta,
           jornada: formData.jornada
         };
         
@@ -149,21 +149,21 @@ const ProyectoForm: React.FC<ProyectoFormProps> = ({
         }
       } else {
         const newProyecto = {
-          idUsuario: user.id||'',
-          idInfraestructura: formData.id_infraestructura,
-          nombreProyecto: formData.nombre_proyecto,
-          idDepartamento: formData.id_departamento,
-          idProvincia: formData.id_provincia,
-          idDistrito: formData.id_distrito,
-          idLocalidad: formData.id_localidad,
+          id_usuario: user.id||'',
+          id_infraestructura: formData.id_infraestructura,
+          nombre_proyecto: formData.nombre_proyecto,
+          id_departamento: formData.id_departamento,
+          id_provincia: formData.id_provincia,
+          id_distrito: formData.id_distrito,
+          id_localidad: formData.id_localidad,
           estado: 'PLANTILLA',
           cliente: formData.cliente,
           empresa: formData.empresa,
           plazo: formData.plazo,
-          pptoBase: formData.ppto_base,
-          pptoOferta: formData.ppto_oferta,
+          ppto_base: formData.ppto_base,
+          ppto_oferta: formData.ppto_oferta,
           jornada: formData.jornada,
-          totalProyecto: 0
+          total_proyecto: 0
         };
 
         const response = await dispatch(addProyecto(newProyecto));
@@ -190,7 +190,7 @@ const ProyectoForm: React.FC<ProyectoFormProps> = ({
 
   const handleDepartamentoSubmit = async (data: Omit<Departamento, 'id_departamento'>) => {
     dispatch(addDepartamento({
-      nombreDepartamento: data.nombre_departamento,
+      nombre_departamento: data.nombre_departamento,
       ubigeo: data.ubigeo
     }));
     setIsDepartamentoModalOpen(false);
@@ -199,8 +199,8 @@ const ProyectoForm: React.FC<ProyectoFormProps> = ({
 
   const handleProvinciaSubmit = async (data: Omit<Provincia, 'id_provincia'>) => {
     dispatch(addProvincia({
-      nombreProvincia: data.nombre_provincia,
-      idDepartamento: data.id_departamento
+      nombre_provincia: data.nombre_provincia,
+      id_departamento: data.id_departamento
     }));
     setIsProvinciaModalOpen(false);
     if (formData.id_departamento) {
@@ -210,8 +210,8 @@ const ProyectoForm: React.FC<ProyectoFormProps> = ({
 
   const handleDistritoSubmit = async (data: Omit<Distrito, 'id_distrito'>) => {
     dispatch(addDistrito({
-      nombreDistrito: data.nombre_distrito,
-      idProvincia: data.id_provincia
+      nombre_distrito: data.nombre_distrito,
+      id_provincia: data.id_provincia
     }));
     setIsDistritoModalOpen(false);
     if (formData.id_provincia) {
@@ -221,18 +221,14 @@ const ProyectoForm: React.FC<ProyectoFormProps> = ({
 
   const handleLocalidadSubmit = async (data: Omit<Localidad, 'id_localidad'>) => {
     dispatch(addLocalidad({
-      nombreLocalidad: data.nombre_localidad,
-      idDistrito: data.id_distrito
+      nombre_localidad: data.nombre_localidad,
+      id_distrito: data.id_distrito
     }));
     setIsLocalidadModalOpen(false);
     if (formData.id_distrito) {
       dispatch(getDistritosByProvincia(formData.id_distrito));
     }
   };
-
-  const activeProyecto = useSelector((state: RootState) => state.activeData.activeProyecto);
-
-  console.log(activeProyecto)
 
   return (
     <div className="h-full overflow-y-auto">

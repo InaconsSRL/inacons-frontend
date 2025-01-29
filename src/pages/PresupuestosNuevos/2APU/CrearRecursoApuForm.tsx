@@ -1,11 +1,29 @@
 import React, { useState } from 'react';
 import { useDispatch } from 'react-redux';
-import { addRecursoComposicionApu } from '../../../slices/recursoComposicionApuSlice';
+import { addRecursoComposicionApu, AddRecursoComposicionApuDto } from '../../../slices/recursoComposicionApuSlice';
 import { AppDispatch } from '../../../store/store';
 
+interface RecursoPresupuesto {
+  id_recurso: string;
+  id_unidad: string;
+  id_clase: string;
+  id_tipo: string;
+  tipo?: ITipo;
+  id_recurso_app: string;
+  nombre: string;
+  precio_referencial: number;
+  fecha_actualizacion: string; // Cambiado de Date a string
+}
+ interface ITipo {
+  id_tipo: string;
+  descripcion: string;
+  codigo: string;
+}
+
+
 interface Props {
-  recurso;
-  onSuccess: (nuevoRecurso) => void;
+  recurso: RecursoPresupuesto;
+  onSuccess: (nuevoRecurso: AddRecursoComposicionApuDto) => void;
   onCancel: () => void;
 }
 
@@ -22,19 +40,18 @@ const CrearRecursoApuForm: React.FC<Props> = ({ recurso, onSuccess, onCancel }) 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    const nuevoRecursoApu = {
-      id_recurso: recurso.id_recurso,
-      id_unidad: recurso.id_unidad,
+    const nuevoRecursoApu: AddRecursoComposicionApuDto = {
       nombre: formData.nombre,
       especificaciones: formData.especificaciones,
       descripcion: formData.descripcion,
-      fecha_creacion: new Date().toISOString()
+      id_unidad: recurso.id_unidad,
+      id_recurso: recurso.id_recurso,
     };
 
     try {
       const resultAction = await dispatch(addRecursoComposicionApu(nuevoRecursoApu));
       if (addRecursoComposicionApu.fulfilled.match(resultAction)) {
-        onSuccess(resultAction.payload);
+        onSuccess(nuevoRecursoApu);
       }
     } catch (error) {
       console.error('Error al crear recurso APU:', error);

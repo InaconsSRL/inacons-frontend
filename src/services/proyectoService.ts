@@ -26,9 +26,8 @@ const LIST_PROYECTOS_QUERY = gql`
 `;
 
 const GET_PROYECTO_QUERY = gql`
-  query GetProyecto($idProyecto: String!) {
-    getProyecto(id_proyecto: $idProyecto) {
-      _id
+  query GetProyecto($id_proyecto: String!) {
+    getProyecto(id_proyecto: $id_proyecto) {
       id_proyecto
       id_usuario
       id_infraestructura
@@ -51,8 +50,8 @@ const GET_PROYECTO_QUERY = gql`
 `;
 
 const ADD_PROYECTO_MUTATION = gql`
-  mutation AddProyecto($idUsuario: String!, $idInfraestructura: String!, $nombreProyecto: String!, $idDepartamento: String!, $idProvincia: String!, $idDistrito: String!, $estado: String!, $cliente: String!, $empresa: String!, $plazo: Int!, $pptoBase: Float!, $pptoOferta: Float!, $jornada: Float!, $idLocalidad: String, $totalProyecto: Float) {
-    addProyecto(id_usuario: $idUsuario, id_infraestructura: $idInfraestructura, nombre_proyecto: $nombreProyecto, id_departamento: $idDepartamento, id_provincia: $idProvincia, id_distrito: $idDistrito, estado: $estado, cliente: $cliente, empresa: $empresa, plazo: $plazo, ppto_base: $pptoBase, ppto_oferta: $pptoOferta, jornada: $jornada, id_localidad: $idLocalidad, total_proyecto: $totalProyecto) {
+  mutation AddProyecto($id_usuario: String!, $id_infraestructura: String!, $nombre_proyecto: String!, $id_departamento: String!, $id_provincia: String!, $id_distrito: String!, $estado: String!, $cliente: String!, $empresa: String!, $plazo: Int!, $ppto_base: Float!, $ppto_oferta: Float!, $jornada: Float!, $id_localidad: String, $total_proyecto: Float) {
+    addProyecto(id_usuario: $id_usuario, id_infraestructura: $id_infraestructura, nombre_proyecto: $nombre_proyecto, id_departamento: $id_departamento, id_provincia: $id_provincia, id_distrito: $id_distrito, estado: $estado, cliente: $cliente, empresa: $empresa, plazo: $plazo, ppto_base: $ppto_base, ppto_oferta: $ppto_oferta, jornada: $jornada, id_localidad: $id_localidad, total_proyecto: $total_proyecto) {
       id_proyecto
       id_usuario
       id_infraestructura
@@ -75,8 +74,8 @@ const ADD_PROYECTO_MUTATION = gql`
 `;
 
 const UPDATE_PROYECTO_MUTATION = gql`
-  mutation UpdateProyecto($idProyecto: String!, $jornada: Float, $pptoOferta: Float, $pptoBase: Float, $plazo: Int, $empresa: String, $cliente: String, $totalProyecto: Float, $estado: String, $nombreProyecto: String) {
-    updateProyecto(id_proyecto: $idProyecto, jornada: $jornada, ppto_oferta: $pptoOferta, ppto_base: $pptoBase, plazo: $plazo, empresa: $empresa, cliente: $cliente, total_proyecto: $totalProyecto, estado: $estado, nombre_proyecto: $nombreProyecto) {
+  mutation UpdateProyecto($id_proyecto: String!, $jornada: Float, $ppto_oferta: Float, $ppto_base: Float, $plazo: Int, $empresa: String, $cliente: String, $total_proyecto: Float, $estado: String, $nombre_proyecto: String) {
+    updateProyecto(id_proyecto: $id_proyecto, jornada: $jornada, ppto_oferta: $ppto_oferta, ppto_base: $ppto_base, plazo: $plazo, empresa: $empresa, cliente: $cliente, total_proyecto: $total_proyecto, estado: $estado, nombre_proyecto: $nombre_proyecto) {
       id_proyecto
       id_usuario
       id_infraestructura
@@ -99,8 +98,8 @@ const UPDATE_PROYECTO_MUTATION = gql`
 `;
 
 const DELETE_PROYECTO_MUTATION = gql`
-  mutation DeleteProyecto($idProyecto: String!) {
-    deleteProyecto(id_proyecto: $idProyecto) {
+  mutation DeleteProyecto($id_proyecto: String!) {
+    deleteProyecto(id_proyecto: $id_proyecto) {
       id_proyecto
     }
   }
@@ -117,11 +116,11 @@ export const listProyectosService = async () => {
   }
 };
 
-export const getProyectoService = async (idProyecto: string) => {
+export const getProyectoService = async (id_proyecto: string) => {
   try {
     const response = await client.query({
       query: GET_PROYECTO_QUERY,
-      variables: { idProyecto },
+      variables: { id_proyecto },
     });
     return response.data.getProyecto;
   } catch (error) {
@@ -130,21 +129,21 @@ export const getProyectoService = async (idProyecto: string) => {
 };
 
 export const addProyectoService = async (data: {
-  idUsuario: string;
-  idInfraestructura: string;
-  nombreProyecto: string;
-  idDepartamento: string;
-  idProvincia: string;
-  idDistrito: string;
+  id_usuario: string;
+  id_infraestructura: string;
+  nombre_proyecto: string;
+  id_departamento: string;
+  id_provincia: string;
+  id_distrito: string;
   estado: string;
   cliente: string;
   empresa: string;
   plazo: number;
-  pptoBase: number;
-  pptoOferta: number;
+  ppto_base: number;
+  ppto_oferta: number;
   jornada: number;
-  idLocalidad?: string;
-  totalProyecto?: number;
+  id_localidad?: string;
+  total_proyecto?: number;
 }) => {
   try {
     const response = await client.mutate({
@@ -158,16 +157,16 @@ export const addProyectoService = async (data: {
 };
 
 export const updateProyectoService = async (data: {
-  idProyecto: string;
+  id_proyecto: string;
   jornada?: number;
-  pptoOferta?: number;
-  pptoBase?: number;
+  ppto_oferta?: number;
+  ppto_base?: number;
   plazo?: number;
   empresa?: string;
   cliente?: string;
-  totalProyecto?: number;
+  total_proyecto?: number;
   estado?: string;
-  nombreProyecto?: string;
+  nombre_proyecto?: string;
 }) => {
   try {
     const response = await client.mutate({
@@ -180,11 +179,11 @@ export const updateProyectoService = async (data: {
   }
 };
 
-export const deleteProyectoService = async (idProyecto: string) => {
+export const deleteProyectoService = async (id_proyecto: string) => {
   try {
     const response = await client.mutate({
       mutation: DELETE_PROYECTO_MUTATION,
-      variables: { idProyecto },
+      variables: { id_proyecto },
     });
     return response.data.deleteProyecto;
   } catch (error) {

@@ -12,8 +12,8 @@ const LIST_TIPOS_QUERY = gql`
 `;
 
 const GET_TIPO_QUERY = gql`
-  query GetTipo($idTipo: String!) {
-    getTipo(id_tipo: $idTipo) {
+  query GetTipo($id_tipo: String!) {
+    getTipo(id_tipo: $id_tipo) {
       id_tipo
       descripcion
       codigo
@@ -32,8 +32,8 @@ const ADD_TIPO_MUTATION = gql`
 `;
 
 const UPDATE_TIPO_MUTATION = gql`
-  mutation UpdateTipo($idTipo: String!, $descripcion: String, $codigo: String) {
-    updateTipo(id_tipo: $idTipo, descripcion: $descripcion, codigo: $codigo) {
+  mutation UpdateTipo($id_tipo: String!, $descripcion: String, $codigo: String) {
+    updateTipo(id_tipo: $id_tipo, descripcion: $descripcion, codigo: $codigo) {
       id_tipo
       descripcion
       codigo
@@ -42,8 +42,8 @@ const UPDATE_TIPO_MUTATION = gql`
 `;
 
 const DELETE_TIPO_MUTATION = gql`
-  mutation DeleteTipo($idTipo: String!) {
-    deleteTipo(id_tipo: $idTipo) {
+  mutation DeleteTipo($id_tipo: String!) {
+    deleteTipo(id_tipo: $id_tipo) {
       id_tipo
     }
   }
@@ -60,11 +60,11 @@ export const listTiposService = async () => {
   }
 };
 
-export const getTipoService = async (idTipo: string) => {
+export const getTipoService = async (id_tipo: string) => {
   try {
     const response = await client.query({
       query: GET_TIPO_QUERY,
-      variables: { idTipo },
+      variables: { id_tipo },
     });
     return response.data.getTipo;
   } catch (error) {
@@ -85,7 +85,7 @@ export const addTipoService = async (data: { descripcion: string; codigo: string
 };
 
 export const updateTipoService = async (data: {
-  idTipo: string;
+  id_tipo: string;
   descripcion?: string;
   codigo?: string;
 }) => {
@@ -100,11 +100,11 @@ export const updateTipoService = async (data: {
   }
 };
 
-export const deleteTipoService = async (idTipo: string) => {
+export const deleteTipoService = async (id_tipo: string) => {
   try {
     const response = await client.mutate({
       mutation: DELETE_TIPO_MUTATION,
-      variables: { idTipo },
+      variables: { id_tipo },
     });
     return response.data.deleteTipo;
   } catch (error) {

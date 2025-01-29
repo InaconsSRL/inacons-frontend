@@ -17,17 +17,27 @@ interface UnidadPresupuesto {
 interface RecursoPresupuesto {
   id_recurso: string;
   nombre: string;
+  id_unidad: string;
 }
 
 export interface RecursoComposicionApu {
   id_rec_comp_apu: string;
   id_recurso: string;
   nombre: string;
-  especificaciones: string;
-  descripcion: string;
+  especificaciones?: string;  // Haciendo opcional
+  descripcion?: string;       // Haciendo opcional
   fecha_creacion: string;
   unidad_presupuesto: UnidadPresupuesto;
   recurso_presupuesto?: RecursoPresupuesto;
+}
+
+export interface AddRecursoComposicionApuDto {
+  id_recurso: string;
+  id_unidad: string;
+  nombre: string;
+  especificaciones?: string;
+  descripcion?: string;
+  fecha_creacion?: string;
 }
 
 interface RecursoComposicionApuState {
@@ -68,13 +78,7 @@ export const getRecursoComposicionApu = createAsyncThunk(
 
 export const addRecursoComposicionApu = createAsyncThunk(
   'recursoComposicionApu/addRecursoComposicionApu',
-  async (data: {
-    idRecurso: string;
-    idUnidad: string;
-    nombre: string;
-    especificaciones?: string;
-    descripcion?: string;
-  }, { rejectWithValue }) => {
+  async (data: AddRecursoComposicionApuDto, { rejectWithValue }) => {
     try {
       return await addRecursoComposicionApuService(data);
     } catch (error) {
@@ -86,9 +90,9 @@ export const addRecursoComposicionApu = createAsyncThunk(
 export const updateRecursoComposicionApu = createAsyncThunk(
   'recursoComposicionApu/updateRecursoComposicionApu',
   async (data: {
-    idRecCompApu: string;
-    idRecurso?: string;
-    idUnidad?: string;
+    id_rec_comp_apu: string;
+    id_recurso?: string;
+    id_unidad?: string;
     nombre?: string;
     especificaciones?: string;
     descripcion?: string;

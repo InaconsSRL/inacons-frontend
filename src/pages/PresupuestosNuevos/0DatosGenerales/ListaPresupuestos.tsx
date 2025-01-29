@@ -4,7 +4,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { AppDispatch, RootState } from '../../../store/store';
 import { getPresupuestosByProyecto, deletePresupuesto, Presupuesto } from '../../../slices/presupuestoSlice';
 import Modal from '../../../components/Modal/Modal';
-import FormularioPresupuesto from './FormularioPresupuesto';
+import FormularioPresupuesto from './PresupuestoForm';
 import ModalAlert from '../../../components/Modal/ModalAlert';
 
 interface ProjectBudgetsProps {
@@ -19,7 +19,7 @@ const ListaPresupuestos: React.FC<ProjectBudgetsProps> = ({ id_proyecto }) => {
   const [selectedBudget, setSelectedBudget] = useState<Presupuesto | null>(null);
   const [showDeleteAlert, setShowDeleteAlert] = useState(false);
   const [presupuestoToDelete, setPresupuestoToDelete] = useState<Presupuesto | null>(null);
-  const [isRefreshing, setIsRefreshing] = useState(false);
+  // const [isRefreshing, setIsRefreshing] = useState(false);
 
   useEffect(() => {
     const fetchPresupuestos = async () => {
@@ -66,15 +66,15 @@ const ListaPresupuestos: React.FC<ProjectBudgetsProps> = ({ id_proyecto }) => {
     setIsModalOpen(true);
   };
 
-  const handleRefresh = async () => {
-    setIsRefreshing(true);
-    try {
-      await dispatch(getPresupuestosByProyecto(id_proyecto));
-    } catch (error) {
-      console.error('Error al refrescar:', error);
-    }
-    setIsRefreshing(false);
-  };
+  // const handleRefresh = async () => {
+  //   setIsRefreshing(true);
+  //   try {
+  //     await dispatch(getPresupuestosByProyecto(id_proyecto));
+  //   } catch (error) {
+  //     console.error('Error al refrescar:', error);
+  //   }
+  //   setIsRefreshing(false);
+  // };
 
   // Filtrar los presupuestos para mostrar solo los del proyecto actual y ordenarlos
   const projectBudgets = presupuestos
@@ -110,7 +110,7 @@ const ListaPresupuestos: React.FC<ProjectBudgetsProps> = ({ id_proyecto }) => {
           <div className="flex justify-between items-center">
             <h3 className="text-sm font-medium text-gray-200">Presupuestos del Proyecto</h3>
             <div className="flex gap-2">
-              <button
+              {/* <button
                 onClick={handleRefresh}
                 className={`flex items-center gap-1 px-3 py-1.5 text-xs 
                   ${isRefreshing ? 'bg-gray-600' : 'bg-indigo-600 hover:bg-indigo-700'} 
@@ -131,7 +131,7 @@ const ListaPresupuestos: React.FC<ProjectBudgetsProps> = ({ id_proyecto }) => {
                   />
                 </svg>
                 {isRefreshing ? 'Actualizando...' : 'Actualizar'}
-              </button>
+              </button> */}
               <button
                 onClick={handleCreate}
                 className="flex items-center gap-1 px-3 py-1.5 text-xs bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors duration-200"

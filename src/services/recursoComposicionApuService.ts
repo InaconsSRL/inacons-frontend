@@ -10,6 +10,11 @@ const LIST_RECURSOS_COMPOSICION_APU_QUERY = gql`
       especificaciones
       descripcion
       fecha_creacion
+      recurso_presupuesto {
+        nombre
+        id_recurso
+        id_unidad
+      }
       unidad_presupuesto {
         id_unidad
         descripcion
@@ -20,14 +25,19 @@ const LIST_RECURSOS_COMPOSICION_APU_QUERY = gql`
 `;
 
 const GET_RECURSO_COMPOSICION_APU_QUERY = gql`
-  query GetRecursoComposicionApu($idRecCompApu: String!) {
-    getRecursoComposicionApu(id_rec_comp_apu: $idRecCompApu) {
+  query GetRecursoComposicionApu($id_rec_comp_apu: String!) {
+    getRecursoComposicionApu(id_rec_comp_apu: $id_rec_comp_apu) {
       id_rec_comp_apu
       id_recurso
       nombre
       especificaciones
       descripcion
       fecha_creacion
+      recurso_presupuesto {
+        nombre
+        id_recurso
+        id_unidad
+      }
       unidad_presupuesto {
         id_unidad
         descripcion
@@ -39,15 +49,15 @@ const GET_RECURSO_COMPOSICION_APU_QUERY = gql`
 
 const ADD_RECURSO_COMPOSICION_APU_MUTATION = gql`
   mutation AddRecursoComposicionApu(
-    $idRecurso: String!
-    $idUnidad: String!
+    $id_recurso: String!
+    $id_unidad: String!
     $nombre: String!
     $especificaciones: String
     $descripcion: String
   ) {
     addRecursoComposicionApu(
-      id_recurso: $idRecurso
-      id_unidad: $idUnidad
+      id_recurso: $id_recurso
+      id_unidad: $id_unidad
       nombre: $nombre
       especificaciones: $especificaciones
       descripcion: $descripcion
@@ -60,6 +70,7 @@ const ADD_RECURSO_COMPOSICION_APU_MUTATION = gql`
       recurso_presupuesto {
         nombre
         id_recurso
+        id_unidad
       }
       unidad_presupuesto {
         id_unidad
@@ -72,17 +83,17 @@ const ADD_RECURSO_COMPOSICION_APU_MUTATION = gql`
 
 const UPDATE_RECURSO_COMPOSICION_APU_MUTATION = gql`
   mutation UpdateRecursoComposicionApu(
-    $idRecCompApu: String!
-    $idRecurso: String
-    $idUnidad: String
+    $id_rec_comp_apu: String!
+    $id_recurso: String
+    $id_unidad: String
     $nombre: String
     $especificaciones: String
     $descripcion: String
   ) {
     updateRecursoComposicionApu(
-      id_rec_comp_apu: $idRecCompApu
-      id_recurso: $idRecurso
-      id_unidad: $idUnidad
+      id_rec_comp_apu: $id_rec_comp_apu
+      id_recurso: $id_recurso
+      id_unidad: $id_unidad
       nombre: $nombre
       especificaciones: $especificaciones
       descripcion: $descripcion
@@ -106,8 +117,8 @@ const UPDATE_RECURSO_COMPOSICION_APU_MUTATION = gql`
 `;
 
 const DELETE_RECURSO_COMPOSICION_APU_MUTATION = gql`
-  mutation DeleteRecursoComposicionApu($idRecCompApu: String!) {
-    deleteRecursoComposicionApu(id_rec_comp_apu: $idRecCompApu) {
+  mutation DeleteRecursoComposicionApu($id_rec_comp_apu: String!) {
+    deleteRecursoComposicionApu(id_rec_comp_apu: $id_rec_comp_apu) {
       id_rec_comp_apu
     }
   }
@@ -124,11 +135,11 @@ export const listRecursosComposicionApuService = async () => {
   }
 };
 
-export const getRecursoComposicionApuService = async (idRecCompApu: string) => {
+export const getRecursoComposicionApuService = async (id_rec_comp_apu: string) => {
   try {
     const response = await client.query({
       query: GET_RECURSO_COMPOSICION_APU_QUERY,
-      variables: { idRecCompApu },
+      variables: { id_rec_comp_apu },
     });
     return response.data.getRecursoComposicionApu;
   } catch (error) {
@@ -137,8 +148,8 @@ export const getRecursoComposicionApuService = async (idRecCompApu: string) => {
 };
 
 export const addRecursoComposicionApuService = async (data: {
-  idRecurso: string;
-  idUnidad: string;
+  id_recurso: string;
+  id_unidad: string;
   nombre: string;
   especificaciones?: string;
   descripcion?: string;
@@ -155,9 +166,9 @@ export const addRecursoComposicionApuService = async (data: {
 };
 
 export const updateRecursoComposicionApuService = async (data: {
-  idRecCompApu: string;
-  idRecurso?: string;
-  idUnidad?: string;
+  id_rec_comp_apu: string;
+  id_recurso?: string;
+  id_unidad?: string;
   nombre?: string;
   especificaciones?: string;
   descripcion?: string;
@@ -173,11 +184,11 @@ export const updateRecursoComposicionApuService = async (data: {
   }
 };
 
-export const deleteRecursoComposicionApuService = async (idRecCompApu: string) => {
+export const deleteRecursoComposicionApuService = async (id_rec_comp_apu: string) => {
   try {
     const response = await client.mutate({
       mutation: DELETE_RECURSO_COMPOSICION_APU_MUTATION,
-      variables: { idRecCompApu },
+      variables: { id_rec_comp_apu },
     });
     return response.data.deleteRecursoComposicionApu;
   } catch (error) {

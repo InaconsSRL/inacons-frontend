@@ -11,8 +11,8 @@ const LIST_CLASES_QUERY = gql`
 `;
 
 const GET_CLASE_QUERY = gql`
-  query GetClase($idClase: String!) {
-    getClase(id_clase: $idClase) {
+  query GetClase($id_clase: String!) {
+    getClase(id_clase: $id_clase) {
       id_clase
       nombre
     }
@@ -29,8 +29,8 @@ const ADD_CLASE_MUTATION = gql`
 `;
 
 const UPDATE_CLASE_MUTATION = gql`
-  mutation UpdateClase($idClase: String!, $nombre: String) {
-    updateClase(id_clase: $idClase, nombre: $nombre) {
+  mutation UpdateClase($id_clase: String!, $nombre: String) {
+    updateClase(id_clase: $id_clase, nombre: $nombre) {
       id_clase
       nombre
     }
@@ -38,8 +38,8 @@ const UPDATE_CLASE_MUTATION = gql`
 `;
 
 const DELETE_CLASE_MUTATION = gql`
-  mutation DeleteClase($idClase: String!) {
-    deleteClase(id_clase: $idClase) {
+  mutation DeleteClase($id_clase: String!) {
+    deleteClase(id_clase: $id_clase) {
       id_clase
       nombre
     }
@@ -57,11 +57,11 @@ export const listClasesService = async () => {
   }
 };
 
-export const getClaseService = async (idClase: string) => {
+export const getClaseService = async (id_clase: string) => {
   try {
     const response = await client.query({
       query: GET_CLASE_QUERY,
-      variables: { idClase },
+      variables: { id_clase },
     });
     return response.data.getClase;
   } catch (error) {
@@ -81,7 +81,7 @@ export const addClaseService = async (nombre: string) => {
   }
 };
 
-export const updateClaseService = async (data: { idClase: string; nombre?: string }) => {
+export const updateClaseService = async (data: { id_clase: string; nombre?: string }) => {
   try {
     const response = await client.mutate({
       mutation: UPDATE_CLASE_MUTATION,
@@ -93,11 +93,11 @@ export const updateClaseService = async (data: { idClase: string; nombre?: strin
   }
 };
 
-export const deleteClaseService = async (idClase: string) => {
+export const deleteClaseService = async (id_clase: string) => {
   try {
     const response = await client.mutate({
       mutation: DELETE_CLASE_MUTATION,
-      variables: { idClase },
+      variables: { id_clase },
     });
     return response.data.deleteClase;
   } catch (error) {

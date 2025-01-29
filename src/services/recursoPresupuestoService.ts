@@ -17,8 +17,8 @@ const LIST_RECURSOS_PRESUPUESTO_QUERY = gql`
 `;
 
 const GET_RECURSO_PRESUPUESTO_QUERY = gql`
-  query GetRecursoPresupuesto($idRecurso: String!) {
-    getRecursoPresupuesto(id_recurso: $idRecurso) {
+  query GetRecursoPresupuesto($id_recurso: String!) {
+    getRecursoPresupuesto(id_recurso: $id_recurso) {
       id_recurso
       nombre
       id_unidad
@@ -32,8 +32,8 @@ const GET_RECURSO_PRESUPUESTO_QUERY = gql`
 `;
 
 const ADD_RECURSO_PRESUPUESTO_MUTATION = gql`
-  mutation AddRecursoPresupuesto($idUnidad: String!, $idClase: String!, $idTipo: String!, $idRecursoApp: String!, $nombre: String!, $precioReferencial: Float!) {
-    addRecursoPresupuesto(id_unidad: $idUnidad, id_clase: $idClase, id_tipo: $idTipo, id_recurso_app: $idRecursoApp, nombre: $nombre, precio_referencial: $precioReferencial) {
+  mutation AddRecursoPresupuesto($id_unidad: String!, $id_clase: String!, $id_tipo: String!, $id_recurso_app: String!, $nombre: String!, $precio_referencial: Float!) {
+    addRecursoPresupuesto(id_unidad: $id_unidad, id_clase: $id_clase, id_tipo: $id_tipo, id_recurso_app: $id_recurso_app, nombre: $nombre, precio_referencial: $precio_referencial) {
       id_recurso
       nombre
       id_unidad
@@ -47,8 +47,8 @@ const ADD_RECURSO_PRESUPUESTO_MUTATION = gql`
 `;
 
 const UPDATE_RECURSO_PRESUPUESTO_MUTATION = gql`
-  mutation UpdateRecursoPresupuesto($idRecurso: String!, $precioReferencial: Float, $nombre: String, $idRecursoApp: String, $idTipo: String, $idClase: String, $idUnidad: String) {
-    updateRecursoPresupuesto(id_recurso: $idRecurso, precio_referencial: $precioReferencial, nombre: $nombre, id_recurso_app: $idRecursoApp, id_tipo: $idTipo, id_clase: $idClase, id_unidad: $idUnidad) {
+  mutation UpdateRecursoPresupuesto($id_recurso: String!, $precio_referencial: Float, $nombre: String, $id_recurso_app: String, $id_tipo: String, $id_clase: String, $id_unidad: String) {
+    updateRecursoPresupuesto(id_recurso: $id_recurso, precio_referencial: $precio_referencial, nombre: $nombre, id_recurso_app: $id_recurso_app, id_tipo: $id_tipo, id_clase: $id_clase, id_unidad: $id_unidad) {
       id_recurso
       nombre
       id_unidad
@@ -62,8 +62,8 @@ const UPDATE_RECURSO_PRESUPUESTO_MUTATION = gql`
 `;
 
 const DELETE_RECURSO_PRESUPUESTO_MUTATION = gql`
-  mutation DeleteRecursoPresupuesto($idRecurso: String!) {
-    deleteRecursoPresupuesto(id_recurso: $idRecurso) {
+  mutation DeleteRecursoPresupuesto($id_recurso: String!) {
+    deleteRecursoPresupuesto(id_recurso: $id_recurso) {
       id_recurso
     }
   }
@@ -80,11 +80,11 @@ export const listRecursosPresupuestoService = async () => {
   }
 };
 
-export const getRecursoPresupuestoService = async (idRecurso: string) => {
+export const getRecursoPresupuestoService = async (id_recurso: string) => {
   try {
     const response = await client.query({
       query: GET_RECURSO_PRESUPUESTO_QUERY,
-      variables: { idRecurso },
+      variables: { id_recurso },
     });
     return response.data.getRecursoPresupuesto;
   } catch (error) {
@@ -93,12 +93,12 @@ export const getRecursoPresupuestoService = async (idRecurso: string) => {
 };
 
 export const addRecursoPresupuestoService = async (data: {
-  idUnidad: string;
-  idClase: string;
-  idTipo: string;
-  idRecursoApp: string;
+  id_unidad: string;
+  id_clase: string;
+  id_tipo: string;
+  id_recurso_app: string;
   nombre: string;
-  precioReferencial: number;
+  precio_referencial: number;
 }) => {
   try {
     const response = await client.mutate({
@@ -112,13 +112,13 @@ export const addRecursoPresupuestoService = async (data: {
 };
 
 export const updateRecursoPresupuestoService = async (data: {
-  idRecurso: string;
-  precioReferencial?: number;
+  id_recurso: string;
+  precio_referencial?: number;
   nombre?: string;
-  idRecursoApp?: string;
-  idTipo?: string;
-  idClase?: string;
-  idUnidad?: string;
+  id_recurso_app?: string;
+  id_tipo?: string;
+  id_clase?: string;
+  id_unidad?: string;
 }) => {
   try {
     const response = await client.mutate({
@@ -131,11 +131,11 @@ export const updateRecursoPresupuestoService = async (data: {
   }
 };
 
-export const deleteRecursoPresupuestoService = async (idRecurso: string) => {
+export const deleteRecursoPresupuestoService = async (id_recurso: string) => {
   try {
     const response = await client.mutate({
       mutation: DELETE_RECURSO_PRESUPUESTO_MUTATION,
-      variables: { idRecurso },
+      variables: { id_recurso },
     });
     return response.data.deleteRecursoPresupuesto;
   } catch (error) {

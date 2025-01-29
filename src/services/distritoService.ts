@@ -12,8 +12,8 @@ const LIST_DISTRITOS_QUERY = gql`
 `;
 
 const GET_DISTRITOS_BY_PROVINCIA_QUERY = gql`
-  query GetDistritosByProvincia($idProvincia: String!) {
-    getDistritosByProvincia(id_provincia: $idProvincia) {
+  query GetDistritosByProvincia($id_provincia: String!) {
+    getDistritosByProvincia(id_provincia: $id_provincia) {
       id_distrito
       id_provincia
       nombre_distrito
@@ -22,8 +22,8 @@ const GET_DISTRITOS_BY_PROVINCIA_QUERY = gql`
 `;
 
 const GET_DISTRITO_QUERY = gql`
-  query GetDistrito($idDistrito: String!) {
-    getDistrito(id_distrito: $idDistrito) {
+  query GetDistrito($id_distrito: String!) {
+    getDistrito(id_distrito: $id_distrito) {
       id_distrito
       id_provincia
       nombre_distrito
@@ -32,8 +32,8 @@ const GET_DISTRITO_QUERY = gql`
 `;
 
 const ADD_DISTRITO_MUTATION = gql`
-  mutation AddDistrito($nombreDistrito: String!, $idProvincia: String!) {
-    addDistrito(nombre_distrito: $nombreDistrito, id_provincia: $idProvincia) {
+  mutation AddDistrito($nombre_distrito: String!, $id_provincia: String!) {
+    addDistrito(nombre_distrito: $nombre_distrito, id_provincia: $id_provincia) {
       id_distrito
       id_provincia
       nombre_distrito
@@ -42,8 +42,8 @@ const ADD_DISTRITO_MUTATION = gql`
 `;
 
 const UPDATE_DISTRITO_MUTATION = gql`
-  mutation UpdateDistrito($idDistrito: String!, $idProvincia: String, $nombreDistrito: String) {
-    updateDistrito(id_distrito: $idDistrito, id_provincia: $idProvincia, nombre_distrito: $nombreDistrito) {
+  mutation UpdateDistrito($id_distrito: String!, $id_provincia: String, $nombre_distrito: String) {
+    updateDistrito(id_distrito: $id_distrito, id_provincia: $id_provincia, nombre_distrito: $nombre_distrito) {
       id_distrito
       id_provincia
       nombre_distrito
@@ -52,8 +52,8 @@ const UPDATE_DISTRITO_MUTATION = gql`
 `;
 
 const DELETE_DISTRITO_MUTATION = gql`
-  mutation DeleteDistrito($idDistrito: String!) {
-    deleteDistrito(id_distrito: $idDistrito) {
+  mutation DeleteDistrito($id_distrito: String!) {
+    deleteDistrito(id_distrito: $id_distrito) {
       id_distrito
     }
   }
@@ -70,11 +70,11 @@ export const listDistritosService = async () => {
   }
 };
 
-export const getDistritosByProvinciaService = async (idProvincia: string) => {
+export const getDistritosByProvinciaService = async (id_provincia: string) => {
   try {
     const response = await client.query({
       query: GET_DISTRITOS_BY_PROVINCIA_QUERY,
-      variables: { idProvincia },
+      variables: { id_provincia },
     });
     return response.data.getDistritosByProvincia;
   } catch (error) {
@@ -82,11 +82,11 @@ export const getDistritosByProvinciaService = async (idProvincia: string) => {
   }
 };
 
-export const getDistritoService = async (idDistrito: string) => {
+export const getDistritoService = async (id_distrito: string) => {
   try {
     const response = await client.query({
       query: GET_DISTRITO_QUERY,
-      variables: { idDistrito },
+      variables: { id_distrito },
     });
     return response.data.getDistrito;
   } catch (error) {
@@ -94,7 +94,7 @@ export const getDistritoService = async (idDistrito: string) => {
   }
 };
 
-export const addDistritoService = async (data: { nombreDistrito: string; idProvincia: string }) => {
+export const addDistritoService = async (data: { nombre_distrito: string; id_provincia: string }) => {
   try {
     const response = await client.mutate({
       mutation: ADD_DISTRITO_MUTATION,
@@ -107,9 +107,9 @@ export const addDistritoService = async (data: { nombreDistrito: string; idProvi
 };
 
 export const updateDistritoService = async (data: {
-  idDistrito: string;
-  idProvincia?: string;
-  nombreDistrito?: string;
+  id_distrito: string;
+  id_provincia?: string;
+  nombre_distrito?: string;
 }) => {
   try {
     const response = await client.mutate({
@@ -122,11 +122,11 @@ export const updateDistritoService = async (data: {
   }
 };
 
-export const deleteDistritoService = async (idDistrito: string) => {
+export const deleteDistritoService = async (id_distrito: string) => {
   try {
     const response = await client.mutate({
       mutation: DELETE_DISTRITO_MUTATION,
-      variables: { idDistrito },
+      variables: { id_distrito },
     });
     return response.data.deleteDistrito;
   } catch (error) {

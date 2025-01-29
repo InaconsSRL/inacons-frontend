@@ -62,7 +62,7 @@ export const addTipo = createAsyncThunk(
 
 export const updateTipo = createAsyncThunk(
   'tipo/updateTipo',
-  async (data: { idTipo: string; descripcion?: string; codigo?: string }, { rejectWithValue }) => {
+  async (data: { id_tipo: string; descripcion?: string; codigo?: string }, { rejectWithValue }) => {
     try {
       return await updateTipoService(data);
     } catch (error) {

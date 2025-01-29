@@ -24,7 +24,6 @@ const TreeItem: React.FC<TreeItemProps> = ({
   isActive = false,
   children
 }) => {
-  console.log("proyectoslist")
   return (
     <div className="select-none">
       <div 
@@ -76,16 +75,18 @@ const ListaProyectos: React.FC = () => {
 
     // Manejar la expansión/colapso
     const projectId = project.id_proyecto;
-    if (!expandedProjects.has(projectId)) {
-      await dispatch(getPresupuestosByProyecto(projectId));
-    }
-    
     const newExpanded = new Set(expandedProjects);
+    
     if (expandedProjects.has(projectId)) {
       newExpanded.delete(projectId);
     } else {
       newExpanded.add(projectId);
+      // Solo cargaremos los presupuestos si estamos expandiendo y no los tenemos ya
+      if (!presupuestos.some(p => p.id_proyecto === projectId)) {
+        await dispatch(getPresupuestosByProyecto(projectId));
+      }
     }
+    
     setExpandedProjects(newExpanded);
   };
 

@@ -26,8 +26,8 @@ const LIST_PRESUPUESTOS_QUERY = gql`
 `;
 
 const GET_PRESUPUESTO_QUERY = gql`
-  query GetPresupuesto($idPresupuesto: String!) {
-    getPresupuesto(id_presupuesto: $idPresupuesto) {
+  query GetPresupuesto($id_presupuesto: String!) {
+    getPresupuesto(id_presupuesto: $id_presupuesto) {
       id_presupuesto
       id_proyecto
       costo_directo
@@ -87,8 +87,8 @@ const ADD_PRESUPUESTO_MUTATION = gql`
 `;
 
 const UPDATE_PRESUPUESTO_MUTATION = gql`
-  mutation UpdatePresupuesto($idPresupuesto: String!, $nombre_presupuesto: String, $costo_directo: Float, $monto_igv: Float, $monto_utilidad: Float, $total_presupuesto: Float, $ppto_oferta: Float, $ppto_base: Float, $porcentaje_utilidad: Float, $porcentaje_igv: Float, $observaciones: String, $plazo: Int) {
-    updatePresupuesto(id_presupuesto: $idPresupuesto, nombre_presupuesto: $nombre_presupuesto, costo_directo: $costo_directo, monto_igv: $monto_igv, monto_utilidad: $monto_utilidad, total_presupuesto: $total_presupuesto, ppto_oferta: $ppto_oferta, ppto_base: $ppto_base, porcentaje_utilidad: $porcentaje_utilidad, porcentaje_igv: $porcentaje_igv, observaciones: $observaciones, plazo: $plazo) {
+  mutation UpdatePresupuesto($id_presupuesto: String!, $nombre_presupuesto: String, $costo_directo: Float, $monto_igv: Float, $monto_utilidad: Float, $total_presupuesto: Float, $ppto_oferta: Float, $ppto_base: Float, $porcentaje_utilidad: Float, $porcentaje_igv: Float, $observaciones: String, $plazo: Int) {
+    updatePresupuesto(id_presupuesto: $id_presupuesto, nombre_presupuesto: $nombre_presupuesto, costo_directo: $costo_directo, monto_igv: $monto_igv, monto_utilidad: $monto_utilidad, total_presupuesto: $total_presupuesto, ppto_oferta: $ppto_oferta, ppto_base: $ppto_base, porcentaje_utilidad: $porcentaje_utilidad, porcentaje_igv: $porcentaje_igv, observaciones: $observaciones, plazo: $plazo) {
       id_presupuesto
       id_proyecto
       costo_directo
@@ -110,8 +110,8 @@ const UPDATE_PRESUPUESTO_MUTATION = gql`
 `;
 
 const DELETE_PRESUPUESTO_MUTATION = gql`
-  mutation DeletePresupuesto($idPresupuesto: String!) {
-    deletePresupuesto(id_presupuesto: $idPresupuesto) {
+  mutation DeletePresupuesto($id_presupuesto: String!) {
+    deletePresupuesto(id_presupuesto: $id_presupuesto) {
       id_presupuesto
     }
   }
@@ -132,7 +132,7 @@ export const getPresupuestoService = async (id: string) => {
   try {
     const response = await client.query({
       query: GET_PRESUPUESTO_QUERY,
-      variables: { idPresupuesto: id },
+      variables: { id_presupuesto: id },
     });
     return response.data.getPresupuesto;
   } catch (error) {
@@ -184,7 +184,7 @@ export const updatePresupuestoService = async (data: Presupuesto) => {
     const response = await client.mutate({
       mutation: UPDATE_PRESUPUESTO_MUTATION,
       variables: {
-        idPresupuesto: data.id_presupuesto,
+        id_presupuesto: data.id_presupuesto,
         nombre_presupuesto: data.nombre_presupuesto,
         costo_directo: parseFloat(data.costo_directo.toString()),
         monto_igv: parseFloat(data.monto_igv.toString()),
@@ -209,7 +209,7 @@ export const deletePresupuestoService = async (id: string) => {
   try {
     const response = await client.mutate({
       mutation: DELETE_PRESUPUESTO_MUTATION,
-      variables: { idPresupuesto: id },
+      variables: { id_presupuesto: id },
     });
     return response.data.deletePresupuesto;
   } catch (error) {

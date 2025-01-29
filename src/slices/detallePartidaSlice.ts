@@ -6,8 +6,9 @@ import {
   updateDetallePartidaService,
   deleteDetallePartidaService,
 } from '../services/detallePartidaService';
+import { RootState } from '../store/store';
 
-interface DetallePartida {
+export interface DetallePartida {
   id_detalle_partida: string;
   id_unidad: string;
   id_titulo: string;
@@ -17,15 +18,13 @@ interface DetallePartida {
 }
 
 interface DetallePartidaState {
-  detallesPartida: DetallePartida[];
-  selectedDetallePartida: DetallePartida | null;
+  detallePartida: DetallePartida | null;
   loading: boolean;
   error: string | null;
 }
 
 const initialState: DetallePartidaState = {
-  detallesPartida: [],
-  selectedDetallePartida: null,
+  detallePartida: null,
   loading: false,
   error: null,
 };
@@ -43,9 +42,9 @@ export const fetchDetallesPartida = createAsyncThunk(
 
 export const getDetallesPartidaByTitulo = createAsyncThunk(
   'detallePartida/getDetallesPartidaByTitulo',
-  async (idTitulo: string, { rejectWithValue }) => {
+  async (id_titulo: string, { rejectWithValue }) => {
     try {
-      return await getDetallesPartidaByTituloService(idTitulo);
+      return await getDetallesPartidaByTituloService(id_titulo);
     } catch (error) {
       return rejectWithValue((error as Error).message);
     }
@@ -54,16 +53,16 @@ export const getDetallesPartidaByTitulo = createAsyncThunk(
 
 // Agregar interfaces para los inputs
 interface CreateDetallePartidaInput {
-  idUnidad: string;
-  idTitulo: string;
+  id_unidad: string;
+  id_titulo: string;
   metrado: number;
   precio: number;
   jornada: number;
 }
 
 interface UpdateDetallePartidaInput {
-  idDetallePartida: string;
-  idUnidad?: string;
+  id_detalle_partida: string;
+  id_unidad?: string;
   metrado?: number;
   precio?: number;
   jornada?: number;
@@ -80,12 +79,41 @@ export const addDetallePartida = createAsyncThunk(
   }
 );
 
+//TodoBien
+
 export const updateDetallePartida = createAsyncThunk(
   'detallePartida/updateDetallePartida',
-  async (data: UpdateDetallePartidaInput, { rejectWithValue }) => {
+  async (data: UpdateDetallePartidaInput, { rejectWithValue, dispatch, getState }) => {
     try {
-      return await updateDetallePartidaService(data);
+      const response = await updateDetallePartidaService(data);      
+      const updatedDetallePartida = response.updateDetallePartida;
+      const state = getState() as RootState;
+      const idPresupuesto = state.activeData.activePresupuesto?.id_presupuesto;
+      const idTitulo = state.activeData.activeTitulo?.id_titulo;
+      
+      if (updatedDetallePartida && idPresupuesto && idTitulo) {
+        // Asegurarse de que el precio actualizado se mantenga
+        const finalDetallePartida = {
+          ...updatedDetallePartida,
+          precio: data.precio // Mantener el precio que se envió originalmente
+        };        
+        dispatch({
+          type: 'titulo/updateTituloDetallePartida',
+          payload: {
+            id_presupuesto: idPresupuesto,
+            id_titulo: idTitulo,
+            detallePartida: finalDetallePartida
+          }
+        });
+      }
+      
+      // Retornar el detalle con el precio correcto
+      return {
+        ...updatedDetallePartida,
+        precio: data.precio
+      };
     } catch (error) {
+      console.error('❌ Error en updateDetallePartida:', error);
       return rejectWithValue((error as Error).message);
     }
   }
@@ -93,9 +121,9 @@ export const updateDetallePartida = createAsyncThunk(
 
 export const deleteDetallePartida = createAsyncThunk(
   'detallePartida/deleteDetallePartida',
-  async (idDetallePartida: string, { rejectWithValue }) => {
+  async (id_detalle_partida: string, { rejectWithValue }) => {
     try {
-      return await deleteDetallePartidaService(idDetallePartida);
+      return await deleteDetallePartidaService(id_detalle_partida);
     } catch (error) {
       return rejectWithValue((error as Error).message);
     }
@@ -117,9 +145,9 @@ const detallePartidaSlice = createSlice({
         state.loading = true;
         state.error = null;
       })
-      .addCase(fetchDetallesPartida.fulfilled, (state, action: PayloadAction<DetallePartida[]>) => {
+      .addCase(fetchDetallesPartida.fulfilled, (state, action: PayloadAction<DetallePartida>) => {
         state.loading = false;
-        state.detallesPartida = action.payload;
+        state.detallePartida = action.payload;
       })
       .addCase(fetchDetallesPartida.rejected, (state, action) => {
         state.loading = false;
@@ -130,9 +158,9 @@ const detallePartidaSlice = createSlice({
         state.loading = true;
         state.error = null;
       })
-      .addCase(getDetallesPartidaByTitulo.fulfilled, (state, action: PayloadAction<DetallePartida[]>) => {
+      .addCase(getDetallesPartidaByTitulo.fulfilled, (state, action: PayloadAction<DetallePartida>) => {
         state.loading = false;
-        state.detallesPartida = action.payload;
+        state.detallePartida = action.payload;
       })
       .addCase(getDetallesPartidaByTitulo.rejected, (state, action) => {
         state.loading = false;
@@ -145,7 +173,7 @@ const detallePartidaSlice = createSlice({
       })
       .addCase(addDetallePartida.fulfilled, (state, action: PayloadAction<DetallePartida>) => {
         state.loading = false;
-        state.detallesPartida.push(action.payload);
+        state.detallePartida = action.payload;
       })
       .addCase(addDetallePartida.rejected, (state, action) => {
         state.loading = false;
@@ -158,12 +186,7 @@ const detallePartidaSlice = createSlice({
       })
       .addCase(updateDetallePartida.fulfilled, (state, action: PayloadAction<DetallePartida>) => {
         state.loading = false;
-        const index = state.detallesPartida.findIndex(
-          (detalle) => detalle.id_detalle_partida === action.payload.id_detalle_partida
-        );
-        if (index !== -1) {
-          state.detallesPartida[index] = action.payload;
-        }
+        state.detallePartida = action.payload;
       })
       .addCase(updateDetallePartida.rejected, (state, action) => {
         state.loading = false;
@@ -174,11 +197,9 @@ const detallePartidaSlice = createSlice({
         state.loading = true;
         state.error = null;
       })
-      .addCase(deleteDetallePartida.fulfilled, (state, action: PayloadAction<{ id_detalle_partida: string }>) => {
+      .addCase(deleteDetallePartida.fulfilled, (state) => {
         state.loading = false;
-        state.detallesPartida = state.detallesPartida.filter(
-          (detalle) => detalle.id_detalle_partida !== action.payload.id_detalle_partida
-        );
+        state.detallePartida = null;
       })
       .addCase(deleteDetallePartida.rejected, (state, action) => {
         state.loading = false;

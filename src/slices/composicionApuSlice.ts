@@ -5,6 +5,7 @@ import {
   updateComposicionApuService,
   deleteComposicionApuService
 } from '../services/composicionApuService';
+import { updatePrecioRecursoProyecto, addPrecioRecursoProyecto } from '../slices/precioRecursoProyectoSlice';
 
 // Interface para el listado con relaciones
 interface PrecioRecursoProyecto {
@@ -52,12 +53,12 @@ interface RecursoComposicionApu {
 }
 
 interface ComposicionApuWithRelations {
+  id_composicion_apu: string;
+  id_titulo: string;
   rec_comp_apu: RecursoComposicionApu;
   cuadrilla: number;
   cantidad: number;
   fecha_creacion: string;
-  id_composicion_apu: string;
-  id_titulo: string;
 }
 
 interface ComposicionApuState {
@@ -76,10 +77,14 @@ const initialState: ComposicionApuState = {
 
 export const getComposicionesApuByTitulo = createAsyncThunk(
   'composicionApu/getComposicionesApuByTitulo',
-  async ({idTitulo, idProyecto}: {idTitulo: string, idProyecto: string}, { rejectWithValue }) => {
+  async ({id_titulo, id_proyecto}: {id_titulo: string, id_proyecto: string}, { rejectWithValue }) => {
+    console.log('🟡 Iniciando getComposicionesApuByTitulo con:', { id_titulo, id_proyecto });
     try {
-      return await getComposicionesApuByTituloService(idTitulo, idProyecto);
+      const result = await getComposicionesApuByTituloService(id_titulo, id_proyecto);
+      console.log('🟡 Resultado de getComposicionesApuByTituloService:', result);
+      return result;
     } catch (error) {
+      console.error('🔴 Error en getComposicionesApuByTitulo:', error);
       return rejectWithValue((error as Error).message);
     }
   }
@@ -88,14 +93,18 @@ export const getComposicionesApuByTitulo = createAsyncThunk(
 export const addComposicionApu = createAsyncThunk(
   'composicionApu/addComposicionApu',
   async (data: {
-    idTitulo: string;
-    idRecCompApu: string;
+    id_titulo: string;
+    id_rec_comp_apu: string;
     cuadrilla: number;
     cantidad: number;
   }, { rejectWithValue }) => {
+    console.log('🟡 Iniciando addComposicionApu con data:', data);
     try {
-      return await addComposicionApuService(data);
+      const result = await addComposicionApuService(data);
+      console.log('🟡 Resultado de addComposicionApuService:', result);
+      return result;
     } catch (error) {
+      console.error('🔴 Error en addComposicionApu:', error);
       return rejectWithValue((error as Error).message);
     }
   }
@@ -104,13 +113,15 @@ export const addComposicionApu = createAsyncThunk(
 export const updateComposicionApu = createAsyncThunk(
   'composicionApu/updateComposicionApu',
   async (data: {
-    idComposicionApu: string;
-    idRecCompApu?: string;
+    id_composicion_apu: string;
+    id_rec_comp_apu?: string;
     cuadrilla?: number;
     cantidad?: number;
   }, { rejectWithValue }) => {
     try {
-      return await updateComposicionApuService(data);
+      const result = await updateComposicionApuService(data);
+      // Después de actualizar la composición, disparar una acción para actualizar los títulos
+      return result;
     } catch (error) {
       return rejectWithValue((error as Error).message);
     }
@@ -143,6 +154,7 @@ const composicionApuSlice = createSlice({
         state.error = null;
       })
       .addCase(getComposicionesApuByTitulo.fulfilled, (state, action: PayloadAction<ComposicionApuWithRelations[]>) => {
+        console.log('🟢 getComposicionesApuByTitulo.fulfilled con payload:', action.payload);
         state.loading = false;
         state.composicionesApu = action.payload;
       })
@@ -150,22 +162,108 @@ const composicionApuSlice = createSlice({
         state.loading = false;
         state.error = action.payload as string;
       })
-    //   .addCase(addComposicionApu.fulfilled, (state, action: PayloadAction<ComposicionApuBase>) => {
-      .addCase(addComposicionApu.fulfilled, (state) => {
-        state.loading = false;
-        // Aquí necesitarías convertir ComposicionApuBase a ComposicionApuWithRelations
-        // o recargar los datos completos
+      .addCase(addComposicionApu.pending, (state) => {
+        state.loading = true;
+        state.error = null;
       })
-    //   .addCase(updateComposicionApu.fulfilled, (state, action: PayloadAction<ComposicionApuBase>) => {
-      .addCase(updateComposicionApu.fulfilled, (state) => {
+      .addCase(addComposicionApu.fulfilled, (state, action: PayloadAction<ComposicionApuWithRelations>) => {
+        console.log('🟢 addComposicionApu.fulfilled con payload:', action.payload);
         state.loading = false;
-        // Similar al add, necesitarías manejar la actualización considerando las relaciones
+        const newComposicion = action.payload;
+        
+        // Asegurarse de que todos los campos necesarios estén presentes
+        if (newComposicion.rec_comp_apu) {
+          // Mantener la referencia a precio_recurso_proyecto si existe
+          if (newComposicion.rec_comp_apu.precio_recurso_proyecto) {
+            newComposicion.rec_comp_apu.precio_recurso_proyecto = {
+              ...newComposicion.rec_comp_apu.precio_recurso_proyecto
+            };
+          }
+          
+          // Mantener la referencia a unidad_presupuesto si existe
+          if (newComposicion.rec_comp_apu.unidad_presupuesto) {
+            newComposicion.rec_comp_apu.unidad_presupuesto = {
+              ...newComposicion.rec_comp_apu.unidad_presupuesto
+            };
+          }
+          
+          // Mantener la referencia a recurso_presupuesto si existe
+          if (newComposicion.rec_comp_apu.recurso_presupuesto) {
+            newComposicion.rec_comp_apu.recurso_presupuesto = {
+              ...newComposicion.rec_comp_apu.recurso_presupuesto
+            };
+          }
+        }
+
+        state.composicionesApu.push(newComposicion);
+      })
+      .addCase(addComposicionApu.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
+      })
+      .addCase(updateComposicionApu.fulfilled, (state, action: PayloadAction<ComposicionApuWithRelations>) => {
+        state.loading = false;
+        const updatedItem = action.payload;
+        const index = state.composicionesApu.findIndex(
+          (comp) => comp.id_composicion_apu === updatedItem.id_composicion_apu
+        );
+        if (index !== -1) {
+          const existing = state.composicionesApu[index];
+          // Mezcla la data nueva con la existente
+          state.composicionesApu[index] = {
+            ...existing,
+            ...updatedItem,
+            rec_comp_apu: {
+              ...existing.rec_comp_apu,
+              ...updatedItem.rec_comp_apu,
+              recurso_presupuesto: {
+                ...existing.rec_comp_apu.recurso_presupuesto,
+                ...updatedItem.rec_comp_apu?.recurso_presupuesto,
+              },
+              unidad_presupuesto: {
+                ...existing.rec_comp_apu.unidad_presupuesto,
+                ...updatedItem.rec_comp_apu?.unidad_presupuesto,
+              },
+              precio_recurso_proyecto: {
+                ...existing.rec_comp_apu.precio_recurso_proyecto,
+                ...updatedItem.rec_comp_apu?.precio_recurso_proyecto,
+              },
+            },
+          };
+        }
       })
       .addCase(deleteComposicionApu.fulfilled, (state, action: PayloadAction<{ id_composicion_apu: string }>) => {
         state.loading = false;
         state.composicionesApu = state.composicionesApu.filter(
           comp => comp.id_composicion_apu !== action.payload.id_composicion_apu
         );
+      })
+      .addCase(updatePrecioRecursoProyecto.fulfilled, (state, action: PayloadAction<PrecioRecursoProyecto>) => {
+        const updatedPrice = action.payload;
+        const compIndex = state.composicionesApu.findIndex(
+          comp => comp.rec_comp_apu.id_rec_comp_apu === updatedPrice.id_rec_comp_apu
+        );
+        if (compIndex !== -1) {
+          state.composicionesApu[compIndex].rec_comp_apu.precio_recurso_proyecto = {
+            ...state.composicionesApu[compIndex].rec_comp_apu.precio_recurso_proyecto,
+            ...updatedPrice
+          };
+        }
+      })
+      .addCase(addPrecioRecursoProyecto.fulfilled, (state, action) => {
+        const newPrecio = action.payload;
+        state.composicionesApu = state.composicionesApu.map(comp => {
+          if (comp.rec_comp_apu.id_rec_comp_apu === newPrecio.id_rec_comp_apu) {
+            return {
+              ...comp,
+              rec_comp_apu: {
+                ...comp.rec_comp_apu,
+                precio_recurso_proyecto: newPrecio
+              }
+            };
+          }
+          return comp;
+        });
       });
   },
 });

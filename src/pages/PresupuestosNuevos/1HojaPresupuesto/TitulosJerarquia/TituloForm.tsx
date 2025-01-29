@@ -4,13 +4,13 @@ import { RootState, AppDispatch } from '../../../../store/store';
 import { fetchEspecialidades, Especialidad  } from '../../../../slices/especialidadSlice';
 import Modal from '../../../../components/Modal/Modal';
 import EspecialidadForm from './EspecialidadForm';
-import { TituloBasic } from '../../../../slices/tituloSlice';
+import { Titulo } from '../../../../slices/tituloSlice';
 
 interface TituloFormProps {
-  titulo: TituloBasic | null;
-  onSubmit: (titulo: TituloBasic) => void;
+  titulo: Titulo | null;
+  onSubmit: (titulo: Titulo) => void;
   onCancel: () => void;
-  titulos: TituloBasic[];
+  titulos: Titulo[];
   tituloParentId?: string; // Nueva prop opcional
   ordenCreate?: number; // Nueva prop opcional
   tipo: 'TITULO' | 'PARTIDA';
@@ -31,7 +31,7 @@ const TituloForm: React.FC<TituloFormProps> = ({
   const especialidades = useSelector((state: RootState) => state.especialidad.especialidades);
   const [showEspecialidadForm, setShowEspecialidadForm] = useState(false);
 
-  const [formData, setFormData] = useState<Partial<TituloBasic>>({
+  const [formData, setFormData] = useState<Partial<Titulo>>({
     descripcion: '',
     nivel: 1,
     item: '',
@@ -84,7 +84,7 @@ const TituloForm: React.FC<TituloFormProps> = ({
 
     if (!activePresupuesto || !formData.id_especialidad) return;
 
-    const tituloData: TituloBasic = {
+    const tituloData: Titulo = {
       id_titulo: titulo?.id_titulo || 'TEMP_' + Date.now(),
       id_presupuesto: activePresupuesto.id_presupuesto,
       id_titulo_padre: formData.id_titulo_padre || null,

@@ -12,8 +12,8 @@ const LIST_LOCALIDADES_QUERY = gql`
 `;
 
 const GET_LOCALIDADES_BY_DISTRITO_QUERY = gql`
-  query GetLocalidadesByDistrito($idDistrito: String!) {
-    getLocalidadesByDistrito(id_distrito: $idDistrito) {
+  query GetLocalidadesByDistrito($id_distrito: String!) {
+    getLocalidadesByDistrito(id_distrito: $id_distrito) {
       id_localidad
       id_distrito
       nombre_localidad
@@ -22,8 +22,8 @@ const GET_LOCALIDADES_BY_DISTRITO_QUERY = gql`
 `;
 
 const GET_LOCALIDAD_QUERY = gql`
-  query GetLocalidad($idLocalidad: String!) {
-    getLocalidad(id_localidad: $idLocalidad) {
+  query GetLocalidad($id_localidad: String!) {
+    getLocalidad(id_localidad: $id_localidad) {
       id_localidad
       id_distrito
       nombre_localidad
@@ -32,8 +32,8 @@ const GET_LOCALIDAD_QUERY = gql`
 `;
 
 const ADD_LOCALIDAD_MUTATION = gql`
-  mutation AddLocalidad($nombreLocalidad: String!, $idDistrito: String!) {
-    addLocalidad(nombre_localidad: $nombreLocalidad, id_distrito: $idDistrito) {
+  mutation AddLocalidad($nombre_localidad: String!, $id_distrito: String!) {
+    addLocalidad(nombre_localidad: $nombre_localidad, id_distrito: $id_distrito) {
       id_localidad
       id_distrito
       nombre_localidad
@@ -42,8 +42,8 @@ const ADD_LOCALIDAD_MUTATION = gql`
 `;
 
 const UPDATE_LOCALIDAD_MUTATION = gql`
-  mutation UpdateLocalidad($idLocalidad: String!, $nombreLocalidad: String, $idDistrito: String) {
-    updateLocalidad(id_localidad: $idLocalidad, nombre_localidad: $nombreLocalidad, id_distrito: $idDistrito) {
+  mutation UpdateLocalidad($id_localidad: String!, $nombre_localidad: String, $id_distrito: String) {
+    updateLocalidad(id_localidad: $id_localidad, nombre_localidad: $nombre_localidad, id_distrito: $id_distrito) {
       id_localidad
       id_distrito
       nombre_localidad
@@ -52,8 +52,8 @@ const UPDATE_LOCALIDAD_MUTATION = gql`
 `;
 
 const DELETE_LOCALIDAD_MUTATION = gql`
-  mutation DeleteLocalidad($idLocalidad: String!) {
-    deleteLocalidad(id_localidad: $idLocalidad) {
+  mutation DeleteLocalidad($id_localidad: String!) {
+    deleteLocalidad(id_localidad: $id_localidad) {
       id_localidad
     }
   }
@@ -70,11 +70,11 @@ export const listLocalidadesService = async () => {
   }
 };
 
-export const getLocalidadesByDistritoService = async (idDistrito: string) => {
+export const getLocalidadesByDistritoService = async (id_distrito: string) => {
   try {
     const response = await client.query({
       query: GET_LOCALIDADES_BY_DISTRITO_QUERY,
-      variables: { idDistrito },
+      variables: { id_distrito },
     });
     return response.data.getLocalidadesByDistrito;
   } catch (error) {
@@ -82,11 +82,11 @@ export const getLocalidadesByDistritoService = async (idDistrito: string) => {
   }
 };
 
-export const getLocalidadService = async (idLocalidad: string) => {
+export const getLocalidadService = async (id_localidad: string) => {
   try {
     const response = await client.query({
       query: GET_LOCALIDAD_QUERY,
-      variables: { idLocalidad },
+      variables: { id_localidad },
     });
     return response.data.getLocalidad;
   } catch (error) {
@@ -94,7 +94,7 @@ export const getLocalidadService = async (idLocalidad: string) => {
   }
 };
 
-export const addLocalidadService = async (data: { nombreLocalidad: string; idDistrito: string }) => {
+export const addLocalidadService = async (data: { nombre_localidad: string; id_distrito: string }) => {
   try {
     const response = await client.mutate({
       mutation: ADD_LOCALIDAD_MUTATION,
@@ -107,9 +107,9 @@ export const addLocalidadService = async (data: { nombreLocalidad: string; idDis
 };
 
 export const updateLocalidadService = async (data: {
-  idLocalidad: string;
-  nombreLocalidad?: string;
-  idDistrito?: string;
+  id_localidad: string;
+  nombre_localidad?: string;
+  id_distrito?: string;
 }) => {
   try {
     const response = await client.mutate({
@@ -122,11 +122,11 @@ export const updateLocalidadService = async (data: {
   }
 };
 
-export const deleteLocalidadService = async (idLocalidad: string) => {
+export const deleteLocalidadService = async (id_localidad: string) => {
   try {
     const response = await client.mutate({
       mutation: DELETE_LOCALIDAD_MUTATION,
-      variables: { idLocalidad },
+      variables: { id_localidad },
     });
     return response.data.deleteLocalidad;
   } catch (error) {

@@ -41,9 +41,9 @@ export const fetchDistritos = createAsyncThunk(
 
 export const getDistritosByProvincia = createAsyncThunk(
   'distrito/getDistritosByProvincia',
-  async (idProvincia: string, { rejectWithValue }) => {
+  async (id_provincia: string, { rejectWithValue }) => {
     try {
-      return await getDistritosByProvinciaService(idProvincia);
+      return await getDistritosByProvinciaService(id_provincia);
     } catch (error) {
       return rejectWithValue((error as Error).message);
     }
@@ -63,7 +63,7 @@ export const getDistrito = createAsyncThunk(
 
 export const addDistrito = createAsyncThunk(
   'distrito/addDistrito',
-  async (data: { nombreDistrito: string; idProvincia: string }, { rejectWithValue }) => {
+  async (data: { nombre_distrito: string; id_provincia: string }, { rejectWithValue }) => {
     try {
       return await addDistritoService(data);
     } catch (error) {
@@ -74,7 +74,7 @@ export const addDistrito = createAsyncThunk(
 
 export const updateDistrito = createAsyncThunk(
   'distrito/updateDistrito',
-  async (data: { idDistrito: string; idProvincia?: string; nombreDistrito?: string }, { rejectWithValue }) => {
+  async (data: { id_distrito: string; id_provincia?: string; nombre_distrito?: string }, { rejectWithValue }) => {
     try {
       return await updateDistritoService(data);
     } catch (error) {

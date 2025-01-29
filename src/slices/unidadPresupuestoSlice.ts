@@ -51,7 +51,7 @@ export const getUnidadPresupuesto = createAsyncThunk(
 
 // Renombrar para consistencia
 interface CreateUnidadPresupuestoInput {
-  abreviaturaUnidad: string;
+  abreviatura_unidad: string;
   descripcion: string;
 }
 
@@ -69,7 +69,7 @@ export const addUnidadPresupuesto = createAsyncThunk(
 
 export const updateUnidadPresupuesto = createAsyncThunk(
   'unidadPresupuesto/updateUnidadPresupuesto',
-  async (data: { idUnidad: string; descripcion?: string; abreviaturaUnidad?: string }, { rejectWithValue }) => {
+  async (data: { id_unidad: string; descripcion?: string; abreviatura_unidad?: string }, { rejectWithValue }) => {
     try {
       return await updateUnidadPresupuestoService(data);
     } catch (error) {

@@ -9,7 +9,6 @@ import {
 } from '../services/provinciaService';
 
 export interface Provincia {
-  _id: string;
   id_provincia: string;
   id_departamento: string;
   nombre_provincia: string;
@@ -42,9 +41,9 @@ export const fetchProvincias = createAsyncThunk(
 
 export const fetchProvinciasByDepartamento = createAsyncThunk(
   'provincia/fetchProvinciasByDepartamento',
-  async (idDepartamento: string, { rejectWithValue }) => {
+  async (id_departamento: string, { rejectWithValue }) => {
     try {
-      return await getProvinciasByDepartamentoService(idDepartamento);
+      return await getProvinciasByDepartamentoService(id_departamento);
     } catch (error) {
       return rejectWithValue((error as Error).message);
     }
@@ -64,7 +63,7 @@ export const getProvincia = createAsyncThunk(
 
 export const addProvincia = createAsyncThunk(
   'provincia/addProvincia',
-  async (data: { nombreProvincia: string; idDepartamento: string }, { rejectWithValue }) => {
+  async (data: { nombre_provincia: string; id_departamento: string }, { rejectWithValue }) => {
     try {
       return await addProvinciaService(data);
     } catch (error) {
@@ -76,9 +75,9 @@ export const addProvincia = createAsyncThunk(
 export const updateProvincia = createAsyncThunk(
   'provincia/updateProvincia',
   async (data: {
-    idProvincia: string;
-    nombreProvincia?: string;
-    idDepartamento?: string;
+    id_provincia: string;
+    nombre_provincia?: string;
+    id_departamento?: string;
   }, { rejectWithValue }) => {
     try {
       return await updateProvinciaService(data);

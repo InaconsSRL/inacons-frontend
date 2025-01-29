@@ -12,8 +12,8 @@ const LIST_ESPECIALIDADES_QUERY = gql`
 `;
 
 const GET_ESPECIALIDAD_QUERY = gql`
-  query GetEspecialidad($idEspecialidad: String!) {
-    getEspecialidad(id_especialidad: $idEspecialidad) {
+  query GetEspecialidad($id_especialidad: String!) {
+    getEspecialidad(id_especialidad: $id_especialidad) {
       id_especialidad
       nombre
       descripcion
@@ -32,8 +32,8 @@ const ADD_ESPECIALIDAD_MUTATION = gql`
 `;
 
 const UPDATE_ESPECIALIDAD_MUTATION = gql`
-  mutation UpdateEspecialidad($idEspecialidad: String!, $nombre: String, $descripcion: String) {
-    updateEspecialidad(id_especialidad: $idEspecialidad, nombre: $nombre, descripcion: $descripcion) {
+  mutation UpdateEspecialidad($id_especialidad: String!, $nombre: String, $descripcion: String) {
+    updateEspecialidad(id_especialidad: $id_especialidad, nombre: $nombre, descripcion: $descripcion) {
       id_especialidad
       nombre
       descripcion
@@ -42,8 +42,8 @@ const UPDATE_ESPECIALIDAD_MUTATION = gql`
 `;
 
 const DELETE_ESPECIALIDAD_MUTATION = gql`
-  mutation DeleteEspecialidad($idEspecialidad: String!) {
-    deleteEspecialidad(id_especialidad: $idEspecialidad) {
+  mutation DeleteEspecialidad($id_especialidad: String!) {
+    deleteEspecialidad(id_especialidad: $id_especialidad) {
       id_especialidad
     }
   }
@@ -60,11 +60,11 @@ export const listEspecialidadesService = async () => {
   }
 };
 
-export const getEspecialidadService = async (idEspecialidad: string) => {
+export const getEspecialidadService = async (id_especialidad: string) => {
   try {
     const response = await client.query({
       query: GET_ESPECIALIDAD_QUERY,
-      variables: { idEspecialidad },
+      variables: { id_especialidad },
     });
     return response.data.getEspecialidad;
   } catch (error) {
@@ -88,7 +88,7 @@ export const addEspecialidadService = async (data: {
 };
 
 export const updateEspecialidadService = async (data: {
-  idEspecialidad: string;
+  id_especialidad: string;
   nombre?: string;
   descripcion?: string;
 }) => {
@@ -103,11 +103,11 @@ export const updateEspecialidadService = async (data: {
   }
 };
 
-export const deleteEspecialidadService = async (idEspecialidad: string) => {
+export const deleteEspecialidadService = async (id_especialidad: string) => {
   try {
     const response = await client.mutate({
       mutation: DELETE_ESPECIALIDAD_MUTATION,
-      variables: { idEspecialidad },
+      variables: { id_especialidad },
     });
     return response.data.deleteEspecialidad;
   } catch (error) {

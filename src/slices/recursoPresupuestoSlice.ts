@@ -7,7 +7,7 @@ import {
   deleteRecursoPresupuestoService
 } from '../services/recursoPresupuestoService';
 
-interface RecursoPresupuesto {
+export interface RecursoPresupuesto {
   id_recurso: string;
   nombre: string;
   id_unidad: string;
@@ -57,12 +57,12 @@ export const getRecursoPresupuesto = createAsyncThunk(
 export const addRecursoPresupuesto = createAsyncThunk(
   'recursoPresupuesto/addRecursoPresupuesto',
   async (data: {
-    idUnidad: string;
-    idClase: string;
-    idTipo: string;
-    idRecursoApp: string;
+    id_unidad: string;
+    id_clase: string;
+    id_tipo: string;
+    id_recurso_app: string;
     nombre: string;
-    precioReferencial: number;
+    precio_referencial: number;
   }, { rejectWithValue }) => {
     try {
       return await addRecursoPresupuestoService(data);
@@ -75,13 +75,13 @@ export const addRecursoPresupuesto = createAsyncThunk(
 export const updateRecursoPresupuesto = createAsyncThunk(
   'recursoPresupuesto/updateRecursoPresupuesto',
   async (data: {
-    idRecurso: string;
-    precioReferencial?: number;
+    id_recurso: string;
+    precio_referencial?: number;
     nombre?: string;
-    idRecursoApp?: string;
-    idTipo?: string;
-    idClase?: string;
-    idUnidad?: string;
+    id_recurso_app?: string;
+    id_tipo?: string;
+    id_clase?: string;
+    id_unidad?: string;
   }, { rejectWithValue }) => {
     try {
       return await updateRecursoPresupuestoService(data);

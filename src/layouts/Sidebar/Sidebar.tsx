@@ -54,7 +54,6 @@ const Sidebar: React.FC<SidebarProps> = ({ isSidebarOpen, toggleSidebar }) => {
     { to: "/dashboard/hojaPresupuesto", icon: GiConcreteBag, text: "HojaPresupuesto" },
     { to: "/dashboard/apu", icon: GiConcreteBag, text: "AnalisisPreciosUnitarios" },
     { to: "/dashboard/obras", icon: GiConcreteBag, text: "Obras" },
-    { to: "/dashboard/presupuestoBoard", icon: FaMoneyBillWave, text: "Presupuestos" },
   ];
 
   const moduloAlmacen = [

@@ -51,7 +51,7 @@ export const getDepartamento = createAsyncThunk(
 
 export const addDepartamento = createAsyncThunk(
   'departamento/addDepartamento',
-  async (data: { nombreDepartamento: string; ubigeo: string }, { rejectWithValue }) => {
+  async (data: { nombre_departamento: string; ubigeo: string }, { rejectWithValue }) => {
     try {
       return await addDepartamentoService(data);
     } catch (error) {
@@ -63,8 +63,8 @@ export const addDepartamento = createAsyncThunk(
 export const updateDepartamento = createAsyncThunk(
   'departamento/updateDepartamento',
   async (data: {
-    idDepartamento: string;
-    nombreDepartamento?: string;
+    id_departamento: string;
+    nombre_departamento?: string;
     ubigeo?: string;
   }, { rejectWithValue }) => {
     try {

@@ -45,9 +45,9 @@ export const fetchEspecialidades = createAsyncThunk(
 
 export const getEspecialidad = createAsyncThunk(
   'especialidad/getEspecialidad',
-  async (idEspecialidad: string, { rejectWithValue }) => {
+  async (id_especialidad: string, { rejectWithValue }) => {
     try {
-      return await getEspecialidadService(idEspecialidad);
+      return await getEspecialidadService(id_especialidad);
     } catch (error) {
       return rejectWithValue((error as Error).message);
     }
@@ -68,7 +68,7 @@ export const addEspecialidad = createAsyncThunk(
 export const updateEspecialidad = createAsyncThunk(
   'especialidad/updateEspecialidad',
   async (data: {
-    idEspecialidad: string;
+    id_especialidad: string;
     nombre?: string;
     descripcion?: string;
   }, { rejectWithValue }) => {
@@ -82,9 +82,9 @@ export const updateEspecialidad = createAsyncThunk(
 
 export const deleteEspecialidad = createAsyncThunk(
   'especialidad/deleteEspecialidad',
-  async (idEspecialidad: string, { rejectWithValue }) => {
+  async (id_especialidad: string, { rejectWithValue }) => {
     try {
-      return await deleteEspecialidadService(idEspecialidad);
+      return await deleteEspecialidadService(id_especialidad);
     } catch (error) {
       return rejectWithValue((error as Error).message);
     }

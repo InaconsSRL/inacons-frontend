@@ -1,18 +1,37 @@
 import React, { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { RootState } from '../../../store/store';
+import { RootState, AppDispatch } from '../../../store/store';
 import ListaProyectos from './ListaProyectos';
 import { clearActiveTitulo, clearActivePresupuesto, clearActiveProyecto } from '../../../slices/activeDataSlice';
 import PresupuestoTableAPU from './PresupuestoTableAPU';
 import APU from './APU';
+import LoaderOverlay from '../../../components/Loader/LoaderOverlay';
+import { getComposicionesApuByTitulo } from '../../../slices/composicionApuSlice';
+import { fetchTipos } from '../../../slices/tipoSlice';
 
 interface GestionLayoutProps {
   children?: React.ReactNode;
 }
 
 const GestionLayoutAPU: React.FC<GestionLayoutProps> = () => {
-  const dispatch = useDispatch();
+  const dispatch = useDispatch<AppDispatch>();
   const { activeProyecto, activePresupuesto, activeTitulo } = useSelector((state: RootState) => state.activeData);
+  const loading = useSelector((state: RootState) => state.titulo.loading);
+  const composiciones = useSelector((state: RootState) => state.composicionApu.composicionesApu);
+  const tipos = useSelector((state: RootState) => state.tipo.tipos);
+  const composicionesLoading = useSelector((state: RootState) => state.composicionApu.loading);
+
+  useEffect(() => {
+    if (activeTitulo?.id_titulo && activeProyecto?.id_proyecto) {
+      dispatch(getComposicionesApuByTitulo({
+        id_titulo: activeTitulo.id_titulo,
+        id_proyecto: activeProyecto.id_proyecto
+      }));
+      if (tipos.length === 0) {
+        dispatch(fetchTipos());
+      }
+    }
+  }, [activeTitulo, dispatch]);
 
   useEffect(() => {
     return () => {
@@ -36,10 +55,16 @@ const GestionLayoutAPU: React.FC<GestionLayoutProps> = () => {
           <PresupuestoTableAPU />
         </div>}
 
-        {/* Panel inferior derecho - Área para componente futuro */}
-        {activeTitulo && <div className="h-1/2 border-b border-gray-700 overflow-y-auto">
-          <APU />
-        </div>}
+        {/* Panel inferior derecho - Área para APU o LoaderOverlay */}
+        {activeTitulo && (
+          <div className="h-1/2 border-b border-gray-700 overflow-y-auto">
+            {loading || composicionesLoading ? (
+              <LoaderOverlay message="Cargando composiciones..." />
+            ) : (
+              <APU composiciones={composiciones} />
+            )}
+          </div>
+        )}
       </div>}
     </div>
   );

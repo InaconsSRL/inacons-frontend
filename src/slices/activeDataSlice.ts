@@ -1,15 +1,69 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import { 
-  IProyecto, 
-  IPresupuesto, 
-  ITitulo,
-  IComposicionApu 
-} from '../types/PresupuestosTypes';
+import { Proyecto } from './proyectoSlice';
+import { Presupuesto } from './presupuestoSlice';
+import { Titulo } from './tituloSlice';
+
+export interface IComposicionApu {
+  id_composicion_apu: string;
+  id_titulo: string;
+  rec_comp_apu?: IRecursoComposicionApu;
+  cuadrilla: number;
+  cantidad: number;
+}
+
+export interface IRecursoComposicionApu {
+  id_rec_comp_apu: string;
+  nombre: string;
+  especificaciones?: string;
+  descripcion?: string;
+  fecha_creacion: string;
+  precio_recurso_proyecto?: IPrecioRecursoProyecto;
+  recurso_presupuesto?: RecursoPresupuesto;
+  unidad_presupuesto?: UnidadPresupuesto;
+  recurso?: RecursoPresupuesto;
+  unidad?: UnidadPresupuesto;
+}
+
+export interface IPrecioRecursoProyecto {
+  id_prp: string;
+  id_proyecto: string;
+  id_rec_comp_apu: string;
+  precio: number;
+}
+
+export interface RecursoPresupuesto {
+  id_recurso: string;
+  id_unidad: string;
+  id_clase: string;
+  id_tipo: string;
+  tipo?: ITipo;
+  id_recurso_app: string;
+  nombre: string;
+  precio_referencial: number;
+  fecha_actualizacion: string; // Cambiado de Date a string
+}
+
+export interface UnidadPresupuesto {
+  id_unidad: string;
+  abreviatura_unidad: string;
+  descripcion: string;
+}
+
+export interface IClase {
+  id_clase: string;
+  nombre: string;
+}
+
+export interface ITipo {
+  id_tipo: string;
+  descripcion: string;
+  codigo: string;
+}
 
 interface ActiveDataState {
-  activeProyecto: IProyecto | null;
-  activePresupuesto: IPresupuesto | null;
-  activeTitulo: ITitulo | null;
+  activeProyecto: Proyecto | null;
+  activePresupuesto: Presupuesto | null;
+  activeTitulo: Titulo | null;
   activeComposicionApu: IComposicionApu | null;
 }
 
@@ -25,13 +79,13 @@ const activeDataSlice = createSlice({
   initialState,
   reducers: {
     // Setters para cada elemento activo
-    setActiveProyecto: (state, action: PayloadAction<IProyecto | null>) => {
+    setActiveProyecto: (state, action: PayloadAction<Proyecto | null>) => {
       state.activeProyecto = action.payload;
     },
-    setActivePresupuesto: (state, action: PayloadAction<IPresupuesto | null>) => {
+    setActivePresupuesto: (state, action: PayloadAction<Presupuesto | null>) => {
       state.activePresupuesto = action.payload;
     },
-    setActiveTitulo: (state, action: PayloadAction<ITitulo | null>) => {
+    setActiveTitulo: (state, action: PayloadAction<Titulo | null>) => {
       state.activeTitulo = action.payload;
     },
     setActiveComposicionApu: (state, action: PayloadAction<IComposicionApu | null>) => {
@@ -39,17 +93,17 @@ const activeDataSlice = createSlice({
     },
 
     // Actualizar elementos activos
-    updateActiveProyecto: (state, action: PayloadAction<Partial<IProyecto>>) => {
+    updateActiveProyecto: (state, action: PayloadAction<Partial<Proyecto>>) => {
       if (state.activeProyecto) {
         state.activeProyecto = { ...state.activeProyecto, ...action.payload };
       }
     },
-    updateActivePresupuesto: (state, action: PayloadAction<Partial<IPresupuesto>>) => {
+    updateActivePresupuesto: (state, action: PayloadAction<Partial<Presupuesto>>) => {
       if (state.activePresupuesto) {
         state.activePresupuesto = { ...state.activePresupuesto, ...action.payload };
       }
     },
-    updateActiveTitulo: (state, action: PayloadAction<ITitulo | null>) => {
+    updateActiveTitulo: (state, action: PayloadAction<Titulo | null>) => {
       state.activeTitulo = action.payload;
     },
     updateActiveComposicionApu: (state, action: PayloadAction<Partial<IComposicionApu>>) => {

@@ -45,9 +45,9 @@ export const fetchPreciosRecursoProyecto = createAsyncThunk(
 
 export const getPreciosByRecursoComposicionApu = createAsyncThunk(
   'precioRecursoProyecto/getPreciosByRecursoComposicionApu',
-  async (idRecCompApu: string, { rejectWithValue }) => {
+  async (id_rec_comp_apu: string, { rejectWithValue }) => {
     try {
-      return await getPreciosByRecursoComposicionApuService(idRecCompApu);
+      return await getPreciosByRecursoComposicionApuService(id_rec_comp_apu);
     } catch (error) {
       return rejectWithValue((error as Error).message);
     }
@@ -67,7 +67,7 @@ export const getPrecioRecursoProyecto = createAsyncThunk(
 
 export const addPrecioRecursoProyecto = createAsyncThunk(
   'precioRecursoProyecto/addPrecioRecursoProyecto',
-  async (data: { idProyecto: string; idRecCompApu: string; precio: number }, { rejectWithValue }) => {
+  async (data: { id_proyecto: string; id_rec_comp_apu: string; precio: number }, { rejectWithValue }) => {
     try {
       return await addPrecioRecursoProyectoService(data);
     } catch (error) {
@@ -78,7 +78,7 @@ export const addPrecioRecursoProyecto = createAsyncThunk(
 
 export const updatePrecioRecursoProyecto = createAsyncThunk(
   'precioRecursoProyecto/updatePrecioRecursoProyecto',
-  async (data: { idPrp: string; precio: number }, { rejectWithValue }) => {
+  async (data: { id_prp: string; precio: number }, { rejectWithValue }) => {
     try {
       return await updatePrecioRecursoProyectoService(data);
     } catch (error) {

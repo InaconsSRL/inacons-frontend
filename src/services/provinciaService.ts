@@ -4,7 +4,6 @@ import client from '../apolloClient';
 const LIST_PROVINCIAS_QUERY = gql`
   query ListProvincias {
     listProvincias {
-      _id
       id_provincia
       id_departamento
       nombre_provincia
@@ -13,9 +12,8 @@ const LIST_PROVINCIAS_QUERY = gql`
 `;
 
 const GET_PROVINCIAS_BY_DEPARTAMENTO_QUERY = gql`
-  query GetProvinciasByDepartamento($idDepartamento: String!) {
-    getProvinciasByDepartamento(id_departamento: $idDepartamento) {
-      _id
+  query GetProvinciasByDepartamento($id_departamento: String!) {
+    getProvinciasByDepartamento(id_departamento: $id_departamento) {
       id_provincia
       id_departamento
       nombre_provincia
@@ -24,9 +22,8 @@ const GET_PROVINCIAS_BY_DEPARTAMENTO_QUERY = gql`
 `;
 
 const GET_PROVINCIA_QUERY = gql`
-  query GetProvincia($idProvincia: String!) {
-    getProvincia(id_provincia: $idProvincia) {
-      _id
+  query GetProvincia($id_provincia: String!) {
+    getProvincia(id_provincia: $id_provincia) {
       id_provincia
       id_departamento
       nombre_provincia
@@ -35,9 +32,8 @@ const GET_PROVINCIA_QUERY = gql`
 `;
 
 const ADD_PROVINCIA_MUTATION = gql`
-  mutation AddProvincia($nombreProvincia: String!, $idDepartamento: String!) {
-    addProvincia(nombre_provincia: $nombreProvincia, id_departamento: $idDepartamento) {
-      _id
+  mutation AddProvincia($nombre_provincia: String!, $id_departamento: String!) {
+    addProvincia(nombre_provincia: $nombre_provincia, id_departamento: $id_departamento) {
       id_provincia
       id_departamento
       nombre_provincia
@@ -46,9 +42,8 @@ const ADD_PROVINCIA_MUTATION = gql`
 `;
 
 const UPDATE_PROVINCIA_MUTATION = gql`
-  mutation UpdateProvincia($idProvincia: String!, $nombreProvincia: String, $idDepartamento: String) {
-    updateProvincia(id_provincia: $idProvincia, nombre_provincia: $nombreProvincia, id_departamento: $idDepartamento) {
-      _id
+  mutation UpdateProvincia($id_provincia: String!, $nombre_provincia: String, $id_departamento: String) {
+    updateProvincia(id_provincia: $id_provincia, nombre_provincia: $nombre_provincia, id_departamento: $id_departamento) {
       id_provincia
       id_departamento
       nombre_provincia
@@ -57,9 +52,8 @@ const UPDATE_PROVINCIA_MUTATION = gql`
 `;
 
 const DELETE_PROVINCIA_MUTATION = gql`
-  mutation DeleteProvincia($idProvincia: String!) {
-    deleteProvincia(id_provincia: $idProvincia) {
-      _id
+  mutation DeleteProvincia($id_provincia: String!) {
+    deleteProvincia(id_provincia: $id_provincia) {
       id_provincia
       id_departamento
       nombre_provincia
@@ -78,11 +72,11 @@ export const listProvinciasService = async () => {
   }
 };
 
-export const getProvinciasByDepartamentoService = async (idDepartamento: string) => {
+export const getProvinciasByDepartamentoService = async (id_departamento: string) => {
   try {
     const response = await client.query({
       query: GET_PROVINCIAS_BY_DEPARTAMENTO_QUERY,
-      variables: { idDepartamento },
+      variables: { id_departamento },
     });
     return response.data.getProvinciasByDepartamento;
   } catch (error) {
@@ -94,7 +88,7 @@ export const getProvinciaService = async (id: string) => {
   try {
     const response = await client.query({
       query: GET_PROVINCIA_QUERY,
-      variables: { idProvincia: id },
+      variables: { id_provincia: id },
     });
     return response.data.getProvincia;
   } catch (error) {
@@ -103,8 +97,8 @@ export const getProvinciaService = async (id: string) => {
 };
 
 export const addProvinciaService = async (data: {
-  nombreProvincia: string;
-  idDepartamento: string;
+  nombre_provincia: string;
+  id_departamento: string;
 }) => {
   try {
     const response = await client.mutate({
@@ -118,9 +112,9 @@ export const addProvinciaService = async (data: {
 };
 
 export const updateProvinciaService = async (data: {
-  idProvincia: string;
-  nombreProvincia?: string;
-  idDepartamento?: string;
+  id_provincia: string;
+  nombre_provincia?: string;
+  id_departamento?: string;
 }) => {
   try {
     const response = await client.mutate({
@@ -137,7 +131,7 @@ export const deleteProvinciaService = async (id: string) => {
   try {
     const response = await client.mutate({
       mutation: DELETE_PROVINCIA_MUTATION,
-      variables: { idProvincia: id },
+      variables: { id_provincia: id },
     });
     return response.data.deleteProvincia;
   } catch (error) {

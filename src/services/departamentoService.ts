@@ -12,8 +12,8 @@ const LIST_DEPARTAMENTOS_QUERY = gql`
 `;
 
 const GET_DEPARTAMENTO_QUERY = gql`
-  query GetDepartamento($idDepartamento: String!) {
-    getDepartamento(id_departamento: $idDepartamento) {
+  query GetDepartamento($id_departamento: String!) {
+    getDepartamento(id_departamento: $id_departamento) {
       id_departamento
       nombre_departamento
       ubigeo
@@ -22,8 +22,8 @@ const GET_DEPARTAMENTO_QUERY = gql`
 `;
 
 const ADD_DEPARTAMENTO_MUTATION = gql`
-  mutation AddDepartamento($nombreDepartamento: String!, $ubigeo: String!) {
-    addDepartamento(nombre_departamento: $nombreDepartamento, ubigeo: $ubigeo) {
+  mutation AddDepartamento($nombre_departamento: String!, $ubigeo: String!) {
+    addDepartamento(nombre_departamento: $nombre_departamento, ubigeo: $ubigeo) {
       id_departamento
       nombre_departamento
       ubigeo
@@ -32,8 +32,8 @@ const ADD_DEPARTAMENTO_MUTATION = gql`
 `;
 
 const UPDATE_DEPARTAMENTO_MUTATION = gql`
-  mutation UpdateDepartamento($idDepartamento: String!, $nombreDepartamento: String, $ubigeo: String) {
-    updateDepartamento(id_departamento: $idDepartamento, nombre_departamento: $nombreDepartamento, ubigeo: $ubigeo) {
+  mutation UpdateDepartamento($id_departamento: String!, $nombre_departamento: String, $ubigeo: String) {
+    updateDepartamento(id_departamento: $id_departamento, nombre_departamento: $nombre_departamento, ubigeo: $ubigeo) {
       id_departamento
       nombre_departamento
       ubigeo
@@ -42,8 +42,8 @@ const UPDATE_DEPARTAMENTO_MUTATION = gql`
 `;
 
 const DELETE_DEPARTAMENTO_MUTATION = gql`
-  mutation DeleteDepartamento($idDepartamento: String!) {
-    deleteDepartamento(id_departamento: $idDepartamento) {
+  mutation DeleteDepartamento($id_departamento: String!) {
+    deleteDepartamento(id_departamento: $id_departamento) {
       id_departamento
       nombre_departamento
       ubigeo
@@ -66,7 +66,7 @@ export const getDepartamentoService = async (id: string) => {
   try {
     const response = await client.query({
       query: GET_DEPARTAMENTO_QUERY,
-      variables: { idDepartamento: id },
+      variables: { id_departamento: id },
     });
     return response.data.getDepartamento;
   } catch (error) {
@@ -75,7 +75,7 @@ export const getDepartamentoService = async (id: string) => {
 };
 
 export const addDepartamentoService = async (data: { 
-  nombreDepartamento: string;
+  nombre_departamento: string;
   ubigeo: string;
 }) => {
   try {
@@ -90,8 +90,8 @@ export const addDepartamentoService = async (data: {
 };
 
 export const updateDepartamentoService = async (data: {
-  idDepartamento: string;
-  nombreDepartamento?: string;
+  id_departamento: string;
+  nombre_departamento?: string;
   ubigeo?: string;
 }) => {
   try {
@@ -109,7 +109,7 @@ export const deleteDepartamentoService = async (id: string) => {
   try {
     const response = await client.mutate({
       mutation: DELETE_DEPARTAMENTO_MUTATION,
-      variables: { idDepartamento: id },
+      variables: { id_departamento: id },
     });
     return response.data.deleteDepartamento;
   } catch (error) {

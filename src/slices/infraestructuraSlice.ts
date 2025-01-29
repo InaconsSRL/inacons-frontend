@@ -63,7 +63,7 @@ export const addInfraestructura = createAsyncThunk(
 
 export const updateInfraestructura = createAsyncThunk(
   'infraestructura/updateInfraestructura',
-  async (data: Partial<Infraestructura> & { idInfraestructura: string }, { rejectWithValue }) => {
+  async (data: Partial<Infraestructura> & { id_infraestructura: string }, { rejectWithValue }) => {
     try {
       return await updateInfraestructuraService(data);
     } catch (error) {

@@ -14,8 +14,8 @@ const LIST_INFRAESTRUCTURAS_QUERY = gql`
 `;
 
 const GET_INFRAESTRUCTURA_QUERY = gql`
-  query GetInfraestructura($idInfraestructura: String!) {
-    getInfraestructura(id_infraestructura: $idInfraestructura) {
+  query GetInfraestructura($id_infraestructura: String!) {
+    getInfraestructura(id_infraestructura: $id_infraestructura) {
       id_infraestructura
       nombre_infraestructura
       tipo_infraestructura
@@ -25,8 +25,8 @@ const GET_INFRAESTRUCTURA_QUERY = gql`
 `;
 
 const ADD_INFRAESTRUCTURA_MUTATION = gql`
-  mutation AddInfraestructura($nombreInfraestructura: String!, $tipoInfraestructura: String!, $descripcion: String!) {
-    addInfraestructura(nombre_infraestructura: $nombreInfraestructura, tipo_infraestructura: $tipoInfraestructura, descripcion: $descripcion) {
+  mutation AddInfraestructura($nombre_infraestructura: String!, $tipo_infraestructura: String!, $descripcion: String!) {
+    addInfraestructura(nombre_infraestructura: $nombre_infraestructura, tipo_infraestructura: $tipo_infraestructura, descripcion: $descripcion) {
       id_infraestructura
       nombre_infraestructura
       tipo_infraestructura
@@ -36,8 +36,8 @@ const ADD_INFRAESTRUCTURA_MUTATION = gql`
 `;
 
 const UPDATE_INFRAESTRUCTURA_MUTATION = gql`
-  mutation UpdateInfraestructura($idInfraestructura: String!, $descripcion: String, $tipoInfraestructura: String, $nombreInfraestructura: String) {
-    updateInfraestructura(id_infraestructura: $idInfraestructura, descripcion: $descripcion, tipo_infraestructura: $tipoInfraestructura, nombre_infraestructura: $nombreInfraestructura) {
+  mutation UpdateInfraestructura($id_infraestructura: String!, $descripcion: String, $tipo_infraestructura: String, $nombre_infraestructura: String) {
+    updateInfraestructura(id_infraestructura: $id_infraestructura, descripcion: $descripcion, tipo_infraestructura: $tipo_infraestructura, nombre_infraestructura: $nombre_infraestructura) {
       id_infraestructura
       nombre_infraestructura
       tipo_infraestructura
@@ -47,8 +47,8 @@ const UPDATE_INFRAESTRUCTURA_MUTATION = gql`
 `;
 
 const DELETE_INFRAESTRUCTURA_MUTATION = gql`
-  mutation DeleteInfraestructura($idInfraestructura: String!) {
-    deleteInfraestructura(id_infraestructura: $idInfraestructura) {
+  mutation DeleteInfraestructura($id_infraestructura: String!) {
+    deleteInfraestructura(id_infraestructura: $id_infraestructura) {
       id_infraestructura
     }
   }
@@ -69,7 +69,7 @@ export const getInfraestructuraService = async (id: string) => {
   try {
     const response = await client.query({
       query: GET_INFRAESTRUCTURA_QUERY,
-      variables: { idInfraestructura: id },
+      variables: { id_infraestructura: id },
     });
     return response.data.getInfraestructura;
   } catch (error) {
@@ -89,7 +89,7 @@ export const addInfraestructuraService = async (data: Omit<Infraestructura, 'id_
   }
 };
 
-export const updateInfraestructuraService = async (data: Partial<Infraestructura> & { idInfraestructura: string }) => {
+export const updateInfraestructuraService = async (data: Partial<Infraestructura> & { id_infraestructura: string }) => {
   try {
     const response = await client.mutate({
       mutation: UPDATE_INFRAESTRUCTURA_MUTATION,
@@ -105,7 +105,7 @@ export const deleteInfraestructuraService = async (id: string) => {
   try {
     const response = await client.mutate({
       mutation: DELETE_INFRAESTRUCTURA_MUTATION,
-      variables: { idInfraestructura: id },
+      variables: { id_infraestructura: id },
     });
     return response.data.deleteInfraestructura;
   } catch (error) {

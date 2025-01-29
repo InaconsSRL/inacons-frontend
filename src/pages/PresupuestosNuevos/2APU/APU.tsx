@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { useDispatch, useSelector } from 'react-redux';
 import { RootState, AppDispatch } from '../../../store/store';
-import { deleteComposicionApu, getComposicionesApuByTitulo, updateComposicionApu } from '../../../slices/composicionApuSlice';
+import { deleteComposicionApu, updateComposicionApu } from '../../../slices/composicionApuSlice';
 import { FaToolbox, FaFileContract, FaPlus, FaTrash } from 'react-icons/fa';
 import { BsClock, BsPersonStanding, BsTools } from 'react-icons/bs';
 import { MdSmartButton } from 'react-icons/md';
@@ -12,28 +12,27 @@ import { updateDetallePartida } from '../../../slices/detallePartidaSlice';
 import CatalogoRecursos from './CatalogoRecursos';
 import { updateRecursoComposicionApu } from '../../../slices/recursoComposicionApuSlice';
 import ModalAlert from '../../../components/Modal/ModalAlert';
+import { fetchTipos } from '../../../slices/tipoSlice';
 
 export interface IComposicionApu {
   id_composicion_apu: string;
   id_titulo: string;
-  id_rec_comp_apu: string;
-  rec_comp_apu?: IRecursoComposicionApu;
+  rec_comp_apu: IRecursoComposicionApu;
   cuadrilla: number;
   cantidad: number;
 }
 
 export interface IRecursoComposicionApu {
   id_rec_comp_apu: string;
-  id_recurso: string;
-  id_unidad: string;
   nombre: string;
   especificaciones?: string;
   descripcion?: string;
   fecha_creacion: string;
   precio_recurso_proyecto?: IPrecioRecursoProyecto;
-  recurso_presupuesto?:RecursoPresupuesto;
-  unidad_presupuesto?:UnidadPresupuesto;
-
+  recurso_presupuesto?: RecursoPresupuesto;
+  unidad_presupuesto?: UnidadPresupuesto;
+  recurso?: RecursoPresupuesto;
+  unidad?: UnidadPresupuesto;
 }
 
 export interface IPrecioRecursoProyecto {
@@ -74,14 +73,14 @@ export interface ITipo {
 
 interface CompositionTableProps {
   className?: string;
+  composiciones: IComposicionApu[]; 
 }
 
-const APU: React.FC<CompositionTableProps> = ({ className }) => {
+const APU: React.FC<CompositionTableProps> = ({ className, composiciones }) => {
   const dispatch = useDispatch<AppDispatch>();
   const activeProyecto = useSelector((state: RootState) => state.activeData.activeProyecto);
   const activeTitulo = useSelector((state: RootState) => state.activeData.activeTitulo);
-  const composiciones = useSelector((state: RootState) => state.composicionApu.composicionesApu);
-  const unidades = useSelector((state: RootState) => state.unidad.unidades);
+  const unidades = useSelector((state: RootState) => state.unidadPresupuesto.unidadesPresupuesto);
   const tipos = useSelector((state: RootState) => state.tipo.tipos);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isAlertOpen, setIsAlertOpen] = useState(false);
@@ -95,15 +94,12 @@ const APU: React.FC<CompositionTableProps> = ({ className }) => {
   useEffect(() => {
     if (activeTitulo?.id_titulo) {
       if (activeProyecto) {
-        dispatch(getComposicionesApuByTitulo({
-          idTitulo: activeTitulo.id_titulo,
-          idProyecto: activeProyecto.id_proyecto
-        }));
+        if (tipos.length === 0) {
+        dispatch(fetchTipos());
+        }
       }
     }
   }, [activeTitulo, dispatch]);
-
-  console.log(activeTitulo)
 
   // Función auxiliar para calcular el total
   const calcularTotal = (composicionesArray: IComposicionApu[]) => {
@@ -112,7 +108,6 @@ const APU: React.FC<CompositionTableProps> = ({ className }) => {
         sum + (comp.cantidad || 0) * (comp.rec_comp_apu?.precio_recurso_proyecto?.precio || 0),
       0
     );
-    console.log('🔄 Calculando nuevo total:', total);
     return total;
   };
 
@@ -120,26 +115,22 @@ const APU: React.FC<CompositionTableProps> = ({ className }) => {
   useEffect(() => {
     const total = calcularTotal(composiciones);
     setTotalCalculado(total);
-    console.log('💫 Total actualizado en estado local:', total);
   }, [composiciones]);
 
-  // useEffect separado para actualizar el detalle de partida
+  // Modificar el useEffect para actualizar el detalle de partida
   useEffect(() => {
     const actualizarPrecioDetalle = async () => {
+
       if (activeTitulo?.detallePartida && totalCalculado !== activeTitulo.detallePartida.precio) {
-        console.log('📝 Intentando actualizar detalle partida. Precio actual:', activeTitulo.detallePartida.precio, 'Nuevo precio:', totalCalculado);
-        
         const detalleActualizado = {
           ...activeTitulo.detallePartida,
           precio: totalCalculado
         };
 
         try {
-          console.log('🚀 Enviando actualización al servidor...');
-          const resultado = await dispatch(updateDetallePartida(detalleActualizado)).unwrap();
-          console.log('✅ Actualización completada:', resultado);
+          await dispatch(updateDetallePartida(detalleActualizado));
         } catch (error) {
-          console.error('❌ Error al actualizar el precio del detalle:', error);
+          console.error('❌ Error en la actualización:', error);
         }
       }
     };
@@ -182,51 +173,56 @@ const APU: React.FC<CompositionTableProps> = ({ className }) => {
     setEditingValue(value);
   };
 
-  // Modificar la función handleFinishEditing para asegurarnos de que se dispare el useEffect
+  // Modificar handleFinishEditing para manejar mejor la actualización
   const handleFinishEditing = async (composicion: IComposicionApu) => {
     if (!editingField) return;
 
     const numericValue = parseFloat(editingValue) || 0;
-    console.log('🖊️ Iniciando edición:', { campo: editingField, valor: numericValue });
 
     try {
-        if (editingField === 'precio' && composicion.rec_comp_apu) {
-            if (!composicion.rec_comp_apu.precio_recurso_proyecto) {
-                await dispatch(addPrecioRecursoProyecto({
-                    idProyecto: activeProyecto?.id_proyecto || '',
-                    idRecCompApu: composicion.id_rec_comp_apu,
-                    precio: numericValue
-                })).unwrap();
-            } else {
-                await dispatch(updatePrecioRecursoProyecto({
-                    ...composicion.rec_comp_apu.precio_recurso_proyecto,
-                    precio: numericValue
-                })).unwrap();
-            }
+      // Actualizar primero la composición o el precio
+      if (editingField === 'precio' && composicion.rec_comp_apu) {
+        if (!composicion.rec_comp_apu.precio_recurso_proyecto) {
+          await dispatch(addPrecioRecursoProyecto({
+            id_proyecto: activeProyecto?.id_proyecto || '',
+            id_rec_comp_apu: composicion.rec_comp_apu.id_rec_comp_apu,
+            precio: numericValue
+          })).unwrap();
         } else {
-            const updatedComposicion = {
-                ...composicion,
-                [editingField]: numericValue
-            };
-            console.log('📊 Actualizando composición:', updatedComposicion);
-            await dispatch(updateComposicionApu(updatedComposicion)).unwrap();
+          await dispatch(updatePrecioRecursoProyecto({
+            ...composicion.rec_comp_apu.precio_recurso_proyecto,
+            precio: numericValue
+          })).unwrap();
         }
-        
-        // Forzar la actualización del estado después de cada edición
-        if (activeTitulo?.id_titulo && activeProyecto) {
-            console.log('🔄 Recargando composiciones...');
-            await dispatch(getComposicionesApuByTitulo({
-                id_titulo: activeTitulo.id_titulo,
-                id_proyecto: activeProyecto.id_proyecto
-            }));
-        }
+      } else {
+        const updatedComposicion = {
+          ...composicion,
+          [editingField]: numericValue
+        };
+        await dispatch(updateComposicionApu(updatedComposicion)).unwrap();
+      }
+
+      // Calcular el nuevo total después de la actualización
+      const newTotal = calcularTotal([...composiciones.map(c => 
+        c.id_composicion_apu === composicion.id_composicion_apu
+          ? { ...c, [editingField]: numericValue }
+          : c
+      )]);
+
+      // Actualizar el detalle de partida con el nuevo total
+      if (activeTitulo?.detallePartida) {
+        await dispatch(updateDetallePartida({
+          ...activeTitulo.detallePartida,
+          precio: newTotal
+        })).unwrap();
+      }
     } catch (error) {
-        console.error('❌ Error en la actualización:', error);
+      console.error('❌ Error en la actualización:', error);
     }
 
     setEditingId(null);
     setEditingField(null);
-};
+  };
 
   const handleUnitChange = async (composicion: IComposicionApu, unidadId: string) => {
     if (!composicion.rec_comp_apu) return;
@@ -244,17 +240,15 @@ const APU: React.FC<CompositionTableProps> = ({ className }) => {
   };
 
   // Agregar esta función para calcular subtotales por tipo
-  const calcularSubtotalPorTipo = (tipoId: string) => {
+  const calcularSubtotalPorTipo = (id_tipo: string) => {
     return composiciones
-      .filter(comp => comp.rec_comp_apu?.recurso_presupuesto?.id_tipo === tipoId)
+      .filter(comp => comp.rec_comp_apu?.recurso_presupuesto?.id_tipo === id_tipo)
       .reduce((sum, comp) =>
         sum + (comp.cantidad || 0) * (comp.rec_comp_apu?.precio_recurso_proyecto?.precio || 0),
         0
       );
   };
-
-  console.log(composiciones);
-
+  
   return (
     <motion.div
       variants={containerVariants}
@@ -292,9 +286,9 @@ const APU: React.FC<CompositionTableProps> = ({ className }) => {
             </div>
 
             {/* Columna derecha */}
-            <div className="flex flex-col gap-0">
+            <div className="flex flex-col gap-0">              
               {tipos.map(tipo => (
-                <div key={tipo.id_tipo} className="flex items-center justify-between bg-white px-2 py-0.5 rounded-md shadow-sm border border-gray-200 text-xs">
+                <div key={tipo.id_tipo} className="flex items-center justify-between bg-white px-2 py-0.5 rounded-md shadow-sm border border-gray-200 text-xs"> 
                   <div className="flex items-center gap-1">
                     {tipo.descripcion === 'MANO DE OBRA' && <BsPersonStanding className="text-green-600" />}
                     {tipo.descripcion === 'MATERIALES' && <FaToolbox className="text-red-600" />}
@@ -336,7 +330,7 @@ const APU: React.FC<CompositionTableProps> = ({ className }) => {
                 <td className="px-2 py-1 text-center">
                   <div className="flex justify-center">
                     {(() => {
-                      const descripcion = comp.rec_comp_apu?.recurso?.tipo?.descripcion || '';
+                      const descripcion = tipos.find(tipo=> tipo.id_tipo === comp.rec_comp_apu?.recurso_presupuesto?.id_tipo)?.descripcion || '';
                       switch (descripcion) {
                         case 'MANO DE OBRA':
                           return <BsPersonStanding className="text-green-600" />;
@@ -357,7 +351,7 @@ const APU: React.FC<CompositionTableProps> = ({ className }) => {
                   {editingUnitId === comp.id_composicion_apu ? (
                     <select
                       className="w-24 text-xs border rounded text-center bg-white"
-                      value={comp.rec_comp_apu?.id_unidad || ''}
+                      value={comp.rec_comp_apu?.unidad_presupuesto?.id_unidad || ''}
                       onChange={(e) => handleUnitChange(comp, e.target.value)}
                       onBlur={() => setEditingUnitId(null)}
                       autoFocus
@@ -374,7 +368,7 @@ const APU: React.FC<CompositionTableProps> = ({ className }) => {
                       className="cursor-pointer hover:bg-gray-100 min-h-[1.5rem] flex items-center justify-center"
                       onDoubleClick={() => setEditingUnitId(comp.id_composicion_apu)}
                     >
-                      {comp.rec_comp_apu?.unidad?.abreviatura_unidad || '-'}
+                      {comp.rec_comp_apu?.unidad_presupuesto?.abreviatura_unidad || '-'}
                     </div>
                   )}
                 </td>

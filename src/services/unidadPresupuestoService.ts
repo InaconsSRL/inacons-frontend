@@ -12,8 +12,8 @@ const LIST_UNIDADES_PRESUPUESTO_QUERY = gql`
 `;
 
 const GET_UNIDAD_PRESUPUESTO_QUERY = gql`
-  query GetUnidadPresupuesto($idUnidad: String!) {
-    getUnidadPresupuesto(id_unidad: $idUnidad) {
+  query GetUnidadPresupuesto($id_unidad: String!) {
+    getUnidadPresupuesto(id_unidad: $id_unidad) {
       id_unidad
       abreviatura_unidad
       descripcion
@@ -22,8 +22,8 @@ const GET_UNIDAD_PRESUPUESTO_QUERY = gql`
 `;
 
 const ADD_UNIDAD_PRESUPUESTO_MUTATION = gql`
-  mutation AddUnidadPresupuesto($abreviaturaUnidad: String!, $descripcion: String!) {
-    addUnidadPresupuesto(abreviatura_unidad: $abreviaturaUnidad, descripcion: $descripcion) {
+  mutation AddUnidadPresupuesto($abreviatura_unidad: String!, $descripcion: String!) {
+    addUnidadPresupuesto(abreviatura_unidad: $abreviatura_unidad, descripcion: $descripcion) {
       id_unidad
       abreviatura_unidad
       descripcion
@@ -32,8 +32,8 @@ const ADD_UNIDAD_PRESUPUESTO_MUTATION = gql`
 `;
 
 const UPDATE_UNIDAD_PRESUPUESTO_MUTATION = gql`
-  mutation UpdateUnidadPresupuesto($idUnidad: String!, $descripcion: String, $abreviaturaUnidad: String) {
-    updateUnidadPresupuesto(id_unidad: $idUnidad, descripcion: $descripcion, abreviatura_unidad: $abreviaturaUnidad) {
+  mutation UpdateUnidadPresupuesto($id_unidad: String!, $descripcion: String, $abreviatura_unidad: String) {
+    updateUnidadPresupuesto(id_unidad: $id_unidad, descripcion: $descripcion, abreviatura_unidad: $abreviatura_unidad) {
       id_unidad
       abreviatura_unidad
       descripcion
@@ -42,8 +42,8 @@ const UPDATE_UNIDAD_PRESUPUESTO_MUTATION = gql`
 `;
 
 const DELETE_UNIDAD_PRESUPUESTO_MUTATION = gql`
-  mutation DeleteUnidadPresupuesto($idUnidad: String!) {
-    deleteUnidadPresupuesto(id_unidad: $idUnidad) {
+  mutation DeleteUnidadPresupuesto($id_unidad: String!) {
+    deleteUnidadPresupuesto(id_unidad: $id_unidad) {
       id_unidad
     }
   }
@@ -60,11 +60,11 @@ export const listUnidadesPresupuestoService = async () => {
   }
 };
 
-export const getUnidadPresupuestoService = async (idUnidad: string) => {
+export const getUnidadPresupuestoService = async (id_unidad: string) => {
   try {
     const response = await client.query({
       query: GET_UNIDAD_PRESUPUESTO_QUERY,
-      variables: { idUnidad },
+      variables: { id_unidad },
     });
     return response.data.getUnidadPresupuesto;
   } catch (error) {
@@ -73,7 +73,7 @@ export const getUnidadPresupuestoService = async (idUnidad: string) => {
 };
 
 export const addUnidadPresupuestoService = async (data: { 
-  abreviaturaUnidad: string; 
+  abreviatura_unidad: string; 
   descripcion: string 
 }) => {
   try {
@@ -88,9 +88,9 @@ export const addUnidadPresupuestoService = async (data: {
 };
 
 export const updateUnidadPresupuestoService = async (data: {
-  idUnidad: string;
+  id_unidad: string;
   descripcion?: string;
-  abreviaturaUnidad?: string;
+  abreviatura_unidad?: string;
 }) => {
   try {
     const response = await client.mutate({
@@ -103,11 +103,11 @@ export const updateUnidadPresupuestoService = async (data: {
   }
 };
 
-export const deleteUnidadPresupuestoService = async (idUnidad: string) => {
+export const deleteUnidadPresupuestoService = async (id_unidad: string) => {
   try {
     const response = await client.mutate({
       mutation: DELETE_UNIDAD_PRESUPUESTO_MUTATION,
-      variables: { idUnidad },
+      variables: { id_unidad },
     });
     return response.data.deleteUnidadPresupuesto;
   } catch (error) {

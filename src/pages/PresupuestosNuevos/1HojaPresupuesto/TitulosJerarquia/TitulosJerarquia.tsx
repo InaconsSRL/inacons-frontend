@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { RootState, AppDispatch } from '../../../../store/store';
-import { getTitulosByPresupuesto, addTitulo, updateTitulo, deleteTitulo, TituloBasic, getTitulosFromCache } from '../../../../slices/tituloSlice';
+import { getTitulosByPresupuesto, addTitulo, updateTitulo, deleteTitulo, Titulo, getTitulosFromCache } from '../../../../slices/tituloSlice';
 import Modal from '../../../../components/Modal/Modal';
 import TituloForm from './TituloForm';
-import { FiRefreshCcw, FiTrash2 } from 'react-icons/fi';
+import { FiTrash2 } from 'react-icons/fi';
 import ModalAlert from '../../../../components/Modal/ModalAlert';
 import LoaderPage from '../../../../components/Loader/LoaderPage';
 import LoaderOverlay from '../../../../components/Loader/LoaderOverlay';
@@ -15,8 +15,8 @@ const TitulosJerarquia: React.FC = () => {
     const titulos = useSelector((state: RootState) => state.titulo.titulos);
     const titulosPorPresupuesto = useSelector((state: RootState) => state.titulo.titulosPorPresupuesto);
     const [showTituloForm, setShowTituloForm] = useState(false);
-    const [editingTitulo, setEditingTitulo] = useState<TituloBasic | null>(null);
-    const [titulosEnEdicion, setTitulosEnEdicion] = useState<TituloBasic[]>([]);
+    const [editingTitulo, setEditingTitulo] = useState<Titulo | null>(null);
+    const [titulosEnEdicion, setTitulosEnEdicion] = useState<Titulo[]>([]);
     const [modoEdicion, setModoEdicion] = useState(false);
     const [tituloMoviendose, setTituloMoviendose] = useState<string | null>(null);
     const [titulosColapsados, setTitulosColapsados] = useState<Set<string>>(new Set());
@@ -27,7 +27,6 @@ const TitulosJerarquia: React.FC = () => {
     const [showDeleteAlert, setShowDeleteAlert] = useState(false);
     const [tituloToDelete, setTituloToDelete] = useState<string | null>(null);
     const [isCalculating, setIsCalculating] = useState(false);
-    const lastSync = useSelector((state: RootState) => state.titulo.lastSync);
     const loading = useSelector((state: RootState) => state.titulo.loading);
 
     useEffect(() => {
@@ -46,7 +45,7 @@ const TitulosJerarquia: React.FC = () => {
         setTitulosEnEdicion([...titulos].sort((a, b) => a.orden - b.orden));
     }, [titulos, modoEdicion]);
 
-    const handleEdit = (titulo: TituloBasic) => {
+    const handleEdit = (titulo: Titulo) => {
         setEditingTitulo(titulo);
         setShowTituloForm(true);
     };
@@ -66,7 +65,7 @@ const TitulosJerarquia: React.FC = () => {
         }));
     };
 
-    const handleSubmit = async (tituloData: TituloBasic) => {
+    const handleSubmit = async (tituloData: Titulo) => {
         if (editingTitulo) {
             await dispatch(updateTitulo(tituloData));
         } else {
@@ -118,13 +117,6 @@ const TitulosJerarquia: React.FC = () => {
         setTimeout(() => setTituloMoviendose(null), 300);
     };
 
-    const titulosIguales = (titulo1: TituloBasic, titulo2: TituloBasic): boolean => {
-        return titulo1.nivel === titulo2.nivel &&
-            titulo1.orden === titulo2.orden &&
-            titulo1.item === titulo2.item &&
-            titulo1.id_titulo_padre === titulo2.id_titulo_padre;
-    };
-
     const calcularEstructura = async () => {
         setIsCalculating(true);
         try {
@@ -132,49 +124,19 @@ const TitulosJerarquia: React.FC = () => {
             const titulosOriginales = new Map(titulos.map(t => [t.id_titulo, { ...t }]));
 
             console.group('Análisis de cambios en títulos');
-            console.log('Estado original de títulos:', [...titulosOriginales.values()]);
 
             // Primera pasada: cálculo inicial
             let titulosOrdenados = await calcularEstructuraInterna([...titulosEnEdicion]);
 
             // Segunda pasada: verificación y corrección
             titulosOrdenados = await calcularEstructuraInterna(titulosOrdenados);
-            console.log('Títulos después del cálculo:', titulosOrdenados);
 
             // Filtrar solo los títulos que realmente cambiaron
             const titulosModificados = titulosOrdenados.filter(titulo => {
                 const original = titulosOriginales.get(titulo.id_titulo);
                 if (!original) {
-                    console.log(`Título nuevo encontrado:`, titulo);
                     return true;
                 }
-                const hayCambios = !titulosIguales(titulo, original);
-                if (hayCambios) {
-                    console.log(`Cambios detectados en título ${titulo.id_titulo}:`, {
-                        original,
-                        modificado: titulo,
-                        cambios: {
-                            nivel: original.nivel !== titulo.nivel ? `${original.nivel} → ${titulo.nivel}` : 'sin cambios',
-                            orden: original.orden !== titulo.orden ? `${original.orden} → ${titulo.orden}` : 'sin cambios',
-                            item: original.item !== titulo.item ? `${original.item} → ${titulo.item}` : 'sin cambios',
-                            id_titulo_padre: original.id_titulo_padre !== titulo.id_titulo_padre ?
-                                `${original.id_titulo_padre} → ${titulo.id_titulo_padre}` : 'sin cambios'
-                        }
-                    });
-                }
-                return hayCambios;
-            });
-
-            console.log(`Resumen de cambios:`, {
-                totalTitulos: titulosOrdenados.length,
-                titulosModificados: titulosModificados.length,
-                listaModificados: titulosModificados.map(t => ({
-                    id: t.id_titulo,
-                    descripcion: t.descripcion,
-                    item: t.item,
-                    nivel: t.nivel,
-                    orden: t.orden
-                }))
             });
             console.groupEnd();
 
@@ -189,7 +151,7 @@ const TitulosJerarquia: React.FC = () => {
         }
     };
 
-    const calcularEstructuraInterna = async (titulos: TituloBasic[]): Promise<TituloBasic[]> => {
+    const calcularEstructuraInterna = async (titulos: Titulo[]): Promise<Titulo[]> => {
         // Ordenar por orden
         let titulosOrdenados = [...titulos].sort((a, b) => a.orden - b.orden);
 
@@ -235,6 +197,16 @@ const TitulosJerarquia: React.FC = () => {
                 }
             }
 
+            // Nueva Regla 4: TITULO no puede estar bajo el nivel de una PARTIDA
+            if (titulo.tipo === 'TITULO') {
+                const padreInmediato = titulosOrdenados.find(t => t.id_titulo === titulo.id_titulo_padre);
+                if (padreInmediato?.tipo === 'PARTIDA') {
+                    // Mover el TITULO al mismo nivel que la PARTIDA
+                    titulo.nivel = padreInmediato.nivel;
+                    titulo.id_titulo_padre = padreInmediato.id_titulo_padre;
+                }
+            }
+
             if (i === 0) {
                 titulo.nivel = titulo.tipo === 'PARTIDA' ? 2 : 1;
                 continue;
@@ -259,7 +231,7 @@ const TitulosJerarquia: React.FC = () => {
         });
     };
 
-    const calcularItem = (titulo: TituloBasic, titulosAnteriores: TituloBasic[]): string => {
+    const calcularItem = (titulo: Titulo, titulosAnteriores: Titulo[]): string => {
         if (titulo.nivel === 1) {
             // Para nivel 1, contar cuántos títulos de nivel 1 hay antes
             const titulosNivel1Anteriores = titulosAnteriores.filter(t => t.nivel === 1);
@@ -284,7 +256,7 @@ const TitulosJerarquia: React.FC = () => {
         }
     };
 
-    const encontrarPadreApropiado = (titulo: TituloBasic, titulosAnteriores: TituloBasic[]): TituloBasic | null => {
+    const encontrarPadreApropiado = (titulo: Titulo, titulosAnteriores: Titulo[]): Titulo | null => {
         for (const posiblePadre of [...titulosAnteriores].reverse()) {
             if (posiblePadre.nivel === titulo.nivel - 1) {
                 return posiblePadre;
@@ -325,11 +297,11 @@ const TitulosJerarquia: React.FC = () => {
         }
     };
 
-    const tieneHijos = (tituloId: string, titulos: TituloBasic[]): boolean => {
+    const tieneHijos = (tituloId: string, titulos: Titulo[]): boolean => {
         return titulos.some(t => t.id_titulo_padre === tituloId);
     };
 
-    const esHijoDeTituloColapsado = (titulo: TituloBasic, titulos: TituloBasic[]): boolean => {
+    const esHijoDeTituloColapsado = (titulo: Titulo, titulos: Titulo[]): boolean => {
         let currentTitulo = titulo;
         while (currentTitulo.id_titulo_padre) {
             if (titulosColapsados.has(currentTitulo.id_titulo_padre)) {
@@ -365,12 +337,6 @@ const TitulosJerarquia: React.FC = () => {
         }
     };
 
-    const handleRefresh = () => {
-        if (activePresupuesto) {
-            dispatch(getTitulosByPresupuesto(activePresupuesto.id_presupuesto));
-        }
-    };
-
     const sortedTitulos = [...titulos].sort((a, b) => (a.orden || 0) - (b.orden || 0));
     const titulosFiltrados = (modoEdicion ? titulosEnEdicion : sortedTitulos).filter(titulo =>
         modoEdicion || !esHijoDeTituloColapsado(titulo, sortedTitulos)
@@ -387,16 +353,7 @@ const TitulosJerarquia: React.FC = () => {
                                 <h1 className="text-base font-bold flex-grow break-words max-w-[800px]">
                                     {activePresupuesto?.nombre_presupuesto}
                                 </h1>
-                                {activePresupuesto && lastSync[activePresupuesto.id_presupuesto] && (
-                                    <div className="flex flex-col min-w-40">
-                                        <span className="text-xs text-gray-400">
-                                            Última sincronización:
-                                        </span>
-                                        <span className="text-xs text-gray-400">
-                                            {lastSync[activePresupuesto.id_presupuesto]}
-                                        </span>
-                                    </div>
-                                )}
+                                
                             </div>
                             <div className='flex justify-between items-center'>
                                 <div className="flex flex-wrap gap-2 w-full lg:w-auto justify-start text-sm">
@@ -435,14 +392,7 @@ const TitulosJerarquia: React.FC = () => {
                                         Nuevo Título
                                     </button>
                                 </div>
-                                <div>
-                                    <button
-                                        onClick={handleRefresh}
-                                        className="px-3 py-2 bg-emerald-600 text-white rounded-md hover:bg-emerald-700 transition-colors duration-300"
-                                    >
-                                        <FiRefreshCcw />
-                                    </button>
-                                </div>
+                                
                             </div>
 
 

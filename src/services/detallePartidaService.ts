@@ -15,8 +15,8 @@ const LIST_DETALLES_PARTIDA_QUERY = gql`
 `;
 
 const GET_DETALLES_PARTIDA_BY_TITULO_QUERY = gql`
-  query GetDetallesPartidaByTitulo($idTitulo: String!) {
-    getDetallesPartidaByTitulo(id_titulo: $idTitulo) {
+  query GetDetallesPartidaByTitulo($id_titulo: String!) {
+    getDetallesPartidaByTitulo(id_titulo: $id_titulo) {
       id_detalle_partida
       id_unidad
       id_titulo
@@ -28,8 +28,8 @@ const GET_DETALLES_PARTIDA_BY_TITULO_QUERY = gql`
 `;
 
 const ADD_DETALLE_PARTIDA_MUTATION = gql`
-  mutation AddDetallePartida($idUnidad: String!, $idTitulo: String!, $metrado: Float!, $precio: Float!, $jornada: Float!) {
-    addDetallePartida(id_unidad: $idUnidad, id_titulo: $idTitulo, metrado: $metrado, precio: $precio, jornada: $jornada) {
+  mutation AddDetallePartida($id_unidad: String!, $id_titulo: String!, $metrado: Float!, $precio: Float!, $jornada: Float!) {
+    addDetallePartida(id_unidad: $id_unidad, id_titulo: $id_titulo, metrado: $metrado, precio: $precio, jornada: $jornada) {
       id_detalle_partida
       id_unidad
       id_titulo
@@ -41,8 +41,8 @@ const ADD_DETALLE_PARTIDA_MUTATION = gql`
 `;
 
 const UPDATE_DETALLE_PARTIDA_MUTATION = gql`
-  mutation UpdateDetallePartida($idDetallePartida: String!, $idUnidad: String, $metrado: Float, $precio: Float, $jornada: Float) {
-    updateDetallePartida(id_detalle_partida: $idDetallePartida, id_unidad: $idUnidad, metrado: $metrado, precio: $precio, jornada: $jornada) {
+  mutation UpdateDetallePartida($id_detalle_partida: String!, $id_unidad: String, $metrado: Float, $precio: Float, $jornada: Float) {
+    updateDetallePartida(id_detalle_partida: $id_detalle_partida, id_unidad: $id_unidad, metrado: $metrado, precio: $precio, jornada: $jornada) {
       id_detalle_partida
       id_unidad
       id_titulo
@@ -54,8 +54,8 @@ const UPDATE_DETALLE_PARTIDA_MUTATION = gql`
 `;
 
 const DELETE_DETALLE_PARTIDA_MUTATION = gql`
-  mutation DeleteDetallePartida($idDetallePartida: String!) {
-    deleteDetallePartida(id_detalle_partida: $idDetallePartida) {
+  mutation DeleteDetallePartida($id_detalle_partida: String!) {
+    deleteDetallePartida(id_detalle_partida: $id_detalle_partida) {
       id_detalle_partida
     }
   }
@@ -72,11 +72,11 @@ export const listDetallesPartidaService = async () => {
   }
 };
 
-export const getDetallesPartidaByTituloService = async (idTitulo: string) => {
+export const getDetallesPartidaByTituloService = async (id_titulo: string) => {
   try {
     const response = await client.query({
       query: GET_DETALLES_PARTIDA_BY_TITULO_QUERY,
-      variables: { idTitulo },
+      variables: { id_titulo },
     });
     return response.data.getDetallesPartidaByTitulo;
   } catch (error) {
@@ -85,8 +85,8 @@ export const getDetallesPartidaByTituloService = async (idTitulo: string) => {
 };
 
 export const addDetallePartidaService = async (data: {
-  idUnidad: string;
-  idTitulo: string;
+  id_unidad: string;
+  id_titulo: string;
   metrado: number;
   precio: number;
   jornada: number;
@@ -103,8 +103,8 @@ export const addDetallePartidaService = async (data: {
 };
 
 export const updateDetallePartidaService = async (data: {
-  idDetallePartida: string;
-  idUnidad?: string;
+  id_detalle_partida: string;
+  id_unidad?: string;
   metrado?: number;
   precio?: number;
   jornada?: number;
@@ -114,17 +114,17 @@ export const updateDetallePartidaService = async (data: {
       mutation: UPDATE_DETALLE_PARTIDA_MUTATION,
       variables: data,
     });
-    return response.data.updateDetallePartida;
+    return response.data;
   } catch (error) {
     throw new Error(`Error updating detalle partida: ${error}`);
   }
 };
 
-export const deleteDetallePartidaService = async (idDetallePartida: string) => {
+export const deleteDetallePartidaService = async (id_detalle_partida: string) => {
   try {
     const response = await client.mutate({
       mutation: DELETE_DETALLE_PARTIDA_MUTATION,
-      variables: { idDetallePartida },
+      variables: { id_detalle_partida },
     });
     return response.data.deleteDetallePartida;
   } catch (error) {

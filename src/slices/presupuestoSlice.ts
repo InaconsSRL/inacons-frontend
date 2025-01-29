@@ -70,9 +70,9 @@ export const getPresupuesto = createAsyncThunk(
 
 export const getPresupuestosByProyecto = createAsyncThunk(
   'presupuesto/getPresupuestosByProyecto',
-  async (idProyecto: string, { rejectWithValue }) => {
+  async (id_proyecto: string, { rejectWithValue }) => {
     try {
-      return await getPresupuestosByProyectoService(idProyecto);
+      return await getPresupuestosByProyectoService(id_proyecto);
     } catch (error) {
       return rejectWithValue((error as Error).message);
     }

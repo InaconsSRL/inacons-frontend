@@ -1,20 +1,27 @@
 import React, { useEffect, useState } from 'react';
-import { getTitulosByPresupuesto, updateTitulo, TituloDetailed } from '../../../slices/tituloSlice';
+import { getTitulosByPresupuesto, Titulo } from '../../../slices/tituloSlice';
+import { updateDetallePartida } from '../../../slices/detallePartidaSlice';
+import { updateActiveTitulo } from '../../../slices/activeDataSlice'
+import { fetchUnidadesPresupuesto } from '../../../slices/unidadPresupuestoSlice';
 import { useDispatch, useSelector } from 'react-redux';
 import { RootState, AppDispatch } from '../../../store/store';
 import { MdKeyboardArrowRight, MdUnfoldLess, MdUnfoldMore } from 'react-icons/md';
 import { IoLayersOutline } from 'react-icons/io5';
 import { motion, AnimatePresence } from 'framer-motion';
-import { addDetallePartida, updateDetallePartida } from '../../../slices/detallePartidaSlice';
-import { updateActiveTitulo } from '../../../slices/activeDataSlice'
-import { fetchUnidadesPresupuesto } from '../../../slices/unidadPresupuestoSlice';
 
-const PresupuestoTable: React.FC = () => {
+interface EditingMetrado {
+  [key: string]: string;
+}
+
+// Componente con tipos
+const PresupuestoTableAPU: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
   const [collapsedItems, setCollapsedItems] = useState<Set<string>>(new Set());
   const [editingTituloId, setEditingTituloId] = useState<string | null>(null);
-  const [editingMetrado, setEditingMetrado] = useState<{ [key: string]: string }>({});
+  const [editingMetrado, setEditingMetrado] = useState<EditingMetrado>({});
   const [editingMetradoId, setEditingMetradoId] = useState<string | null>(null);
+  
+  // Definir tipos para los selectores
   const activePresupuesto = useSelector((state: RootState) => state.activeData.activePresupuesto);
   const unidades = useSelector((state: RootState) => state.unidadPresupuesto.unidadesPresupuesto);
   const activeTitulo = useSelector((state: RootState) => state.activeData.activeTitulo);
@@ -35,6 +42,28 @@ const PresupuestoTable: React.FC = () => {
     // Cargar las unidades cuando el componente se monta
     dispatch(fetchUnidadesPresupuesto());
   }, [dispatch]);
+
+  // Modificar el useEffect para observar cambios en activePresupuesto y activeTitulo
+  useEffect(() => {
+    const fetchTitulos = async () => {
+      if (activePresupuesto?.id_presupuesto) {
+        await dispatch(getTitulosByPresupuesto(activePresupuesto.id_presupuesto));
+      }
+    };
+
+    fetchTitulos();
+  }, [dispatch, activePresupuesto]);
+
+  // Agregar un nuevo useEffect para escuchar cambios en los detalles de partida
+  useEffect(() => {
+    const fetchTitulosOnDetailChange = async () => {
+      if (activePresupuesto?.id_presupuesto && activeTitulo?.detallePartida) {
+        await dispatch(getTitulosByPresupuesto(activePresupuesto.id_presupuesto));
+      }
+    };
+
+    fetchTitulosOnDetailChange();
+  }, [dispatch, activePresupuesto, activeTitulo?.detallePartida?.precio]);
 
   const getIndentation = (nivel: number) => {
     // Usar padding-left directamente en píxeles
@@ -71,7 +100,7 @@ const PresupuestoTable: React.FC = () => {
     setCollapsedItems(newCollapsedItems);
   };
 
-  const isVisible = (titulo: TituloDetailed) => {
+  const isVisible = (titulo: Titulo) => {
     const parentItems = sortedTitulos.filter(t => 
       t.item.split('.').length < titulo.item.split('.').length &&
       titulo.item.startsWith(t.item)
@@ -108,38 +137,22 @@ const PresupuestoTable: React.FC = () => {
     setCollapsedItems(newCollapsedItems);
   };
 
-  const handleUnidadChange = async (titulo: TituloDetailed, unidadId: string) => {
+  const handleUnidadChange = async (titulo: Titulo, id_unidad: string): Promise<void> => {
     try {
-      let updatedDetalle;
-      let updatedTitulo = { ...titulo };
-  
-      if (titulo.detallePartida.id_detalle_partida) {
+      if (titulo.detallePartida?.id_detalle_partida) {
         // Actualizar detalle existente
-        updatedDetalle = await dispatch(updateDetallePartida({
-          id_detalle_partida: titulo.detallePartida?.id_detalle_partida || '',
-          id_unidad: unidadId,
-          metrado: titulo.detallePartida?.metrado || 0,
-          precio: titulo.detallePartida?.precio || 0,
-          jornada: titulo.detallePartida?.jornada || 0
+        await dispatch(updateDetallePartida({
+          id_detalle_partida: titulo.detallePartida.id_detalle_partida,
+          id_unidad: id_unidad,
+          metrado: titulo.detallePartida.metrado || 0,
+          precio: titulo.detallePartida.precio || 0,
+          jornada: titulo.detallePartida.jornada || 0
         })).unwrap();
-      } else {
-        // Crear nuevo detalle
-        updatedDetalle = await dispatch(addDetallePartida({
-          idUnidad: unidadId,
-          metrado: 0,
-          precio: 0,
-          jornada: 0
-        })).unwrap();
+      } 
   
-        // Actualizar el título con el nuevo id_detalle_partida
-        updatedTitulo = {
-          ...titulo,
-          id_detalle_partida: updatedDetalle.id_detalle_partida,
-          detallePartida: updatedDetalle // Añadir el detalle al título
-        };
-        
-        await dispatch(updateTitulo(updatedTitulo)).unwrap();
-        dispatch(getTitulosByPresupuesto(updatedTitulo.id_presupuesto));
+      // Inmediatamente después de una operación exitosa, actualizar los títulos
+      if (activePresupuesto?.id_presupuesto) {
+        await dispatch(getTitulosByPresupuesto(activePresupuesto.id_presupuesto));
       }
     } catch (error) {
       console.error('Error al manejar el cambio de unidad:', error);
@@ -148,50 +161,36 @@ const PresupuestoTable: React.FC = () => {
     }
   };
   
-  const handleMetradoChange = async (titulo: TituloDetailed, metrado: number) => {
+  const handleMetradoChange = async (titulo: Titulo, metrado: number): Promise<void> => {
     try {
-      let updatedDetalle;
-      if (titulo.id_detalle_partida) {
-        console.log('Actualizando detalle existente...');
-        updatedDetalle = await dispatch(updateDetallePartida({
-          id_detalle_partida: titulo.id_detalle_partida,
-          id_unidad: titulo.detallePartida?.id_unidad || '',
+      if (titulo.detallePartida?.id_detalle_partida) {
+        // Actualizar detalle existente
+        await dispatch(updateDetallePartida({
+          id_detalle_partida: titulo.detallePartida.id_detalle_partida,
+          id_unidad: titulo.detallePartida.id_unidad,
           metrado,
-          precio: titulo.detallePartida?.precio || 0,
-          jornada: titulo.detallePartida?.jornada || 0
+          precio: titulo.detallePartida.precio || 0,
+          jornada: titulo.detallePartida.jornada || 0
         })).unwrap();
-      } else {
-        console.log('Creando nuevo detalle...');
-        updatedDetalle = await dispatch(addDetallePartida({
-          id_detalle_partida: '',
-          id_unidad: '',
-          metrado,
-          precio: 0,
-          jornada: 0
-        })).unwrap();
-
-        // Actualizar el título con el nuevo id_detalle_partida
-        await dispatch(updateTitulo({
-          ...titulo,
-          id_detalle_partida: updatedDetalle.id_detalle_partida
-        })).unwrap();
-      }
   
-      // Actualizar el estado local
-
+        // Inmediatamente después de una operación exitosa, actualizar los títulos
+        if (activePresupuesto?.id_presupuesto) {
+          await dispatch(getTitulosByPresupuesto(activePresupuesto.id_presupuesto));
+        }
+      }
     } catch (error) {
       console.error('Error al manejar el cambio de metrado:', error);
     }
   };
 
-  const handleMetradoInputChange = (tituloId: string, value: string) => {
+  const handleMetradoInputChange = (tituloId: string, value: string): void => {
     setEditingMetrado(prev => ({
       ...prev,
       [tituloId]: value
     }));
   };
 
-  const handleMetradoBlur = (titulo: TituloDetailed) => {
+  const handleMetradoBlur = (titulo: Titulo): void => {
     const value = editingMetrado[titulo.id_titulo];
     if (value !== undefined) {
       handleMetradoChange(titulo, parseFloat(value) || 0);
@@ -203,22 +202,21 @@ const PresupuestoTable: React.FC = () => {
     }
   };
 
-  const handleMetradoKeyDown = (e: React.KeyboardEvent, titulo: TituloDetailed) => {
+  const handleMetradoKeyDown = (e: React.KeyboardEvent<HTMLInputElement>, titulo: Titulo): void => {
     if (e.key === 'Enter') {
       handleMetradoBlur(titulo);
     }
   };
   
-  const handleTituloClick = (titulo: TituloDetailed, event: React.MouseEvent) => {
+  const handleTituloClick = (titulo: Titulo, event: React.MouseEvent<HTMLTableRowElement>): void => {
     // Solo actualizar el título activo si el click no fue en un input
     const target = event.target as HTMLElement;
     if (!target.closest('input') && !target.closest('select')) {
       dispatch(updateActiveTitulo(titulo));
-      console.log('Título modificado:', titulo.descripcion);
     }
   };
 
-  const handleStartEditingMetrado = (tituloId: string, currentValue: number) => {
+  const handleStartEditingMetrado = (tituloId: string, currentValue: number): void => {
     setEditingMetradoId(tituloId);
     setEditingMetrado({
       ...editingMetrado,
@@ -226,12 +224,12 @@ const PresupuestoTable: React.FC = () => {
     });
   };
 
-  const handleFinishEditingMetrado = (titulo: TituloDetailed) => {
+  const handleFinishEditingMetrado = (titulo: Titulo): void => {
     handleMetradoBlur(titulo);
     setEditingMetradoId(null);
   };
 
-  const calcularParcial = (titulo: TituloDetailed): number => {
+  const calcularParcial = (titulo: Titulo): number => {
     if (titulo.tipo === 'PARTIDA') {
       return (titulo.detallePartida?.metrado || 0) * (titulo.detallePartida?.precio || 0);
     }
@@ -463,4 +461,4 @@ const PresupuestoTable: React.FC = () => {
   );
 };
 
-export default PresupuestoTable;
+export default PresupuestoTableAPU;

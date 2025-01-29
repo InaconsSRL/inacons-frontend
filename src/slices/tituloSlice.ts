@@ -7,9 +7,10 @@ import {
   updateTituloService,
   deleteTituloService
 } from '../services/tituloService';
+import { DetallePartida } from './detallePartidaSlice';
 
 // Interface para el listado simple
-export interface TituloBasic {
+export interface Titulo {
   id_titulo: string;
   id_presupuesto: string;
   id_titulo_padre: string | null;
@@ -22,29 +23,16 @@ export interface TituloBasic {
   nivel: number;
   orden: number;
   tipo: string;
+  detallePartida?: DetallePartida;
 }
 
-// Interface para consultas detalladas
-interface DetallePartida {
-  id_detalle_partida: string;
-  id_unidad: string;
-  id_titulo: string;
-  metrado: number;
-  precio: number;
-  jornada: number;
-}
-
-export interface TituloDetailed extends TituloBasic {
-  detallePartida: DetallePartida[];
-}
 
 interface TituloState {
-  titulos: TituloBasic[];
-  selectedTitulo: TituloDetailed | null;
+  titulos: Titulo[];
+  selectedTitulo: Titulo| null;
   loading: boolean;
   error: string | null;
-  titulosPorPresupuesto: { [key: string]: TituloBasic[] };
-  lastSync: { [key: string]: string }; // Guardará la fecha de última sincronización por presupuesto
+  titulosPorPresupuesto: { [key: string]: Titulo[] };
 }
 
 const initialState: TituloState = {
@@ -53,7 +41,6 @@ const initialState: TituloState = {
   loading: false,
   error: null,
   titulosPorPresupuesto: {},
-  lastSync: {},
 };
 
 export const fetchTitulos = createAsyncThunk(
@@ -69,9 +56,9 @@ export const fetchTitulos = createAsyncThunk(
 
 export const getTitulosByPresupuesto = createAsyncThunk(
   'titulo/getTitulosByPresupuesto',
-  async (idPresupuesto: string, { rejectWithValue }) => {
+  async (id_presupuesto: string, { rejectWithValue }) => {
     try {
-      return await getTitulosByPresupuestoService(idPresupuesto);
+      return await getTitulosByPresupuestoService(id_presupuesto);
     } catch (error) {
       return rejectWithValue((error as Error).message);
     }
@@ -80,9 +67,9 @@ export const getTitulosByPresupuesto = createAsyncThunk(
 
 export const getTitulo = createAsyncThunk(
   'titulo/getTitulo',
-  async (idTitulo: string, { rejectWithValue }) => {
+  async (id_titulo: string, { rejectWithValue }) => {
     try {
-      return await getTituloService(idTitulo);
+      return await getTituloService(id_titulo);
     } catch (error) {
       return rejectWithValue((error as Error).message);
     }
@@ -91,7 +78,7 @@ export const getTitulo = createAsyncThunk(
 
 export const addTitulo = createAsyncThunk(
   'titulo/addTitulo',
-  async (data: TituloBasic, { rejectWithValue }) => {
+  async (data: Titulo, { rejectWithValue }) => {
     try {
       return await addTituloService(data);
     } catch (error) {
@@ -102,7 +89,7 @@ export const addTitulo = createAsyncThunk(
 
 export const updateTitulo = createAsyncThunk(
   'titulo/updateTitulo',
-  async (data: TituloBasic, { rejectWithValue }) => {
+  async (data: Titulo, { rejectWithValue }) => {
     try {
       return await updateTituloService(data);
     } catch (error) {
@@ -113,9 +100,9 @@ export const updateTitulo = createAsyncThunk(
 
 export const deleteTitulo = createAsyncThunk(
   'titulo/deleteTitulo',
-  async (idTitulo: string, { rejectWithValue }) => {
+  async (id_titulo: string, { rejectWithValue }) => {
     try {
-      return await deleteTituloService(idTitulo);
+      return await deleteTituloService(id_titulo);
     } catch (error) {
       return rejectWithValue((error as Error).message);
     }
@@ -136,6 +123,27 @@ const tituloSlice = createSlice({
         state.titulos = titulosCache;
       }
       state.loading = false;  // Finalizar loading
+    },
+    // Nuevo reducer para actualizar el detalle de partida en un título
+    updateTituloDetallePartida: (state, action: PayloadAction<{
+      id_presupuesto: string;
+      id_titulo: string;
+      detallePartida: DetallePartida;
+    }>) => {      
+      // Actualizar en la lista principal de títulos
+      const titulo = state.titulos.find(t => t.id_titulo === action.payload.id_titulo);
+      if (titulo) {
+        titulo.detallePartida = action.payload.detallePartida;
+      }
+    
+      // Actualizar en el cache de títulos por presupuesto
+      if (state.titulosPorPresupuesto[action.payload.id_presupuesto]) {
+        const tituloEnCache = state.titulosPorPresupuesto[action.payload.id_presupuesto]
+          .find(t => t.id_titulo === action.payload.id_titulo);
+        if (tituloEnCache) {
+          tituloEnCache.detallePartida = action.payload.detallePartida;
+        }
+      }
     }
   },
   extraReducers: (builder) => {
@@ -143,8 +151,9 @@ const tituloSlice = createSlice({
       // Fetch Titulos
       .addCase(fetchTitulos.pending, (state) => {
         state.loading = true;
+        state.error = null;
       })
-      .addCase(fetchTitulos.fulfilled, (state, action: PayloadAction<TituloBasic[]>) => {
+      .addCase(fetchTitulos.fulfilled, (state, action: PayloadAction<Titulo[]>) => {
         state.loading = false;
         state.titulos = action.payload;
       })
@@ -155,14 +164,14 @@ const tituloSlice = createSlice({
       // Get Titulos By Presupuesto
       .addCase(getTitulosByPresupuesto.pending, (state) => {
         state.loading = true;
+        state.error = null;
       })
-      .addCase(getTitulosByPresupuesto.fulfilled, (state, action: PayloadAction<TituloDetailed[], string, { arg: string }>) => {
+      .addCase(getTitulosByPresupuesto.fulfilled, (state, action: PayloadAction<Titulo[], string, { arg: string }>) => {
         state.loading = false;
         state.titulos = action.payload;
         // Guardar en cache
-        if (action.meta.arg) { // action.meta.arg contiene el idPresupuesto
+        if (action.meta.arg) { // action.meta.arg contiene el id_presupuesto
           state.titulosPorPresupuesto[action.meta.arg] = action.payload;
-          state.lastSync[action.meta.arg] = new Date().toLocaleString();
         }
       })
       .addCase(getTitulosByPresupuesto.rejected, (state, action) => {
@@ -172,8 +181,9 @@ const tituloSlice = createSlice({
       // Get Single Titulo
       .addCase(getTitulo.pending, (state) => {
         state.loading = true;
+        state.error = null;
       })
-      .addCase(getTitulo.fulfilled, (state, action: PayloadAction<TituloDetailed>) => {
+      .addCase(getTitulo.fulfilled, (state, action: PayloadAction<Titulo>) => {
         state.loading = false;
         state.selectedTitulo = action.payload;
       })
@@ -185,9 +195,9 @@ const tituloSlice = createSlice({
       .addCase(addTitulo.pending, (state) => {
         state.loading = true;
       })
-      .addCase(addTitulo.fulfilled, (state, action: PayloadAction<TituloDetailed>) => {
+      .addCase(addTitulo.fulfilled, (state, action: PayloadAction<Titulo>) => {
         state.loading = false;
-        state.titulos.push(action.payload);
+        state.selectedTitulo = action.payload;
       })
       .addCase(addTitulo.rejected, (state, action) => {
         state.loading = false;
@@ -197,11 +207,19 @@ const tituloSlice = createSlice({
       .addCase(updateTitulo.pending, (state) => {
         state.loading = true;
       })
-      .addCase(updateTitulo.fulfilled, (state, action: PayloadAction<TituloDetailed>) => {
+      .addCase(updateTitulo.fulfilled, (state, action: PayloadAction<Titulo>) => {
         state.loading = false;
         const index = state.titulos.findIndex(t => t.id_titulo === action.payload.id_titulo);
         if (index !== -1) {
           state.titulos[index] = action.payload;
+          // Actualizar el cache si existe para este presupuesto
+          if (action.payload.id_presupuesto && state.titulosPorPresupuesto[action.payload.id_presupuesto]) {
+            const cacheIndex = state.titulosPorPresupuesto[action.payload.id_presupuesto]
+              .findIndex(t => t.id_titulo === action.payload.id_titulo);
+            if (cacheIndex !== -1) {
+              state.titulosPorPresupuesto[action.payload.id_presupuesto][cacheIndex] = action.payload;
+            }
+          }
         }
       })
       .addCase(updateTitulo.rejected, (state, action) => {
@@ -212,9 +230,15 @@ const tituloSlice = createSlice({
       .addCase(deleteTitulo.pending, (state) => {
         state.loading = true;
       })
-      .addCase(deleteTitulo.fulfilled, (state, action: PayloadAction<{ id_titulo: string }>) => {
+      .addCase(deleteTitulo.fulfilled, (state, action: PayloadAction<{ id_titulo: string; id_presupuesto: string }>) => {
         state.loading = false;
         state.titulos = state.titulos.filter(t => t.id_titulo !== action.payload.id_titulo);
+        // Actualizar el cache si existe para este presupuesto
+        if (action.payload.id_presupuesto && state.titulosPorPresupuesto[action.payload.id_presupuesto]) {
+          state.titulosPorPresupuesto[action.payload.id_presupuesto] = 
+            state.titulosPorPresupuesto[action.payload.id_presupuesto]
+              .filter(t => t.id_titulo !== action.payload.id_titulo);
+        }
       })
       .addCase(deleteTitulo.rejected, (state, action) => {
         state.loading = false;
@@ -223,5 +247,5 @@ const tituloSlice = createSlice({
   },
 });
 
-export const { clearErrors, getTitulosFromCache } = tituloSlice.actions;
+export const { clearErrors, getTitulosFromCache, updateTituloDetallePartida } = tituloSlice.actions;
 export const tituloReducer = tituloSlice.reducer;
