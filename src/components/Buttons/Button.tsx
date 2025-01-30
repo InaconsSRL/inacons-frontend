@@ -7,11 +7,12 @@ interface ButtonProps {
   className?: string;
   text?: string | ReactNode;
   icon?: ReactNode;
+  disabled?: boolean; // Añadimos esta propiedad
 }
 
 type Option = { label: string; action: () => void } | string;
 
-const Button: React.FC<ButtonProps> = ({ onClick, color = 'blanco', options = [], className = '', text, icon }) => {
+const Button: React.FC<ButtonProps> = ({ onClick, color = 'blanco', options = [], className = '', text, icon, disabled }) => {
   const [isOpen, setIsOpen] = useState(false);
 
   const handleButtonClick = () => {
@@ -51,6 +52,7 @@ const Button: React.FC<ButtonProps> = ({ onClick, color = 'blanco', options = []
           ${className}
           flex items-center justify-center
         `}
+        disabled={disabled} // Añadimos la prop disabled al botón
       >
         {icon && <span className="mr-2">{icon}</span>}
         <span className="truncate whitespace-nowrap sm:whitespace-normal text-[10px] sm:text-sm">

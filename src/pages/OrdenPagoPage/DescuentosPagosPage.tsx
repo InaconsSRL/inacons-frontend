@@ -18,11 +18,12 @@ import { calcularDescuento } from '../../components/Utils/calculosUtils';
 interface DescuentoPagosPageProps {
   ordenPagoId?: string;
   tipoDescuento?: 'detracciones' | 'retenciones' | null;
-  onClose?: () => void;
+  handleClose: () => void; 
   montoSolicitado?: number;
   tipoMoneda?: string;
   tipoComprobante?: string;
 }
+
 
 const pageVariants = {
   initial: { opacity: 0, y: 20 },
@@ -39,7 +40,6 @@ const pageTransition = {
 const DescuentoPagosPage: React.FC<DescuentoPagosPageProps> = ({
   ordenPagoId,
   tipoDescuento,
-  onClose,
   montoSolicitado = 0,
   tipoMoneda = '',
   tipoComprobante = ''
@@ -89,10 +89,23 @@ const DescuentoPagosPage: React.FC<DescuentoPagosPageProps> = ({
   const handleEdit = (descuento: OrdenPagoDescuento) => {
     setEditingDescuento({
       id: descuento.id,
-      tipo: descuento.tipo,
-      monto: descuento.monto,
-      detalle: descuento.detalle,
-      orden_pago_id: descuento.orden_pago_id.id
+    codigo: descuento.codigo,
+    tipo: descuento.tipo,
+    monto: descuento.monto,
+    detalle: descuento.detalle,
+    estado: descuento.estado,
+    usuario_id: descuento.usuario_id,
+    orden_pago_id: {
+      id: descuento.orden_pago_id.id,
+      codigo: descuento.orden_pago_id.codigo,
+      monto_solicitado: descuento.orden_pago_id.monto_solicitado,
+      tipo_moneda: descuento.orden_pago_id.tipo_moneda,
+      tipo_pago: descuento.orden_pago_id.tipo_pago,
+      estado: descuento.orden_pago_id.estado,
+      observaciones: descuento.orden_pago_id.observaciones,
+      comprobante: descuento.orden_pago_id.comprobante,
+      fecha: descuento.orden_pago_id.fecha
+      }
     });
     setIsModalOpen(true);
   };
@@ -505,12 +518,14 @@ const tableData = {
               exit={{ opacity: 0, scale: 0.9 }}
               transition={{ duration: 0.3 }}
             >
-              <DescuentoPagoFormComponent
-                initialValues={editingDescuento}
-                onSubmit={handleSubmit}
-                ordenPagoId={ordenPagoId}
-                tipoDescuento={tipoDescuento}
-              />
+                  <DescuentoPagoFormComponent
+                    initialValues={editingDescuento || undefined}
+                    onSubmit={handleSubmit}
+                    ordenPagoId={ordenPagoId}
+                    tipoDescuento={tipoDescuento}
+                  />
+
+
             </motion.div>
           </Modal>
         )}

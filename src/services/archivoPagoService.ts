@@ -147,36 +147,6 @@ const DELETE_ARCHIVO_PAGO = gql`
   }
 `;
 
-const UPLOAD_ARCHIVO_PAGO = gql`
-  mutation UploadArchivoPago($orden_pago_id: ID!, $usuario_id: ID!, $file: Upload!) {
-    uploadArchivoPago(
-      orden_pago_id: $orden_pago_id
-      usuario_id: $usuario_id
-      file: $file
-    ) {
-      id
-      orden_pago_id {
-        id
-        codigo
-        monto_solicitado
-        tipo_moneda
-        tipo_pago
-        estado
-        observaciones
-        comprobante
-        fecha
-      }
-      file
-      usuario_id {
-        id
-        nombres
-        apellidos
-      }
-      fecha
-    }
-  }
-`;
-
 export interface ArchivoPago {
   id: string;
   orden_pago_id: {

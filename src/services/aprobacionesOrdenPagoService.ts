@@ -176,6 +176,8 @@ export interface AprobacionOrdenPagoInput {
   usuario_id: string;
   estado: string;
   orden_pago_id: string;
+  monto: number;
+  tipo_moneda: string;
 }
 
 export const listAprobacionesOrdenPagoService = async () => {

@@ -191,7 +191,7 @@ const GET_DESCUENTOS_BY_ORDEN_PAGO = gql`
 
 
 // Interface para el input
-interface OrdenPagoDescuentoInput {
+export interface OrdenPagoDescuentoInput {
   orden_pago_id: string;
   monto: number;
   tipo: string;

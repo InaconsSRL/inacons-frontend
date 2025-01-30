@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, {  useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { AppDispatch, RootState } from '../../store/store';
 import { addAprobacion } from '../../slices/aprobacionesOrdenPagoSlice';
@@ -8,6 +8,7 @@ import Modal from '../../components/Modal/Modal';
 import Button from '../../components/Buttons/Button';
 import Toast from '../../components/Toast/Toast';
 import { FaSpinner } from 'react-icons/fa'; // Agregar este import
+//import { OrdenPagoInput } from '../../types/ordenPago';
 
 interface AprobacionArchivoModalProps {
   isOpen: boolean;
@@ -20,7 +21,7 @@ const AprobacionArchivoModal: React.FC<AprobacionArchivoModalProps> = ({
   isOpen,
   onClose,
   ordenPagoId,
-  currentEstado,
+ 
 }) => {
   const dispatch = useDispatch<AppDispatch>();
   const userId = useSelector((state: RootState) => state.user.id);
@@ -113,10 +114,11 @@ const AprobacionArchivoModal: React.FC<AprobacionArchivoModalProps> = ({
       const confirmarFinalizacion = window.confirm('¿Desea finalizar el pago?');
       if (confirmarFinalizacion) {
         try {
-          await dispatch(updateOrdenPago({
+          const updateData: any = {
             id: ordenPagoId,
             estado: 'FINALIZADO'
-          })).unwrap();
+          };
+          await dispatch(updateOrdenPago(updateData)).unwrap();
 
           setToastMessage('Pago finalizado exitosamente');
           setToastVariant('success');

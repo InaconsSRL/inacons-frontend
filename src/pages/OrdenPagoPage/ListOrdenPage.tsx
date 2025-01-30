@@ -15,6 +15,11 @@ import ComprobantesModal from '../../components/Modals/ComprobantesModal';
 import { FiFileText } from 'react-icons/fi';
 import { ArchivoPago } from '../../services/archivoPagoService';
 
+interface Descuento {
+  monto: number;
+  // Añade otras propiedades si las hay
+}
+
 const pageVariants = {
   initial: { opacity: 0, y: 20 },
   in: { opacity: 1, y: 0 },
@@ -78,7 +83,7 @@ const ListOrdenPage: React.FC = () => {
         try {
           const result = await dispatch(fetchDescuentosByOrdenPago(orden.id)).unwrap();
           if (result && result.length > 0) {
-            const totalDescuentos = result.reduce((acc, desc) => acc + desc.monto, 0);
+            const totalDescuentos = result.reduce((acc: number, desc: Descuento) => acc + desc.monto, 0);
             descuentos[orden.id] = orden.monto_solicitado - totalDescuentos;
           } else {
             descuentos[orden.id] = orden.monto_solicitado;

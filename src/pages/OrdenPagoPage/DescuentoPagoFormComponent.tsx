@@ -9,13 +9,21 @@ interface DescuentoPagoFormProps {
   tipoDescuento?: 'detracciones' | 'retenciones' | null;
 }
 
+// Agregamos la interfaz para los valores del formulario
+interface FormValues {
+  tipo: string;
+  monto: number;
+  detalle: string;
+  porcentaje: number;
+  montoBase: number;
+}
+
 const DescuentoPagoFormComponent: React.FC<DescuentoPagoFormProps> = ({
   initialValues,
   onSubmit,
   ordenPagoId,
-  tipoDescuento
 }) => {
-  const [formValues, setFormValues] = useState({
+  const [formValues, setFormValues] = useState<FormValues>({
     tipo: initialValues?.tipo || '',
     monto: initialValues?.monto || 0,
     detalle: initialValues?.detalle || '',
@@ -66,8 +74,18 @@ const DescuentoPagoFormComponent: React.FC<DescuentoPagoFormProps> = ({
     e.preventDefault();
     onSubmit({
       ...formValues,
-      orden_pago_id: ordenPagoId || '',
-      estado: 'ACTIVO'
+      orden_pago_id: {
+        id: ordenPagoId || '',
+        codigo: '',
+        monto_solicitado: 0,
+        tipo_moneda: '',
+        tipo_pago: '',
+        estado: '',
+        observaciones: '',
+        comprobante: '',
+        fecha: ''
+      },
+      estado: 'ACTIVO'  // Now this is properly typed
     });
   };
 

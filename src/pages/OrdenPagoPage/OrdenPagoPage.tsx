@@ -8,15 +8,19 @@ import DescuentoPagosPage from './DescuentosPagosPage';
 import {useSearchParams} from 'react-router-dom';
 
 import { useDispatch, useSelector } from 'react-redux';
-import { addOrdenPago, updateOrdenPago, deleteOrdenPago, fetchOrdenPagosByOrdenCompra } from '../../slices/ordenPagoSlice';
+import { addOrdenPago, deleteOrdenPago, fetchOrdenPagosByOrdenCompra, IOrdenPago, OrdenPago } from '../../slices/ordenPagoSlice';
 import { RootState, AppDispatch } from '../../store/store';
 import LoaderPage from '../../components/Loader/LoaderPage';
 import { TbEyeDiscount } from "react-icons/tb";
 import { FiEdit, FiTrash2 } from 'react-icons/fi';
 import UpdateOrdenPagoModal from './UpdateOrdenPagoModal';
-import { addTipoCambio } from '../../slices/tipoCambioOrdenPagoSlice';
+import { addTipoCambio, TipoCambioInput } from '../../slices/tipoCambioOrdenPagoSlice';
 import { uploadComprobante } from '../../slices/comprobantePagoSlice';
-import { fetchDescuentosByOrdenPago } from '../../slices/descuentoPagoSlice';
+import { fetchDescuentosByOrdenPago, OrdenPagoDescuento } from '../../slices/descuentoPagoSlice';
+
+interface CustomError {
+  message: string;
+}
 
 const pageVariants = {
   initial: { opacity: 0, y: 20 },
@@ -34,19 +38,16 @@ const OrdenPagoPage: React.FC = () => {
   const [searchParams] = useSearchParams();
   const ordenCompraId = searchParams.get('ordenCompraId');
     
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  //const [isModalOpen, setIsModalOpen] = useState(false);
   const [isUpdateModalOpen, setIsUpdateModalOpen] = useState(false);
-  const [selectedOrdenPago, setSelectedOrdenPago] = useState<any>(null);
+  const [selectedOrdenPago, setSelectedOrdenPago] = useState<OrdenPago | null>(null);
 
   const dispatch = useDispatch<AppDispatch>();
-  const { ordenPagos, loading, error } = useSelector((state: RootState) => state.ordenPago);
+  const { loading, error } = useSelector((state: RootState) => state.ordenPago);
   const { 
     ordenPagosByOrdenCompra, 
-    loadingByOrdenCompra, 
-    errorByOrdenCompra 
   } = useSelector((state: RootState) => state.ordenPago);
-  const { descuentos } = useSelector((state: RootState) => state.descuentoPago);
-
+  
   const userId = useSelector((state: RootState) => state.user.id);
   const [moneda, setMoneda] = useState<string>('');
   const [tipoCambio, setTipoCambio] = useState(0);
@@ -65,8 +66,29 @@ const OrdenPagoPage: React.FC = () => {
   const [tipoDescuento, setTipoDescuento] = useState<'detracciones' | 'retenciones' | null>(null);
 
   // Función para abrir el modal de descuentos
-  const handleOpenDescuentoModal = (ordenPago: any, tipo: 'detracciones' | 'retenciones') => {
-    setSelectedOrdenPago(ordenPago);
+  const handleOpenDescuentoModal = (ordenPago: IOrdenPago, tipo: 'detracciones' | 'retenciones') => {
+    const ordenPagoConvertido: OrdenPago = {
+      id: ordenPago._id,
+      codigo: ordenPago.codigo,
+      monto_solicitado: ordenPago.monto_solicitado,
+      tipo_moneda: ordenPago.tipo_moneda,
+      tipo_pago: ordenPago.tipo_pago,
+      estado: ordenPago.estado,
+      comprobante: ordenPago.comprobante,
+      orden_compra: ordenPago.orden_compra,
+      orden_compra_id: {
+        id: ordenPago.orden_compra.id || ordenPago._id,
+        codigo_orden: ordenPago.orden_compra.codigo_orden
+      },
+      usuario_id: {
+        id: ordenPago.usuario_id.id,
+        nombres: ordenPago.usuario_id.nombres,
+        apellidos: '',
+        dni: '',
+        usuario: '',
+      }
+    };
+    setSelectedOrdenPago(ordenPagoConvertido);
     setTipoDescuento(tipo);
     setIsDescuentoModalOpen(true);
   };
@@ -120,11 +142,12 @@ const OrdenPagoPage: React.FC = () => {
       // Si es en dólares y hay tipo de cambio, guardar el tipo de cambio y el monto en soles
       if (moneda === 'dolares' && tipoCambio > 0) {
         const montoSoles = tipoCambio * monto;
-        await dispatch(addTipoCambio({
+        const tipoCambioData: TipoCambioInput = {
           cambio: tipoCambio,
-          monto_soles: montoSoles, // Agregamos el monto en soles calculado
+          monto_soles: montoSoles,
           orden_pago_id: result.id
-        }));
+        };
+        await dispatch(addTipoCambio(tipoCambioData));
       }
 
       setToastMessage('Orden de pago creada exitosamente');
@@ -146,9 +169,10 @@ const OrdenPagoPage: React.FC = () => {
       if (ordenCompraId) {
         dispatch(fetchOrdenPagosByOrdenCompra(ordenCompraId));
       }
-    } catch (error: any) {
-      console.error('Error al crear orden de pago:', error);
-      setToastMessage(`Error al crear la orden de pago: ${error.message}`);
+    } catch (error) {
+      const customError = error as CustomError;
+      console.error('Error al crear orden de pago:', customError);
+      setToastMessage(`Error al crear la orden de pago: ${customError.message}`);
       setToastVariant('danger');
       setShowToast(true);
     }
@@ -163,20 +187,20 @@ const OrdenPagoPage: React.FC = () => {
 
   const [montosAPagar, setMontosAPagar] = useState<{ [key: string]: number }>({});
 
-  // Función para calcular el total de descuentos
-  const calcularTotalDescuentos = async (ordenPagoId: string) => {
-    try {
-      const response = await dispatch(fetchDescuentosByOrdenPago(ordenPagoId)).unwrap();
-      const total = response.reduce((sum: number, descuento: any) => sum + Number(descuento.monto), 0);
-      return total;
-    } catch (error) {
-      console.error('Error al obtener descuentos:', error);
-      return 0;
-    }
-  };
-
   // Efecto para calcular los montos a pagar
   useEffect(() => {
+    const calcularTotalDescuentos = async (ordenPagoId: string) => {
+      try {
+        const response = await dispatch(fetchDescuentosByOrdenPago(ordenPagoId)).unwrap();
+        const total = response.reduce((sum: number, descuento: OrdenPagoDescuento) => sum + Number(descuento.monto), 0);
+        return total;
+      } catch (error) {
+        const customError = error as CustomError;
+        console.error('Error al obtener descuentos:', customError);
+        return 0;
+      }
+    };
+
     const calcularMontos = async () => {
       const montos: { [key: string]: number } = {};
       for (const ordenPago of ordenPagosByOrdenCompra) {
@@ -189,10 +213,31 @@ const OrdenPagoPage: React.FC = () => {
     if (ordenPagosByOrdenCompra.length > 0) {
       calcularMontos();
     }
-  }, [ordenPagosByOrdenCompra]);
+  }, [ordenPagosByOrdenCompra, dispatch]);
 
-  const handleEdit = (ordenPago: any) => {
-    setSelectedOrdenPago(ordenPago);
+  const handleEdit = (ordenPago: IOrdenPago) => {
+    const ordenPagoConvertido: OrdenPago = {
+      id: ordenPago._id,
+      codigo: ordenPago.codigo,
+      monto_solicitado: ordenPago.monto_solicitado,
+      tipo_moneda: ordenPago.tipo_moneda,
+      tipo_pago: ordenPago.tipo_pago,
+      estado: ordenPago.estado,
+      comprobante: ordenPago.comprobante || '', // Proporcionar valor por defecto
+      orden_compra: ordenPago.orden_compra,
+      orden_compra_id: {
+        id: ordenPago.orden_compra.id ?? '',
+        codigo_orden: ordenPago.orden_compra.codigo_orden
+      },
+      usuario_id: {
+        id: ordenPago.usuario_id.id,
+        nombres: ordenPago.usuario_id.nombres,
+        apellidos: '',
+        dni: '',
+        usuario: '',
+      }
+    };
+    setSelectedOrdenPago(ordenPagoConvertido);
     setIsUpdateModalOpen(true);
   };
 
@@ -260,7 +305,7 @@ const OrdenPagoPage: React.FC = () => {
           </button>
           <button
             className="text-black"
-            onClick={() => handleDelete(ordenPago.id)}
+            onClick={() => handleDelete(ordenPago._id)} 
           >
             <FiTrash2 size={18} className="text-red-500" />
           </button>
@@ -525,9 +570,9 @@ const OrdenPagoPage: React.FC = () => {
               transition={{ duration: 0.3 }}
             >
               <DescuentoPagosPage 
-                ordenPagoId={selectedOrdenPago._id}
+                ordenPagoId={selectedOrdenPago.id}
                 tipoDescuento={tipoDescuento}
-                onClose={() => setIsDescuentoModalOpen(false)}
+                handleClose={() => setIsDescuentoModalOpen(false)} 
                 montoSolicitado={selectedOrdenPago.monto_solicitado}
                 tipoMoneda={selectedOrdenPago.tipo_moneda}
                 tipoComprobante={selectedOrdenPago.comprobante}
@@ -537,12 +582,14 @@ const OrdenPagoPage: React.FC = () => {
         )}
       </AnimatePresence>
       {/* Add UpdateOrdenPagoModal */}
-      <UpdateOrdenPagoModal
-        isOpen={isUpdateModalOpen}
-        onClose={() => setIsUpdateModalOpen(false)}
-        ordenPago={selectedOrdenPago}
-        onSuccess={handleUpdateSuccess}
-      />
+      {selectedOrdenPago && isUpdateModalOpen && (
+        <UpdateOrdenPagoModal
+          isOpen={isUpdateModalOpen}
+          onClose={() => setIsUpdateModalOpen(false)}
+          ordenPago={selectedOrdenPago}
+          onSuccess={handleUpdateSuccess}
+        />
+      )}
     </motion.div>
   );
 };

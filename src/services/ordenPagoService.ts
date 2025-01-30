@@ -181,32 +181,30 @@ getOrdenPagoByOrdenCompra(ordenCompraId: $ordenCompraId) {
   }
 `;
 
-interface OrdenPagoInput {
+export interface OrdenPagoInput {
   monto_solicitado: number;
   tipo_moneda: string;
   tipo_pago: string;
-  orden_compra_id: string;
-  estado: string;
-  observaciones?: string;
-  usuario_id: string;
   comprobante?: string;
+  tipo_cambio?: number;
+  monto_soles?: number;
 }
 
-interface Proveedor {
+export interface Proveedor {
   razon_social: string;
 }
 
-interface OrdenCompra {
+export interface OrdenCompra {
   codigo_orden: string;
 }
 
-interface Usuario {
+export interface Usuario {
   id: string;
   nombres: string;
 }
 
-interface OrdenPagoByOrdenCompra {
-    _id:  string;
+export interface OrdenPagoByOrdenCompra {
+  _id: string;
   codigo: string;
   monto_solicitado: number;
   tipo_moneda: string;
@@ -220,7 +218,6 @@ interface OrdenPagoByOrdenCompra {
   proveedor: Proveedor;
   usuario_id: Usuario;
 }
-
 
 export const listOrdenPagosService = async () => {
   try {

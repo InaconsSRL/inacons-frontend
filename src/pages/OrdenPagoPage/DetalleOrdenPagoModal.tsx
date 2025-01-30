@@ -1,14 +1,41 @@
 import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { AppDispatch, RootState } from '../../store/store';
+import { IOrdenPago } from '../../slices/ordenPagoSlice';
+import { OrdenPagoDescuento } from '../../slices/descuentoPagoSlice';
+//import { AprobacionOrdenPago } from '../../slices/aprobacionesOrdenPagoSlice';
 import { fetchOrdenPagosByOrdenCompra } from '../../slices/ordenPagoSlice';
 import { fetchDescuentosByOrdenPago } from '../../slices/descuentoPagoSlice';
-import { addAprobacion, fetchAprobacionesByOrdenPago } from '../../slices/aprobacionesOrdenPagoSlice';
+import { addAprobacion } from '../../slices/aprobacionesOrdenPagoSlice';
 import { FiEdit } from 'react-icons/fi';
-import TableComponent from '../../components/Table/TableComponent';
+//import TableComponent, { TableData, TableRow as TableRowType } from '../../components/Table/TableComponent';
+import TableComponent from '../../components/Table/TableComponent';  // Importar solo el componente
 import Modal from '../../components/Modal/Modal';
 import Button from '../../components/Buttons/Button';
 import { motion } from 'framer-motion';
+
+interface Proveedor {
+  razon_social: string;
+}
+
+interface ExtendedOrdenPago extends Omit<IOrdenPago, 'orden_compra'> {
+  proveedor?: Proveedor;
+  orden_compra: {
+    codigo_orden?: string;
+    id?: string;
+  };
+}
+
+// Función de mapeo para transformar los datos
+const mapToExtendedOrdenPago = (data: any): ExtendedOrdenPago => {
+  return {
+    ...data,
+    orden_compra: {
+      codigo_orden: data.orden_compra?.codigo_orden || '',
+      id: data.orden_compra?.id
+    }
+  };
+};
 
 interface DetalleOrdenPagoModalProps {
   ordenId: string;
@@ -23,9 +50,9 @@ const DetalleOrdenPagoModal: React.FC<DetalleOrdenPagoModalProps> = ({
 }) => {
   const dispatch = useDispatch<AppDispatch>();
   const userId = useSelector((state: RootState) => state.user.id);
-  const [ordenPago, setOrdenPago] = useState<any>(null);
-  const [descuentos, setDescuentos] = useState<any[]>([]);
-  const [aprobaciones, setAprobaciones] = useState<any[]>([]);
+  const [ordenPago, setOrdenPago] = useState<ExtendedOrdenPago | null>(null);
+  const [descuentos, setDescuentos] = useState<OrdenPagoDescuento[]>([]);
+ // const [aprobaciones, setAprobaciones] = useState<AprobacionOrdenPago[]>([]);
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -33,14 +60,12 @@ const DetalleOrdenPagoModal: React.FC<DetalleOrdenPagoModalProps> = ({
     const fetchData = async () => {
       try {
         const ordenPagoResult = await dispatch(fetchOrdenPagosByOrdenCompra(ordenCompraId)).unwrap();
-        const ordenPagoEncontrada = ordenPagoResult.find((op: any) => op._id === ordenId);
-        setOrdenPago(ordenPagoEncontrada);
+        const ordenPagoEncontrada = ordenPagoResult.find((op) => op._id === ordenId);
+        setOrdenPago(ordenPagoEncontrada ? mapToExtendedOrdenPago(ordenPagoEncontrada) : null);
 
         const descuentosResult = await dispatch(fetchDescuentosByOrdenPago(ordenId)).unwrap();
         setDescuentos(descuentosResult);
-
-        const aprobacionesResult = await dispatch(fetchAprobacionesByOrdenPago(ordenId)).unwrap();
-        setAprobaciones(aprobacionesResult);
+        // await dispatch(fetchAprobacionesByOrdenPago(ordenId)).unwrap();
       } catch (error) {
         console.error('Error al cargar datos:', error);
       }
@@ -50,7 +75,7 @@ const DetalleOrdenPagoModal: React.FC<DetalleOrdenPagoModalProps> = ({
   }, [dispatch, ordenId, ordenCompraId]);
 
   // Configuración de la tabla de descuentos
-  const tableData = {
+  const tableData = {  // Removemos el tipo TableData
     headers: [
       "Orden Pago",
       "Orden Descuento",
@@ -60,7 +85,7 @@ const DetalleOrdenPagoModal: React.FC<DetalleOrdenPagoModalProps> = ({
       "Acciones"
     ],
     rows: descuentos.map(descuento => ({
-      "Orden Pago": ordenPago.codigo,
+      "Orden Pago": ordenPago?.codigo || '',
       "Orden Descuento": descuento.codigo,
       "Monto": descuento.monto.toFixed(2),
       "Tipo": descuento.tipo,
@@ -70,29 +95,7 @@ const DetalleOrdenPagoModal: React.FC<DetalleOrdenPagoModalProps> = ({
           <FiEdit size={18} />
         </button>
       )
-    }))
-  };
-
-  // Nuevo tableData para aprobaciones
-  const aprobacionesTableData = {
-    headers: [
-      "Fecha",
-      "Usuario",
-      "Estado",
-      "Acción"
-    ],
-    rows: aprobaciones.map(aprobacion => ({
-      "Fecha": new Date(aprobacion.fecha).toLocaleDateString('es-PE'),
-      "Usuario": `${aprobacion.usuario_id.nombres} ${aprobacion.usuario_id.apellidos}`,
-      "Estado": aprobacion.estado,
-      "Acción": (
-        <span className={`px-2 py-1 rounded-full text-sm font-semibold
-          ${aprobacion.estado === 'APROBADO' ? 'bg-green-100 text-green-800' : 
-            'bg-yellow-100 text-yellow-800'}`}>
-          {aprobacion.estado}
-        </span>
-      )
-    }))
+    }))  // Removemos el type assertion
   };
 
   const handleAprobar = async () => {
@@ -100,12 +103,16 @@ const DetalleOrdenPagoModal: React.FC<DetalleOrdenPagoModalProps> = ({
   };
 
   const handleConfirmAprobacion = async () => {
+    if (!ordenPago) return;
+    
     try {
       setIsSubmitting(true);
       await dispatch(addAprobacion({
         usuario_id: userId || '',
         estado: 'APROBADO',
-        orden_pago_id: ordenPago._id
+        orden_pago_id: ordenPago._id,
+        monto: ordenPago.monto_solicitado, // Agregamos el monto
+        tipo_moneda: ordenPago.tipo_moneda // Agregamos el tipo de moneda
       })).unwrap();
       
       alert('Aprobación registrada exitosamente');
@@ -192,11 +199,13 @@ const DetalleOrdenPagoModal: React.FC<DetalleOrdenPagoModalProps> = ({
               <div className="flex flex-col space-y-1">
                 <span className="text-sm font-medium text-gray-500">Fecha de generación</span>
                 <span className="text-lg text-gray-900">
-                  {new Date(ordenPago.fecha).toLocaleDateString('es-PE', {
-                    year: 'numeric',
-                    month: 'long',
-                    day: 'numeric'
-                  })}
+                  {ordenPago.fecha 
+                    ? new Date(ordenPago.fecha).toLocaleDateString('es-PE', {
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric'
+                      })
+                    : '-'}
                 </span>
               </div>
 
@@ -286,7 +295,7 @@ const DetalleOrdenPagoModal: React.FC<DetalleOrdenPagoModalProps> = ({
             <div className="flex justify-end gap-4">
               <Button
                 text="No"
-                color="gris"
+                color="rojo"
                 onClick={() => setShowConfirmModal(false)}
                 className="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600"
               />

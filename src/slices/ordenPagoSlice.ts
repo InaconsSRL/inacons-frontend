@@ -9,33 +9,48 @@ import {
   OrdenPagoByOrdenCompra
 } from '../services/ordenPagoService';
 
+export interface IOrdenPago {
+  _id: string;
+  codigo: string;
+  monto_solicitado: number;
+  tipo_moneda: string;
+  tipo_pago: string;
+  estado: string;
+  comprobante?: string; // Hacemos el campo opcional aquí
+  orden_compra: {
+    codigo_orden: string;
+    id?: string;  // Hacer id opcional
+  };
+  usuario_id: {
+    nombres: string;
+    id: string;
+  };
+  fecha?: string;
+  observaciones?: string;
+}
+
+interface OrdenCompraId {
+  id: string;
+  codigo_orden: string;
+}
+
 export interface OrdenPago {
   id: string;
   codigo: string;
   monto_solicitado: number;
   tipo_moneda: string;
   tipo_pago: string;
-  orden_compra_id: {
-    id: string;
-    codigo_orden: string;
-    estado: string;
-    descripcion: string;
-    fecha_ini: string;
-    fecha_fin: string;
-  };
   estado: string;
-  observaciones?: string;
+  comprobante?: string;
+  orden_compra: any;
+  orden_compra_id: OrdenCompraId;
   usuario_id: {
     id: string;
     nombres: string;
     apellidos: string;
     dni: string;
     usuario: string;
-    contrasenna: string;
-    rol_id: string;
   };
-  comprobante?: string;
-  fecha: string;
 }
 
 interface OrdenPagoState {
@@ -95,7 +110,8 @@ export const updateOrdenPago = createAsyncThunk(
   'ordenPago/updateOrdenPago',
   async ({ id, ...data }: OrdenPagoInput & { id: string }, { rejectWithValue }) => {
     try {
-      return await updateOrdenPagoService(id, data);
+      const response = await updateOrdenPagoService(id, data);
+      return response;
     } catch (error) {
       return rejectWithValue((error as Error).message);
     }
@@ -163,5 +179,9 @@ const ordenPagoSlice = createSlice({
       });
   },
 });
+
+// Exportar el selector
+// export const selectOrdenPagoById = (state: RootState, id: string) => 
+//   state.ordenPago.items.find(item => item.id === id);
 
 export const ordenPagoReducer = ordenPagoSlice.reducer;

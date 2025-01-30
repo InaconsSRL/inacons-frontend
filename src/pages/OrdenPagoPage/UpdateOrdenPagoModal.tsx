@@ -5,10 +5,19 @@ import Button from '../../components/Buttons/Button';
 import Modal from '../../components/Modal/Modal';
 import { AppDispatch } from '../../store/store';
 
+interface OrdenPago {
+  id: number | string; // Permitir tanto number como string para el id
+  monto_solicitado: number;
+  tipo_moneda: string;
+  comprobante?: string; // Hacer opcional
+  tipo_pago: string;
+  tipo_cambio?: number;
+}
+
 interface UpdateOrdenPagoModalProps {
   isOpen: boolean;
   onClose: () => void;
-  ordenPago: any;
+  ordenPago: OrdenPago; // No permitimos null aquí
   onSuccess: () => void;
 }
 
@@ -24,13 +33,13 @@ const UpdateOrdenPagoModal: React.FC<UpdateOrdenPagoModalProps> = ({
   const [tipoCambio, setTipoCambio] = useState(0);
   const [tipoComprobante, setTipoComprobante] = useState('');
   const [tipoPago, setTipoPago] = useState('');
-  const [comprobanteFile, setComprobanteFile] = useState<File | null>(null);
+  //const [comprobanteFile, setComprobanteFile] = useState<File | null>(null);
 
   useEffect(() => {
     if (ordenPago) {
       setMonto(ordenPago.monto_solicitado);
       setMoneda(ordenPago.tipo_moneda);
-      setTipoComprobante(ordenPago.comprobante);
+      setTipoComprobante(ordenPago.comprobante || ''); // Proporcionar valor por defecto
       setTipoPago(ordenPago.tipo_pago);
       setTipoCambio(ordenPago.tipo_cambio || 0);
     }
@@ -38,33 +47,38 @@ const UpdateOrdenPagoModal: React.FC<UpdateOrdenPagoModalProps> = ({
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
-      setComprobanteFile(e.target.files[0]);
+     // setComprobanteFile(e.target.files[0]);
     }
   };
 
   const handleSubmit = async () => {
+    if (!ordenPago) return; // Agregamos esta verificación por seguridad
+    
     try {
-      const formData = new FormData();
-      formData.append('id', ordenPago.id);
-      formData.append('monto_solicitado', monto.toString());
-      formData.append('tipo_moneda', moneda);
-      formData.append('tipo_pago', tipoPago);
-      formData.append('comprobante', tipoComprobante);
-      
-      if (moneda === 'dolares') {
-        formData.append('tipo_cambio', tipoCambio.toString());
-        formData.append('monto_soles', (tipoCambio * monto).toString());
-      }
+      const updateData = {
+        id: ordenPago.id.toString(),
+        monto_solicitado: monto,
+        tipo_moneda: moneda,
+        tipo_pago: tipoPago,
+        comprobante: tipoComprobante
+      };
 
-      if (comprobanteFile) {
-        formData.append('comprobante_file', comprobanteFile);
-      }
+     
+      console.log('Enviando datos:', updateData);
 
-      await dispatch(updateOrdenPago(formData));
-      onSuccess();
-      onClose();
+      const response = await dispatch(updateOrdenPago(updateData)).unwrap();
+      console.log('Respuesta del servidor:', response);
+
+      if (response) {
+        onSuccess();
+        onClose();
+        return response;
+      } else {
+        throw new Error('No se recibió respuesta del servidor');
+      }
     } catch (error) {
       console.error('Error al actualizar:', error);
+      throw error;
     }
   };
 
@@ -183,10 +197,10 @@ const UpdateOrdenPagoModal: React.FC<UpdateOrdenPagoModalProps> = ({
           )}
         </div>
 
-        <div className="mt-6 flex justify-end space-x-3">
+        <div className="mt-6 flex justify-center space-x-3">
           <Button
             text="Cancelar"
-            color="gris"
+            color="rojo"
             onClick={onClose}
           />
           <Button

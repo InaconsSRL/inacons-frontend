@@ -38,7 +38,6 @@ const ComprobantesModal: React.FC<ComprobantesModalProps> = ({ isOpen, onClose, 
                   <div className="absolute inset-0 bg-black opacity-0 group-hover:opacity-30 transition-opacity" />
                   <div className="absolute bottom-0 left-0 right-0 p-2 bg-gradient-to-t from-black/70 to-transparent">
                     <p className="text-white text-sm truncate">
-                      {archivo.nombre_archivo}
                     </p>
                   </div>
                 </div>

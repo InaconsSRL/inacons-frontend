@@ -5,7 +5,7 @@ import {
   addTipoCambioService,
   updateTipoCambioService,
   deleteTipoCambioService,
-  TipoCambioInput
+  //TipoCambioInput
 } from '../services/tipoCambioOrdenPagoService';
 
 export interface TipoCambio {

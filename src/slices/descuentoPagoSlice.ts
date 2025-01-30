@@ -35,6 +35,7 @@ export interface OrdenPagoDescuento {
     contrasenna: string;
     rol_id: string;
   };
+  estado: string;  // Add this line
 }
 
 // Interfaz para el estado
