@@ -25,6 +25,10 @@ import TipoAlmacenPage from './pages/TipoAlmacenPage/TipoAlmacenPage';
 import ObrasComponent from './pages/ObrasPage/ObrasPage';
 import ComprasBoard from './pages/ComprasPage/ComprasBoard';
 import OrdenCompraPage from './pages/OrdenCompraPage/OrdenCompraPage';
+import OrdenPagoPage from './pages/OrdenPagoPage/OrdenPagoPage';
+
+import ListOrdenPage from './pages/OrdenPagoPage/ListOrdenPage';
+
 import HomologacionFormPage from './pages/ProveedorPage/Forms/HomologacionForm';
 import AlmacenBetha from './pages/AlmacenesPage/AlmacenBoard/AlmacenBetha';
 import EmpleadosPage from './pages/EmpleadosPage/EmpleadosPage';
@@ -66,8 +70,11 @@ const App: React.FC = () => {
         <Route path="compras" element={<ComprasBoard />}> </Route>
         <Route path="tipoAlmacen" element={<TipoAlmacenPage />}> </Route>
         <Route path="obras" element={<ObrasComponent />}> </Route>
-        <Route path="ordenCompra" element={<OrdenCompraPage />}> </Route>
-        <Route path="almacenbetha" element={<AlmacenBetha />} />
+          <Route path="ordenCompra" element={<OrdenCompraPage />}> </Route>
+	  <Route path="ordenPago" element={<OrdenPagoPage />}> </Route>
+      <Route path="orden-pago" element={<Navigate to="/dashboard/ordenPago" replace />} />
+      <Route path="listaOrdenPago" element={<ListOrdenPage />} />
+	<Route path="almacenbetha" element={<AlmacenBetha />} />
         <Route path="empleados" element={<EmpleadosPage />} />
         <Route path="sorteo" element={<SorteoPage />} />
         <Route path="loader" element={<LoaderOverlay />} />

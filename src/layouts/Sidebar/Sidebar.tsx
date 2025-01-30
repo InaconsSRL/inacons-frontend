@@ -49,6 +49,11 @@ const Sidebar: React.FC<SidebarProps> = ({ isSidebarOpen, toggleSidebar }) => {
     { to: "/dashboard/ordenCompra", icon: FaListCheck, text: "OrdenesDeCompra" },
   ];
 
+   const moduloPagos = [
+      { to: "/dashboard/ordenPago", icon: FaListCheck, text: "OrdenesDePagos" },
+      { to: "/dashboard/listaOrdenPago", icon: FaClipboardList, text: "Lista de Pagos" }, // Nueva línea agregada
+  ];
+       
   const moduloProyectos = [
     { to: "/dashboard/datosGenerales", icon: GiConcreteBag, text: "datosGenerales" },
     { to: "/dashboard/hojaPresupuesto", icon: GiConcreteBag, text: "HojaPresupuesto" },
@@ -182,6 +187,15 @@ const Sidebar: React.FC<SidebarProps> = ({ isSidebarOpen, toggleSidebar }) => {
           setOpenDropdown={setOpenDropdown}
         />
 
+        <DropdownMenu
+          title="Pagos"
+          items={moduloPagos}
+          isSidebarOpen={isSidebarOpen || (!isMobile && isHovered)}
+          toggleSidebar={toggleSidebar}
+          openDropdown={openDropdown}
+          setOpenDropdown={setOpenDropdown}
+        />
+	  
         <DropdownMenu
           title="Almacen"
           items={moduloAlmacen}

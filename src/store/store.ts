@@ -21,6 +21,9 @@ import { movilidadReducer } from '../slices/movilidadSlice';
 import { obraReducer } from '../slices/obrasSlice';
 import { ordenCompraRecursosReducer } from '../slices/ordenCompraRecursosSlice';
 import { ordenCompraReducer } from '../slices/ordenCompraSlice';
+import { ordenPagoReducer } from '../slices/ordenPagoSlice';
+import { descuentoPagoReducer} from '../slices/descuentoPagoSlice';
+import { aprobacionOrdenPagoReducer } from '../slices/aprobacionesOrdenPagoSlice';
 import { preSolicitudAlmacenRecursoReducer } from '../slices/preSolicitudAlmacenRecursoSlice';
 import { preSolicitudAlmacenReducer } from '../slices/preSolicitudAlmacenSlice';
 import { proveedorReducer } from '../slices/proveedorSlice';
@@ -76,6 +79,10 @@ import { recursoComposicionApuReducer } from '../slices/recursoComposicionApuSli
 import { composicionApuReducer } from '../slices/composicionApuSlice';
 import activeDataReducer from '../slices/activeDataSlice';
 import { tituloReducer } from '../slices/tituloSlice';
+import { pagosOrdenPagoReducer } from '../slices/pagosOrdenPagoSlice';
+import { archivoPagoReducer } from '../slices/archivoPagoSlice';
+import { comprobantePagoReducer } from '../slices/comprobantePagoSlice';
+import { tipoCambioOrdenPagoReducer } from '../slices/tipoCambioOrdenPagoSlice';
 
 export const store = configureStore({
   reducer: {
@@ -106,7 +113,10 @@ export const store = configureStore({
     movilidad: movilidadReducer,
     obra: obraReducer,
     ordenCompraRecursos: ordenCompraRecursosReducer,
-    ordenCompra: ordenCompraReducer,
+      ordenCompra: ordenCompraReducer,
+      ordenPago : ordenPagoReducer,
+      descuentoPago: descuentoPagoReducer,
+      aprobacionOrdenPago: aprobacionOrdenPagoReducer,
     preSolicitudAlmacenRecurso: preSolicitudAlmacenRecursoReducer,
     preSolicitudAlmacen: preSolicitudAlmacenReducer,
     proveedor: proveedorReducer,
@@ -155,6 +165,10 @@ export const store = configureStore({
     composicionApu: composicionApuReducer,
     activeData: activeDataReducer,
     titulo: tituloReducer,
+    pagosOrdenPago: pagosOrdenPagoReducer,
+    archivoPago: archivoPagoReducer,
+    comprobantePago: comprobantePagoReducer,
+    tipoCambioOrdenPago: tipoCambioOrdenPagoReducer,      
   },
 
   //Para que se tome mas tiempo en responder todas las solicitudes de la API
