@@ -3,14 +3,14 @@ import { useDispatch, useSelector } from 'react-redux';
 import { FiSearch, FiPlusCircle } from 'react-icons/fi';
 import { AppDispatch, RootState } from '../../store/store';
 import { fetchProveedores } from '../../slices/proveedorSlice';
-import { addCotizacionProveedor } from '../../slices/cotizacionProveedorSlice';
+import { addCotizacionProveedor, fetchCotizacionProveedores } from '../../slices/cotizacionProveedorSlice';
 import { updateCotizacion } from '../../slices/cotizacionSlice';
 import type { Proveedor } from '../../slices/proveedorSlice';
 import Button from '../../components/Buttons/Button';
 import ProveedorFormComponent from '../ProveedorPage/ProveedorFormComponent';
 
 interface BuscarProveedoresModalProps {
-  cotizacionId: string; // Añadir esta prop
+  cotizacion_id: string; // Añadir esta prop
   proveedoresActuales: Array<{ id: string }>;  // Añadir esta prop
   cotizacionEstado: string; // Añadir esta prop
 }
@@ -23,7 +23,7 @@ const estadosProveedor=[
   "noAdjudicada",
   ];
 
-const BuscarProveedoresModal: React.FC<BuscarProveedoresModalProps> = ({ cotizacionId, proveedoresActuales, cotizacionEstado }) => {
+const BuscarProveedoresModal: React.FC<BuscarProveedoresModalProps> = ({ cotizacion_id, proveedoresActuales, cotizacionEstado }) => {
   const dispatch = useDispatch<AppDispatch>();
   const proveedores = useSelector((state: RootState) => state.proveedor.proveedores);
   const [searchTerm, setSearchTerm] = useState('');
@@ -52,18 +52,20 @@ const BuscarProveedoresModal: React.FC<BuscarProveedoresModalProps> = ({ cotizac
     if (selectedProveedor) {
       try {
         if (cotizacionEstado === 'pendiente') {
-          await dispatch(updateCotizacion({ id: cotizacionId, estado: 'iniciada' })).unwrap();
+          await dispatch(updateCotizacion({ id: cotizacion_id, estado: 'iniciada' })).unwrap();
         }
         await dispatch(addCotizacionProveedor({
-          cotizacionId,
+          cotizacion_id,
           proveedor_id: selectedProveedor.id,
           estado: estadosProveedor[0],
           fecha_inicio: new Date(),
           fecha_fin: new Date(new Date().setDate(new Date().getDate() + 3)), // 3 días por defecto
           entrega: new Date(new Date().setDate(new Date().getDate() + 3)),
+          divisa_id: '679bbb9b46ff10eb05a34fdf',
           c_pago: '',
           observaciones: ''
         })).unwrap();
+        await dispatch(fetchCotizacionProveedores());
       } catch (error) {
         console.error('Error al agregar cotización proveedor:', error);
       }

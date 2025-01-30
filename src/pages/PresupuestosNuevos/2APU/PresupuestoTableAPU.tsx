@@ -8,6 +8,8 @@ import { RootState, AppDispatch } from '../../../store/store';
 import { MdKeyboardArrowRight, MdUnfoldLess, MdUnfoldMore } from 'react-icons/md';
 import { IoLayersOutline } from 'react-icons/io5';
 import { motion, AnimatePresence } from 'framer-motion';
+import { setEditMode } from '../../../slices/activeDataSlice';
+import { FiEdit2 } from 'react-icons/fi';
 
 interface EditingMetrado {
   [key: string]: string;
@@ -260,6 +262,16 @@ const PresupuestoTableAPU: React.FC = () => {
       >
         <h2 className="font-semibold text-sm text-gray-800">Hoja del Presupuesto</h2>
         <div className="flex gap-2">
+          <motion.button
+            variants={buttonVariants}
+            whileHover="hover"
+            whileTap="tap"
+            onClick={() => dispatch(setEditMode(true))}
+            className="px-3 py-1 bg-yellow-600 text-white rounded-md hover:bg-yellow-700 text-sm flex items-center gap-2"
+          >
+            <FiEdit2 className="w-4 h-4" />
+            Modo Edición
+          </motion.button>
           <div className="flex items-center gap-1">
             <motion.button
               variants={buttonVariants}

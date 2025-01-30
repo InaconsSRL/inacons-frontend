@@ -8,6 +8,7 @@ import APU from './APU';
 import LoaderOverlay from '../../../components/Loader/LoaderOverlay';
 import { getComposicionesApuByTitulo } from '../../../slices/composicionApuSlice';
 import { fetchTipos } from '../../../slices/tipoSlice';
+import EdicionPresupuestoTableAPU from './EdicionPresupuestoTableAPU';
 
 interface GestionLayoutProps {
   children?: React.ReactNode;
@@ -15,7 +16,7 @@ interface GestionLayoutProps {
 
 const GestionLayoutAPU: React.FC<GestionLayoutProps> = () => {
   const dispatch = useDispatch<AppDispatch>();
-  const { activeProyecto, activePresupuesto, activeTitulo } = useSelector((state: RootState) => state.activeData);
+  const { activeProyecto, activePresupuesto, activeTitulo, isEditMode } = useSelector((state: RootState) => state.activeData);
   const loading = useSelector((state: RootState) => state.titulo.loading);
   const composiciones = useSelector((state: RootState) => state.composicionApu.composicionesApu);
   const tipos = useSelector((state: RootState) => state.tipo.tipos);
@@ -48,22 +49,29 @@ const GestionLayoutAPU: React.FC<GestionLayoutProps> = () => {
         <ListaProyectos />
       </div>
 
-      {/* Panel derecho - Contenedor flexible para formulario y área inferior */}
+      {/* Panel derecho */}
       {activeProyecto && <div className="flex-1 flex flex-col h-[60vh] lg:h-full">
-        {/* Panel superior derecho - Formulario de Proyecto */}
-        {activePresupuesto && <div className="h-1/2 border-b border-gray-700 overflow-y-auto">
-          <PresupuestoTableAPU />
-        </div>}
-
-        {/* Panel inferior derecho - Área para APU o LoaderOverlay */}
-        {activeTitulo && (
-          <div className="h-1/2 border-b border-gray-700 overflow-y-auto">
-            {loading || composicionesLoading ? (
-              <LoaderOverlay message="Cargando composiciones..." />
-            ) : (
-              <APU composiciones={composiciones} />
+        {isEditMode ? (
+          // Modo edición - Panel completo
+          <EdicionPresupuestoTableAPU />
+        ) : (
+          // Modo normal - Paneles divididos
+          <>
+            {activePresupuesto && (
+              <div className="h-1/2 border-b border-gray-700 overflow-y-auto">
+                <PresupuestoTableAPU />
+              </div>
             )}
-          </div>
+            {activeTitulo && (
+              <div className="h-1/2 border-b border-gray-700 overflow-y-auto">
+                {loading || composicionesLoading ? (
+                  <LoaderOverlay message="Cargando composiciones..." />
+                ) : (
+                  <APU composiciones={composiciones} />
+                )}
+              </div>
+            )}
+          </>
         )}
       </div>}
     </div>

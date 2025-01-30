@@ -9,6 +9,7 @@ import { updateCotizacionProveedor, deleteCotizacionProveedor } from '../../slic
 import Modal from '../../components/Modal/Modal';
 import Button from '../../components/Buttons/Button';
 import { updateCotizacion } from '../../slices/cotizacionSlice';
+import { fetchDivisas } from '../../slices/divisaSlice';
 
 //Todo Ok
 
@@ -60,7 +61,7 @@ interface ComparacionTableProps {
     proveedores: ProveedorCotizacion[];
     mejorProveedor: ProveedorCotizacion;
     estadoCotizacion: string;
-    cotizacionId: string;  // Añadimos esta prop
+    cotizacion_id: string;  // Añadimos esta prop
 }
 
 const ComparacionTable: React.FC<ComparacionTableProps> = ({
@@ -68,14 +69,14 @@ const ComparacionTable: React.FC<ComparacionTableProps> = ({
     proveedores,
     mejorProveedor,
     estadoCotizacion,
-    cotizacionId
+    cotizacion_id
 }) => {
     const dispatch = useDispatch<AppDispatch>();
+    const { divisas } = useSelector((state: RootState) => state.divisa);
     const [editingProveedor, setEditingProveedor] = useState<string | null>(null);
-    const [editedValues, setEditedValues] = useState<{
-        [key: string]: { cantidad: string; precio: string }[];
-    }>({});
+    const [editedValues, setEditedValues] = useState<{[key: string]: { cantidad: string; precio: string }[];}>({});
     const [notasProveedores, setNotasProveedores] = useState<{ [key: string]: string }>({});
+    const [editedDivisas, setEditedDivisas] = useState<{ [key: string]: string }>({});
     const [showConfirmModal, setShowConfirmModal] = useState(false);
     const [selectedProveedor, setSelectedProveedor] = useState<{
         id: string;
@@ -90,9 +91,20 @@ const ComparacionTable: React.FC<ComparacionTableProps> = ({
     const loading = useSelector((state: RootState) =>
         state.cotizacionProveedoresRecurso.loading
     );
-    const formatCurrency = (value: number) =>
-        `S/ ${value.toFixed(2)}`;
+    const getDivisaSymbol = (proveedorId: string): string => {
+        const proveedor = proveedores.find(p => p.id === proveedorId);
+        return proveedor?.divisa_id?.simbolo || '';
+    };
 
+    const formatCurrency = (value: number, proveedorId?: string) => {
+        const symbol = proveedorId ? getDivisaSymbol(proveedorId) : '';
+        return `${symbol}${value.toFixed(2)}`;
+    };
+
+    useEffect(() => {
+        dispatch(fetchDivisas());
+    }, [dispatch]);
+    
     useEffect(() => {
         // Cargar datos para cada proveedor
         proveedores.forEach(proveedor => {
@@ -129,6 +141,11 @@ const ComparacionTable: React.FC<ComparacionTableProps> = ({
         setEditedValues(prev => ({
             ...prev,
             [proveedorId]: initialValues
+        }));
+
+        setEditedDivisas(prev => ({
+            ...prev,
+            [proveedorId]: proveedores.find(p => p.id === proveedorId)?.divisa_id?.id || ''
         }));
     };
 
@@ -186,7 +203,8 @@ const ComparacionTable: React.FC<ComparacionTableProps> = ({
                     dispatch(updateCotizacionProveedor({
                         id: proveedorId,
                         observaciones: notasProveedores[proveedorId],
-                        estado: "proformaRecibida"
+                        estado: "proformaRecibida",
+                        divisa_id: editedDivisas[proveedorId]
                     })).unwrap()
                 );
             }
@@ -199,7 +217,7 @@ const ComparacionTable: React.FC<ComparacionTableProps> = ({
                 // Actualizar estado de la cotización si está "iniciada"
                 if (estadoCotizacion === "iniciada") {
                     await dispatch(updateCotizacion({
-                        id: cotizacionId,
+                        id: cotizacion_id,
                         estado: "cotizada"
                     })).unwrap();
                 }
@@ -310,7 +328,7 @@ const ComparacionTable: React.FC<ComparacionTableProps> = ({
 
                 // Actualizar estado de la cotización
                 await dispatch(updateCotizacion({
-                    id: cotizacionId,
+                    id: cotizacion_id,
                     estado: 'adjudicada',
                     fecha: new Date()
                 })).unwrap();
@@ -340,7 +358,7 @@ const ComparacionTable: React.FC<ComparacionTableProps> = ({
                 // Verificar si era el último proveedor
                 if (proveedores.length === 1) {
                     await dispatch(updateCotizacion({
-                        id: cotizacionId,
+                        id: cotizacion_id,
                         estado: "pendiente"
                     })).unwrap();
                 }
@@ -402,7 +420,6 @@ const ComparacionTable: React.FC<ComparacionTableProps> = ({
                 return 'bg-gray-600';
         }
     };
-
     return (
         <motion.div
             initial={{ opacity: 0 }}
@@ -495,7 +512,26 @@ const ComparacionTable: React.FC<ComparacionTableProps> = ({
                                                 <span className="font-bold text-xl font-poppins text-sky-800 drop-shadow-sm">{prov.nombre}</span>
                                             </div>
                                         </div>
-
+                                        <div>
+                                            {editingProveedor === prov.id ? (
+                                                <select
+                                                    value={editedDivisas[prov.id] || ''}
+                                                    onChange={(e) => setEditedDivisas({ ...editedDivisas, [prov.id]: e.target.value })}
+                                                    className="border rounded px-2 py-1 text-xs"
+                                                >
+                                                    <option value="">Seleccione divisa</option>
+                                                    {divisas.map((div) => (
+                                                        <option key={div.id} value={div.id}>
+                                                            {div.abreviatura} - {div.simbolo}
+                                                        </option>
+                                                    ))}
+                                                </select>
+                                            ) : (
+                                                <span className="text-sm font-semibold">
+                                                    {prov.divisa_id?.abreviatura} - {prov.divisa_id?.simbolo}
+                                                </span>
+                                            )}
+                                        </div>                                        
                                         <div className="flex flex-col gap-1">
                                             <span className={`text-xs ${getEstadoColor(prov.estado)} pt-2 rounded-lg px-2 py-0.5 text-white shadow-sm font-medium`}>
                                                 {prov.estado}
@@ -586,13 +622,13 @@ const ComparacionTable: React.FC<ComparacionTableProps> = ({
                                                     />
                                                 ) : (
                                                     <span className="text-gray-500">
-                                                        {savedValues.precio !== '--' ? formatCurrency(+savedValues.precio) : '--'}
+                                                        {savedValues.precio !== '--' ? formatCurrency(+savedValues.precio, prov.id) : '--'}
                                                     </span>
                                                 )}
                                             </td>
                                             <td className={`border p-2 text-right ${isMejorPrecio ? bgColor : 'bg-green-50'}`}>
                                                 <span className="text-gray-500">
-                                                    {savedValues.subTotal !== '--' ? formatCurrency(+savedValues.subTotal) : '--'}
+                                                    {savedValues.subTotal !== '--' ? formatCurrency(+savedValues.subTotal, prov.id) : '--'}
                                                 </span>
                                             </td>
                                         </React.Fragment>
@@ -615,7 +651,7 @@ const ComparacionTable: React.FC<ComparacionTableProps> = ({
                                 <React.Fragment key={`total-section-${prov.id}`}>
                                     <td colSpan={2} className={`border p-2 text-right ${prov.id === mejorProveedor.id ? 'bg-green-200' : ''}`} >TOTAL</td>
                                     <td className={`border p-2 text-right ${prov.id === mejorProveedor.id ? 'bg-green-200' : ''}`}>
-                                        {formatCurrency(proveedorTotal)}
+                                        {formatCurrency(proveedorTotal, prov.id)}
                                     </td>
                                 </React.Fragment>
                             );

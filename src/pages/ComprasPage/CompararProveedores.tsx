@@ -70,6 +70,15 @@ export interface ProveedorCotizacion {
   }[];
   total: number;
   notas: string;
+  divisa_id ?: Divisa;
+}
+
+interface Divisa {
+  id: string;
+  nombre: string;
+  abreviatura: string;
+  simbolo: string;
+  region: string;
 }
 
 const CompararProveedores: React.FC<CompararProveedoresProps> = ({ cotizacion, recursos, onClose }) => {
@@ -132,6 +141,13 @@ const CompararProveedores: React.FC<CompararProveedoresProps> = ({ cotizacion, r
       fechaInicio: cp.fecha_inicio,
       fechaFin: cp.fecha_fin,
       entrega: cp.entrega,
+      divisa_id: {
+        id: cp.divisa_id?.id || '',
+        nombre: cp.divisa_id?.nombre || '',
+        abreviatura: cp.divisa_id?.abreviatura || '',
+        simbolo: cp.divisa_id?.simbolo || '',
+        region: cp.divisa_id?.region || ''
+      },
       items: recursos.map(recurso => ({
         cantidad: recurso.cantidad,
         precio: recurso.recurso_id.precio_actual, // Este precio deberá actualizarse cuando implementes la edición
@@ -369,7 +385,7 @@ const CompararProveedores: React.FC<CompararProveedoresProps> = ({ cotizacion, r
         proveedores={proveedores}
         estadoCotizacion={cotizacion.estado || ''}
         mejorProveedor={mejorProveedor || {} as ProveedorCotizacion}
-        cotizacionId={cotizacion.id || ''}
+        cotizacion_id={cotizacion.id || ''}
       />
 
       {showProveedorModal && (
@@ -379,7 +395,7 @@ const CompararProveedores: React.FC<CompararProveedoresProps> = ({ cotizacion, r
           title="Buscar Proveedor"
         >
           <BuscarProveedoresModal
-            cotizacionId={cotizacion.id || ''}
+            cotizacion_id={cotizacion.id || ''}
             cotizacionEstado={cotizacion.estado || ''}
             proveedoresActuales={cotizacionProveedores.map(cp => ({
               id: cp.proveedor_id.id || ''

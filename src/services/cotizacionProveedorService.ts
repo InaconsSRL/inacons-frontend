@@ -20,6 +20,13 @@ const LIST_COTIZACION_PROVEEDORES = gql`
       entrega
       c_pago
       observaciones
+      divisa_id {
+        id
+        nombre
+        abreviatura
+        simbolo
+        region
+      }
     }
   }
 `;
@@ -43,13 +50,20 @@ const LIST_COTIZACION_PROVEEDORES_BY_COTIZACION_ID = gql`
       entrega
       c_pago
       observaciones
+      divisa_id {
+        id
+        nombre
+        abreviatura
+        simbolo
+        region
+      }
     }
   }
 `;
 
 const ADD_COTIZACION_PROVEEDOR = gql`
-  mutation AddCotizacionProveedor($cotizacionId: ID!, $proveedor_id: ID!, $estado: String, $fecha_inicio: DateTime, $fecha_fin: DateTime, $entrega: DateTime, $c_pago: String, $observaciones: String) {
-    addCotizacionProveedor(cotizacion_id: $cotizacionId, proveedor_id: $proveedor_id, estado: $estado, fecha_inicio: $fecha_inicio, fecha_fin: $fecha_fin, entrega: $entrega, c_pago: $c_pago, observaciones: $observaciones) {
+  mutation AddCotizacionProveedor($cotizacion_id: ID!, $proveedor_id: ID!, $estado: String, $fecha_inicio: DateTime, $fecha_fin: DateTime, $entrega: DateTime, $c_pago: String, $observaciones: String, $divisa_id: ID!) {
+    addCotizacionProveedor(cotizacion_id: $cotizacion_id, proveedor_id: $proveedor_id, estado: $estado, fecha_inicio: $fecha_inicio, fecha_fin: $fecha_fin, entrega: $entrega, c_pago: $c_pago, observaciones: $observaciones, divisa_id: $divisa_id) {
       id
       cotizacion_id {
         id
@@ -66,13 +80,20 @@ const ADD_COTIZACION_PROVEEDOR = gql`
       entrega
       c_pago
       observaciones
+      divisa_id {
+        id
+        nombre
+        abreviatura
+        simbolo
+        region
+      }
     }
   }
 `;
 
 const UPDATE_COTIZACION_PROVEEDOR = gql`
-  mutation UpdateCotizacionProveedor($updateCotizacionProveedorId: ID!, $cotizacion_id: ID, $proveedor_id: ID, $estado: String, $fecha_inicio: DateTime, $fecha_fin: DateTime, $entrega: DateTime, $c_pago: String, $observaciones: String) {
-    updateCotizacionProveedor(id: $updateCotizacionProveedorId, cotizacion_id: $cotizacion_id, proveedor_id: $proveedor_id, estado: $estado, fecha_inicio: $fecha_inicio, fecha_fin: $fecha_fin, entrega: $entrega, c_pago: $c_pago, observaciones: $observaciones) {
+  mutation UpdateCotizacionProveedor($updateCotizacionProveedorId: ID!, $cotizacion_id: ID, $proveedor_id: ID, $estado: String, $fecha_inicio: DateTime, $fecha_fin: DateTime, $entrega: DateTime, $c_pago: String, $observaciones: String, $divisa_id: ID) {
+    updateCotizacionProveedor(id: $updateCotizacionProveedorId, cotizacion_id: $cotizacion_id, proveedor_id: $proveedor_id, estado: $estado, fecha_inicio: $fecha_inicio, fecha_fin: $fecha_fin, entrega: $entrega, c_pago: $c_pago, observaciones: $observaciones, divisa_id: $divisa_id) {
       id
       cotizacion_id {
         id
@@ -89,6 +110,13 @@ const UPDATE_COTIZACION_PROVEEDOR = gql`
       entrega
       c_pago
       observaciones
+      divisa_id {
+        id
+        nombre
+        abreviatura
+        simbolo
+        region
+      }
     }
   }
 `;
@@ -117,6 +145,7 @@ export const listCotizacionProveedoresByCotizacionId = async (cotizacionId: stri
     const { data } = await client.query({
       query: LIST_COTIZACION_PROVEEDORES_BY_COTIZACION_ID,
       variables: { cotizacionId },
+      fetchPolicy: 'network-only', // Forzar consulta al servidor
     });
     return data.listCotizacionProveedoresByCotizacionId;
   } catch (error) {
@@ -125,7 +154,7 @@ export const listCotizacionProveedoresByCotizacionId = async (cotizacionId: stri
 };
 
 interface CotizacionProveedorData {
-  cotizacionId: string;
+  cotizacion_id: string;
   proveedor_id: string;
   estado?: string;
   fecha_inicio?: string;
@@ -133,6 +162,7 @@ interface CotizacionProveedorData {
   entrega?: string;
   c_pago?: string;
   observaciones?: string;
+  divisa_id ?: string;
 }
 
 export const addCotizacionProveedor = async (cotizacionProveedorData: CotizacionProveedorData) => {
@@ -157,6 +187,7 @@ interface UpdateCotizacionProveedorData {
   entrega?: string;
   c_pago?: string;
   observaciones?: string;
+  divisa_id ?: string;
 }
 
 export const updateCotizacionProveedor = async (cotizacionProveedorData: UpdateCotizacionProveedorData) => {

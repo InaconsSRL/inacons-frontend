@@ -26,6 +26,15 @@ interface CotizacionProveedor {
   entrega: string;
   c_pago: string;
   observaciones: string;
+  divisa_id ?: Divisa;
+}
+
+interface Divisa {
+  id: string;
+  nombre: string;
+  abreviatura: string;
+  simbolo: string;
+  region: string;
 }
 
 interface CotizacionProveedorState {
@@ -65,7 +74,7 @@ export const fetchCotizacionProveedoresByCotizacionId = createAsyncThunk(
 export const addCotizacionProveedor = createAsyncThunk(
   'cotizacionProveedor/add',
   async (data: {
-    cotizacionId: string;
+    cotizacion_id: string;
     proveedor_id: string;
     estado: string;
     fecha_inicio: Date;
@@ -73,6 +82,7 @@ export const addCotizacionProveedor = createAsyncThunk(
     entrega: Date;
     c_pago: string;
     observaciones: string;
+    divisa_id ?: string;
   }, { rejectWithValue }) => {
     try {
       const formattedData = {
@@ -100,6 +110,7 @@ export const updateCotizacionProveedor = createAsyncThunk(
     entrega?: Date;
     c_pago?: string;
     observaciones?: string;
+    divisa_id ?: string;
   }, { rejectWithValue }) => {
     try {
       const formattedData = {
@@ -150,12 +161,23 @@ const cotizacionProveedorSlice = createSlice({
         state.error = action.payload as string;
       })
       .addCase(fetchCotizacionProveedoresByCotizacionId.fulfilled, (state, action) => {
-        state.cotizacionProveedores = action.payload;
+        console.log('fetchByCotizacionId - Estado anterior:', [...state.cotizacionProveedores]);
+        console.log('fetchByCotizacionId - Payload recibido:', action.payload);
+        // Asegurarnos de que el payload es un array
+        const newState = Array.isArray(action.payload) ? action.payload : [];
+        state.cotizacionProveedores = newState;
         state.error = null;
+        console.log('fetchByCotizacionId - Nuevo estado:', [...state.cotizacionProveedores]);
       })
       .addCase(addCotizacionProveedor.fulfilled, (state, action) => {
-        state.cotizacionProveedores.push(action.payload);
+        console.log('add - Estado anterior:', [...state.cotizacionProveedores]);
+        console.log('add - Payload recibido:', action.payload);
+        // Crear un nuevo array en lugar de modificar el existente
+        const newCotizaciones = [...state.cotizacionProveedores];
+        newCotizaciones.push(action.payload);
+        state.cotizacionProveedores = newCotizaciones;
         state.error = null;
+        console.log('add - Nuevo estado:', [...state.cotizacionProveedores]);
       })
       .addCase(updateCotizacionProveedor.fulfilled, (state, action) => {
         const index = state.cotizacionProveedores.findIndex(
@@ -167,10 +189,14 @@ const cotizacionProveedorSlice = createSlice({
         state.error = null;
       })
       .addCase(deleteCotizacionProveedor.fulfilled, (state, action) => {
-        state.cotizacionProveedores = state.cotizacionProveedores.filter(
+        console.log('delete - Estado anterior:', [...state.cotizacionProveedores]);
+        console.log('delete - ID a eliminar:', action.payload);
+        // Crear un nuevo array filtrado
+        state.cotizacionProveedores = [...state.cotizacionProveedores].filter(
           (item) => item.id !== action.payload
         );
         state.error = null;
+        console.log('delete - Nuevo estado:', [...state.cotizacionProveedores]);
       });
   },
 });
