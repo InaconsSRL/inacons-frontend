@@ -27,7 +27,7 @@ const client = new ApolloClient({
       nextFetchPolicy: 'network-only',
     },
     query: {
-      fetchPolicy: 'cache-first', // Cambiado a network-only para asegurar datos frescos
+      fetchPolicy: 'network-only', // Cambiado a network-only para asegurar datos frescos - se cambio de cache-first
     },
     mutate: {
       fetchPolicy: 'no-cache',

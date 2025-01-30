@@ -8,7 +8,7 @@ import APU from './APU';
 import LoaderOverlay from '../../../components/Loader/LoaderOverlay';
 import { getComposicionesApuByTitulo } from '../../../slices/composicionApuSlice';
 import { fetchTipos } from '../../../slices/tipoSlice';
-import EdicionPresupuestoTableAPU from './EdicionPresupuestoTableAPU';
+import TitulosJerarquia from '../1HojaPresupuesto/TitulosJerarquia/TitulosJerarquia';
 
 interface GestionLayoutProps {
   children?: React.ReactNode;
@@ -53,7 +53,7 @@ const GestionLayoutAPU: React.FC<GestionLayoutProps> = () => {
       {activeProyecto && <div className="flex-1 flex flex-col h-[60vh] lg:h-full">
         {isEditMode ? (
           // Modo edición - Panel completo
-          <EdicionPresupuestoTableAPU />
+          <TitulosJerarquia />
         ) : (
           // Modo normal - Paneles divididos
           <>

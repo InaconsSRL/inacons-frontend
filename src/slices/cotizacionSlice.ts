@@ -155,6 +155,11 @@ const cotizacionSlice = createSlice({
   name: 'cotizacion',
   initialState,
   reducers: {
+    setCotizaciones: (state, action: PayloadAction<Cotizacion[]>) => {
+      state.cotizaciones = action.payload;
+      state.loading = false;
+      state.error = null;
+    },
     clearErrors: (state) => {
       state.error = null;
     },
@@ -227,5 +232,5 @@ const cotizacionSlice = createSlice({
   },
 });
 
-export const { clearErrors } = cotizacionSlice.actions;
+export const { setCotizaciones, clearErrors } = cotizacionSlice.actions;
 export const cotizacionReducer = cotizacionSlice.reducer;

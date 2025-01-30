@@ -8,6 +8,7 @@ import { FiTrash2 } from 'react-icons/fi';
 import ModalAlert from '../../../../components/Modal/ModalAlert';
 import LoaderPage from '../../../../components/Loader/LoaderPage';
 import LoaderOverlay from '../../../../components/Loader/LoaderOverlay';
+import { setEditMode } from '../../../../slices/activeDataSlice';
 
 const TitulosJerarquia: React.FC = () => {
     const dispatch = useDispatch<AppDispatch>();
@@ -120,40 +121,76 @@ const TitulosJerarquia: React.FC = () => {
     const calcularEstructura = async () => {
         setIsCalculating(true);
         try {
+            console.log('Iniciando cálculo de estructura...');
+
             // Guardar estado original de los títulos para comparación
             const titulosOriginales = new Map(titulos.map(t => [t.id_titulo, { ...t }]));
-
-            console.group('Análisis de cambios en títulos');
+            console.log('Estado original de títulos:', titulosOriginales);
 
             // Primera pasada: cálculo inicial
             let titulosOrdenados = await calcularEstructuraInterna([...titulosEnEdicion]);
+            console.log('Primera pasada - títulos ordenados:', titulosOrdenados);
 
             // Segunda pasada: verificación y corrección
             titulosOrdenados = await calcularEstructuraInterna(titulosOrdenados);
+            console.log('Segunda pasada - títulos ordenados:', titulosOrdenados);
 
             // Filtrar solo los títulos que realmente cambiaron
             const titulosModificados = titulosOrdenados.filter(titulo => {
                 const original = titulosOriginales.get(titulo.id_titulo);
-                if (!original) {
-                    return true;
+                if (!original) return true;
+
+                const hayCambios =
+                    titulo.nivel !== original.nivel ||
+                    titulo.orden !== original.orden ||
+                    titulo.item !== original.item ||
+                    titulo.id_titulo_padre !== original.id_titulo_padre;
+
+                if (hayCambios) {
+                    console.log('Título modificado:', {
+                        id: titulo.id_titulo,
+                        cambios: {
+                            nivel: `${original.nivel} -> ${titulo.nivel}`,
+                            orden: `${original.orden} -> ${titulo.orden}`,
+                            item: `${original.item} -> ${titulo.item}`,
+                            padre: `${original.id_titulo_padre} -> ${titulo.id_titulo_padre}`
+                        }
+                    });
                 }
+
+                return hayCambios;
             });
-            console.groupEnd();
+
+            console.log('Títulos que requieren actualización:', titulosModificados);
 
             // Guardar solo los cambios necesarios
             for (const titulo of titulosModificados) {
+                console.log('Actualizando título:', titulo);
                 await dispatch(updateTitulo(titulo));
             }
 
+            if (titulosModificados.length === 0) {
+                console.log('No se detectaron cambios en la estructura');
+            }
+
             setModoEdicion(false);
+        } catch (error) {
+            console.error('Error al calcular estructura:', error);
         } finally {
             setIsCalculating(false);
         }
     };
 
     const calcularEstructuraInterna = async (titulos: Titulo[]): Promise<Titulo[]> => {
+        console.log('Iniciando cálculo de estructura interna');
+
         // Ordenar por orden
         let titulosOrdenados = [...titulos].sort((a, b) => a.orden - b.orden);
+        console.log('Títulos ordenados inicialmente:', titulosOrdenados.map(t => ({
+            id: t.id_titulo,
+            orden: t.orden,
+            nivel: t.nivel
+        })));
 
         // Asignar orden secuencial
         titulosOrdenados = titulosOrdenados.map((titulo, index) => ({
@@ -265,37 +302,18 @@ const TitulosJerarquia: React.FC = () => {
         return null;
     };
 
-    const getNivelColor = (nivel: number, isEditing: boolean, tipo: string) => {
-        if (tipo === 'PARTIDA') {
-            return 'bg-black/60'; // Todas las partidas serán negras
-        }
-
-        if (isEditing) {
-            // Colores para modo edición de títulos
-            switch (nivel) {
-                case 1: return 'bg-purple-900';
-                case 2: return 'bg-indigo-900';
-                case 3: return 'bg-blue-900';
-                case 4: return 'bg-cyan-900';
-                case 5: return 'bg-teal-900';
-                case 6: return 'bg-green-900';
-                case 7: return 'bg-lime-900';
-                default: return 'bg-yellow-900';
-            }
-        } else {
-            // Colores para modo visualización de títulos
-            switch (nivel) {
-                case 1: return 'bg-purple-800';
-                case 2: return 'bg-indigo-800';
-                case 3: return 'bg-blue-800';
-                case 4: return 'bg-cyan-800';
-                case 5: return 'bg-teal-800';
-                case 6: return 'bg-green-800';
-                case 7: return 'bg-lime-800';
-                default: return 'bg-yellow-800';
-            }
+    const getTitleColor = (nivel: number, tipo: string) => {
+        if (tipo === 'PARTIDA') return 'text-gray-900';
+        switch (nivel) {
+            case 1: return 'text-blue-600';
+            case 2: return 'text-orange-500';
+            case 3: return 'text-red-800';
+            case 4: return 'text-pink-500';
+            case 5: return 'text-cyan-500';
+            default: return 'text-gray-900';
         }
     };
+
 
     const tieneHijos = (tituloId: string, titulos: Titulo[]): boolean => {
         return titulos.some(t => t.id_titulo_padre === tituloId);
@@ -346,204 +364,203 @@ const TitulosJerarquia: React.FC = () => {
         <>
             {loading && <LoaderOverlay message="Cargando títulos..." />}
             {isCalculating ? <LoaderPage /> :
-                <div className="p-1 ">
-                    <div className="justify-between items-center ">
-                        <div className={`${modoEdicion ? "bg-zinc-950 text-white" : "bg-gray-900 text-white"}  p-4 rounded-md mb-4`}>
-                            <div className="flex justify-between items-start mb-2">
-                                <h1 className="text-base font-bold flex-grow break-words max-w-[800px]">
-                                    {activePresupuesto?.nombre_presupuesto}
-                                </h1>
-                                
-                            </div>
-                            <div className='flex justify-between items-center'>
-                                <div className="flex flex-wrap gap-2 w-full lg:w-auto justify-start text-sm">
+                <div className="mx-auto w-full h-[calc(100vh-7rem)] bg-white shadow-sm border border-gray-200 flex flex-col">
+                    <div className="bg-gray-100 p-2 border-b border-gray-200 flex flex-col gap-1 sticky top-0 z-20">
+                        <h2 className="font-semibold text-sm text-gray-800">
+                            {activePresupuesto?.nombre_presupuesto}
+                        </h2>
+                        <div className="flex gap-1">
 
-                                    {!modoEdicion ? (
-                                        <button
-
-                                            onClick={() => setModoEdicion(true)}
-                                            className="px-3 py-0.5 bg-yellow-600 text-white rounded-md hover:bg-yellow-700 transition-colors duration-300"
-                                        >
-                                            Editar Estructura
-                                        </button>
-                                    ) : (
-                                        <>
-                                            <button
-                                                onClick={calcularEstructura}
-                                                className="px-3 py-0.5 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors duration-300"
-                                            >
-                                                Guardar Estructura
-                                            </button>
-                                            <button
-                                                onClick={() => {
-                                                    setModoEdicion(false);
-                                                    setTitulosEnEdicion([...titulos]);
-                                                }}
-                                                className="px-3 py-0.5 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors duration-300"
-                                            >
-                                                Cancelar
-                                            </button>
-                                        </>
-                                    )}
+                            {!modoEdicion ? (
+                                <>
                                     <button
-                                        onClick={() => handleCreate(undefined, undefined, 'TITULO')}
-                                        className="px-3 py-0.5 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors duration-300"
+                                        onClick={() => dispatch(setEditMode(false))}
+                                        className="px-2 py-0.5 bg-blue-600 text-white rounded text-xs hover:bg-blue-700 flex items-center gap-1"
                                     >
-                                        Nuevo Título
+                                        Volver a Presupuesto
                                     </button>
-                                </div>
-                                
-                            </div>
-
-
-
+                                    <button
+                                        onClick={() => setModoEdicion(true)}
+                                        className="px-2 py-0.5 bg-yellow-600 text-white rounded text-xs hover:bg-yellow-700 flex items-center gap-1"
+                                    >
+                                        Editar Estructura
+                                    </button></>
+                            ) : (
+                                <>
+                                    <button
+                                        onClick={calcularEstructura}
+                                        className="px-2 py-0.5 bg-green-600 text-white rounded text-xs hover:bg-green-700 flex items-center gap-1"
+                                    >
+                                        Guardar Estructura
+                                    </button>
+                                    <button
+                                        onClick={() => {
+                                            setModoEdicion(false);
+                                            setTitulosEnEdicion([...titulos]);
+                                        }}
+                                        className="px-2 py-0.5 bg-red-600 text-white rounded text-xs hover:bg-red-700 flex items-center gap-1"
+                                    >
+                                        Cancelar
+                                    </button>
+                                </>
+                            )}
+                            <button
+                                onClick={() => handleCreate(undefined, undefined, 'TITULO')}
+                                className="px-2 py-0.5 bg-blue-600 text-white rounded text-xs hover:bg-blue-700 flex items-center gap-1"
+                            >
+                                Nuevo Título
+                            </button>
                         </div>
                     </div>
 
-                    <div className="h-[calc(100vh-16rem)] overflow-y-auto space-y-2 text-[11px] bg-gradient-to-br from-gray-900/50 to-gray-800/50 p-2 rounded-lg pb-32">
-                        {titulosFiltrados.map((titulo, index, array) => (
-                            <div
-                                key={titulo.id_titulo}
-                                className={`flex justify-between items-center px-3 py-0.5 rounded-md transition-all duration-300 
-                            ${getNivelColor(titulo.nivel, modoEdicion, titulo.tipo)}
-                            ${tituloMoviendose === titulo.id_titulo ? 'border-2 border-blue-500' : ''}`}
-                                style={{ marginLeft: `${(titulo.nivel - 1) * 2}rem` }}
-                            >
-                                <div className="flex items-center space-x-2">
-                                    {!modoEdicion && tieneHijos(titulo.id_titulo, sortedTitulos) && (
-                                        <button
-                                            onClick={() => handleToggleColapso(titulo.id_titulo)}
-                                            className="w-4 h-4 flex items-center justify-center text-gray-400 hover:text-white"
-                                        >
-                                            {titulosColapsados.has(titulo.id_titulo) ? '►' : '▼'}
-                                        </button>
-                                    )}
-                                    <span className="text-gray-400">{titulo.item}</span>
-                                    <span className="text-gray-100">{titulo.descripcion}</span>
-                                </div>
-                                <div className="flex space-x-2">
-                                    {modoEdicion && (
-                                        <>
-                                            {titulo.tipo === 'TITULO' && (
-                                                <div className="relative">
+                    <div className="overflow-x-auto flex-1 relative">
+                        <div className="min-w-full divide-y divide-gray-200 text-[11px]">
+                            {titulosFiltrados.map((titulo, index, array) => (
+                                <div
+                                    key={titulo.id_titulo}
+                                    className={`flex justify-between items-center px-3 py-0 border-b border-gray-200
+                                        ${modoEdicion ? 'hover:bg-gray-50' : ''} 
+                                        ${tituloMoviendose === titulo.id_titulo ? 'ring-2 ring-blue-200 bg-blue-50' : ''}`}
+                                    style={{ paddingLeft: `${(titulo.nivel + 1) * 20}px` }}
+                                >
+                                    <div className="flex items-center gap-x-2">
+                                        {!modoEdicion && tieneHijos(titulo.id_titulo, sortedTitulos) && (
+                                            <button
+                                                onClick={() => handleToggleColapso(titulo.id_titulo)}
+                                                className="w-4 h-4 flex items-center justify-center text-gray-500 hover:text-gray-700"
+                                            >
+                                                {titulosColapsados.has(titulo.id_titulo) ? '►' : '▼'}
+                                            </button>
+                                        )}
+                                        <span className="text-gray-500 w-14">{titulo.item}</span>
+                                        <span className={`${titulo.tipo === 'PARTIDA' ? 'text-gray-900' : getTitleColor(titulo.nivel, titulo.tipo)}`}>
+                                            {titulo.descripcion}
+                                        </span>
+                                    </div>
+
+                                    <div className="flex items-center gap-1">
+                                        {modoEdicion && (
+                                            <>
+                                                {titulo.tipo === 'TITULO' && (
                                                     <button
                                                         onClick={() => toggleMenu(titulo.id_titulo)}
-                                                        className="px-2 py-1 bg-green-700 text-gray-200 rounded hover:bg-green-600"
+                                                        className="inline-flex items-center px-2 py-1 text-xs font-medium text-gray-700 bg-green-300 border border-gray-300 rounded hover:bg-green-500"
                                                     >
                                                         +
                                                     </button>
-                                                    {menuAnchorEl[titulo.id_titulo] && (
-                                                        <div className="absolute z-10 mt-1 bg-sky-700 rounded-md shadow-lg">
-                                                            <button
-                                                                onClick={() => {
-                                                                    handleCreate(titulo.id_titulo, titulo.orden, 'TITULO');
-                                                                    toggleMenu(titulo.id_titulo);
-                                                                }}
-                                                                className="block w-40 px-4 py-2 text-left text-sm text-gray-200 hover:bg-sky-500"
-                                                            >
-                                                                Agregar Título
-                                                            </button>
-                                                            <button
-                                                                onClick={() => {
-                                                                    handleCreate(titulo.id_titulo, titulo.orden, 'PARTIDA');
-                                                                    toggleMenu(titulo.id_titulo);
-                                                                }}
-                                                                className="block w-40 px-4 py-2 text-left text-sm text-gray-200 hover:bg-sky-500"
-                                                            >
-                                                                Agregar Partida
-                                                            </button>
-                                                        </div>
-                                                    )}
-                                                </div>
+                                                )}
+                                                <button
+                                                    onClick={() => handleNivelChange(titulo.id_titulo, false)}
+                                                    className="inline-flex items-center px-2 py-1 text-xs font-medium text-gray-700 bg-yellow-300 border border-gray-300 rounded hover:bg-yellow-500"
+                                                >
+                                                    {'<'}
+                                                </button>
+                                                <button
+                                                    onClick={() => handleNivelChange(titulo.id_titulo, true)}
+                                                    className="inline-flex items-center px-2 py-1 text-xs font-medium text-gray-700 bg-yellow-300 border border-gray-300 rounded hover:bg-yellow-500"
+                                                >
+                                                    {'>'}
+                                                </button>
+                                                <button
+                                                    onClick={() => handleMoverOrden(titulo.id_titulo, 'arriba')}
+                                                    disabled={index === 0}
+                                                    className="inline-flex items-center px-2 py-1 text-xs font-medium text-gray-100 bg-sky-600 border border-gray-300 rounded hover:bg-sky-500 disabled:opacity-50"
+                                                >
+                                                    ↑
+                                                </button>
+                                                <button
+                                                    onClick={() => handleMoverOrden(titulo.id_titulo, 'abajo')}
+                                                    disabled={index === array.length - 1}
+                                                    className="inline-flex items-center px-2 py-1 text-xs font-medium text-gray-100 bg-sky-600 border border-gray-300 rounded hover:bg-sky-500 disabled:opacity-50"
+                                                >
+                                                    ↓
+                                                </button>
+                                                <button
+                                                    onClick={() => handleDelete(titulo.id_titulo)}
+                                                    className="inline-flex items-center px-2 py-1 text-xs font-medium text-white bg-red-600 border border-transparent rounded hover:bg-red-700"
+                                                >
+                                                    <FiTrash2 />
+                                                </button>
+                                            </>
+                                        )}
+                                        {!modoEdicion && (
+                                            <button
+                                                onClick={() => handleEdit(titulo)}
+                                                className="inline-flex items-center px-2 py-1 text-xs font-medium text-gray-700 bg-white border border-gray-300 rounded hover:bg-gray-50"
+                                            >
+                                                Editar
+                                            </button>
+                                        )}
+                                    </div>
 
-                                            )}
+                                    {menuAnchorEl[titulo.id_titulo] && (
+                                        <div className="absolute z-10 mt-1 bg-white rounded-md shadow-lg border border-gray-200">
                                             <button
-                                                onClick={() => handleNivelChange(titulo.id_titulo, false)}
-                                                className="px-2 py-1 bg-gray-700 text-gray-200 rounded hover:bg-gray-600"
+                                                onClick={() => {
+                                                    handleCreate(titulo.id_titulo, titulo.orden, 'TITULO');
+                                                    toggleMenu(titulo.id_titulo);
+                                                }}
+                                                className="block w-40 px-4 py-0 text-left text-sm text-gray-700 hover:bg-gray-50"
                                             >
-                                                {'<'}
+                                                Agregar Título
                                             </button>
                                             <button
-                                                onClick={() => handleNivelChange(titulo.id_titulo, true)}
-                                                className="px-2 py-1 bg-gray-700 text-gray-200 rounded hover:bg-gray-600"
+                                                onClick={() => {
+                                                    handleCreate(titulo.id_titulo, titulo.orden, 'PARTIDA');
+                                                    toggleMenu(titulo.id_titulo);
+                                                }}
+                                                className="block w-40 px-4 py-0 text-left text-sm text-gray-700 hover:bg-gray-50"
                                             >
-                                                {'>'}
+                                                Agregar Partida
                                             </button>
-                                            <button
-                                                onClick={() => handleMoverOrden(titulo.id_titulo, 'arriba')}
-                                                disabled={index === 0}
-                                                className="px-2 py-1 bg-gray-700 text-gray-200 rounded hover:bg-gray-600 disabled:opacity-50"
-                                            >
-                                                ↑
-                                            </button>
-                                            <button
-                                                onClick={() => handleMoverOrden(titulo.id_titulo, 'abajo')}
-                                                disabled={index === array.length - 1}
-                                                className="px-2 py-1 bg-gray-700 text-gray-200 rounded hover:bg-gray-600 disabled:opacity-50"
-                                            >
-                                                ↓
-                                            </button>
-                                            <button
-                                                onClick={() => handleDelete(titulo.id_titulo)}
-                                                className="px-2 py-1 bg-red-500 text-white rounded hover:bg-gray-600 disabled:opacity-50"
-                                            >
-                                                <FiTrash2 />
-                                            </button>
-                                        </>
-                                    )}
-                                    {!modoEdicion && (
-                                        <button
-                                            onClick={() => handleEdit(titulo)}
-                                            className="px-3 py-1 bg-gray-700 text-gray-200 rounded hover:bg-gray-600"
-                                        >
-                                            Editar
-                                        </button>
+                                        </div>
                                     )}
                                 </div>
-                            </div>
-                        ))}
+                            ))}
+                        </div>
                     </div>
+                </div>
+            }
 
-                    {showTituloForm &&
-                        <Modal
-                            isOpen={showTituloForm}
-                            onClose={() => {
-                                setShowTituloForm(false);
-                                setParentId(undefined);
-                                setOrdenCreate(undefined);
-                            }}
-                            title={editingTitulo ? "Editar Título" : "Nuevo Título"}
-                        >
-                            <TituloForm
-                                titulo={editingTitulo}
-                                onSubmit={handleSubmit}
-                                onCancel={() => {
-                                    setShowTituloForm(false);
-                                    setParentId(undefined);
-                                    setOrdenCreate(undefined);
-                                }}
-                                titulos={titulos}
-                                tituloParentId={parentId}
-                                ordenCreate={ordenCreate}
-                                tipo={tipoTitulo}
-                            />
-                        </Modal>
-                    }
+            {showTituloForm &&
+                <Modal
+                    isOpen={showTituloForm}
+                    onClose={() => {
+                        setShowTituloForm(false);
+                        setParentId(undefined);
+                        setOrdenCreate(undefined);
+                    }}
+                    title={editingTitulo ? "Editar Título" : "Nuevo Título"}
+                >
+                    <TituloForm
+                        titulo={editingTitulo}
+                        onSubmit={handleSubmit}
+                        onCancel={() => {
+                            setShowTituloForm(false);
+                            setParentId(undefined);
+                            setOrdenCreate(undefined);
+                        }}
+                        titulos={titulos}
+                        tituloParentId={parentId}
+                        ordenCreate={ordenCreate}
+                        tipo={tipoTitulo}
+                    />
+                </Modal>
+            }
 
-                    {showDeleteAlert && tituloToDelete &&
-                        <ModalAlert
-                            isOpen={showDeleteAlert}
-                            title="Confirmar Eliminación"
-                            message="¿Estás seguro de eliminar este título?"
-                            onConfirm={confirmDelete}
-                            onCancel={() => {
-                                setShowDeleteAlert(false);
-                                setTituloToDelete(null);
-                            }}
-                            variant="red"
-                        />
-                    }
-                </div>}
+            {showDeleteAlert && tituloToDelete &&
+                <ModalAlert
+                    isOpen={showDeleteAlert}
+                    title="Confirmar Eliminación"
+                    message="¿Estás seguro de eliminar este título?"
+                    onConfirm={confirmDelete}
+                    onCancel={() => {
+                        setShowDeleteAlert(false);
+                        setTituloToDelete(null);
+                    }}
+                    variant="red"
+                />
+            }
         </>
     );
 };

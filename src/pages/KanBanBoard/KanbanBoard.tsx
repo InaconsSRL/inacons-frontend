@@ -18,6 +18,8 @@ import KanbanColumnCotizacion, {
   Cotizacion 
 } from './KanbanColumnCotizacion';
 import { fetchCotizaciones } from '../../slices/cotizacionSlice';
+import { listRequerimientosService } from '../../services/requerimientoService';
+import { listCotizacionesService } from '../../services/cotizacionService';
 
 const KanbanBoard = () => {
   const [searchTerm, setSearchTerm] = useState('');
@@ -39,7 +41,7 @@ const KanbanBoard = () => {
   const user = useSelector((state: RootState) => state.user);
 
   useEffect(() => {
-
+    dispatch(fetchCotizaciones());
     dispatch(fetchRequerimientos());
 
   }, [dispatch]);
@@ -155,9 +157,20 @@ const KanbanBoard = () => {
     setModalNuevoRequerimiento(false);
   }
 
-  const handleRefresh = () => {
-    dispatch(fetchRequerimientos());
-    dispatch(fetchCotizaciones());
+  const handleRefresh = async () => {
+    try {
+      // Obtener datos directamente del servidor
+      const [newRequerimientos, newCotizaciones] = await Promise.all([
+        listRequerimientosService(),
+        listCotizacionesService()
+      ]);
+
+      // Actualizar el estado en Redux con los nuevos datos
+      dispatch({ type: 'requerimiento/setRequerimientos', payload: newRequerimientos });
+      dispatch({ type: 'cotizacion/setCotizaciones', payload: newCotizaciones });
+    } catch (error) {
+      console.error('Error al actualizar los datos:', error);
+    }
   };
 
   return (

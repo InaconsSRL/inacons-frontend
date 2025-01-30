@@ -96,9 +96,12 @@ const ComparacionTable: React.FC<ComparacionTableProps> = ({
         return proveedor?.divisa_id?.simbolo || '';
     };
 
-    const formatCurrency = (value: number, proveedorId?: string) => {
+    const formatCurrency = (value: number | string | null | undefined, proveedorId?: string) => {
+        if (value === null || value === undefined || isNaN(Number(value))) {
+            return '--';
+        }
         const symbol = proveedorId ? getDivisaSymbol(proveedorId) : '';
-        return `${symbol}${value.toFixed(2)}`;
+        return `${symbol}${Number(value).toFixed(2)}`;
     };
 
     useEffect(() => {

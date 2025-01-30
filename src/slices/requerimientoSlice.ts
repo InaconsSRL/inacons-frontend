@@ -102,7 +102,13 @@ export const deleteRequerimiento = createAsyncThunk(
   const requerimientoSlice = createSlice({
     name: 'requerimiento',
     initialState,
-    reducers: {},
+    reducers: {
+      setRequerimientos: (state, action: PayloadAction<Requerimiento[]>) => {
+        state.requerimientos = action.payload;
+        state.loading = false;
+        state.error = null;
+      }
+    },
     extraReducers: (builder) => {
       builder
         .addCase(fetchRequerimientos.pending, (state) => {
@@ -144,4 +150,5 @@ export const deleteRequerimiento = createAsyncThunk(
     },
   });
   
+  export const { setRequerimientos } = requerimientoSlice.actions;
   export const requerimientoReducer = requerimientoSlice.reducer;
