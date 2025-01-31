@@ -17,6 +17,7 @@ import UpdateOrdenPagoModal from './UpdateOrdenPagoModal';
 import { addTipoCambio, TipoCambioInput } from '../../slices/tipoCambioOrdenPagoSlice';
 import { uploadComprobante } from '../../slices/comprobantePagoSlice';
 import { fetchDescuentosByOrdenPago, OrdenPagoDescuento } from '../../slices/descuentoPagoSlice';
+import RecursosOrdenCompraModal from '../../components/Modal/RecursosOrdenCompraModal';
 
 interface CustomError {
   message: string;
@@ -37,8 +38,10 @@ const pageTransition = {
 const OrdenPagoPage: React.FC = () => {
   const [searchParams] = useSearchParams();
   const ordenCompraId = searchParams.get('ordenCompraId');
+  
+  // Mover esta declaración aquí arriba junto con los otros estados
+  const [isRecursosModalOpen, setIsRecursosModalOpen] = useState(false);
     
-  //const [isModalOpen, setIsModalOpen] = useState(false);
   const [isUpdateModalOpen, setIsUpdateModalOpen] = useState(false);
   const [selectedOrdenPago, setSelectedOrdenPago] = useState<OrdenPago | null>(null);
 
@@ -290,7 +293,7 @@ const OrdenPagoPage: React.FC = () => {
             onClick={() => handleOpenDescuentoModal(ordenPago, 'detracciones')}
             title="Detracciones"
           >
-            <TbEyeDiscount size={18} className="text-green-500" />
+            <TbEyeDiscount size={18} className="text-green-500" />  
           </button>
          
         </div>
@@ -377,7 +380,7 @@ const OrdenPagoPage: React.FC = () => {
 	      <Button 
                text='Ver recursos' 
 	       color='azul' 
-	       onClick={handleAgregar}
+	       onClick={() => setIsRecursosModalOpen(true)}
 	       className="rounded w-[150px] bg-blue-500 hover:bg-blue-600 text-white"
 	     />
 
@@ -588,6 +591,13 @@ const OrdenPagoPage: React.FC = () => {
           onClose={() => setIsUpdateModalOpen(false)}
           ordenPago={selectedOrdenPago}
           onSuccess={handleUpdateSuccess}
+        />
+      )}
+      {ordenCompraId && (
+        <RecursosOrdenCompraModal
+          isOpen={isRecursosModalOpen}
+          onClose={() => setIsRecursosModalOpen(false)}
+          ordenCompraId={ordenCompraId}
         />
       )}
     </motion.div>

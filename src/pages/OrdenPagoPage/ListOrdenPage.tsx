@@ -32,6 +32,18 @@ const pageTransition = {
   duration: 0.5
 };
 
+const formatearFecha = (fecha: string) => {
+  const date = new Date(fecha);
+  const dia = date.getDate().toString().padStart(2, '0');
+  const mes = (date.getMonth() + 1).toString().padStart(2, '0');
+  const año = date.getFullYear();
+  const hora = date.getHours().toString().padStart(2, '0');
+  const minutos = date.getMinutes().toString().padStart(2, '0');
+  const segundos = date.getSeconds().toString().padStart(2, '0');
+
+  return `${dia}/${mes}/${año} : ${hora}-${minutos}-${segundos}`;
+};
+
 const ListOrdenPage: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
   const { ordenPagos, loading, error } = useSelector((state: RootState) => state.ordenPago);
@@ -120,9 +132,10 @@ const ListOrdenPage: React.FC = () => {
   };
 
   const tableData = {
-    filter: [true, true, true, true, true, true, true, true, true, true, true, false],
+    filter: [true, true, true, true, true, true, true, true, true, true, true, true, false],
     headers: [
       "código",
+      "fecha",
       "Monto Solicitado",
       "Total descuento",
       "Total a depositar",
@@ -136,55 +149,72 @@ const ListOrdenPage: React.FC = () => {
       "Acciones"
     ],
     rows: ordenPagos.map(ordenPago => ({
-      código: ordenPago.codigo,
-      "Monto Solicitado": ordenPago.monto_solicitado,
-      "Total descuento": descuentosPorOrden[ordenPago.id] || ordenPago.monto_solicitado,
-      "Total a depositar": ordenPago.monto_solicitado - (descuentosPorOrden[ordenPago.id] || ordenPago.monto_solicitado),
-      moneda: ordenPago.tipo_moneda,
-      "tipo pago": ordenPago.tipo_pago,
-      "orden compra": ordenPago.orden_compra_id.codigo_orden,
+      código: <div className="min-w-[80px] text-left">{ordenPago.codigo}</div>,
+      fecha: <div className="min-w-[180px] text-left">{formatearFecha(ordenPago.fecha)}</div>,
+      "Monto Solicitado": <div className="min-w-[120px] text-right">{ordenPago.monto_solicitado}</div>,
+      "Total descuento": <div className="min-w-[120px] text-right">
+        {descuentosPorOrden[ordenPago.id] || ordenPago.monto_solicitado}
+      </div>,
+      "Total a depositar": <div className="min-w-[120px] text-right">
+        {ordenPago.monto_solicitado - (descuentosPorOrden[ordenPago.id] || ordenPago.monto_solicitado)}
+      </div>,
+      moneda: <div className="min-w-[80px] text-center">{ordenPago.tipo_moneda}</div>,
+      "tipo pago": <div className="min-w-[100px] text-center">{ordenPago.tipo_pago}</div>,
+      "orden compra": <div className="min-w-[120px] text-left">{ordenPago.orden_compra_id.codigo_orden}</div>,
       estado: (
-        <button
-          onClick={() => setSelectedOrdenForAprobacion({
-            id: ordenPago.id,
-            estado: ordenPago.estado
-          })}
-          className={`px-2 py-0.5 rounded-full text-xs ${
-            ordenPago.estado === 'APROBADO' 
-              ? 'bg-green-100 text-green-800'
-              : ordenPago.estado === 'FINALIZADO'
-                ? 'bg-green-100 text-green-800'
-                : 'bg-yellow-100 text-yellow-800'
-          }`}
-        >
-          {ordenPago.estado}
-        </button>
+        <div className="min-w-[100px] text-center">
+          {ordenPago.estado === 'FINALIZADO' ? (
+            <span className="px-2 py-0.5 rounded-full text-xs bg-green-100 text-green-800">
+              {ordenPago.estado}
+            </span>
+          ) : (
+            <button
+              onClick={() => setSelectedOrdenForAprobacion({
+                id: ordenPago.id,
+                estado: ordenPago.estado
+              })}
+              className={`px-2 py-0.5 rounded-full text-xs ${
+                ordenPago.estado === 'APROBADO' 
+                  ? 'bg-green-100 text-green-800'
+                  : 'bg-yellow-100 text-yellow-800'
+              }`}
+            >
+              {ordenPago.estado}
+            </button>
+          )}
+        </div>
       ),
-      usuario: `${ordenPago.usuario_id.nombres} ${ordenPago.usuario_id.apellidos}`,
+      usuario: <div className="min-w-[150px] text-left">{`${ordenPago.usuario_id.nombres} ${ordenPago.usuario_id.apellidos}`}</div>,
       "Aprobación": (
-        <span className={`px-2 py-0.5 rounded-full text-xs ${
-          aprobacionesPorOrden[ordenPago.id] === 'APROBADO' 
-            ? 'bg-green-100 text-green-800' 
-            : 'bg-yellow-100 text-yellow-800'
-        }`}>
-          {aprobacionesPorOrden[ordenPago.id] || 'PENDIENTE'}
-        </span>
+        <div className="min-w-[100px] text-center">
+          <span className={`px-2 py-0.5 rounded-full text-xs ${
+            aprobacionesPorOrden[ordenPago.id] === 'APROBADO' 
+              ? 'bg-green-100 text-green-800' 
+              : 'bg-yellow-100 text-yellow-800'
+          }`}>
+            {aprobacionesPorOrden[ordenPago.id] || 'PENDIENTE'}
+          </span>
+        </div>
       ),
       "Comprobantes": (
-        <button
-          onClick={() => handleVerComprobantes(ordenPago.id)}
-          className="flex items-center justify-center gap-2 px-3 py-1 text-blue-600 hover:text-blue-800 hover:bg-blue-50 rounded-full transition-colors"
-        >
-          <FiFileText size={18} />
-        </button>
+        <div className="min-w-[80px] flex justify-center">
+          <button
+            onClick={() => handleVerComprobantes(ordenPago.id)}
+            className="flex items-center justify-center gap-2 px-3 py-1 text-blue-600 hover:text-blue-800 hover:bg-blue-50 rounded-full transition-colors"
+          >
+            <FiFileText size={18} />
+          </button>
+        </div>
       ),
       "Acciones": (
-        <button
-          onClick={() => handleVerDetalle(ordenPago.id, ordenPago.orden_compra_id.id)}
-          className="flex items-center justify-center text-blue-600 hover:text-blue-800"
-        >
-         <FiEye size={18} />
-        </button>
+        <div className="min-w-[80px] flex justify-center">
+          <button
+            onClick={() => handleVerDetalle(ordenPago.id, ordenPago.orden_compra_id.id)}
+            className="flex items-center justify-center text-blue-600 hover:text-blue-800"
+          >
+           <FiEye size={18} />
+          </button>
+        </div>
       )
     }))
   };
@@ -200,6 +230,7 @@ const ListOrdenPage: React.FC = () => {
     >
       <motion.div className="text-white pb-4 px-4 flex items-center justify-between">
         <h1 className="text-2xl font-bold text-gray-800">Lista de Órdenes de Pago</h1>
+   
       </motion.div>
 
       <motion.div

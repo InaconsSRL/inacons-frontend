@@ -6,7 +6,8 @@ import Modal from '../../components/Modal/Modal';
 import TableComponent from '../../components/Table/TableComponent';
 import { fetchOrdenCompras } from '../../slices/ordenCompraSlice';
 import LoaderPage from '../../components/Loader/LoaderPage';
-import { FiEye, FiRefreshCw, FiDollarSign } from 'react-icons/fi';
+import { FiEye, FiRefreshCw } from 'react-icons/fi';
+import { LiaMoneyBillWaveAltSolid } from "react-icons/lia";
 import { useNavigate } from 'react-router-dom';
 import { RootState, AppDispatch } from '../../store/store';
 import OrdenCompraDetalle from './OrdenCompraDetalle';
@@ -110,7 +111,7 @@ const OrdenCompraPage: React.FC = () => {
                     onClick={() => handleNavigateToPayments(oc.id)}
                     title="Ver pagos"
                 >
-                    <FiDollarSign size={20} />
+                    <LiaMoneyBillWaveAltSolid size={22} className="text-green-500"  />
                 </button>
             ),	    
             opciones: (
