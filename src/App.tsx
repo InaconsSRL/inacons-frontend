@@ -2,7 +2,6 @@ import React from 'react';
 import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import { RootState } from './store/store';
-
 import Login from './pages/IniciarSesionPage/Login';
 import Dashboard from './layouts/dashboard/Dashboard';
 import HomePage from './pages/HomePage/HomePage';
@@ -26,18 +25,16 @@ import ObrasComponent from './pages/ObrasPage/ObrasPage';
 import ComprasBoard from './pages/ComprasPage/ComprasBoard';
 import OrdenCompraPage from './pages/OrdenCompraPage/OrdenCompraPage';
 import OrdenPagoPage from './pages/OrdenPagoPage/OrdenPagoPage';
-
 import ListOrdenPage from './pages/OrdenPagoPage/ListOrdenPage';
-
 import HomologacionFormPage from './pages/ProveedorPage/Forms/HomologacionForm';
 import AlmacenBetha from './pages/AlmacenesPage/AlmacenBoard/AlmacenBetha';
 import EmpleadosPage from './pages/EmpleadosPage/EmpleadosPage';
 import SorteoPage from './pages/HomePage/Sorteo';
 import BodegasComponent from './pages/BodegasPage/BodegasComponent';
 import LoaderOverlay from './components/Loader/LoaderOverlay';
-import GestionLayoutDatosGenerales from './pages/PresupuestosNuevos/0DatosGenerales/GestionLayoutDatosGenerales';
-import GestionLayoutHojaPresupuesto from './pages/PresupuestosNuevos/1HojaPresupuesto/GestionLayoutHojaPresupuesto';
 import GestionLayoutAPU from './pages/PresupuestosNuevos/2APU/0GestionLayoutAPU';
+import EmpresaPage from './pages/EmpresaPage/EmpresaPage';
+import GestionLayoutDatosGenerales from './pages/PresupuestosNuevos/0DatosGenerales/GestionLayoutDatosGenerales';
 
 const App: React.FC = () => {
   const user = useSelector((state: RootState) => state.user);
@@ -46,8 +43,8 @@ const App: React.FC = () => {
     <Routes >
       <Route path="/login" element={<Login />} />
       <Route path="/proveedor-registro" element={<HomologacionFormPage />} />
-      <Route 
-        path="/dashboard" 
+      <Route
+        path="/dashboard"
         element={user.token ? <Dashboard /> : <Navigate to="/login" replace />}
       >
         <Route index element={<HomePage />} />
@@ -64,39 +61,39 @@ const App: React.FC = () => {
         <Route path="proveedor" element={<ProveedorComponent />} />
         <Route path="requerimiento" element={<RequerimientosComponent />} />
         <Route path="tipoCostoRecurso" element={<TipoCostoRecursoComponent />} />
-        <Route path="reqRecursos" element={<RequermientoRecursos onClose={() => {}} />} />
+        <Route path="reqRecursos" element={<RequermientoRecursos onClose={() => { }} />} />
         <Route path="almacen" element={<BodegasComponent />}> </Route>
         <Route path="almacenBoard" element={<AlmacenBoardPage />}> </Route>
         <Route path="compras" element={<ComprasBoard />}> </Route>
         <Route path="tipoAlmacen" element={<TipoAlmacenPage />}> </Route>
         <Route path="obras" element={<ObrasComponent />}> </Route>
-          <Route path="ordenCompra" element={<OrdenCompraPage />}> </Route>
-	  <Route path="ordenPago" element={<OrdenPagoPage />}> </Route>
-      <Route path="orden-pago" element={<Navigate to="/dashboard/ordenPago" replace />} />
-      <Route path="listaOrdenPago" element={<ListOrdenPage />} />
-	<Route path="almacenbetha" element={<AlmacenBetha />} />
+        <Route path="ordenCompra" element={<OrdenCompraPage />}> </Route>
+        <Route path="ordenPago" element={<OrdenPagoPage />}> </Route>
+        <Route path="orden-pago" element={<Navigate to="/dashboard/ordenPago" replace />} />
+        <Route path="listaOrdenPago" element={<ListOrdenPage />} />
+        <Route path="almacenbetha" element={<AlmacenBetha />} />
         <Route path="empleados" element={<EmpleadosPage />} />
         <Route path="sorteo" element={<SorteoPage />} />
         <Route path="loader" element={<LoaderOverlay />} />
-        <Route path="hojaPresupuesto" element={<GestionLayoutHojaPresupuesto />} />
         <Route path="datosGenerales" element={<GestionLayoutDatosGenerales />} />
         <Route path="apu" element={<GestionLayoutAPU />} />
+        <Route path="empresa" element={<EmpresaPage />} />
 
 
       </Route>
       <Route path="/" element={
-        user.token ? 
-        <Navigate to="/dashboard" replace /> : 
-        <Navigate to="/login" replace />
+        user.token ?
+          <Navigate to="/dashboard" replace /> :
+          <Navigate to="/login" replace />
       } />
-    </Routes> 
+    </Routes>
   );
 };
 
 const AppWrapper: React.FC = () => (
-  <Router 
-  future={{//salia error, este codigo prepara la app para la version 7 de react-router
-    v7_startTransition: true, v7_relativeSplatPath: true
+  <Router
+    future={{//salia error, este codigo prepara la app para la version 7 de react-router
+      v7_startTransition: true, v7_relativeSplatPath: true
     }}>
     <App />
   </Router>

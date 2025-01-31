@@ -30,9 +30,11 @@ const Sidebar: React.FC<SidebarProps> = ({ isSidebarOpen, toggleSidebar }) => {
   ];
 
   const moduloAdministracionItems = [
-    { to: "/dashboard/usuario", icon: FaUsers, text: "Usuarios" },
+    { to: "/dashboard/empresa", icon: FaUsers, text: "Empresas" },
+    { to: "/dashboard/obras", icon: GiConcreteBag, text: "Obras" },
     { to: "/dashboard/roles", icon: FaUserShield, text: "AsignarRoles" },
     { to: "/dashboard/cargo", icon: FaBriefcase, text: "Cargos" },
+    { to: "/dashboard/usuario", icon: FaUsers, text: "Usuarios" },
   ];
 
   const moduloRecursosItems = [
@@ -56,9 +58,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isSidebarOpen, toggleSidebar }) => {
        
   const moduloProyectos = [
     { to: "/dashboard/datosGenerales", icon: GiConcreteBag, text: "datosGenerales" },
-    { to: "/dashboard/hojaPresupuesto", icon: GiConcreteBag, text: "HojaPresupuesto" },
     { to: "/dashboard/apu", icon: GiConcreteBag, text: "AnalisisPreciosUnitarios" },
-    { to: "/dashboard/obras", icon: GiConcreteBag, text: "Obras" },
   ];
 
   const moduloAlmacen = [

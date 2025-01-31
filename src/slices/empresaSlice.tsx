@@ -7,7 +7,7 @@ import {
   deleteEmpresaService
 } from '../services/empresaService';
 
-interface Empresa {
+export interface Empresa {
   id: string;
   nombre_comercial: string;
   razon_social: string;

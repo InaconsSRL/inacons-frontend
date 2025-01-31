@@ -11,6 +11,15 @@ const LIST_OBRA_QUERY = gql`
       ubicacion
       direccion
       estado
+      empresa_id {
+        id
+        nombre_comercial
+        razon_social
+        descripcion
+        estado
+        regimen_fiscal
+        ruc
+      }
       tipo_id {
         id
         nombre
@@ -29,6 +38,15 @@ const GET_OBRA_QUERY = gql`
       ubicacion
       direccion
       estado
+      empresa_id {
+        id
+        nombre_comercial
+        razon_social
+        descripcion
+        estado
+        regimen_fiscal
+        ruc
+      }
       tipo_id {
         id
         nombre
@@ -38,8 +56,8 @@ const GET_OBRA_QUERY = gql`
 `;
 
 const ADD_OBRA_MUTATION = gql`
-  mutation AddObra($titulo: String, $nombre: String, $descripcion: String, $ubicacion: String, $direccion: String, $estado: String, $tipoId: ID) {
-    addObra(titulo: $titulo, nombre: $nombre, descripcion: $descripcion, ubicacion: $ubicacion, direccion: $direccion, estado: $estado, tipo_id: $tipoId) {
+  mutation AddObra($titulo: String, $nombre: String, $descripcion: String, $ubicacion: String, $direccion: String, $estado: String, $tipoId: ID, $empresaId: ID) {
+    addObra(titulo: $titulo, nombre: $nombre, descripcion: $descripcion, ubicacion: $ubicacion, direccion: $direccion, estado: $estado, tipo_id: $tipoId, empresa_id: $empresaId) {
       id
       titulo
       nombre
@@ -47,6 +65,15 @@ const ADD_OBRA_MUTATION = gql`
       ubicacion
       direccion
       estado
+      empresa_id {
+        id
+        nombre_comercial
+        razon_social
+        descripcion
+        estado
+        regimen_fiscal
+        ruc
+      }
       tipo_id {
         id
         nombre
@@ -56,8 +83,8 @@ const ADD_OBRA_MUTATION = gql`
 `;
 
 const UPDATE_OBRA_MUTATION = gql`
-  mutation UpdateObra($updateObraId: ID!, $titulo: String, $nombre: String, $descripcion: String, $ubicacion: String, $direccion: String, $estado: String, $tipoId: ID) {
-    updateObra(id: $updateObraId, titulo: $titulo, nombre: $nombre, descripcion: $descripcion, ubicacion: $ubicacion, direccion: $direccion, estado: $estado, tipo_id: $tipoId) {
+  mutation UpdateObra($updateObraId: ID!, $titulo: String, $nombre: String, $descripcion: String, $ubicacion: String, $direccion: String, $estado: String, $tipoId: ID, $empresaId: ID) {
+    updateObra(id: $updateObraId, titulo: $titulo, nombre: $nombre, descripcion: $descripcion, ubicacion: $ubicacion, direccion: $direccion, estado: $estado, tipo_id: $tipoId, empresa_id: $empresaId) {
       id
       titulo
       nombre
@@ -65,6 +92,15 @@ const UPDATE_OBRA_MUTATION = gql`
       ubicacion
       direccion
       estado
+      empresa_id {
+        id
+        nombre_comercial
+        razon_social
+        descripcion
+        estado
+        regimen_fiscal
+        ruc
+      }
       tipo_id {
         id
         nombre
@@ -113,11 +149,16 @@ export const addObraService = async (obraData: {
   direccion: string;
   estado: string;
   tipoId: string;
+  empresaId: string;
 }) => {
   try {
     const response = await client.mutate({
       mutation: ADD_OBRA_MUTATION,
-      variables: obraData,
+      variables: {
+        ...obraData,
+        tipo_id: obraData.tipoId,
+        empresa_id: obraData.empresaId
+      },
     });
     if (response.errors) {
       throw new Error(response.errors[0]?.message || 'Error desconocido');
@@ -138,11 +179,17 @@ export const updateObraService = async (obra: {
   direccion: string;
   estado: string;
   tipoId: string;
+  empresaId: string;
 }) => {
   try {
     const response = await client.mutate({
       mutation: UPDATE_OBRA_MUTATION,
-      variables: { updateObraId: obra.id, ...obra },
+      variables: {
+        updateObraId: obra.id,
+        ...obra,
+        tipo_id: obra.tipoId,
+        empresa_id: obra.empresaId
+      },
     });
     if (response.errors) {
       throw new Error(response.errors[0]?.message || 'Error desconocido');

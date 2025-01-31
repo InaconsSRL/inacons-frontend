@@ -1,28 +1,36 @@
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
 import { listObrasService, addObraService, updateObraService, getObraService } from '../services/obraService';
+import { Empresa } from './empresaSlice';
 
-// Interfaces
+// Interfaces base
 interface TipoObra {
   id: string;
   nombre: string;
 }
 
-interface ObraBase {
+// Interface para mutations (entrada)
+export interface ObraMutationInput {
   titulo: string;
   nombre: string;
   descripcion: string;
   ubicacion: string;
   direccion: string;
   estado: string;
-}
-
-interface ObraInput extends ObraBase {
   tipoId: string;
+  empresaId: string;
 }
 
-interface Obra extends ObraBase {
+// Interface para la obra completa (respuesta de queries)
+export interface Obra {
   id: string;
+  titulo: string;
+  nombre: string;
+  descripcion: string;
+  ubicacion: string;
+  direccion: string;
+  estado: string;
   tipo_id: TipoObra;
+  empresa_id: Empresa;
 }
 
 interface ObraState {
@@ -60,7 +68,7 @@ export const fetchObras = createAsyncThunk(
 
 export const addObra = createAsyncThunk(
   'obra/addObra',
-  async (obraData: ObraInput, { rejectWithValue }) => {
+  async (obraData: ObraMutationInput, { rejectWithValue }) => {
     try {
       return await addObraService(obraData);
     } catch (error) {
@@ -71,7 +79,7 @@ export const addObra = createAsyncThunk(
 
 export const updateObra = createAsyncThunk(
   'obra/updateObra',
-  async (obra: ObraInput & { id: string }, { rejectWithValue }) => {
+  async (obra: ObraMutationInput & { id: string }, { rejectWithValue }) => {
     try {
       return await updateObraService(obra);
     } catch (error) {

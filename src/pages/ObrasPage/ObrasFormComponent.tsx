@@ -5,6 +5,7 @@ import Button from '../../components/Buttons/Button';
 import { useDispatch, useSelector } from 'react-redux';
 import { RootState, AppDispatch } from '../../store/store';
 import { fetchTipoAlmacenes } from '../../slices/tipoAlmacenSlice';
+import { fetchEmpresas } from '../../slices/empresaSlice';
 
 interface ObraInput {
   titulo: string;
@@ -14,6 +15,7 @@ interface ObraInput {
   direccion: string;
   estado: string;
   tipoId: string;
+  empresaId: string;
 }
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -25,6 +27,7 @@ const obraSchema = z.object({
   direccion: z.string().min(1, 'La dirección es requerida'),
   estado: z.string().min(1, 'El estado es requerido'),
   tipoId: z.string().min(1, 'El tipo de obra es requerido'),
+  empresaId: z.string().min(1, 'La empresa es requerida'),
 });
 
 type ObraFormData = z.infer<typeof obraSchema>;
@@ -37,13 +40,17 @@ interface FormComponentProps {
 const ObraFormComponent: React.FC<FormComponentProps> = ({ initialValues, onSubmit }) => {
   const dispatch = useDispatch<AppDispatch>();
   const { tipoAlmacenes } = useSelector((state: RootState) => state.tipoAlmacen);
+  const { empresas } = useSelector((state: RootState) => state.empresa);
 
   useEffect(() => {
     // Solo realizar la consulta si no hay tipos de almacén en el estado
     if (tipoAlmacenes.length === 0) {
       dispatch(fetchTipoAlmacenes());
     }
-  }, [dispatch, tipoAlmacenes.length]);
+    if (empresas.length === 0) {
+      dispatch(fetchEmpresas());
+    }
+  }, [dispatch, tipoAlmacenes.length, empresas.length]);
 
   const form = useForm<ObraFormData>({
     defaultValues: {
@@ -53,7 +60,8 @@ const ObraFormComponent: React.FC<FormComponentProps> = ({ initialValues, onSubm
       ubicacion: initialValues?.ubicacion || '',
       direccion: initialValues?.direccion || '',
       estado: initialValues?.estado || '',
-      tipoId: initialValues?.tipoId || ''
+      tipoId: initialValues?.tipoId || '',
+      empresaId: initialValues?.empresaId || ''
     },
     onSubmit: async (values) => {
       onSubmit(values.value);
@@ -67,9 +75,9 @@ const ObraFormComponent: React.FC<FormComponentProps> = ({ initialValues, onSubm
         e.stopPropagation();
         void form.handleSubmit();
       }}
-      className="bg-gradient-to-b from-white to-gray-100 shadow-lg rounded-lg px-6 sm:px-8 py-8 mb-4 max-w-md mx-auto border border-gray-200"
+      className=" bg-gradient-to-b from-white to-gray-100 shadow-lg rounded-lg px-6 sm:px-8 py-8 mb-4 w-full mx-auto border border-gray-200"
     >
-      <div className="mb-6">
+      <div className="mb-6 w-full">
         <label htmlFor="titulo" className="block text-blue-700 text-sm font-semibold mb-2">
           Título:
           <span className='text-neutral-300 text-xs '>(Ejm: "CU_PLAN3")</span>
@@ -247,6 +255,37 @@ const ObraFormComponent: React.FC<FormComponentProps> = ({ initialValues, onSubm
           )}
         />
       </div>
+
+      <div className="mb-6">
+        <label htmlFor="empresaId" className="block text-blue-700 text-sm font-semibold mb-2">
+          Empresa:
+        </label>
+        <form.Field
+          name="empresaId"
+          children={(field: FieldApi<ObraFormData, 'empresaId'>) => (
+            <>
+              <select
+                id="empresaId"
+                value={field.state.value}
+                onBlur={field.handleBlur}
+                onChange={(e) => field.handleChange(e.target.value)}
+                className="shadow-sm appearance-none border border-gray-300 rounded-md w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              >
+                <option value="">Seleccione una empresa</option>
+                {empresas.map((empresa) => (
+                  <option key={empresa.id} value={empresa.id}>
+                    {empresa.nombre_comercial}
+                  </option>
+                ))}
+              </select>
+              {field.state.meta.errors && (
+                <p className="text-red-500 text-xs italic mt-1">{field.state.meta.errors[0]}</p>
+              )}
+            </>
+          )}
+        />
+      </div>
+
       <div className="flex items-center justify-center mt-8">
         <Button
           text={initialValues ? 'Actualizar Obra' : 'Crear Obra'}

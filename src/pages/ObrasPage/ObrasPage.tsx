@@ -6,41 +6,18 @@ import TableComponent from '../../components/Table/TableComponent';
 import FormComponent from './ObrasFormComponent';
 
 import { useDispatch, useSelector } from 'react-redux';
-import { addObra, updateObra } from '../../slices/obrasSlice';
+import { addObra, updateObra, Obra, ObraMutationInput } from '../../slices/obrasSlice';
 import { RootState, AppDispatch } from '../../store/store';
 import LoaderPage from '../../components/Loader/LoaderPage';
 import { FiEdit } from 'react-icons/fi';
 
-// Definimos las interfaces
-interface TipoObra {
-  id: string;
-  nombre: string;
-}
 
-interface ObraBase {
-  titulo: string;
-  nombre: string;
-  descripcion: string;
-  ubicacion: string;
-  direccion: string;
-  estado: string;
-}
-
-interface ObraInput extends ObraBase {
-  tipoId: string;
-}
-
-interface Obra extends ObraBase {
-  id: string;
-  tipo_id: TipoObra;
-}
 
 const pageVariants = {
   initial: { opacity: 0, y: 20 },
   in: { opacity: 1, y: 0 },
   out: { opacity: 0, y: -20 }
 };
-
 const pageTransition = {
   type: 'tween',
   ease: 'anticipate',
@@ -54,18 +31,11 @@ const ObrasComponent: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
   const { obras, loading, error } = useSelector((state: RootState) => state.obra);
 
-  const handleSubmit = (data: ObraInput) => {
+  const handleSubmit = (data: ObraMutationInput) => {
     if (editingObra) {
-      // Asegurarse de que todos los campos necesarios estén presentes
       const updateData = {
         id: editingObra.id,
-        titulo: data.titulo,
-        nombre: data.nombre,
-        descripcion: data.descripcion,
-        ubicacion: data.ubicacion,
-        direccion: data.direccion,
-        estado: data.estado,
-        tipoId: data.tipoId
+        ...data
       };
       dispatch(updateObra(updateData));
     } else {
@@ -76,7 +46,17 @@ const ObrasComponent: React.FC = () => {
   };
 
   const handleEdit = (obra: Obra) => {
-    setEditingObra({ ...obra });
+    setEditingObra({
+      id: obra.id,
+      titulo: obra.titulo,
+      nombre: obra.nombre,
+      descripcion: obra.descripcion,
+      ubicacion: obra.ubicacion,
+      direccion: obra.direccion,
+      estado: obra.estado,
+      tipo_id: obra.tipo_id,
+      empresa_id: obra.empresa_id
+    });
     setIsModalOpen(true);
   };
 
@@ -96,8 +76,9 @@ const ObrasComponent: React.FC = () => {
   const tableData = {
 
     filter: [true, true, true, true, true, true, false],
-    headers: ["titulo", "nombre", "descripcion", "ubicacion", "direccion", "estado", "opciones"],
-    rows: obras.map(obra => ({
+    headers: ["empresa","titulo", "nombre", "descripcion", "ubicacion", "direccion", "estado", "opciones"],
+    rows: obras.map((obra: Obra) => ({
+      empresa: obra.empresa_id?.nombre_comercial || '',
       titulo: obra.titulo || '',
       nombre: obra.nombre || '',
       descripcion: obra.descripcion || '',
@@ -174,7 +155,8 @@ const ObrasComponent: React.FC = () => {
                   ubicacion: editingObra.ubicacion || '',
                   direccion: editingObra.direccion || '',
                   estado: editingObra.estado || '',
-                  tipoId: editingObra.tipo_id?.id || ''
+                  tipoId: editingObra.tipo_id?.id || '',
+                  empresaId: editingObra.empresa_id?.id || ''
                 } : undefined}
                 onSubmit={handleSubmit}
               />
