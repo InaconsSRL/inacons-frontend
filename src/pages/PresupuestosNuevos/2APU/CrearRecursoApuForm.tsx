@@ -51,7 +51,7 @@ const CrearRecursoApuForm: React.FC<Props> = ({ recurso, onSuccess, onCancel }) 
     try {
       const resultAction = await dispatch(addRecursoComposicionApu(nuevoRecursoApu));
       if (addRecursoComposicionApu.fulfilled.match(resultAction)) {
-        onSuccess(nuevoRecursoApu);
+        onSuccess({...nuevoRecursoApu, id_rec_comp_apu: resultAction.payload.id_rec_comp_apu});
       }
     } catch (error) {
       console.error('Error al crear recurso APU:', error);

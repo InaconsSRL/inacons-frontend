@@ -84,6 +84,7 @@ import { archivoPagoReducer } from '../slices/archivoPagoSlice';
 import { comprobantePagoReducer } from '../slices/comprobantePagoSlice';
 import { tipoCambioOrdenPagoReducer } from '../slices/tipoCambioOrdenPagoSlice';
 import { divisaReducer } from '../slices/divisaSlice';
+import { empresaReducer } from '../slices/empresaSlice';
 
 export const store = configureStore({
   reducer: {
@@ -171,6 +172,7 @@ export const store = configureStore({
     comprobantePago: comprobantePagoReducer,
     tipoCambioOrdenPago: tipoCambioOrdenPagoReducer,      
     divisa: divisaReducer,
+    empresa: empresaReducer,
   },
 
   //Para que se tome mas tiempo en responder todas las solicitudes de la API

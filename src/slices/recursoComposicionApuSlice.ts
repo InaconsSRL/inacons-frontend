@@ -32,6 +32,7 @@ export interface RecursoComposicionApu {
 }
 
 export interface AddRecursoComposicionApuDto {
+  id_rec_comp_apu?: string;
   id_recurso: string;
   id_unidad: string;
   nombre: string;

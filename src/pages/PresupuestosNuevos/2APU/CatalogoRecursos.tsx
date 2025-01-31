@@ -6,7 +6,7 @@ import { FaChevronRight, FaFolder, FaFolderOpen } from 'react-icons/fa';
 import { AddRecursoComposicionApuDto, fetchRecursosComposicionApu, RecursoComposicionApu } from '../../../slices/recursoComposicionApuSlice';
 import CrearRecursoApuForm from './CrearRecursoApuForm';
 import Modal from '../../../components/Modal/Modal';
-import { addComposicionApu, getComposicionesApuByTitulo } from '../../../slices/composicionApuSlice';
+import { addComposicionApu } from '../../../slices/composicionApuSlice';
 import ModalAlert, { ColorVariant } from '../../../components/Modal/ModalAlert';
 import { fetchRecursosPresupuesto } from '../../../slices/recursoPresupuestoSlice';
 
@@ -112,7 +112,7 @@ const CatalogoRecursos: React.FC<CatalogoRecursosProps> = (
   const recursos = useSelector((state: RootState) => state.recursoPresupuesto.recursosPresupuesto);
   const unidades = useSelector((state: RootState) => state.unidadPresupuesto.unidadesPresupuesto);
   const activeTitulo = useSelector((state: RootState) => state.activeData.activeTitulo);
-  const activeProyecto = useSelector((state: RootState) => state.activeData.activeProyecto);
+  //const activeProyecto = useSelector((state: RootState) => state.activeData.activeProyecto);
   const recursosComposicionApu = useSelector(
     (state: RootState) => state.recursoComposicionApu.recursosComposicionApu
   );
@@ -257,12 +257,13 @@ const CatalogoRecursos: React.FC<CatalogoRecursosProps> = (
         await new Promise(resolve => setTimeout(resolve, 1000));
 
         // Actualizar la lista solo si todo fue exitoso
-        if (activeTitulo && activeProyecto) {
-          await dispatch(getComposicionesApuByTitulo({
-            id_titulo: activeTitulo.id_titulo,
-            id_proyecto: activeProyecto.id_proyecto
-          }));
-        }
+        // if (activeTitulo && activeProyecto) {
+        //   await dispatch(getComposicionesApuByTitulo({
+        //     id_titulo: activeTitulo.id_titulo,
+        //     id_proyecto: activeProyecto.id_proyecto
+        //   })
+        // );
+        // }
       }
 
       // Mostrar mensaje apropiado
@@ -472,7 +473,7 @@ const CatalogoRecursos: React.FC<CatalogoRecursosProps> = (
             onSuccess={(nuevoRecurso: AddRecursoComposicionApuDto) => {
               // Convertir el AddRecursoComposicionApuDto a RecursoComposicionApu
               const recursoCompleto: RecursoComposicionApu = {
-                id_rec_comp_apu: '', // Se llenará cuando la API responda
+                id_rec_comp_apu: nuevoRecurso.id_rec_comp_apu || '', // Se llenará cuando la API responda
                 id_recurso: nuevoRecurso.id_recurso,
                 nombre: nuevoRecurso.nombre,
                 fecha_creacion: nuevoRecurso.fecha_creacion || new Date().toISOString(),
