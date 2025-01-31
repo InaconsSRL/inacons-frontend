@@ -397,7 +397,12 @@ const PresupuestoTableAPU: React.FC = () => {
                         </motion.span>
                       </div>
                     </td>
-                    <td className="px-2 py-1 text-center text-gray-500 border-r">
+                    <td
+                    onClick={(e) => {
+                      e.stopPropagation(); // Prevenir que el click del botón active el título
+                      toggleCollapse(titulo.id_titulo);
+                    }}
+                     className="px-2 py-1 text-center text-gray-500 border-r">
                       {titulo.tipo === 'PARTIDA' ? (
                         editingTituloId === titulo.id_titulo ? (
                           <select
@@ -427,7 +432,12 @@ const PresupuestoTableAPU: React.FC = () => {
                         )
                       ) : ''}
                     </td>
-                    <td className="px-2 py-1 text-center text-gray-500 border-r">
+                    <td 
+                    onClick={(e) => {
+                      e.stopPropagation(); // Prevenir que el click del botón active el título
+                      toggleCollapse(titulo.id_titulo);
+                    }}
+                    className="px-2 py-1 text-center text-gray-500 border-r">
                       {titulo.tipo === 'PARTIDA' && (
                         editingMetradoId === titulo.id_titulo ? (
                           <input
