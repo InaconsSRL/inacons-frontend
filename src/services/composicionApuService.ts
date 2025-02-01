@@ -99,19 +99,12 @@ const DELETE_COMPOSICION_APU_MUTATION = gql`
 `;
 
 export const getComposicionesApuByTituloService = async (id_titulo: string, id_proyecto: string) => {
-  try {
-    console.log('🟡 Llamando a getComposicionesApuByTituloService con:', { id_titulo, id_proyecto });
-    const { data } = await client.query({
-      query: GET_COMPOSICIONES_APU_BY_TITULO_QUERY,
-      variables: { id_titulo, id_proyecto },
-      fetchPolicy: 'network-only' // Forzar a buscar desde el servidor
-    });
-    console.log('🟡 Respuesta de GET_COMPOSICIONES_APU_BY_TITULO_QUERY:', data);
-    return data.getComposicionesApuByTitulo;
-  } catch (error) {
-    console.error('🔴 Error en getComposicionesApuByTituloService:', error);
-    throw error;
-  }
+  const { data } = await client.query({
+    query: GET_COMPOSICIONES_APU_BY_TITULO_QUERY,
+    variables: { id_titulo, id_proyecto },
+    fetchPolicy: 'network-only' // Forzar a buscar desde el servidor
+  });
+  return data.getComposicionesApuByTitulo;
 };
 
 export const addComposicionApuService = async (data: {
@@ -120,29 +113,17 @@ export const addComposicionApuService = async (data: {
   cuadrilla: number;
   cantidad: number;
 }) => {
-  console.log('🟡 Llamando a addComposicionApuService con:', data);
-  try {
-    const response = await client.mutate({
-      mutation: ADD_COMPOSICION_APU_MUTATION,
-      variables: data,
-      errorPolicy: 'all', // Importante: manejar errores sin romper la ejecución
-    });
+  const response = await client.mutate({
+    mutation: ADD_COMPOSICION_APU_MUTATION,
+    variables: data,
+    errorPolicy: 'all', // Importante: manejar errores sin romper la ejecución
+  });
 
-    if (response.errors) {
-      // Si hay errores pero también datos, loggear el error pero continuar
-      console.warn('⚠️ Advertencias en addComposicionApuService:', response.errors);
-    }
-
-    if (!response.data?.addComposicionApu) {
-      throw new Error('No se recibieron datos de la mutación');
-    }
-
-    console.log('🟡 Respuesta de ADD_COMPOSICION_APU_MUTATION:', response.data);
-    return response.data.addComposicionApu;
-  } catch (error) {
-    console.error('🔴 Error en addComposicionApuService:', error);
-    throw error;
+  if (!response.data?.addComposicionApu) {
+    throw new Error('No se recibieron datos de la mutación');
   }
+
+  return response.data.addComposicionApu;
 };
 
 export const updateComposicionApuService = async (data: {

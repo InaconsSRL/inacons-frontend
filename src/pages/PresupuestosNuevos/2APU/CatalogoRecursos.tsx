@@ -82,9 +82,9 @@ const CatalogoRecursos: React.FC<CatalogoRecursosProps> = (
 ) => {
   const dispatch = useDispatch<AppDispatch>();
   const [searchTerm, setSearchTerm] = useState('');
-  const [selectedTipo, setSelectedTipo] = useState<string | null>(null);
+  const [selectedTipo, setSelectedTipo] = useState<string | null>("TODOS");
   const [tiposTree, setTiposTree] = useState<ITipoNode[]>([
-    { id_tipo: 'TODOS', descripcion: 'TODOS', isActive: false },
+    { id_tipo: 'TODOS', descripcion: 'TODOS', isActive: true },
     { id_tipo: 'TIP0000000001', descripcion: 'MANO DE OBRA', isActive: false },
     { id_tipo: 'TIP0000000002', descripcion: 'MATERIALES', isActive: false },
     { id_tipo: 'TIP0000000003', descripcion: 'EQUIPO', isActive: false },
@@ -360,7 +360,7 @@ const CatalogoRecursos: React.FC<CatalogoRecursosProps> = (
               </div>
             </div>
 
-            <div className="h-[calc(100vh-28rem)] p-4 overflow-y-auto">
+            <div className="h-[calc(100vh-28rem)] max-w-[calc(52vw)] min-w-[calc(51vw)] p-4 overflow-y-auto">
               <AnimatePresence>
                 {selectedTipo && (
                   <motion.div
@@ -374,8 +374,8 @@ const CatalogoRecursos: React.FC<CatalogoRecursosProps> = (
                       if (!isRecursoComposicionApu(rca)) return null;
                       return (
                         <motion.div
-                          key={rca.id_recurso}
-                          className="px-4 py-2 bg-white rounded-lg shadow hover:shadow-md transition-shadow grid grid-cols-5 gap-2 items-center"
+                          key={`apu-${rca.id_rec_comp_apu}`} // Cambiado para asegurar unicidad
+                          className="px-4 py-2 w-full max-w-[calc(50vw)] min-w-[calc(49vw)] bg-white rounded-lg shadow hover:shadow-md transition-shadow grid grid-cols-5 gap-2 items-center"
                         >
                           <div className="col-span-3">
                             <h3 className="font-medium text-sm text-gray-800 break-words">
@@ -407,8 +407,8 @@ const CatalogoRecursos: React.FC<CatalogoRecursosProps> = (
                     {/* Recursos normales */}
                     {filterResources(filteredRecursos).map((recurso) => (
                       <motion.div
-                        key={recurso.id_recurso}
-                        className="px-4 py-2 bg-white rounded-lg shadow hover:shadow-md transition-shadow grid grid-cols-5 gap-2 items-center"
+                        key={`recurso-${recurso.id_recurso}`} // Cambiado para asegurar unicidad
+                        className="px-4 py-2 w-full max-w-[calc(50vw)] min-w-[calc(49vw)] bg-white rounded-lg shadow hover:shadow-md transition-shadow grid grid-cols-5 gap-2 items-center"
                       >
                         <div className="col-span-3">
                           <h3 className="font-medium text-sm text-gray-800 break-words">
@@ -447,7 +447,10 @@ const CatalogoRecursos: React.FC<CatalogoRecursosProps> = (
               </div>
               <div className="h-44 space-y-2 overflow-y-auto">
                 {acumuladorRecursos.map((recurso) => (
-                  <div key={recurso.id_rec_comp_apu} className="flex justify-between items-center bg-gray-50 p-2 rounded">
+                  <div 
+                    key={`acumulador-${recurso.id_rec_comp_apu}`} // Cambiado para asegurar unicidad
+                    className="flex justify-between items-center bg-gray-50 p-2 rounded"
+                  >
                     <span className="text-xs text-slate-800">{recurso.nombre} - {unidades.find(und => und.id_unidad === recurso.unidad_presupuesto.id_unidad)?.abreviatura_unidad}</span>
                     <button
                       onClick={() => handleRemoveFromAcumulador(recurso.id_rec_comp_apu)}

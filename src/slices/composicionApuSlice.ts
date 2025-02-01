@@ -78,13 +78,10 @@ const initialState: ComposicionApuState = {
 export const getComposicionesApuByTitulo = createAsyncThunk(
   'composicionApu/getComposicionesApuByTitulo',
   async ({id_titulo, id_proyecto}: {id_titulo: string, id_proyecto: string}, { rejectWithValue }) => {
-    console.log('🟡 Iniciando getComposicionesApuByTitulo con:', { id_titulo, id_proyecto });
     try {
       const result = await getComposicionesApuByTituloService(id_titulo, id_proyecto);
-      console.log('🟡 Resultado de getComposicionesApuByTituloService:', result);
       return result;
     } catch (error) {
-      console.error('🔴 Error en getComposicionesApuByTitulo:', error);
       return rejectWithValue((error as Error).message);
     }
   }
@@ -98,13 +95,10 @@ export const addComposicionApu = createAsyncThunk(
     cuadrilla: number;
     cantidad: number;
   }, { rejectWithValue }) => {
-    console.log('🟡 Iniciando addComposicionApu con data:', data);
     try {
       const result = await addComposicionApuService(data);
-      console.log('🟡 Resultado de addComposicionApuService:', result);
       return result;
     } catch (error) {
-      console.error('🔴 Error en addComposicionApu:', error);
       return rejectWithValue((error as Error).message);
     }
   }
@@ -154,7 +148,6 @@ const composicionApuSlice = createSlice({
         state.error = null;
       })
       .addCase(getComposicionesApuByTitulo.fulfilled, (state, action: PayloadAction<ComposicionApuWithRelations[]>) => {
-        console.log('🟢 getComposicionesApuByTitulo.fulfilled con payload:', action.payload);
         state.loading = false;
         state.composicionesApu = action.payload;
       })
@@ -167,7 +160,6 @@ const composicionApuSlice = createSlice({
         state.error = null;
       })
       .addCase(addComposicionApu.fulfilled, (state, action: PayloadAction<ComposicionApuWithRelations>) => {
-        console.log('🟢 addComposicionApu.fulfilled con payload:', action.payload);
         state.loading = false;
         const newComposicion = action.payload;
         

@@ -153,9 +153,9 @@ const PresupuestoTableAPU: React.FC = () => {
       } 
   
       // Inmediatamente después de una operación exitosa, actualizar los títulos
-      if (activePresupuesto?.id_presupuesto) {
-        await dispatch(getTitulosByPresupuesto(activePresupuesto.id_presupuesto));
-      }
+      // if (activePresupuesto?.id_presupuesto) {
+      //   await dispatch(getTitulosByPresupuesto(activePresupuesto.id_presupuesto));
+      // }
     } catch (error) {
       console.error('Error al manejar el cambio de unidad:', error);
     } finally {
@@ -176,9 +176,9 @@ const PresupuestoTableAPU: React.FC = () => {
         })).unwrap();
   
         // Inmediatamente después de una operación exitosa, actualizar los títulos
-        if (activePresupuesto?.id_presupuesto) {
-          await dispatch(getTitulosByPresupuesto(activePresupuesto.id_presupuesto));
-        }
+        // if (activePresupuesto?.id_presupuesto) {
+        //   await dispatch(getTitulosByPresupuesto(activePresupuesto.id_presupuesto));
+        // }
       }
     } catch (error) {
       console.error('Error al manejar el cambio de metrado:', error);
@@ -213,7 +213,8 @@ const PresupuestoTableAPU: React.FC = () => {
   const handleTituloClick = (titulo: Titulo, event: React.MouseEvent<HTMLTableRowElement>): void => {
     // Solo actualizar el título activo si el click no fue en un input
     const target = event.target as HTMLElement;
-    if (!target.closest('input') && !target.closest('select')) {
+    if (!target.closest('input') && !target.closest('select') && activeTitulo?.id_titulo !== titulo.id_titulo) {
+           
       dispatch(updateActiveTitulo(titulo));
     }
   };

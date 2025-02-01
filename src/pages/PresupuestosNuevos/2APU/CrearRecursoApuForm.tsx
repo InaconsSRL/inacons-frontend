@@ -34,14 +34,19 @@ const CrearRecursoApuForm: React.FC<Props> = ({ recurso, onSuccess, onCancel }) 
     cantidad: 1,
     especificaciones: '',
     descripcion: '',
-    nombre: recurso.nombre
+    nombreAdicional: '',  // Nuevo campo para el texto adicional
+    nombre: recurso.nombre // Mantenemos el nombre original
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
+    const nombreCompleto = formData.nombreAdicional 
+      ? `${recurso.nombre} ${formData.nombreAdicional}`.trim()
+      : recurso.nombre;
+
     const nuevoRecursoApu: AddRecursoComposicionApuDto = {
-      nombre: formData.nombre,
+      nombre: nombreCompleto,
       especificaciones: formData.especificaciones,
       descripcion: formData.descripcion,
       id_unidad: recurso.id_unidad,
@@ -59,16 +64,24 @@ const CrearRecursoApuForm: React.FC<Props> = ({ recurso, onSuccess, onCancel }) 
   };
 
   return (
-    <div className="p-4 bg-white rounded-lg shadow-md min-w-[30vw] max-w-[40vw]">
+    <div className="p-4 m-auto bg-white rounded-lg shadow-md min-w-[30vw] max-w-[40vw]">
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
-          <label className="block text-sm font-medium text-gray-900">Nuevo Nombre para el recurso <span className='font-semibold'>{recurso.nombre}</span></label>
-          <input
-            type="text"
-            value={formData.nombre}
-            onChange={(e) => setFormData({...formData, nombre: e.target.value})}
-            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md text-gray-900"
-          />
+          <label className="block text-sm font-medium text-gray-900">
+            Nombre del recurso: <span className='font-semibold'>{recurso.nombre}</span>
+          </label>
+          <div className="mt-1 flex items-center">
+            <span className="inline-block px-3 py-2 bg-gray-100 border border-r-0 border-gray-300 rounded-l-md text-gray-600">
+              {recurso.nombre}
+            </span>
+            <input
+              type="text"
+              value={formData.nombreAdicional}
+              onChange={(e) => setFormData({...formData, nombreAdicional: e.target.value})}
+              className="flex-1 px-3 py-2 border border-l-0 border-gray-300 rounded-r-md text-gray-900 focus:ring-blue-500 focus:border-blue-500"
+              placeholder="Texto adicional..."
+            />
+          </div>
         </div>
         <div>
           <label className="block text-sm font-medium text-gray-950">Especificaciones</label>
